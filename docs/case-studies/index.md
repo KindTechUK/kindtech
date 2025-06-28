@@ -26,7 +26,7 @@ To contribute a case study:
 When writing a case study, consider including:
 
 - **Problem Statement**: What is the question the charity is trying to answer?
-- **Dataset involved**: What opensourced and privatedatasets are involved in the analysis? Note that 
+- **Dataset involved**: What opensourced and privatedatasets are involved in the analysis? Note that
 for private dataset we will have synthetic data to complement the analysis
 - **Desired output**: What was the output of the original analysis?
 - **Replicating the output with kindtech**: How did we replicate the output with kindtech?
@@ -41,4 +41,4 @@ for private dataset we will have synthetic data to complement the analysis
 
 ---
 
-*Have a case study to share? We'd love to feature it here!* 
+*Have a case study to share? We'd love to feature it here!*

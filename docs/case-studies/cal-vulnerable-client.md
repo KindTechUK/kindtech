@@ -61,4 +61,3 @@ Citizens Advice Lewisham (CAL) needed to identify 'vulnerability hotspots' - are
 - **Visualization drives action**: Clear maps help stakeholders understand and act on the findings
 - **Per-capita analysis matters**: Normalizing by population reveals true service demand patterns
 - **LSOA-level granularity is appropriate**: Geographic units of ~1,500 people provide sufficient detail without compromising privacy
-

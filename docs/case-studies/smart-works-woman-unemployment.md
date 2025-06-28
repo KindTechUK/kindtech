@@ -19,4 +19,3 @@ How did we replicate the output with KindTech?
 ## Lessons Learned
 
 Key takeaways and recommendations.
-
