@@ -46,5 +46,8 @@ nav:
     - Overview: api/index.md
     - Geographic Data: api/geo.md
     - ONS Data: api/ons.md
+  - Case Studies:
+    - Overview: case-studies/index.md
+    - CAL Vulnerable Client Analysis: case-studies/cal-vulnerable-client.md
   - Blog:
     - blog/index.md
