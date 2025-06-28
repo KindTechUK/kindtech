@@ -27,7 +27,7 @@ Citizens Advice Lewisham (CAL) needed to identify 'vulnerability hotspots' - are
 
 **Key Finding**: Strong correlation between deprivation levels and service usage - areas with highest deprivation scores also showed highest client volumes, validating CAL's service targeting.
 
-![CAL map data dashboard](../images/case-studies/deprivation-vs-client-per-capita.png)
+![CAL map data dashboard](../images/case-studies/deprivation-vs-client-per-capita.jpg)
 *Figure 1: Geographic distribution of CAL clients per capita across Lewisham LSOAs and IMD scores*
 
 ## Replicating the Output with KindTech
