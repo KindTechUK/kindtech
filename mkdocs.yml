@@ -49,5 +49,6 @@ nav:
   - Case Studies:
     - Overview: case-studies/index.md
     - CAL Vulnerable Client Analysis: case-studies/cal-vulnerable-client.md
+    - SOBUS BAME referral mapping:  case-studies/sobus-bame-analysis.md
   - Blog:
     - blog/index.md

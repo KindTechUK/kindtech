@@ -1,5 +1,9 @@
 # Sobus BAME hospitalisation analysis
 
+**Reference article:** [DataKind UK - Sobus](https://www.datakind.org.uk/stories-news/sobus)
+
+**More about what Sobus is doing:** [Sobus](https://sobus.org.uk/)
+
 ## Problem Statement
 
 Sobus identified ongoing concerns about the disproportionate numbers of BAME (Black, Asian, and Minority Ethnic) people diagnosed with mental health conditions and under the care of mental health services, coupled with inadequate service provision to these communities.
