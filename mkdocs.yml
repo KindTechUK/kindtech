@@ -46,5 +46,10 @@ nav:
     - Overview: api/index.md
     - Geographic Data: api/geo.md
     - ONS Data: api/ons.md
+  - Case Studies:
+    - Overview: case-studies/index.md
+    - CAL Vulnerable Client Analysis: case-studies/cal-vulnerable-client.md
+    - SOBUS BAME referral mapping:  case-studies/sobus-bame-analysis.md
+    - Material Focus Recycling: case-studies/material-focus-recycling.md
   - Blog:
     - blog/index.md
