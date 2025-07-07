@@ -19,6 +19,9 @@ dev = [
     "ruff>=0.1.6",
     "pre-commit>=3.5.0",
     "mkdocs-material>=9.6.14",
+    "beautifulsoup4>=4.13.4",
+    "pytest>=8.4.1",
+    "polars>=1.31.0",
 ]
 
 [tool.ruff]
@@ -26,7 +29,7 @@ line-length = 88
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ERA"]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ERA", "TID252"]
 ignore = []
 
 [tool.ruff.format]
