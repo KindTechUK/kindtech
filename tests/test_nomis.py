@@ -9,10 +9,10 @@ import pandas as pd
 import pytest
 import requests
 import responses
-from kindtech.nomis import (
+from kindtech.ons import load_ons
+from kindtech.ons._ingestion import (
     create_nomis_tables_dataset,
     extract_data_source,
-    get_ons_table,
     get_overview,
     list_data_sources,
     list_tables,
@@ -219,11 +219,11 @@ class TestGetOverview:
             get_overview("INVALID_ID")
 
 
-class TestGetOnsTable:
-    """Test suite for get_ons_table function."""
+class TestLoadOns:
+    """Test suite for load_ons function."""
 
     @responses.activate
-    def test_get_ons_table_success(self, mock_csv_response):
+    def test_load_ons_success(self, mock_csv_response):
         """Test successful get_ons_table call."""
         responses.add(
             responses.GET,
@@ -233,7 +233,7 @@ class TestGetOnsTable:
             content_type="text/csv",
         )
 
-        result = get_ons_table(
+        result = load_ons(
             "NM_1_1", geography="TYPE480", time="latest", measures=20100, item=1
         )
 
@@ -243,7 +243,7 @@ class TestGetOnsTable:
         assert "England" in result["geography_name"].values
 
     @responses.activate
-    def test_get_ons_table_with_select(self, mock_csv_response):
+    def test_load_ons_with_select(self, mock_csv_response):
         """Test get_ons_table with select parameter."""
         responses.add(
             responses.GET,
@@ -253,7 +253,7 @@ class TestGetOnsTable:
             content_type="text/csv",
         )
 
-        result = get_ons_table(
+        result = load_ons(
             "NM_1_1",
             geography="TYPE480",
             time="latest",
@@ -267,7 +267,7 @@ class TestGetOnsTable:
         assert "obs_value" in result.columns
 
     @responses.activate
-    def test_get_ons_table_invalid_id(self):
+    def test_load_ons_invalid_id(self):
         """Test get_ons_table with invalid dataset ID."""
         responses.add(
             responses.GET,
@@ -278,10 +278,10 @@ class TestGetOnsTable:
         )
 
         with pytest.raises(ValueError, match="NOMIS ID does not exist"):
-            get_ons_table("INVALID_ID")
+            load_ons("INVALID_ID")
 
     @responses.activate
-    def test_get_ons_table_truncation_warning(self):
+    def test_load_ons_truncation_warning(self):
         """Test get_ons_table with truncation warning."""
         # Create a CSV with exactly 25000 rows
         csv_data = "geography_name,obs_value\n"
@@ -297,15 +297,15 @@ class TestGetOnsTable:
         )
 
         # Should not raise an exception, but should print a warning
-        result = get_ons_table("NM_1_1")
+        result = load_ons("NM_1_1")
         assert len(result) == 25000
 
 
 class TestExtractDataSource:
     """Test suite for extract_data_source function."""
 
-    @patch("kindtech.nomis.list_tables")
-    @patch("kindtech.nomis.get_overview")
+    @patch("kindtech.ons._ingestion.list_tables")
+    @patch("kindtech.ons._ingestion.get_overview")
     def test_extract_data_source_success(
         self,
         mock_get_overview,
@@ -325,8 +325,8 @@ class TestExtractDataSource:
         assert "id" in result.columns
         assert result.iloc[0]["sourceName"] == "Office for National Statistics"
 
-    @patch("kindtech.nomis.list_tables")
-    @patch("kindtech.nomis.get_overview")
+    @patch("kindtech.ons._ingestion.list_tables")
+    @patch("kindtech.ons._ingestion.get_overview")
     def test_extract_data_source_with_error(
         self, mock_get_overview, mock_list_tables, sample_tables_df
     ):
@@ -346,8 +346,8 @@ class TestExtractDataSource:
 class TestCreateNomisTablesDataset:
     """Test suite for create_nomis_tables_dataset function."""
 
-    @patch("kindtech.nomis.list_tables")
-    @patch("kindtech.nomis.extract_data_source")
+    @patch("kindtech.ons._ingestion.list_tables")
+    @patch("kindtech.ons._ingestion.extract_data_source")
     def test_create_nomis_tables_dataset_success(
         self, mock_extract_data_source, mock_list_tables, sample_tables_df
     ):
@@ -370,7 +370,7 @@ class TestCreateNomisTablesDataset:
 class TestSaveNomisTablesDataset:
     """Test suite for save_nomis_tables_dataset function."""
 
-    @patch("kindtech.nomis.create_nomis_tables_dataset")
+    @patch("kindtech.ons._ingestion.create_nomis_tables_dataset")
     @patch("pandas.DataFrame.to_csv")
     def test_save_nomis_tables_dataset_success(
         self, mock_to_csv, mock_create_dataset, sample_tables_df
@@ -406,9 +406,9 @@ class TestIntegration:
         assert "source_id" in result.columns
         assert "source_description" in result.columns
 
-    def test_get_ons_table_integration(self):
-        """Integration test for get_ons_table."""
-        result = get_ons_table(
+    def test_load_ons_integration(self):
+        """Integration test for load_ons."""
+        result = load_ons(
             "NM_1_1", geography="TYPE480", time="latest", measures=20100, item=1
         )
         assert isinstance(result, pd.DataFrame)

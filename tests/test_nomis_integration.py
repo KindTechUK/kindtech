@@ -8,8 +8,8 @@ import time
 
 import pandas as pd
 import pytest
-from kindtech.nomis import (
-    get_ons_table,
+from kindtech.ons import load_ons
+from kindtech.ons._ingestion import (
     get_overview,
     list_data_sources,
     list_tables,
@@ -80,10 +80,10 @@ class TestNomisAPIIntegration:
         assert "keyfamilies" in structure
         assert "header" in structure
 
-    def test_get_ons_table_basic_integration(self):
+    def test_load_ons_basic_integration(self):
         """Test basic data retrieval from NOMIS."""
         # Get Jobseeker's Allowance data with basic filters
-        data = get_ons_table(
+        data = load_ons(
             "NM_1_1", geography="TYPE480", time="latest", measures=20100, item=1
         )
 
@@ -96,10 +96,10 @@ class TestNomisAPIIntegration:
         assert "GEOGRAPHY_NAME" in data.columns
         assert "OBS_VALUE" in data.columns
 
-    def test_get_ons_table_with_select_integration(self):
+    def test_load_ons_with_select_integration(self):
         """Test data retrieval with column selection."""
         # Get data with specific column selection
-        data = get_ons_table(
+        data = load_ons(
             "NM_1_1",
             geography="TYPE480",
             time="latest",
@@ -117,10 +117,10 @@ class TestNomisAPIIntegration:
         assert "OBS_VALUE" in data.columns
         assert len(data.columns) == 2
 
-    def test_get_ons_table_with_aggregation_integration(self):
+    def test_load_ons_with_aggregation_integration(self):
         """Test data retrieval with aggregation parameters."""
         # Get data with aggregation
-        data = get_ons_table(
+        data = load_ons(
             "NM_1_1",
             geography="TYPE480",
             time="latest",
@@ -141,19 +141,19 @@ class TestNomisAPIIntegration:
         # The aggregation creates new columns based on the values,
         # not the original column names
 
-    def test_get_ons_table_different_dataset_integration(self):
+    def test_load_ons_different_dataset_integration(self):
         """Test data retrieval from a different dataset."""
         # Test with a different dataset that we know works
-        data = get_ons_table("NM_2_1", geography="TYPE480", time="latest")
+        data = load_ons("NM_2_1", geography="TYPE480", time="latest")
 
         assert isinstance(data, pd.DataFrame)
         assert len(data) > 0
         assert len(data.columns) > 0
 
-    def test_get_ons_table_time_series_integration(self):
+    def test_load_ons_time_series_integration(self):
         """Test data retrieval with time series parameters."""
         # Get data for a specific time period
-        data = get_ons_table(
+        data = load_ons(
             "NM_1_1",
             geography="TYPE480",
             time="2023-01,2023-02,2023-03",
@@ -169,7 +169,7 @@ class TestNomisAPIIntegration:
             unique_dates = data["DATE"].nunique()
             assert unique_dates >= 1
 
-    def test_get_ons_table_geography_integration(self):
+    def test_load_ons_geography_integration(self):
         """Test data retrieval with different geography types."""
         # Test with different geography types
         geography_types = [
@@ -180,7 +180,7 @@ class TestNomisAPIIntegration:
 
         for geo_type in geography_types:
             try:
-                data = get_ons_table(
+                data = load_ons(
                     "NM_1_1", geography=geo_type, time="latest", measures=20100, item=1
                 )
 
@@ -309,11 +309,11 @@ class TestNomisAPIIntegration:
         """Test error handling with invalid requests."""
         # Test with invalid dataset ID
         with pytest.raises(ValueError, match="NOMIS ID does not exist"):
-            get_ons_table("INVALID_DATASET_ID")
+            load_ons("INVALID_DATASET_ID")
 
         # Test with invalid parameters - this should raise a ValueError or similar
         with pytest.raises(ValueError):
-            get_ons_table("NM_1_1", invalid_param="invalid_value")
+            load_ons("NM_1_1", invalid_param="invalid_value")
 
     def test_api_rate_limiting_integration(self):
         """Test that we handle API rate limiting gracefully."""
@@ -321,7 +321,7 @@ class TestNomisAPIIntegration:
         results = []
         for i in range(3):
             try:
-                data = get_ons_table(
+                data = load_ons(
                     "NM_1_1", geography="TYPE480", time="latest", measures=20100, item=1
                 )
                 results.append(data)
@@ -362,7 +362,7 @@ class TestNomisAPIPerformance:
         import time
 
         start_time = time.time()
-        data = get_ons_table(
+        data = load_ons(
             "NM_1_1", geography="TYPE480", time="latest", measures=20100, item=1
         )
         end_time = time.time()
