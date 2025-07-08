@@ -182,7 +182,7 @@ def extract_data_source(
 
     for dataset_id in filtered_tables["id"]:
         try:
-            print(f"Processing dataset: {dataset_id}")
+            logger.info(f"Processing dataset: {dataset_id}")
             x = get_overview(dataset_id, base_url)
 
             # Extract source from annotations
@@ -231,7 +231,7 @@ def extract_data_source(
             sources_list.append(source)
 
         except Exception as e:
-            print(f"Error processing dataset {dataset_id}: {e}")
+            logger.error(f"Error processing dataset {dataset_id}: {e}")
             # Add empty source for failed datasets
             source = {"sourceName": "", "id": dataset_id}
             sources_list.append(source)
@@ -276,5 +276,15 @@ def save_nomis_tables_dataset(
     """
     nomis_tables = create_nomis_tables_dataset(base_url)
     nomis_tables.to_csv(filepath, index=False)
-    print(f"NOMIS tables dataset saved to {filepath}")
+    logger.info(f"NOMIS tables dataset saved to {filepath}")
     return nomis_tables
+
+
+if __name__ == "__main__":
+    # Example usage
+    try:
+        full_dataset = create_nomis_tables_dataset()
+        full_dataset.to_csv(DEFAULT_OUTPUT_PATH, index=False)
+        logger.info(f"NOMIS tables dataset saved to {DEFAULT_OUTPUT_PATH}")
+    except Exception as e:
+        logger.error(f"Failed to create NOMIS tables dataset: {e}")
