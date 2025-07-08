@@ -1,3 +1,8 @@
+---
+description: whenever you are trying to install a new python package, follow the following guidance
+globs:
+alwaysApply: false
+---
 
 # Package Management with `uv`
 
