@@ -8,3 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
+
+# MkDocs build directory
+site/
+# MkDocs cache
+.mkdots/
+.mkdocs/
+# MkDocs config overrides
+mkdocs.yml.lock
