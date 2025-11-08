@@ -16,3 +16,9 @@ site/
 .mkdocs/
 # MkDocs config overrides
 mkdocs.yml.lock
+
+# Mac
+*.DS_Store
+
+# Local downloads
+downloads/
