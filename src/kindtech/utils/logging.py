@@ -1,13 +1,12 @@
 """Logging utilities for consistent logging across the kindtech package."""
 
 import logging
-from typing import Optional
 
 # Track if we've configured the root logger
 _ROOT_LOGGER_CONFIGURED = False
 
 
-def get_logger(name: Optional[str] = None) -> logging.Logger:
+def get_logger(name: str | None = None) -> logging.Logger:
     """
     Get a logger with consistent formatting for the kindtech package.
 
@@ -48,4 +47,3 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
     logger.setLevel(logging.INFO)
 
     return logger
-
