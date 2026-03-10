@@ -1,46 +1,40 @@
 # Introduction to KindTech
 
-## Posted on June 28, 2025
+## Posted June 2025
 
-Welcome to KindTech, a Python package designed to simplify working with geographic and Office for National Statistics (ONS) data.
+Welcome to KindTech, a Python package designed to simplify working with UK geographic boundaries and Office for National Statistics data.
 
 ## What is KindTech?
 
-KindTech is a Python library that provides easy-to-use functions for loading and processing geographic data and ONS statistics. Whether you're a data scientist, researcher, or developer, KindTech aims to make your data workflows more efficient.
+KindTech is a lightweight Python library for accessing UK public data. It wraps the ONS ArcGIS Geoportal (geographic boundaries) and the NOMIS API (statistics) with a clean, functional API.
 
 ## Key Features
 
-- **Simple API**: Clean, intuitive functions that are easy to use
-- **Geographic Data**: Load and process geographic data from various sources
-- **ONS Integration**: Direct access to Office for National Statistics datasets
-- **Flexible**: Works with your existing data pipelines
+- **Simple API** — flat functions, no classes to instantiate
+- **Bring your own DataFrame** — works with pandas or polars via narwhals, no backend lock-in
+- **Lightweight** — core package is ~500KB (requests + narwhals), no pandas/numpy required
+- **Bundled catalogs** — browse available datasets offline, data is fetched live from source
 
 ## Getting Started
 
-Installation is simple:
-
 ```bash
-# Using pip
-pip install kindtech
-
-# Using uv (recommended)
-uv add kindtech
+uv add kindtech[pandas]   # or kindtech[polars]
 ```
 
-Then you can import and use the package:
-
 ```python
-from kindtech import load_geodata, load_ons
+from kindtech.geo import load_geodata
+from kindtech.ons import load_ons, list_tables
 
-# Load geographic data
-geo_data = load_geodata(source="uk_boundaries")
+# Load Local Authority District boundaries (GeoJSON)
+boundaries = load_geodata(geography_type="LAD", coverage="UK")
 
-# Load ONS data
-ons_data = load_ons(dataset="population", period="2023")
+# Load ONS statistics
+df = load_ons("NM_1_1", geography="TYPE480", time="latest")
+
+# Browse available datasets
+tables = list_tables(name="population")
 ```
 
 ## Next Steps
 
-Check out our [API documentation](/api/) to learn more about the available functions and how to use them effectively.
-
-Stay tuned for more blog posts and tutorials on how to make the most of KindTech!
+Check out the [API documentation](../api/index.md) to learn more about the available functions.

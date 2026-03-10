@@ -1,23 +1,35 @@
 # API Reference
 
-Welcome to the KindTech API reference documentation. This section provides detailed information about the available modules and functions in the KindTech package.
+KindTech provides two modules for accessing UK public data:
 
-## Available Modules
+## Modules
 
-KindTech provides the following modules:
+### [Geographic Data](geo.md) — `kindtech.geo`
 
-- **Geographic Data**: Functions for loading and processing geographic data
-- **ONS Data**: Functions for accessing Office for National Statistics data
-
-## Quick Start
+Load UK geographic boundary data from the ONS ArcGIS Geoportal. Returns GeoJSON.
 
 ```python
-# Import functions directly
-from kindtech import load_geodata, load_ons
+from kindtech.geo import load_geodata
 
-# Load geographic data
-geo_data = load_geodata(source="uk_boundaries")
-
-# Load ONS data
-ons_data = load_ons(dataset="population", period="2023", geography="E12000007")
+# Load Local Authority Districts
+boundaries = load_geodata(geography_type="LAD", coverage="UK")
 ```
+
+### [ONS Statistics](ons.md) — `kindtech.ons`
+
+Load statistical data from the ONS NOMIS API. Returns pandas or polars DataFrames.
+
+```python
+from kindtech.ons import load_ons
+
+# Load Jobseeker's Allowance data
+df = load_ons("NM_1_1", geography="TYPE480", time="latest")
+```
+
+## Design principles
+
+- **Flat functions** — no classes to instantiate, just call `load_geodata()` or `load_ons()`
+- **String or enum** — pass `"LAD"` or `GeographyType.LAD`, both work
+- **Bring your own DataFrame** — narwhals returns whatever backend you have installed
+- **Bundled catalogs** — small CSV reference tables ship with the package (136KB total) so you can browse available datasets offline
+- **Live data** — actual geographic/statistical data is always fetched fresh from the source APIs

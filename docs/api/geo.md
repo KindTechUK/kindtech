@@ -1,40 +1,110 @@
 # Geographic Data
 
-The `kindtech.geo` module provides functions for loading and processing geographic data.
+The `kindtech.geo` module provides access to UK geographic boundary data from the [ONS ArcGIS Geoportal](https://geoportal.statistics.gov.uk/).
 
 ## Functions
 
 ### `load_geodata()`
 
+Load geographic boundary data as GeoJSON.
+
 ```python
-from kindtech import load_geodata
+from kindtech.geo import load_geodata, GeographyType, CoverageArea, BoundaryType
 
-# Load geographic data from a specific source
-data = load_geodata(source="uk_boundaries")
+# Using strings
+data = load_geodata(geography_type="LAD", coverage="UK", boundary_type="BGC")
 
-# Load geographic data from a file
-data = load_geodata(filepath="/path/to/geodata.geojson")
+# Using enums
+data = load_geodata(
+    geography_type=GeographyType.LAD,
+    coverage=CoverageArea.UK,
+    boundary_type=BoundaryType.BGC,
+)
+
+# With filters
+manchester = load_geodata(geography_type="LAD", LAD21NM="Manchester")
 ```
 
 #### Parameters
 
-- **filepath** (*str, optional*): Path to the geographic data file.
-- **source** (*str, optional*): Source identifier for pre-configured data sources.
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `geography_type` | `str` or `GeographyType` | *required* | Geography level (e.g., `"LAD"`, `"LSOA"`) |
+| `year` | `str` or `None` | `None` | Year of the data (e.g., `"2021"`) |
+| `month` | `str`, `Month`, or `None` | `None` | Month (e.g., `"DEC"`, `Month.DEC`) |
+| `coverage` | `str`, `CoverageArea`, or `None` | `None` | Coverage area (`"UK"`, `"GB"`, `"EW"`) |
+| `boundary_type` | `str`, `BoundaryType`, or `None` | `"BGC"` | Boundary resolution |
+| `**filters` | keyword args | | Field filters (e.g., `LAD21NM="Manchester"`) |
 
 #### Returns
 
-- **dict**: Loaded geographic data.
+`dict` — A GeoJSON FeatureCollection. Returns `{"type": "FeatureCollection", "features": []}` if no matching service is found or the request fails.
 
-#### Raises
+---
 
-- **ValueError**: If neither filepath nor source is provided.
+### `get_field_info()`
 
-## Examples
+Get available fields for filtering a dataset.
 
 ```python
-# Load UK administrative boundaries
-uk_boundaries = load_geodata(source="uk_boundaries")
+from kindtech.geo import get_field_info
 
-# Load custom GeoJSON file
-custom_geo = load_geodata(filepath="custom_boundaries.geojson")
+fields = get_field_info(geography_type="LAD")
+# [{"name": "LAD21CD", "type": "esriFieldTypeString", "alias": "LAD Code"}, ...]
 ```
+
+#### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `geography_type` | `str` or `GeographyType` | *required* | Geography level |
+| `year` | `str` or `None` | `None` | Year |
+| `coverage` | `str`, `CoverageArea`, or `None` | `None` | Coverage area |
+| `boundary_type` | `str`, `BoundaryType`, or `None` | `None` | Boundary resolution |
+
+#### Returns
+
+`list[dict]` — Field metadata from ArcGIS (name, type, alias, etc.).
+
+---
+
+### `get_available_geography_types()`
+
+List all supported geography types.
+
+```python
+from kindtech.geo import get_available_geography_types
+
+types = get_available_geography_types()
+# [{"code": "LAD", "description": "Local Authority Districts"}, ...]
+```
+
+---
+
+### `get_available_boundary_types()`
+
+List all supported boundary resolutions.
+
+---
+
+### `get_available_coverage_areas()`
+
+List all supported coverage areas.
+
+## Enums
+
+All enums accept both string codes and enum values. They have `.code` and `.description` attributes.
+
+| Enum | Values | Example |
+|---|---|---|
+| `GeographyType` | LAD, LSOA, MSOA, ... | `GeographyType.LAD` |
+| `BoundaryType` | BFC, BFE, BGC, BSC | `BoundaryType.BGC` |
+| `CoverageArea` | UK, GB, EW | `CoverageArea.UK` |
+| `Month` | JAN through DEC | `Month.DEC` |
+
+## How it works
+
+1. The bundled CSV catalog (`geo/data/arcgis_services.csv`, 70 services) maps geography type + year + coverage + boundary to an ArcGIS service ID
+2. `load_geodata()` finds the best matching service (most recent year if not specified)
+3. Queries the ArcGIS FeatureServer REST API for GeoJSON
+4. Returns the raw GeoJSON FeatureCollection
