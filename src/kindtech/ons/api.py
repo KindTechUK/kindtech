@@ -2,11 +2,12 @@
 KindTech ONS API
 
 Provides a simple interface for accessing ONS data via the NOMIS API.
+Returns DataFrames in whatever backend you have installed (pandas or polars).
 
 Examples:
     >>> from kindtech.ons import load_ons
     >>>
-    >>> # Load all data from a dataset
+    >>> # Load all data from a dataset (returns pandas or polars DataFrame)
     >>> df = load_ons("NM_1_1")
     >>>
     >>> # Filter and select columns
@@ -22,9 +23,8 @@ Examples:
 import logging
 from io import StringIO
 from typing import Any
-from urllib.parse import urlencode
 
-import pandas as pd
+import narwhals.stable.v2 as nw
 import requests
 
 from . import _catalog
@@ -34,11 +34,61 @@ NOMIS_BASE_URL = "https://www.nomisweb.co.uk/api/v01"
 logger = logging.getLogger(__name__)
 
 
+def _get_native_namespace() -> Any:
+    """Detect the best available DataFrame backend."""
+    try:
+        import polars
+
+        return polars
+    except ImportError:
+        pass
+    try:
+        import pandas
+
+        return pandas
+    except ImportError:
+        pass
+    msg = (
+        "No DataFrame backend found. "
+        "Install pandas or polars: `uv add kindtech[pandas]` "
+        "or `uv add kindtech[polars]`"
+    )
+    raise ImportError(msg)
+
+
+def _csv_text_to_frame(text: str) -> nw.DataFrame:
+    """Parse CSV text into a narwhals DataFrame using the available backend."""
+    native_ns = _get_native_namespace()
+
+    if native_ns.__name__ == "polars":
+        native_df = native_ns.read_csv(StringIO(text))
+    else:
+        native_df = native_ns.read_csv(StringIO(text))
+
+    return nw.from_native(native_df, eager_only=True)
+
+
+def _dicts_to_frame(data: list[dict]) -> nw.DataFrame:
+    """Convert a list of dicts to a narwhals DataFrame."""
+    if not data:
+        return nw.from_native(_get_native_namespace().DataFrame(), eager_only=True)
+
+    columns = {key: [row[key] for row in data] for key in data[0]}
+    native_ns = _get_native_namespace()
+
+    if native_ns.__name__ == "polars":
+        native_df = native_ns.DataFrame(columns)
+    else:
+        native_df = native_ns.DataFrame(columns)
+
+    return nw.from_native(native_df, eager_only=True)
+
+
 def load_ons(
     dataset_id: str,
     base_url: str = NOMIS_BASE_URL,
     **kwargs: Any,
-) -> pd.DataFrame:
+) -> Any:
     """
     Load data from the ONS NOMIS API.
 
@@ -50,10 +100,11 @@ def load_ons(
             Lists are joined with commas. See https://www.nomisweb.co.uk/api/v01/help
 
     Returns:
-        DataFrame with the requested data.
+        DataFrame (pandas or polars, depending on what's installed).
 
     Raises:
         ValueError: If the dataset ID doesn't exist or the response can't be parsed.
+        ImportError: If neither pandas nor polars is installed.
     """
     # Build query params
     params: dict[str, str] = {}
@@ -65,6 +116,8 @@ def load_ons(
 
     url = f"{base_url}/dataset/{dataset_id}.data.csv"
     if params:
+        from urllib.parse import urlencode
+
         url = f"{url}?{urlencode(params)}"
 
     logger.info("Querying NOMIS API: %s", url)
@@ -81,7 +134,7 @@ def load_ons(
         raise ValueError(msg)
 
     try:
-        df = pd.read_csv(StringIO(response.text))
+        df = _csv_text_to_frame(response.text)
     except Exception as e:
         msg = f"Failed to parse CSV response for '{dataset_id}': {e}"
         raise ValueError(msg) from e
@@ -93,13 +146,13 @@ def load_ons(
             "See https://www.nomisweb.co.uk/api/v01/help"
         )
 
-    return df
+    return nw.to_native(df)
 
 
 def list_tables(
     name: str | None = None,
     source: str | None = None,
-) -> pd.DataFrame:
+) -> Any:
     """
     List available NOMIS datasets, optionally filtered.
 
@@ -108,11 +161,14 @@ def list_tables(
         source: Source name to filter by (e.g., "jsa", "aps").
 
     Returns:
-        DataFrame with columns: id, name, sourceName.
+        DataFrame (pandas or polars) with columns: id, name, sourceName.
+
+    Raises:
+        ImportError: If neither pandas nor polars is installed.
     """
     if name or source:
         tables = _catalog.find_tables(name=name, source=source)
     else:
         tables = _catalog._tables
 
-    return pd.DataFrame(tables)
+    return nw.to_native(_dicts_to_frame(tables))
