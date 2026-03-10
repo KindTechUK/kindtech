@@ -66,7 +66,7 @@ def _load_arcgis_data(url: str = ARCGIS_BASE_URL) -> str:
     """
     logger.info(f"Loading ArcGIS data from {url}")
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=60)
         response.raise_for_status()
         return response.text
     except requests.RequestException as e:

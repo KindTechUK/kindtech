@@ -9,6 +9,7 @@ The catalog (CSV-based) is not mocked — it loads real service metadata.
 import unittest.mock as mock
 
 import requests
+
 from kindtech.geo import (
     BoundaryType,
     CoverageArea,

@@ -1,0 +1,1616 @@
+id,name,sourceName
+NM_1_1,Jobseeker's Allowance with rates and proportions,jsa
+NM_2_1,claimant count - age and duration,jsa
+NM_4_1,Jobseeker's Allowance by age and duration,jsa
+NM_5_1,claimant count denominators - historical workforce series,jsa
+NM_6_1,claimant count - occupation,jsa
+NM_7_1,"claimant count - occupation, age and duration",jsa
+NM_8_1,"Jobseeker's Allowance off-flows by reason, age and duration",jsa
+NM_9_1,Jobseeker's Allowance flows by age and duration,jsa
+NM_10_1,Jobseeker's Allowance flows,jsa
+NM_11_1,Claimant Count - seasonally adjusted,cc
+NM_12_1,benefit claimants - employment and support allowance for small areas,dwp_wpls
+NM_17_1,annual population survey,aps
+NM_17_5,annual population survey (variables (percentages)),aps
+NM_18_1,Jobseeker's Allowance by age and duration with proportions,jsa
+NM_19_1,vacancies - seasonally adjusted series,vacs
+NM_20_1,vacancies by industry,vacs
+NM_21_1,vacancies by industry with duration analysis,vacs
+NM_22_1,vacancies by occupation,vacs
+NM_23_1,vacancies by occupation with duration analysis,vacs
+NM_24_1,vacancies - summary analysis,vacs
+NM_29_1,vat registrations/deregistrations by industry,vat
+NM_30_1,annual survey of hours and earnings - resident analysis,ashe
+NM_31_1,Population estimates - local authority based by five year age band,pest
+NM_34_1,vat registrations/deregistrations by industry - 1968 SIC,vat
+NM_35_1,1991 census - local base statistics,census_1991
+NM_37_1,1991 census - special workplace statistics,census_1991
+NM_38_1,1991 census - small area statistics,census_1991
+NM_39_1,Jobseeker's Allowance flows - seasonally adjusted,jsa
+NM_44_1,vacancies by occupation - SOC 2000,vacs
+NM_45_1,Jobseeker's Allowance - seasonally adjusted,
+NM_47_1,local area labour force survey,aps
+NM_47_5,local area labour force survey (variables (percentages)),aps
+NM_50_1,vacancies - notified by industry,vacs
+NM_51_1,vacancies - notified by occupation,vacs
+NM_52_1,claimant count denominators - current residents / workforce series,jsa
+NM_57_1,jobs density,jd
+NM_58_1,2001 census - standard tables,census_2001
+NM_59_1,labour force survey - national and regional - headline indicators (seasonally adjusted),aps
+NM_62_1,2001 census - census area statistics,census_2001
+NM_62_5,2001 census - census area statistics (create your own variables (percentages)),census_2001
+NM_63_1,1991 census - small area statistics (NI data),census_1991
+NM_64_1,Jobseeker's Allowance by occupation,jsa
+NM_65_1,"Jobseeker's Allowance by occupation, age and duration",jsa
+NM_66_1,1981 census - small area statistics,census_1981
+NM_67_1,1981 census - special workplace statistics,census_1981
+NM_68_1,benefit claimants 5% data - working age client group,dwp_5pc
+NM_69_1,benefit claimants 5% data - working age families,dwp_5pc
+NM_70_1,benefit claimants 5% data - children of working age clients,dwp_5pc
+NM_71_1,benefit claimants 5% data - pensionable age,dwp_5pc
+NM_73_1,benefit payments 5% data - pension credit,dwp_5pc
+NM_74_1,benefit payments 5% data - state pension,dwp_5pc
+NM_75_1,benefit payments 5% data - IB/SDA,dwp_5pc
+NM_76_1,benefit payments 5% data - income support,dwp_5pc
+NM_77_1,benefit payments 5% data - jobseekers allowance,dwp_5pc
+NM_78_1,benefit payments 5% data - attendance allowance,dwp_5pc
+NM_79_1,benefit payments 5% data - disability living allowance,dwp_5pc
+NM_80_1,claimant count stocks,jsa
+NM_81_1,registrants stocks,jsa
+NM_82_1,registrants stocks - published,jsa
+NM_83_1,registrants - age and duration,jsa
+NM_84_1,registrants - age and duration,jsa
+NM_85_1,claimant flows,jsa
+NM_87_1,labour force survey - quarterly: four quarter averages,aps
+NM_88_1,2001 census - census area statistics theme tables,census_2001
+NM_89_1,vacancies - summary analysis,vacs
+NM_90_1,vacancies - unfilled by duration and occupation,vacs
+NM_91_1,vacancies - outflow by duration and occupation,vacs
+NM_92_1,vacancies - unfilled by duration and industry,vacs
+NM_93_1,vacancies - outflow by duration and industry,vacs
+NM_94_1,2001 census - theme tables,census_2001
+NM_96_1,Jobseeker's Allowance flows by occupation,jsa
+NM_97_1,Jobseeker's Allowance on-flows by occupation and age,jsa
+NM_98_1,"Jobseeker's Allowance off-flows by occupation, age and duration",jsa
+NM_99_1,annual survey of hours and earnings - workplace analysis,ashe
+NM_100_1,annual population survey - workplace analysis,aps
+NM_101_1,Jobseeker's Allowance off-flows by reason and occupation,jsa
+NM_102_1,"Jobseeker's Allowance off-flows by reason, occupation, age and duration",jsa
+NM_103_1,benefit claimants - working age clients for small areas,dwp_wpls
+NM_105_1,benefit claimants - working age client group,dwp_wpls
+NM_106_1,benefit payments - incapacity benefit / severe disablement,dwp_wpls
+NM_107_1,benefit claimants - IB/SDA for small areas,dwp_wpls
+NM_108_1,benefit claimants - income support for small areas,dwp_wpls
+NM_109_1,benefit claimants - pension credits for small areas,dwp_wpls
+NM_110_1,benefit claimants - disability living allowance for small areas,dwp_wpls
+NM_111_1,benefit claimants - job seekers allowance for small areas,dwp_wpls
+NM_112_1,benefit claimants - state pension for small areas,dwp_wpls
+NM_113_1,benefit payments - income support,dwp_wpls
+NM_114_1,benefit payments - pension credits,dwp_wpls
+NM_115_1,benefit claimants - disability living allowance,dwp_wpls
+NM_116_1,benefit payments - carers allowance,dwp_wpls
+NM_117_1,benefit claimants - state pension,dwp_wpls
+NM_118_1,"Jobseeker's Allowance stocks and flows by ethnicity, age and duration",jsa
+NM_119_1,benefit payments - job seekers allowance,dwp_wpls
+NM_120_1,2001 census - UK travel flows (local authority),census_2001
+NM_123_1,2001 census - Scottish travel flows (local authority),census_2001
+NM_124_1,2001 census - UK travel flows (ward),census_2001
+NM_127_1,model-based estimates of unemployment,aps
+NM_129_1,Annual Civil Service Employment Survey,acses
+NM_130_1,workforce jobs by industry (SIC 2007) - seasonally adjusted,wfj
+NM_131_1,workforce jobs by industry (SIC 2007) and sex - unadjusted,wfj
+NM_134_1,benefit claimants - employment and support allowance,dwp_wpls
+NM_136_1,annual population survey - households by combined economic activity status,aps
+NM_137_1,annual population survey - households with dependent children and type,aps
+NM_138_1,benefit claimants - disability living allowance by disabling condition,dwp_wpls
+NM_141_1,UK Business Counts - local units by industry and employment size band,ukbc
+NM_142_1,UK Business Counts - enterprises by industry and employment size band,ukbc
+NM_143_1,QS102EW - Population density,census_2011_qs
+NM_144_1,KS101EW - Usual resident population,census_2011_ks
+NM_145_1,KS102EW - Age structure,census_2011_ks
+NM_146_1,"KS403EW - Rooms, bedrooms and central heating",census_2011_ks
+NM_150_1,ST102EWla - Population density,census_2011_st
+NM_151_1,WD102EW - Population density,census_2011_wd
+NM_153_1,QS702EW - Distance travelled to work,census_2011_qs
+NM_154_1,WD702EW - Distance travelled to work (Workday population),census_2011_wd
+NM_155_1,WP102EW - Population density (Workplace population),census_2011_wp
+NM_156_1,WP702EW - Distance travelled to work (Workplace population),census_2011_wp
+NM_157_1,OT102EW - Population density (Out of term-time population),census_2011_ot
+NM_158_1,KS101UK - Usual resident population,census_2011_ksuk
+NM_159_1,KS102UK - Age Structure,census_2011_ksuk
+NM_160_1,QS102UK - Population density,census_2011_qsuk
+NM_161_1,"Mortality statistics - underlying cause, sex and age",life
+NM_162_1,Claimant count by sex and age,cc
+NM_164_1,"Marriages of opposite-sex couples in England and Wales by age group, previous legal partnership status and ceremony type",life
+NM_165_1,"Marriages of opposite-sex couples in England and Wales by area of occurrence, broad age group, previous legal partnership status and ceremony type",life
+NM_167_1,"Divorces of opposite-sex couples, England and Wales",life
+NM_168_1,annual population survey - regional - employment by occupation (SOC2010),aps
+NM_169_1,annual population survey - regional - nationality,Nomis
+NM_170_1,annual population survey - regional - labour market status by age,aps
+NM_172_1,Business Register and Employment Survey (excluding units registered for PAYE only) : open access,bres
+NM_173_1,Business Register and Employment Survey (excluding units registered for PAYE only) public / private sector : open access,bres
+NM_174_1,Marriages of same-sex couples in England and Wales,life
+NM_179_1,annual population survey - regional - country of birth,Nomis
+NM_180_1,annual population survey - regional - ethnicity by industry,aps
+NM_181_1,annual population survey - regional - economic inactivity by reasons,aps
+NM_184_1,Annual Civil Service Employment Survey with professions,Nomis
+NM_185_1,Regional gross disposable household income (GDHI) at current basic prices,ra
+NM_186_1,Annual Business Inquiry employee analysis : safeguarded access,bres
+NM_187_1,Annual Business Inquiry employee analysis : open access,bres
+NM_189_1,Business Register and Employment Survey : open access,bres
+NM_190_1,Business Register and Employment Survey public/private sector  : open access,bres
+NM_191_1,Annual Business Inquiry employee analysis (SIC 2007) : safeguarded access,bres
+NM_192_1,Annual Business Inquiry employee analysis (SIC 2007) : open access,bres
+NM_193_1,Annual Employment Survey employee analysis : safeguarded access,bres
+NM_194_1,Annual Employment Survey employee analysis : open access,bres
+NM_195_1,Annual Employment Survey rescaled employee analysis : safeguarded access,bres
+NM_196_1,Annual Employment Survey rescaled employee analysis : open access,bres
+NM_197_1,Census of Employment employee analysis : safeguarded access,bres
+NM_198_1,Census of Employment employee analysis : open access,bres
+NM_199_1,UK Business Counts - enterprises by industry and turnover size band,Nomis
+NM_200_1,Business Register and Employment Survey : safeguarded access,bres
+NM_201_1,Business Register and Employment Survey (excluding units registered for PAYE only) : safeguarded access,bres
+NM_203_1,Live births in England and Wales by sex and characteristics of mother : national/regional,life
+NM_204_1,Live births in England and Wales by characteristics of mother and father,life
+NM_205_1,Live births in England and Wales down to local authority local area,life
+NM_206_1,Live births in England and Wales for small geographic areas,life
+NM_207_1,Live births in England and Wales : birth rates down to local authority areas,life
+NM_210_1,annual population survey - regional - occupation (SOC2010) by sex by employment type,aps
+NM_213_1,Census of Employment employee analysis (SIC 68) : safeguarded access,Nomis
+NM_214_1,Census of Employment employee analysis (SIC 68) : Open access,Nomis
+NM_218_1,annual population survey - regional - occupation (SOC2020) by sex by employment type,aps
+NM_501_1,QS101EW - Residence type,census_2011_qs
+NM_503_1,QS103EW - Age by single year,census_2011_qs
+NM_504_1,QS104EW - Sex,census_2011_qs
+NM_505_1,QS105EW - Schoolchildren and full-time students at their non term-time address,census_2011_qs
+NM_506_1,QS106EW - Second address,census_2011_qs
+NM_507_1,Age,Nomis
+NM_508_1,QS108EW - Living Arrangements,census_2011_qs
+NM_509_1,Population,Nomis
+NM_510_1,QS110EW - Adult lifestage (alternative adult definition),census_2011_qs
+NM_511_1,QS111EW - Household lifestage,census_2011_qs
+NM_512_1,QS112EW - Household composition - People,census_2011_qs
+NM_513_1,QS113EW - Household composition - Households,census_2011_qs
+NM_514_1,QS114EW - Household composition (alternative child and adult definition) - People,census_2011_qs
+NM_515_1,QS115EW - Household composition (alternative child and adult definition) - Households,census_2011_qs
+NM_516_1,QS116EW - Household type,census_2011_qs
+NM_517_1,QS117EW - People aged 18 to 64 living in a one adult household,census_2011_qs
+NM_518_1,QS118EW - Families with dependent children,census_2011_qs
+NM_519_1,QS119EW - Households by deprivation dimensions,census_2011_qs
+NM_520_1,Ethnic Group,Nomis
+NM_521_1,QS121EW - Armed Forces,census_2011_qs
+NM_522_1,QS201EW - Ethnic group,census_2011_qs
+NM_523_1,QS202EW - Multiple ethnic groups,census_2011_qs
+NM_524_1,QS203EW - Country of birth (detailed),census_2011_qs
+NM_525_1,QS204EW - Main language (detailed),census_2011_qs
+NM_526_1,QS205EW - Proficiency in English,census_2011_qs
+NM_527_1,QS206WA - Welsh language skills,census_2011_qs
+NM_528_1,QS207WA - Welsh language skills (detailed),census_2011_qs
+NM_529_1,QS208EW - Religion,census_2011_qs
+NM_530_1,QS301EW - Provision of unpaid care,census_2011_qs
+NM_531_1,QS302EW - General health,census_2011_qs
+NM_532_1,QS303EW - Long-term health problem or disability,census_2011_qs
+NM_533_1,QS401EW - Accommodation type - People,census_2011_qs
+NM_534_1,QS402EW - Accommodation type - Households,census_2011_qs
+NM_535_1,QS403EW - Tenure - People,census_2011_qs
+NM_536_1,QS404EW - Tenure - Household Reference Person aged 65 and over,census_2011_qs
+NM_537_1,QS405EW - Tenure - Households,census_2011_qs
+NM_538_1,QS406EW - Household size,census_2011_qs
+NM_539_1,QS407EW - Number of rooms,census_2011_qs
+NM_540_1,QS408EW - Occupancy rating (rooms),census_2011_qs
+NM_541_1,QS409EW - Persons per room - Households,census_2011_qs
+NM_542_1,QS410EW - Persons per room - People,census_2011_qs
+NM_543_1,QS411EW - Number of bedrooms,census_2011_qs
+NM_544_1,QS412EW - Occupancy rating (bedrooms),census_2011_qs
+NM_545_1,QS413EW - Persons per bedroom - Households,census_2011_qs
+NM_546_1,QS414EW - Persons per bedroom - People,census_2011_qs
+NM_547_1,QS415EW - Central heating,census_2011_qs
+NM_548_1,QS416EW - Car or van availability,census_2011_qs
+NM_549_1,QS417EW - Household spaces,census_2011_qs
+NM_550_1,QS418EW - Dwellings,census_2011_qs
+NM_551_1,QS419EW - Position in communal establishment,census_2011_qs
+NM_552_1,QS420EW - Communal establishment management and type - Communal establishments,census_2011_qs
+NM_553_1,QS421EW - Communal establishment management and type - People,census_2011_qs
+NM_554_1,QS501EW - Highest level of qualification,census_2011_qs
+NM_555_1,QS502EW - Qualifications gained,census_2011_qs
+NM_556_1,QS601EW - Economic activity,census_2011_qs
+NM_557_1,QS602EW - Economic activity of Household Reference Person,census_2011_qs
+NM_558_1,QS603EW - Economic activity - Full-time students,census_2011_qs
+NM_559_1,QS604EW - Hours worked,census_2011_qs
+NM_560_1,QS605EW - Industry,census_2011_qs
+NM_561_1,QS606EW - Occupation (Minor Groups),census_2011_qs
+NM_562_1,QS607EW - NS-SeC,census_2011_qs
+NM_563_1,QS608EW - NS-SeC of Household Reference Person - People aged under 65,census_2011_qs
+NM_564_1,QS609EW - NS-SeC of Household Reference Person - People,census_2011_qs
+NM_565_1,QS610EW - NS-SeC of Household Reference Person (HRP) - HRP Aged under 65,census_2011_qs
+NM_566_1,QS611EW - Approximated Social Grade,census_2011_qs
+NM_567_1,QS612EW - Year last worked,census_2011_qs
+NM_568_1,QS701EW - Method of travel to work,census_2011_qs
+NM_569_1,QS801EW - Year of arrival in the UK,census_2011_qs
+NM_570_1,QS802EW - Age of arrival in the UK,census_2011_qs
+NM_571_1,QS803EW - length of residence in the UK,census_2011_qs
+NM_573_1,QS210EW - Religion (detailed),census_2011_qs
+NM_574_1,CT0010 - Ethnic group (write-in responses),census_2011_ct
+NM_575_1,QS211EW - Ethnic group (detailed),census_2011_qs
+NM_576_1,QS703EW - Method of Travel to Work (2001 specification),census_2011_qs
+NM_577_1,QS212EW - Passports held,census_2011_qs
+NM_578_1,QS213EW - Country of birth (expanded),census_2011_qs
+NM_579_1,QS214EW - National Identity (detailed),census_2011_qs
+NM_580_1,QS613EW - Approximated social grade,census_2011_qs
+NM_582_1,Marital Status,Nomis
+NM_583_1,Country of Birth,Nomis
+NM_584_1,Economic Position - all persons,Nomis
+NM_585_1,Economic Position - males,Nomis
+NM_586_1,Economic Position - Females,Nomis
+NM_587_1,Hours Worked,Nomis
+NM_588_1,Industry,Nomis
+NM_589_1,Occupation,Nomis
+NM_590_1,Qualifications,Nomis
+NM_603_1,KS103EW - Marital and civil partnership status,census_2011_ks
+NM_604_1,KS104EW - Living arrangements,census_2011_ks
+NM_605_1,KS105EW - Household composition,census_2011_ks
+NM_606_1,KS106EW - Adults not in employment and dependent children and persons with long-term health problems or disability for all households,census_2011_ks
+NM_607_1,KS107EW - Lone parent households with dependent children,census_2011_ks
+NM_608_1,KS201EW - Ethnic group,census_2011_ks
+NM_609_1,KS202EW - National identity,census_2011_ks
+NM_611_1,KS204EW - Country of birth,census_2011_ks
+NM_612_1,KS205EW - Passports held,census_2011_ks
+NM_613_1,KS206EW - Household language,census_2011_ks
+NM_614_1,KS207WA - Welsh language skills,census_2011_ks
+NM_615_1,KS208WA - Welsh language profile,census_2011_ks
+NM_616_1,KS209EW - Religion,census_2011_ks
+NM_617_1,KS301EW - Health and provision of unpaid care,census_2011_ks
+NM_618_1,"KS401EW - Dwellings, household spaces and accommodation type",census_2011_ks
+NM_619_1,KS402EW - Tenure,census_2011_ks
+NM_621_1,KS404EW - Car or van availability,census_2011_ks
+NM_622_1,KS405EW - Communal establishment residents,census_2011_ks
+NM_623_1,KS501EW - Qualifications and students,census_2011_ks
+NM_624_1,KS601EW to KS603EW - Economic activity by sex,census_2011_ks
+NM_625_1,KS604EW - Hours worked,census_2011_ks
+NM_626_1,KS605EW to KS607EW - Industry by sex,census_2011_ks
+NM_627_1,KS608EW to KS610EW - Occupation by sex,census_2011_ks
+NM_628_1,KS611EW to KS613EW - NS-SeC by sex,census_2011_ks
+NM_651_1,DC2101EW - Ethnic group by sex by age,census_2011_dc
+NM_652_1,DC2102EW - National identity by sex by age,census_2011_dc
+NM_653_1,DC2103EW - Country of birth by sex by age,census_2011_dc
+NM_654_1,DC2104EW - Main Language by sex by age,census_2011_dc
+NM_655_1,DC2105EW - Proficiency in English  by sex by age,census_2011_dc
+NM_657_1,DC2107EW - Religion by sex by age,census_2011_dc
+NM_658_1,DC2108EW - Passports held by sex by age,census_2011_dc
+NM_659_1,DC2201EW - Ethnic Group by Religion,census_2011_dc
+NM_660_1,DC2202EW - National identity by ethnic group,census_2011_dc
+NM_661_1,DC2203WA - Ability to speak Welsh skills by national identity by sex by age,census_2011_dc
+NM_662_1,DC2204EW - National identity by religion,census_2011_dc
+NM_663_1,DC2205EW - Country of birth by ethnic group by sex,census_2011_dc
+NM_664_1,DC2206WA - Welsh Language Skills by Country of Birth by sex by age,census_2011_dc
+NM_665_1,DC2207EW - Country of birth by religion by sex,census_2011_dc
+NM_666_1,DC2301EW - Ethnic group by provision of unpaid care by general health,census_2011_dc
+NM_667_1,DC2801EW - Ethnic group by age of arrival in the UK,census_2011_dc
+NM_668_1,DC2802EW - Country of birth by age of arrival in UK,census_2011_dc
+NM_669_1,DC2803EW - Proficiency in English by age of arrival in the UK,census_2011_dc
+NM_670_1,DC3201EW - Long-term health problem or disability by general health by ethnic group by sex by age,census_2011_dc
+NM_671_1,DC3202WA - Long-term health problem or disability by general health by Welsh language skills by sex by age,census_2011_dc
+NM_672_1,DC3203EW - Long-term health problem or disability by general health by religion by sex by age,census_2011_dc
+NM_673_1,DC3301EW - Provision of unpaid care by general health by sex by age,census_2011_dc
+NM_674_1,DC3302EW - Long term health problem or disability by health by sex by age,census_2011_dc
+NM_675_1,DC3601EW - General health by NS-SeC by sex by age,census_2011_dc
+NM_676_1,DC3602EW - Long-term health problem or disability by NS-SeC by sex by age,census_2011_dc
+NM_677_1,DC6201EW - Economic activity by ethnic group by sex by age,census_2011_dc
+NM_679_1,DC6203EW - Economic activity by country of birth by sex by age,census_2011_dc
+NM_680_1,DC6204EW - Economic activity by passports held by sex by age,census_2011_dc
+NM_681_1,DC6205EW - Economic activity by religion by sex by age,census_2011_dc
+NM_682_1,DC6206EW - NS-SeC by ethnic group by sex by age,census_2011_dc
+NM_683_1,DC6207EW - NS-SeC by religion by sex by age,census_2011_dc
+NM_684_1,DC6301EWla - Economic activity by provision of unpaid care by general health by sex,census_2011_dc
+NM_685_1,DC6302EW - Economic activity by hours worked by sex by long-term health problem or disability,census_2011_dc
+NM_686_1,DC2109EWr - Country of birth by sex by age (regional),census_2011_dc
+NM_687_1,DC2110EWr - Passports held by sex by age (regional),census_2011_dc
+NM_688_1,DC2208EWr - Passports held by country of birth (regional),census_2011_dc
+NM_689_1,DC2804EWr - Country of birth by year of arrival in the UK (regional),census_2011_dc
+NM_690_1,DC2805EWr - Passports held by year of arrival in the UK (regional),census_2011_dc
+NM_691_1,DC3303EWr - Provision of unpaid care by general health by sex by age (regional),census_2011_dc
+NM_692_1,DC6208EWr - Economic activity by country of birth by sex by age (regional),census_2011_dc
+NM_693_1,DC6209EWr - Economic activity by passports held by sex by age (regional),census_2011_dc
+NM_694_1,DC1101EW - Marital and civil partnership status by sex by age - Household Reference Persons,census_2011_dc
+NM_695_1,DC1102EW - Living arrangements by sex by age - Household Reference Persons,census_2011_dc
+NM_696_1,DC2604EW - Proficiency in English by industry by economic activity,census_2011_dc
+NM_697_1,DC2605WAla - Ability to speak Welsh by year last worked by age,census_2011_dc
+NM_698_1,DC2607WAla - Welsh language skills by industry,census_2011_dc
+NM_699_1,DC2106WAla - Welsh language skills by sex by age,census_2011_dc
+NM_700_1,DC2608WAla - Welsh language skills by occupation,census_2011_dc
+NM_701_1,DC2401WA - Number of people who can speak Welsh by household size,census_2011_dc
+NM_702_1,DC2402WA - Ability to speak Welsh by tenure by age - Household Reference Persons,census_2011_dc
+NM_703_1,DC2403WA - Welsh language skills by tenure by age - Household Reference Persons,census_2011_dc
+NM_704_1,DC2609WAla - Welsh language skills by NS-SeC,census_2011_dc
+NM_705_1,DC2610WA - Ability to speak Welsh by year last worked,census_2011_dc
+NM_706_1,DC2601WA - Ability of dependent child in a family to speak Welsh by NS-SeC of Household Reference Person by Welsh household composition,census_2011_dc
+NM_707_1,DC4101EW - Tenure by household composition,census_2011_dc
+NM_708_1,DC4102EW - Number of bedrooms by accommodation type by age of dependent children,census_2011_dc
+NM_709_1,DC4103EW - Number of bedrooms by tenure by age of dependent children,census_2011_dc
+NM_710_1,DC4201EW - Tenure by ethnic group by age - Household Reference Persons,census_2011_dc
+NM_711_1,DC4202EW - Tenure by car or van availability by ethnic group of Household Reference Person (HRP),census_2011_dc
+NM_712_1,DC4203EW - Tenure by car or van availability by ethnic group,census_2011_dc
+NM_713_1,DC4204EW - Tenure by car or van availability by religion of Household Reference Person (HRP),census_2011_dc
+NM_714_1,DC4205EW - Dwelling type by type of central heating in household by occupancy rating (rooms) by ethnic group of Household Reference Person (HRP),census_2011_dc
+NM_715_1,DC4206EW - Dwelling type by type of central heating in household by occupancy rating (bedrooms) by ethnic group of Household Reference Person (HRP),census_2011_dc
+NM_716_1,DC4207EW - Dwelling type by type of central heating in household by occupancy rating (rooms) by religion of Household Reference Person (HRP),census_2011_dc
+NM_717_1,DC4208EW - Dwelling type by type of central heating in household by occupancy rating (bedrooms) by religion of Household Reference Person (HRP),census_2011_dc
+NM_718_1,DC2611WA - Ability to speak Welsh by industry,census_2011_dc
+NM_719_1,DC4402EW - Accommodation type by type of central heating in household by tenure,census_2011_dc
+NM_720_1,DC4403EW - Accommodation type by household spaces,census_2011_dc
+NM_721_1,DC4404EW - Tenure by household size by number of rooms,census_2011_dc
+NM_722_1,DC4405EW - Tenure by household size by number of bedrooms,census_2011_dc
+NM_723_1,DC4406EW - Tenure by number of persons per room in household by accommodation type,census_2011_dc
+NM_724_1,DC4407EW - Tenure by number of persons per bedroom in household by accommodation type,census_2011_dc
+NM_725_1,DC4408EW - Tenure by number of persons per bedroom in household by household type,census_2011_dc
+NM_726_1,DC4601EW - Tenure by economic activity by age - Household Reference Persons,census_2011_dc
+NM_727_1,DC4602EWr - Tenure by industry by age - Household Reference Persons (regional),census_2011_dc
+NM_728_1,DC2612WA - Ability to speak Welsh by occupation,census_2011_dc
+NM_729_1,DC4604EW - Tenure by occupation by age - Household Reference Persons,census_2011_dc
+NM_730_1,DC4605EW - Tenure by NS-SeC by age - Household Reference Persons,census_2011_dc
+NM_731_1,DC4606EW - Tenure by number of bedrooms by occupation of Household Reference Person (HRP),census_2011_dc
+NM_732_1,DC6101EW - NS-SeC by sex by age - Household Reference Persons,census_2011_dc
+NM_733_1,DC6102EW - NS-SeC of Household Reference Person (HRP) by households with schoolchildren or full-time students living away during term-time,census_2011_dc
+NM_734_1,DC4607EWr - Tenure by occupation by sex by age - Household Reference Persons (regional),census_2011_dc
+NM_735_1,DC4608EWr - Tenure by NS-SeC by sex by age - Household Reference Persons (regional),census_2011_dc
+NM_736_1,DC1103WAla - Extended Welsh household composition by age of youngest dependent child,census_2011_dc
+NM_737_1,DC2112WAla - Extended Welsh household composition by ability to speak Welsh by age of dependent child,census_2011_dc
+NM_738_1,DC2209EWr - Country of birth by national identity (regional),census_2011_dc
+NM_739_1,DC3204EWr - General health by ethnic group by sex by age (regional),census_2011_dc
+NM_740_1,DC3205EWr - Long-term health problem or disability by ethnic group by sex by age (regional),census_2011_dc
+NM_741_1,DC6303EWr - NS-SeC by general health by sex by age (regional),census_2011_dc
+NM_742_1,DC6304EWr - NS-SeC by long-term health problem or disability by sex by age (regional),census_2011_dc
+NM_743_1,DC1104EW - Residence type by sex by age,census_2011_dc
+NM_744_1,DC2613WA - Ability to speak Welsh by NS-SeC,census_2011_dc
+NM_745_1,DC1106EW - Schoolchildren and full-time students at their non term-time address by sex by age,census_2011_dc
+NM_746_1,DC1107EW - Marital and civil partnership status by sex by age,census_2011_dc
+NM_747_1,DC1108EW - Living arrangements by sex by age,census_2011_dc
+NM_748_1,DC1109EW - Household composition by age by sex,census_2011_dc
+NM_749_1,DC1110EWla - Concealed family by family type by dependent children in family by age of Family Reference Person (FRP),census_2011_dc
+NM_750_1,DC6107EW - Economic Activity by sex by age,census_2011_dc
+NM_751_1,DC1112EWla - Age of youngest dependent child by household type by sex by age,census_2011_dc
+NM_752_1,DC1113EW - Age of youngest dependent child by household type,census_2011_dc
+NM_753_1,DC6108EW - Economic activity of full-time students by student accommodation by age,census_2011_dc
+NM_754_1,DC1115EW - Age of youngest dependent child by family type by marital status by age of Family Reference Person (FRP),census_2011_dc
+NM_755_1,DC1201EW - Household composition by ethnic group of Household Reference Person (HRP),census_2011_dc
+NM_756_1,DC1202EW - Household composition by religion of Household Reference Person (HRP),census_2011_dc
+NM_757_1,DC1203EW - Dependent children by ethnic group of Household Reference Person (HRP) by age,census_2011_dc
+NM_758_1,DC1301EW - Household composition by number of people in household with a long-term health problem or disability,census_2011_dc
+NM_759_1,DC1401EW - Household composition by car or van availability,census_2011_dc
+NM_760_1,DC1402EW - Household composition by number of bedrooms,census_2011_dc
+NM_761_1,DC1601EWla - Family status by number of parents working by dependent children in family by economic activity,census_2011_dc
+NM_762_1,DC6109EW - Hours worked by sex by age,census_2011_dc
+NM_763_1,DC2115WA - Ability to speak Welsh by family type by Welsh speaking parents,census_2011_dc
+NM_764_1,DC2116EW - Ethnic group of dependent child by sex,census_2011_dc
+NM_765_1,DC2210EWr - Main language by proficiency in English (regional),census_2011_dc
+NM_766_1,DC2302EWr - Proficiency in English by general health by sex by age,census_2011_dc
+NM_767_1,DC2303EW - Proficiency in English by general health by sex by age,census_2011_dc
+NM_768_1,DC2602EW - Proficiency in English by occupation by sex by age,census_2011_dc
+NM_769_1,DC4104EWla - Tenure by occupancy rating (rooms) by household composition,census_2011_dc
+NM_770_1,DC4105EWla - Tenure by occupancy rating (bedrooms) by household composition,census_2011_dc
+NM_771_1,DC6110EW - Industry by sex by age,census_2011_dc
+NM_772_1,DC4209EW - Number of persons per room in household by ethnic group of household reference person (HRP),census_2011_dc
+NM_773_1,DC2806EW - Passports held by age of arrival in the UK,census_2011_dc
+NM_774_1,DC1116EWla - Marital and civil partnership status by sex by age - Communal establishment residents,census_2011_dc
+NM_775_1,DC2117EWla - Ethnic group by sex by age - Communal establishment residents,census_2011_dc
+NM_776_1,DC2118EWla - Country of birth by age - Communal establishment residents,census_2011_dc
+NM_777_1,DC2119EWla - Passports held by sex by age - Communal establishment residents,census_2011_dc
+NM_778_1,DC2404WAla - Ability to speak Welsh by communal establishment management and type by position in communal establishment,census_2011_dc
+NM_779_1,DC2405WAla - Welsh language skills by communal establishment management and type by position in communal establishment,census_2011_dc
+NM_780_1,DC3304EWla - Long-term health problem or disability by general health by age - Communal establishment residents,census_2011_dc
+NM_781_1,DC3401EWla - General health by communal establishment management and type by sex by age,census_2011_dc
+NM_782_1,DC3402EWla - Long-term health problem or disability by communal establishment management and type by sex by age,census_2011_dc
+NM_783_1,DC4107EWla - Position in communal establishment by sex by age,census_2011_dc
+NM_784_1,DC4210EWla - Communal establishment management and type by sex by age,census_2011_dc
+NM_785_1,DC4211EWla - Communal establishment management and type by ethnic group by sex,census_2011_dc
+NM_786_1,DC4409EWla - Communal establishment management and type by religion by sex,census_2011_dc
+NM_787_1,DC5101EWla - Highest level of qualification by sex by age - Communal establishment residents,census_2011_dc
+NM_788_1,DC6103EWla - Economic activity by sex by age - Communal establishment residents,census_2011_dc
+NM_789_1,DC6104EWla -  Industry by sex by age - Communal establishment residents,census_2011_dc
+NM_790_1,DC6105EWla - Occupation by sex by age - Communal establishment residents,census_2011_dc
+NM_791_1,DC6106EWla - NS-SeC by sex by age - Communal establishment residents,census_2011_dc
+NM_792_1,DC1117EW - Sex by single year of age,census_2011_dc
+NM_793_1,DC6111EW - Former industry by sex by age,census_2011_dc
+NM_794_1,DC6112EW - Occupation by sex by age,census_2011_dc
+NM_795_1,DC6113EW - Former occupation by sex by age,census_2011_dc
+NM_796_1,DC6114EW - NS-SeC by sex by age,census_2011_dc
+NM_797_1,DC6115EW - NS-SeC of Household Reference Person by household composition by sex,census_2011_dc
+NM_798_1,DC6116EW - Year last worked by sex by age,census_2011_dc
+NM_801_1,LC2101EW - Ethnic group by sex by age,census_2011_lc
+NM_802_1,LC2102EW - National Identity by sex by age,census_2011_lc
+NM_803_1,LC2104EW - Main language by sex by age,census_2011_lc
+NM_804_1,LC2105EW - Proficiency in English by age,census_2011_lc
+NM_805_1,LC2106WA - Welsh language skills by sex by age,census_2011_lc
+NM_806_1,LC2107EW - Religion by sex by age,census_2011_lc
+NM_807_1,LC2201EW - Ethnic group by religion,census_2011_lc
+NM_808_1,LC2202EW - National identity by ethnic group,census_2011_lc
+NM_809_1,LC2203WA - Ability to speak Welsh by national identity by age,census_2011_lc
+NM_810_1,LC2204EW - National Identity by religion,census_2011_lc
+NM_811_1,LC2205EW - Country of birth by ethnic group,census_2011_lc
+NM_812_1,LC2206WA - Welsh language skills by country of birth by age,census_2011_lc
+NM_813_1,LC2207EW - Country of birth by religion by sex,census_2011_lc
+NM_814_1,LC2801EW - Ethnic group by age of arrival in the UK,census_2011_lc
+NM_815_1,LC2803EW -  Proficiency in English by age of arrival in the UK,census_2011_lc
+NM_816_1,LC3202WA - General health by ability to speak Welsh by age,census_2011_lc
+NM_817_1,LC3204WA - Long-term health problem or disability by ability to speak Welsh by age,census_2011_lc
+NM_818_1,LC6201EW - Economic activity by ethnic group by age,census_2011_lc
+NM_819_1,LC6205EW - Economic activity by Religion,census_2011_lc
+NM_820_1,LC6206EW - NS-SeC by ethnic group by age,census_2011_lc
+NM_821_1,LC6207EW - NS-SeC by religion,census_2011_lc
+NM_822_1,LC2301EW - Ethnic group by provision of unpaid care by general health,census_2011_lc
+NM_823_1,LC2303EW - Proficiency in English by general health by sex,census_2011_lc
+NM_824_1,LC3203EW - General health by religion by sex by age,census_2011_lc
+NM_826_1,LC3205EW - Long-term health problem or disability by ethnic group by sex by age,census_2011_lc
+NM_827_1,LC3207EW - Long-term health problem or disability by religion by sex by age,census_2011_lc
+NM_828_1,LC3301EW - Provision of unpaid care by general health by sex by age,census_2011_lc
+NM_829_1,LC3302EW - Long-term health problem or disability by general health by sex by age,census_2011_lc
+NM_830_1,LC3304EW - Provision of unpaid care by age,census_2011_lc
+NM_831_1,LC3601EW - General health by NS-SeC,census_2011_lc
+NM_832_1,LC3602EW - Long-term health problem or disability by NS-SeC by age,census_2011_lc
+NM_833_1,LC6301EW - Economic activity by provision of unpaid care by general health,census_2011_lc
+NM_834_1,LC6302EW - Economic activity by hours worked by long-term health problem or disability,census_2011_lc
+NM_835_1,LC3206EW - General health by ethnic group by sex by age,census_2011_lc
+NM_836_1,LC2103EW - Country of birth by sex by age,census_2011_lc
+NM_837_1,LC2108EW - Passports held by sex by age,census_2011_lc
+NM_838_1,LC2208EW - Passports held by country of birth,census_2011_lc
+NM_839_1,LC2802EW - Country of birth by age of arrival in the UK,census_2011_lc
+NM_840_1,LC2804EW - Country of birth by year of arrival in the UK,census_2011_lc
+NM_841_1,LC2805EW - Passports held by year of arrival in the UK,census_2011_lc
+NM_842_1,LC6203EW - Economic activity by country of birth by age,census_2011_lc
+NM_843_1,LC6204EW - Economic activity by passports held by age,census_2011_lc
+NM_844_1,LC2806EW - Passports held by age of arrival in the UK,census_2011_lc
+NM_845_1,LC1104EW - Residence type by age,census_2011_lc
+NM_846_1,LC1106EW - Schoolchildren and full-time students at their non term-time address by sex by age,census_2011_lc
+NM_847_1,LC1107EW - Marital and civil partnership status by sex by age,census_2011_lc
+NM_848_1,LC1108EW - Living arrangements by sex by age,census_2011_lc
+NM_849_1,LC1109EW - Household composition by age by sex,census_2011_lc
+NM_850_1,LC1110EW - Concealed family status by family type by dependent children by age of Family Reference Person (FRP),census_2011_lc
+NM_851_1,LC1112EW - Age of youngest dependent child by household type by sex,census_2011_lc
+NM_852_1,LC1113EW - Age of youngest dependent child by household type,census_2011_lc
+NM_853_1,LC1114EW - Dependent children by family type,census_2011_lc
+NM_854_1,LC1115EW - Age of youngest dependent child by family type by age of Family Reference Persion (FRP),census_2011_lc
+NM_855_1,LC1118EW - Age of youngest dependent child by family type,census_2011_lc
+NM_856_1,LC1201EW - Household composition by ethnic group of Household Reference Person (HRP),census_2011_lc
+NM_857_1,LC1202EW - Household composition by religion of Household Reference Person (HRP),census_2011_lc
+NM_858_1,LC1203EW - Dependent children by ethnic group of Household Reference Person (HRP) by age,census_2011_lc
+NM_859_1,LC1301EW - Household composition by number of people in household with a long-term health problem or disability,census_2011_lc
+NM_860_1,LC1401EW - Household composition by car or van availability,census_2011_lc
+NM_861_1,LC1402EW - Household composition by number of bedrooms,census_2011_lc
+NM_862_1,LC1601EW - Family status by number of parents working by economic activity,census_2011_lc
+NM_863_1,LC2115WA - Family type by parents ability to speak Welsh by age and ability to speak Welsh of dependent child,census_2011_lc
+NM_864_1,LC2116EW - Ethnic group of dependent child by sex,census_2011_lc
+NM_865_1,LC4104EW - Occupancy rating (rooms) by household composition,census_2011_lc
+NM_866_1,LC4105EW - Occupancy rating (bedrooms) by household composition,census_2011_lc
+NM_867_1,LC4106EW - Occupancy rating (rooms) by tenure,census_2011_lc
+NM_868_1,LC4108EW - Occupancy rating (bedrooms) by tenure,census_2011_lc
+NM_869_1,LC4209EW - Number of persons per room in household by ethnic group of household reference person (HRP),census_2011_lc
+NM_870_1,LC1101EW - Marital and civil partnership status by sex by age - Household Reference Persons,census_2011_lc
+NM_871_1,LC1102EW - Living arrangements by age - Household Reference Persons,census_2011_lc
+NM_872_1,LC1103WA - Welsh household composition by age of youngest dependent child,census_2011_lc
+NM_873_1,LC2401WA - Number of people who can speak Welsh by household size,census_2011_lc
+NM_874_1,LC2402WA - Ability to speak Welsh by tenure - Household Reference Persons,census_2011_lc
+NM_875_1,LC2403WA - Welsh language skills by tenure - Household Reference Persons,census_2011_lc
+NM_876_1,LC4101EW - Tenure by household composition,census_2011_lc
+NM_877_1,LC4102EW - Number of bedrooms by accommodation type by age of dependent children,census_2011_lc
+NM_878_1,LC4103EW - Number of bedrooms by tenure by age of dependent children,census_2011_lc
+NM_879_1,LC4201EW - Tenure by ethnic group by age - Household Reference Persons,census_2011_lc
+NM_880_1,LC4202EW - Tenure by car or van availability by ethnic group of Household Reference Person (HRP),census_2011_lc
+NM_881_1,LC4203EW - Tenure by car or van availability by ethnic group,census_2011_lc
+NM_882_1,LC4204EW - Tenure by car or van availability by religion of Household Reference Person (HRP),census_2011_lc
+NM_883_1,LC4205EW - Occupancy rating (rooms) by ethnic group of Household Reference Person (HRP),census_2011_lc
+NM_884_1,LC4206EW - Occupancy rating (bedrooms) by ethnic group of Household Reference Person (HRP),census_2011_lc
+NM_885_1,LC4207EW - Occupancy rating (rooms) by religion of Household Reference Person (HRP),census_2011_lc
+NM_886_1,LC4208EW - Occupancy rating (bedrooms) by religion of Household Reference Person (HRP),census_2011_lc
+NM_887_1,LC4402EW - Accommodation type by type of central heating in household by tenure,census_2011_lc
+NM_888_1,LC4403EW - Accommodation type by household spaces,census_2011_lc
+NM_889_1,LC4404EW - Tenure by household size by number of rooms,census_2011_lc
+NM_890_1,LC4405EW - Tenure by household size by number of bedrooms,census_2011_lc
+NM_891_1,LC4406EW - Tenure by number of persons per room in household by accommodation type,census_2011_lc
+NM_892_1,LC4407EW - Tenure by number of persons per bedroom in household by accommodation type,census_2011_lc
+NM_893_1,LC4408EW - Tenure by number of persons per bedroom in household by household type,census_2011_lc
+NM_894_1,LC4410EW - Type of central heating in household by occupancy rating (rooms) by age,census_2011_lc
+NM_896_1,LC4412EW - Tenure by dependent children in household,census_2011_lc
+NM_897_1,LC4413EW - Occupancy rating (rooms) by type of central heating in household,census_2011_lc
+NM_898_1,LC4414EW - Occupancy rating (bedrooms) by type of central heating in household,census_2011_lc
+NM_899_1,LC4601EW - Tenure by economic activity by age - Household Reference Persons,census_2011_lc
+NM_900_1,LC4602EW - Tenure by industry - Household Reference Persons,census_2011_lc
+NM_901_1,ST101EWla - Residence type,census_2011_st
+NM_904_1,ST1117EWla - Sex by single year of age,census_2011_st
+NM_905_1,ST201EWla - Ethnic group,census_2011_st
+NM_906_1,ST203EWla - Country of Birth,census_2011_st
+NM_907_1,ST204EWla - Main language,census_2011_st
+NM_910_1,ST210EWla - Religion,census_2011_st
+NM_911_1,ST212EWla - Passports held (detailed),census_2011_st
+NM_912_1,ST301EWla - Provision of unpaid care,census_2011_st
+NM_913_1,ST302EWla - General Health,census_2011_st
+NM_914_1,ST403EWla - Tenure - People,census_2011_st
+NM_915_1,ST601EWla - Economic activity,census_2011_st
+NM_916_1,ST604EWla - Hours worked,census_2011_st
+NM_917_1,ST605EWla - Industry,census_2011_st
+NM_918_1,ST606EWla - Occupation,census_2011_st
+NM_919_1,ST607EWla - NS-SeC,census_2011_st
+NM_920_1,ST701EWla - method of travel to work,census_2011_st
+NM_931_1,WD1117EW - Sex by single year of age,census_2011_wd
+NM_932_1,WD201EW - Ethnic group,census_2011_wd
+NM_933_1,WD203EW - Country of birth,census_2011_wd
+NM_934_1,WD204EW - Main language,census_2011_wd
+NM_935_1,WD206WA - Welsh language skills,census_2011_wd
+NM_936_1,WD207WA - Welsh language skills (detailed),census_2011_wd
+NM_937_1,WD210EW - Religion,census_2011_wd
+NM_938_1,WD212EW - Passports held (detailed),census_2011_wd
+NM_939_1,WD302EW - General health,census_2011_wd
+NM_940_1,WD403EW - Tenure - people,census_2011_wd
+NM_941_1,WD501EW - Highest level of qualification,census_2011_wd
+NM_942_1,WD601EW - Economic activity (Workday population),census_2011_wd
+NM_943_1,WD604EW - Hours worked (Workday population),census_2011_wd
+NM_944_1,WD605EW - Industry (Workday population),census_2011_wd
+NM_945_1,WD606EW - Occupation (Workday population),census_2011_wd
+NM_946_1,WD607EW - NS-SeC (Workday population),census_2011_wd
+NM_947_1,WD613EW - Approximated Social Grade (Workday population),census_2011_wd
+NM_948_1,WD803EW - Length of residence in the UK,census_2011_wd
+NM_949_1,WD703EW - Method of travel to work (2001 specification) (Workday population),census_2011_wd
+NM_950_1,WD1101EW - Sex by Age (Workday population),census_2011_wd
+NM_951_1,DC6210EW - Economic activity by country of birth,census_2011_dc
+NM_952_1,DC6211EW - Industry by ethnic group by age,census_2011_dc
+NM_953_1,DC6212EW - Industry by religion by age,census_2011_dc
+NM_954_1,DC6213EW - Occupation by ethnic group by sex by age,census_2011_dc
+NM_955_1,DC6214EW - Occupation by religion by sex by age,census_2011_dc
+NM_956_1,DC6215EW - Economic activity by passports held,census_2011_dc
+NM_957_1,DC6216EW - Industry by ethnic group by sex,census_2011_dc
+NM_958_1,DC6217EW - Industry by religion by sex,census_2011_dc
+NM_959_1,DC6401EW - Economic activity by living arrangements,census_2011_dc
+NM_961_1,DC6601EW - Occupation by economic activity by sex,census_2011_dc
+NM_962_1,DC6602EW - Industry by economic activity,census_2011_dc
+NM_963_1,DC6603EW - Occupation by economic activity by age,census_2011_dc
+NM_964_1,DC6604EW - Occupation by industry,census_2011_dc
+NM_965_1,DC6605EW - Occupation by hours worked by sex,census_2011_dc
+NM_966_1,DC6606EW - NS-SeC by economic activity by sex,census_2011_dc
+NM_967_1,DC6607EWla - Home-worker by economic activity by sex by age,census_2011_dc
+NM_968_1,DC6608EWla - Home-worker by industry by sex by age,census_2011_dc
+NM_969_1,DC6609EWla - Home-worker by occupation by sex by age,census_2011_dc
+NM_970_1,CT0347 - Occupation (full) by sex,census_2011_ct
+NM_974_1,CT0144 - Occupation (full) by industry (full) (national),census_2011_ct
+NM_986_1,CT0065 - Proficiency in English by year of arrival in the UK by country of birth (national),census_2011_ct
+NM_987_1,CT0066 - Proficiency in English by year of arrival in the UK by passports held (national),census_2011_ct
+NM_988_1,CT0067 - General health by year of arrival in the UK by country of birth by age (national),census_2011_ct
+NM_989_1,CT0068 - General health by year of arrival in the UK by passports held by age (national),census_2011_ct
+NM_990_1,CT0069 - Tenure by year of arrival in the UK by country of birth (national),census_2011_ct
+NM_991_1,CT0070 - Tenure by year of arrival in the UK by passports held (national),census_2011_ct
+NM_992_1,CT0071 - Highest level of qualification by year of arrival in the UK by country of birth by age (national),census_2011_ct
+NM_993_1,CT0072 - Highest level of qualification by year of arrival in the UK by passports held by age (national),census_2011_ct
+NM_994_1,CT0073 - Economic activity by year of arrival in the UK by country of birth (national),census_2011_ct
+NM_995_1,CT0074 - Economic activity by year of arrival in the UK by passports held (national),census_2011_ct
+NM_996_1,CT0075 - Industry by year of arrival in the UK by country of birth (national),census_2011_ct
+NM_997_1,CT0076 - Industry by year of arrival in the UK by passports held (national),census_2011_ct
+NM_998_1,CT0077 - Occupation by year of arrival in the UK by country of birth (national),census_2011_ct
+NM_999_1,CT0078 - Occupation by year of arrival in the UK by passports held (national),census_2011_ct
+NM_1000_1,LC4604EW - Tenure by occupation - Household Reference Persons,census_2011_lc
+NM_1001_1,LC4605EW - Tenure by NS-SeC - Household Reference Persons,census_2011_lc
+NM_1002_1,LC6101EW - NS-SeC by sex by age - Household Reference Persons,census_2011_lc
+NM_1003_1,LC2603EW - Proficiency in English by economic activity,census_2011_lc
+NM_1004_1,LC2604EW - Proficiency in English by industry,census_2011_lc
+NM_1005_1,LC2610WA - Ability to speak Welsh by year last worked,census_2011_lc
+NM_1006_1,LC2611WA - Ability to speak Welsh by industry,census_2011_lc
+NM_1007_1,LC2612WA - Ability to speak Welsh by occupation,census_2011_lc
+NM_1008_1,LC2613WA - Ability to speak Welsh by NS-SeC,census_2011_lc
+NM_1010_1,LC6108EW - Economic activity of full-time students by student accommodation,census_2011_lc
+NM_1011_1,LC6109EW - Hours worked by sex,census_2011_lc
+NM_1017_1,LC6115EW - NS-SeC of Household Reference Person by household composition,census_2011_lc
+NM_1020_1,LC6118EW - Industry by sex,census_2011_lc
+NM_1021_1,LC6119EW - Former industry by sex,census_2011_lc
+NM_1022_1,LC6210EW - Economic activity by country of birth,census_2011_lc
+NM_1023_1,LC6211EW - Industry by ethnic group,census_2011_lc
+NM_1024_1,LC6212EW - Industry by religion,census_2011_lc
+NM_1025_1,LC6213EW - Occupation by ethnic group,census_2011_lc
+NM_1026_1,LC6214EW - Occupation by religion,census_2011_lc
+NM_1027_1,LC6215EW - Economic activity by passports held,census_2011_lc
+NM_1028_1,LC6401EW - Economic activity by living arrangements,census_2011_lc
+NM_1029_1,LC6601EW - Occupation by economic activity,census_2011_lc
+NM_1030_1,LC6602EW - Industry by economic activity,census_2011_lc
+NM_1031_1,LC6605EW - Occupation by hours worked,census_2011_lc
+NM_1032_1,LC6606EW - NS-SeC by economic activity,census_2011_lc
+NM_1034_1,LC5103EW - Highest level of qualification by household composition,census_2011_lc
+NM_1035_1,LC5104EW - Highest level of qualification by number of children,census_2011_lc
+NM_1036_1,LC5106EW - Highest level of qualification by family type,census_2011_lc
+NM_1037_1,LC5202EW - Highest level of qualification by ethnic group,census_2011_lc
+NM_1038_1,LC5203EW - Highest level of qualification by country of birth,census_2011_lc
+NM_1039_1,LC5204EW - Highest level of qualification by religion,census_2011_lc
+NM_1040_1,LC5206EW - Highest level of qualification by passports held,census_2011_lc
+NM_1041_1,LC5208EW - Highest level of qualification by main language,census_2011_lc
+NM_1042_1,LC5301EW - Highest level of qualification by long-term health problem or disability,census_2011_lc
+NM_1043_1,LC5601EW - Highest level of qualification by economic activity,census_2011_lc
+NM_1044_1,LC5801EW - Highest level of qualification by year of arrival in the UK,census_2011_lc
+NM_1045_1,LC5802EW - Highest level of qualification by length of residence in the UK,census_2011_lc
+NM_1046_1,LC6107EW - Economic Activity by sex by age,census_2011_lc
+NM_1047_1,LC6110EW - Industry by age,census_2011_lc
+NM_1048_1,LC6111EW - Former industry by age,census_2011_lc
+NM_1049_1,LC6112EW - Occupation by age,census_2011_lc
+NM_1050_1,LC6113EW - Former occupation by age,census_2011_lc
+NM_1051_1,LC6114EW - NS-SeC by age,census_2011_lc
+NM_1052_1,LC6116EW - Year last worked by age,census_2011_lc
+NM_1053_1,LC6117EW - Hours worked by age,census_2011_lc
+NM_1054_1,LC6120EW - Occupation by sex,census_2011_lc
+NM_1055_1,LC6121EW - NS-SeC by sex,census_2011_lc
+NM_1056_1,LC6122EW - Year last worked by sex,census_2011_lc
+NM_1057_1,LC6123EW - Former occupation by sex,census_2011_lc
+NM_1058_1,LC5102EW - Highest level of qualification by age,census_2011_lc
+NM_1059_1,LC5107EW - Highest level of qualification by sex,census_2011_lc
+NM_1060_1,LC4109EW - Car or van availability by sex by age,census_2011_lc
+NM_1061_1,LC4110EW - Car or van availability by household composition,census_2011_lc
+NM_1062_1,LC4415EW - Accommodation type by car or van availability by number of usual residents aged 17 or over in household,census_2011_lc
+NM_1063_1,LC4416EW - Tenure by car or van availability by number of usual residents aged 17 or over in household,census_2011_lc
+NM_1064_1,LC4417EW - Tenure by car or van availability by religion,census_2011_lc
+NM_1065_1,LC4609EW - Car or van availability by economic activity,census_2011_lc
+NM_1066_1,LC4610EW - Car or van availability by employment status,census_2011_lc
+NM_1067_1,LC7101EW - Method of travel to work (2001 specification) by age,census_2011_lc
+NM_1068_1,LC7102EW - Distance travelled to work by age,census_2011_lc
+NM_1069_1,LC7201EW - Method of travel to work (2001 specification) by ethnic group,census_2011_lc
+NM_1070_1,LC7202EW - Distance travelled to work by ethnic group,census_2011_lc
+NM_1071_1,LC7401EW - Method of travel to work (2001 specification) by car or van availability,census_2011_lc
+NM_1072_1,LC7402EW - Distance travelled to work by car or van availability,census_2011_lc
+NM_1073_1,LC7501EW - Method of travel to work (2001 specification) by highest level of qualification,census_2011_lc
+NM_1074_1,LC7502EW - Distance travelled to work by highest level of qualification,census_2011_lc
+NM_1075_1,LC7601EW - Method of travel to work (2001 specification) by hours worked,census_2011_lc
+NM_1076_1,LC7602EW - Method of travel to work (2001 specification) by industry,census_2011_lc
+NM_1077_1,LC7603EW - Method of travel to work (2001 specification) by occupation,census_2011_lc
+NM_1078_1,LC7604EW - Method of travel to work (2001 specification) by NS-SeC,census_2011_lc
+NM_1079_1,LC7605EW - Distance travelled to work by hours worked,census_2011_lc
+NM_1080_1,LC7606EW - Distance travelled to work by industry,census_2011_lc
+NM_1081_1,LC7607EW - Distance travelled to work by occupation,census_2011_lc
+NM_1082_1,LC7608EW - Distance travelled to work by NS-SeC,census_2011_lc
+NM_1083_1,LC7701EW - Method of travel to work (2001 specification) by distance travelled to work,census_2011_lc
+NM_1084_1,LC7103EW - Method of travel to work (2001 specification) by sex,census_2011_lc
+NM_1085_1,LC7104EW - Distance travelled to work by sex,census_2011_lc
+NM_1086_1,LC1105EW - Residence type by sex by age,census_2011_lc
+NM_1087_1,LC2109EWls - Ethnic group by age,census_2011_lc
+NM_1088_1,LC2110EWls - National identity by age,census_2011_lc
+NM_1089_1,LC2404EWls - Ethnic group by occupancy rating (bedrooms),census_2011_lc
+NM_1090_1,LC2405EWls - Ethnic group by occupancy rating (rooms),census_2011_lc
+NM_1091_1,LC2602EW - Proficiency in English by occupation,census_2011_lc
+NM_1092_1,LC3101EWls - Long term health problem or disability by sex by age,census_2011_lc
+NM_1093_1,LC4411EW - Student accommodation by age,census_2011_lc
+NM_1094_1,LC5605EWls - Highest level of qualification by economic activity by age,census_2011_lc
+NM_1095_1,LC2120EW - Religion by accommodation type,census_2011_lc
+NM_1096_1,LC2121EW - Ethnic group by accommodation type,census_2011_lc
+NM_1097_1,LC3403EW - General health by long-term health problem or disability by occupancy rating (rooms),census_2011_lc
+NM_1098_1,LC3404EW - General health by long-term health problem or disability by occupancy rating (bedrooms),census_2011_lc
+NM_1099_1,LC3405EW - Long-term health problem or disability by car or van availability by sex,census_2011_lc
+NM_1101_1,DC2501WAla - Highest level of qualification by Welsh language skills by age,census_2011_dc
+NM_1102_1,DC5102EW - Highest level of qualification by sex by age,census_2011_dc
+NM_1103_1,DC5103EW - Highest level of qualification by household composition,census_2011_dc
+NM_1104_1,DC5104EWla - Highest level of qualification by number of dependent children by hours worked by sex,census_2011_dc
+NM_1105_1,DC5106EW - Highest level of qualification by family type,census_2011_dc
+NM_1106_1,DC5107EWla - Highest level of qualification by sex by age,census_2011_dc
+NM_1107_1,DC5202EW - Highest level of qualification by ethnic group by age,census_2011_dc
+NM_1108_1,DC5203EW - Highest level of qualification by country of birth by age,census_2011_dc
+NM_1109_1,DC5204EW - Highest level of qualification by religion by age,census_2011_dc
+NM_1110_1,DC5205EWr - Highest level of qualification by country of birth by age (regional),census_2011_dc
+NM_1111_1,DC5206EW - Highest level of qualification by passports held by age,census_2011_dc
+NM_1112_1,DC5207EWr - Highest level of qualification by passports held by age (regional),census_2011_dc
+NM_1113_1,DC5208EW - Highest level of qualification by main language,census_2011_dc
+NM_1114_1,DC5209EWla - Highest level of qualification by ethnic group,census_2011_dc
+NM_1115_1,DC5301EW - Highest level of qualification by long-term health problem or disability,census_2011_dc
+NM_1116_1,DC5601EWla - Highest Level of Qualification by Economic Activity by age,census_2011_dc
+NM_1117_1,DC5602EW - Highest level of qualification by economic activity of full-time students,census_2011_dc
+NM_1118_1,DC5603EWr - Highest level of qualification by economic activity by country of birth (regional),census_2011_dc
+NM_1119_1,DC5604EWr - Highest level of qualification by economic activity by passports held (regional),census_2011_dc
+NM_1120_1,DC5801EW - Highest level of qualification by year of arrival in the UK by sex by age,census_2011_dc
+NM_1121_1,DC5802EWla - Highest level of qualification by length of residence in the UK,census_2011_dc
+NM_1122_1,DC6501EWla - Occupation by highest level of qualification by age,census_2011_dc
+NM_1123_1,DC6502EWla - NS-SeC by highest level of qualification by age,census_2011_dc
+NM_1124_1,DC6503EWla - Industry by highest level of qualification by age,census_2011_dc
+NM_1125_1,DC1114EW - Dependent children by family type,"census_2011_dc,census_2011_dc"
+NM_1126_1,DC1118EW - Youngest dependent child in family by family type,"census_2011_dc,census_2011_dc"
+NM_1127_1,DC2606WAla - Ability of dependent child in a family to speak Welsh by Welsh household composition by approximated social grade of Household Reference Person,census_2011_dc
+NM_1132_1,DC6218EW - Approximated social grade by country of birth,census_2011_dc
+NM_1133_1,DC6219EW - Approximated social grade by passports held,census_2011_dc
+NM_1134_1,DC6403EW - Approximated social grade by tenure by car or van availability,census_2011_dc
+NM_1135_1,DC4109EWla - Car or van availability by sex by age,census_2011_dc
+NM_1136_1,DC4415EWla - Accommodation type by car or van availability by number of usual residents aged 17 or over in household,census_2011_dc
+NM_1137_1,DC4416EWla - Tenure by car or van availability by number of usual residents aged 17 or over in household,census_2011_dc
+NM_1138_1,DC7101EWla - Method of travel to work (2001 specification) by sex by age,census_2011_dc
+NM_1139_1,DC7102EWla - Distance travelled to work by sex by age,census_2011_dc
+NM_1140_1,DC7201EWla - Method of travel to work (2001 specification) by ethnic group,census_2011_dc
+NM_1141_1,DC7202EWla - Distance travelled to work by ethnic group,census_2011_dc
+NM_1142_1,DC7401EWla - Method of travel to work (2001 specification) by car or van availability,census_2011_dc
+NM_1143_1,DC7402EWla - Distance travelled to work by car or van availability,census_2011_dc
+NM_1144_1,DC7501EWla - Method of travel to work (2001 specification) by highest level of qualification by sex,census_2011_dc
+NM_1145_1,DC7502EWla - Distance travelled to work by highest level of qualification by sex,census_2011_dc
+NM_1146_1,DC7601EWla - Method of travel to work (2001 specification) by hours worked by sex,census_2011_dc
+NM_1147_1,DC7602EWla - Method of travel to work (2001 specification) by industry,census_2011_dc
+NM_1148_1,DC7603EWla - Method of travel to work (2001 specification) by occupation by sex,census_2011_dc
+NM_1149_1,DC7604EWla - Method of travel to work (2001 specification) by NS-SeC by sex,census_2011_dc
+NM_1150_1,DC7605EWla - Distance travelled to work by hours worked by sex,census_2011_dc
+NM_1151_1,DC7606EWla - Distance travelled to work by industry,census_2011_dc
+NM_1152_1,DC7607EWla - Distance travelled to work by occupation by sex,census_2011_dc
+NM_1153_1,DC7608EWla - Distance travelled to work by NS-SeC by sex,census_2011_dc
+NM_1154_1,DC7701EWla - Method of travel to work (2001 specification) by distance travelled to work,census_2011_dc
+NM_1155_1,DC6124EW - Approximated social grade by sex by age,census_2011_dc
+NM_1156_1,DC6125EW - Approximated social grade by adult lifestage,census_2011_dc
+NM_1157_1,DC6126EW - Approximated social grade by adult lifestage - Household Reference Persons,census_2011_dc
+NM_1158_1,DC6127EW - Approximated social grade by household composition,census_2011_dc
+NM_1159_1,DC2121EW - Ethnic group by accommodation type,census_2011_dc
+NM_1160_1,DC3403EW - General health by long-term health problem or disability by occupancy rating (rooms) by age,census_2011_dc
+NM_1161_1,DC3404EW - General health by long-term health problem or disability by occupancy rating (bedrooms) by age,census_2011_dc
+NM_1162_1,DC3405EW - General health by long-term health problem or disability by car or van availability by sex,Census Customer Services
+NM_1163_1,DC3407EW - Long-term health problem or disability by car or van availability by sex by age,census_2011_dc
+NM_1164_1,DC3408EW - Long-term health problem or disability by tenure by sex by age,census_2011_dc
+NM_1165_1,DC3409EW - General health by tenure by sex by age,census_2011_dc
+NM_1167_1,DC3306EW -  Provision of unpaid care by number of people in household with a long-term health problem or disability by economic activity by sex,census_2011_dc
+NM_1168_1,DC2122EW - Country of birth by number of children in family,census_2011_dc
+NM_1169_1,DC1602EWla - Residence type by economic activity by age,census_2011_dc
+NM_1170_1,DC4801EWla - Communal establishment management and type by position in communal establishment by resident one year ago,census_2011_dc
+NM_1201_1,MM01CUK_ALL - Origin and destination of migrants by age (broad grouped) by sex,census_2011_od
+NM_1202_1,MM01CUK_NON_UK - Origin and destination of international migrants by age (broad grouped) by sex,census_2011_od
+NM_1203_1,WU01UK - Location of usual residence and place of work by sex,census_2011_od
+NM_1204_1,WU01EW - Location of usual residence and place of work by sex (MSOA level),census_2011_od
+NM_1205_1,WU02UK - Location of usual residence and place of work by age,census_2011_od
+NM_1206_1,WU02EW - Location of usual residence and place of work by age (MSOA level),census_2011_od
+NM_1207_1,WU03UK - Location of usual residence and place of work by method of travel to work,census_2011_od
+NM_1208_1,WU03EW - Location of usual residence and place of work by method of travel to work (MSOA level),census_2011_od
+NM_1209_1,"SM01UK - Origin and destination of people who moved from a student term time/boarding school address in the year before the census by age, sex and student status",census_2011_od
+NM_1210_1,RF02AEW - Location of second address and place of work,census_2011_od
+NM_1211_1,RF03EW - Location of usual residence and place of work,census_2011_od
+NM_1212_1,RF04AEW - Location of where people live when working and place of work,census_2011_od
+NM_1213_1,RF05EW - Dependent children : location of usual residence and second address,census_2011_od
+NM_1214_1,RU02AEW - Location of usual residence and second address by sex,census_2011_od
+NM_1215_1,RU03AEW - Location of usual residence and second address by age,census_2011_od
+NM_1220_1,MF02UK - Origin and destination of international migrants (expanded country of origin),census_2011_od
+NM_1221_1,MF02NI - Origin and destination of international migrants (expanded country of origin),Census Customer Services
+NM_1222_1,MM01CNI_ALL - Origin and destination of migrants by age (broad grouped) by sex,Census Customer Services
+NM_1223_1,MM01CNI_NON_UK - Origin and destination of international migrants by age (broad grouped) by sex,Census Customer Services
+NM_1224_1,"SM01NI - Origin and destination of people who moved from a student term time/boarding school address in the year before the census by age, sex and student status",Census Customer Services
+NM_1225_1,MU01BUK_ALL - Origin and destination of migrants by age (grouped),census_2011_od
+NM_1226_1,MU01BUK_NON_UK - Origin and destination of international migrants by age (grouped),census_2011_od
+NM_1228_1,WF01BEW - Location of usual residence and place of work (OA level),census_2011_od
+NM_1229_1,WF02EW - Location of usual residence and place of work (with outside UK collapsed) (OA/WPZ level),census_2011_od
+NM_1230_1,SH01 - Distribution by tenure [1961 Census],census_1961_sh
+NM_1231_1,SH02 - Dwellings by building type [1961 Census],census_1961_sh
+NM_1232_1,SH03 - Residents born outside UK by country of birth [1961 Census],census_1961_sh
+NM_1233_1,SH04 - Residents born outside UK by nationality [1961 Census],census_1961_sh
+NM_1234_1,SH05a - Non-private population - Not hotels - Persons [1961 Census],census_1961_sh
+NM_1235_1,SH06 - Household arrangements [1961 Census],census_1961_sh
+NM_1236_1,SH07 - Old persons living alone [1961 Census],census_1961_sh
+NM_1237_1,SH08 - Old persons in households of 2 persons [1961 Census],census_1961_sh
+NM_1238_1,SH09 - Non-private population - hotels [1961 Census],census_1961_sh
+NM_1239_1,SH10 - All non-private [1961 Census],census_1961_sh
+NM_1240_1,SH11 - Densities - persons per room [1961 census],census_1961_sh
+NM_1241_1,SH12 - Persons resident outside local authority area [1961 census],census_1961_sh
+NM_1242_1,SH13 - Age and marital condition by five year age groups [1961 Census],census_1961_sh
+NM_1243_1,SH14 - Single years under 21 [1961 census],census_1961_sh
+NM_1244_1,SH15 - Sharing households by number of persons [1961 census],census_1961_sh
+NM_1245_1,ST01 - People and households (10% Sample) [1961 census],census_1961_st
+NM_1246_1,ST02 - Workers away and workers within area (10% Sample) [1961 census],census_1961_st
+NM_1247_1,ST03 - Workers by age (10% Sample) [1961 census],census_1961_st
+NM_1248_1,ST04 - Out of work (10% Sample) [1961 census],census_1961_st
+NM_1249_1,ST05 - Industry (10% Sample) [1961 census],census_1961_st
+NM_1250_1,ST06 - Terminal education age (10% Sample) [1961 census],census_1961_st
+NM_1251_1,ST07 - Socio-economic group (10% Sample) [1961 census],census_1961_st
+NM_1252_1,ST08 - Changing usual residence during the previous year (10% Sample) [1961 census],census_1961_st
+NM_1253_1,ST09 - Families (10% Sample) [1961 census],census_1961_st
+NM_1254_1,"SC11 - Dwellings by building type, rooms and household spaces [1961 census]",census_1961_sh
+NM_1255_1,SH05b - Non-private population - Not hotels - Establishments [1961 Census],census_1961_sh
+NM_1256_1,"SC13 - Private households by size, rooms occupied and sharing of dwellings [1961 census]",census_1961_sh
+NM_1257_1,SC22 - Dwellings by availability of certain household arrangements [1961 census],census_1961_sh
+NM_1280_1,UKMIG001 - Migration by sex by age,census_2011_ukmigration
+NM_1281_1,UKMIG002 - Migration by family status,census_2011_ukmigration
+NM_1282_1,UKMIG003 - Migration by ethnic group by age,census_2011_ukmigration
+NM_1283_1,UKMIG004 - Migration by ethnic group by NS-SeC,census_2011_ukmigration
+NM_1284_1,UKMIG005 - Migration by long-term health problem or disability,census_2011_ukmigration
+NM_1285_1,UKMIG006 - Migration by economic activity,census_2011_ukmigration
+NM_1286_1,UKMIG007 - Migration by NS-SeC,census_2011_ukmigration
+NM_1287_1,UKMIG008 - Migration,census_2011_ukmigration
+NM_1288_1,UKMIG009 -  Household migration by household composition,census_2011_ukmigration
+NM_1289_1,UKMIG010 - Household migration by dependent children by age of household reference person (HRP),census_2011_ukmigration
+NM_1290_1,UKMIG011 -  Household migration by tenure,census_2011_ukmigration
+NM_1291_1,UKMIG012 - Household migration by economic activity - Household Reference Person (HRP),census_2011_ukmigration
+NM_1292_1,UKMIG013 - Household migration by NS-SeC - Household Reference Person (HRP),census_2011_ukmigration
+NM_1300_1,WP101EW - Population (Workplace population),census_2011_wp
+NM_1302_1,WP201EW - Ethnic group (Workplace population),census_2011_wp
+NM_1303_1,WP203EW - Country of birth (Workplace population),census_2011_wp
+NM_1304_1,WP204EW - Main language (Workplace population),census_2011_wp
+NM_1305_1,WP206WA - Welsh language skills (Workplace population),census_2011_wp
+NM_1306_1,WP207WA - Welsh language skills (detailed) (Workplace population),census_2011_wp
+NM_1307_1,WP210EW - Religion (Workplace population),census_2011_wp
+NM_1308_1,WP212EW - Passports held (detailed) (Workplace population),census_2011_wp
+NM_1309_1,WP302EW - General Health (Workplace population),census_2011_wp
+NM_1310_1,WP403EW - Tenure - People (Workplace population),census_2011_wp
+NM_1311_1,WP501EW - Highest level of qualification (Workplace population),census_2011_wp
+NM_1312_1,WP601EW - Employment Status (Workplace population),census_2011_wp
+NM_1313_1,WP604EW - Hours worked (Workplace population),census_2011_wp
+NM_1314_1,WP605EW - Industry (Workplace population),census_2011_wp
+NM_1315_1,WP606EW - Occupation (Minor groups) (Workplace population),census_2011_wp
+NM_1316_1,WP607EW - NS-SeC (Workplace population),census_2011_wp
+NM_1317_1,WP613EW - Approximated social grade (Workplace population),census_2011_wp
+NM_1318_1,WP703EW - Method of travel to work (2001 specification) (Workplace population),census_2011_wp
+NM_1319_1,WP803EW - Length of residence in the UK (Workplace population),census_2011_wp
+NM_1320_1,WP1101EW - Sex by single year of age (Workplace population),census_2011_wp
+NM_1321_1,WP6110EW - Industry by age (Workplace population),census_2011_wp
+NM_1322_1,WP6112EW - Occupation by age (Workplace population),census_2011_wp
+NM_1323_1,WP6501EW - Occupation by highest level of qualification (Workplace population),census_2011_wp
+NM_1324_1,WP6503EW - Industry by highest level of qualification (Workplace population),census_2011_wp
+NM_1325_1,WP6604EW - Occupation by industry (Workplace population),census_2011_wp
+NM_1326_1,WP7101EW - Method of travel to work by age (Workplace population),census_2011_wp
+NM_1327_1,WP7102EW - Distance travelled to work by age (Workplace population),census_2011_wp
+NM_1328_1,WP7606EW - Distance travelled to work by industry (Workplace population),census_2011_wp
+NM_1329_1,WP7607EW - Distance travelled to work by occupation (Workplace population),census_2011_wp
+NM_1330_1,WP7701EW - Method of travel to work (2001 specification) by distance travelled to work (Workplace population),census_2011_wp
+NM_1331_1,WP7103EW - Workplace and usual residence by method of travel to work (2001 specification) (Workplace population),census_2011_wp
+NM_1351_1,OT107EW - Marital and civil partnership status (Out of term-time population),census_2011_ot
+NM_1352_1,OT1101EW - Sex by five-year age group (Out of term-time population),census_2011_ot
+NM_1353_1,OT1117EW - Sex by single year of age (Out of term-time population),census_2011_ot
+NM_1354_1,OT201EW - Ethnic group (Out of term-time population),census_2011_ot
+NM_1355_1,OT203EW - Country of birth (detailed) (Out of term-time population),census_2011_ot
+NM_1356_1,OT204EW - Main language (detailed) (Out of term-time population),census_2011_ot
+NM_1357_1,OT206WA - Welsh Language Skills  (Out of term-time population),census_2011_ot
+NM_1358_1,OT207WA - Welsh Language Skills (Detailed)  (Out of term-time population),census_2011_ot
+NM_1359_1,OT210EW - Religion (Out of term-time population),census_2011_ot
+NM_1360_1,OT212EW - Passports held (detailed) (Out of term-time population),census_2011_ot
+NM_1361_1,OT301EW - Provision of unpaid care (Out of term-time population),census_2011_ot
+NM_1362_1,OT302EW - General health (Out of term-time population),census_2011_ot
+NM_1363_1,OT501EW - Highest level of qualification (Out of term-time population),census_2011_ot
+NM_1364_1,OT601EW - Economic activity (Out of term-time population),census_2011_ot
+NM_1365_1,OT603EW - Economic activity - Full-time students (Out of term-time population),census_2011_ot
+NM_1366_1,OT604EW - Hours worked (Out of term-time population),census_2011_ot
+NM_1367_1,OT605EW - Industry (Out of term-time population),census_2011_ot
+NM_1368_1,OT606EW - Occupation (Minor groups) (Out of term-time population),census_2011_ot
+NM_1369_1,OT607EW - NS-SeC (Out of term-time population),census_2011_ot
+NM_1370_1,OT803EW - Length of residence in the UK (Out of term-time population),census_2011_ot
+NM_1400_1,LC3406EW - General health by car or van availability by sex,census_2011_lc
+NM_1401_1,LC6124EW - Approximated social grade by sex by age,census_2011_lc
+NM_1402_1,LC6125EW - Approximated social grade by adult lifestage,census_2011_lc
+NM_1403_1,LC3408EW - Long-term health problem or disability by tenure by age,census_2011_lc
+NM_1404_1,LC3409EW - General health by tenure by age,census_2011_lc
+NM_1405_1,LC3305EW - Long-term health problem or disability by provision of unpaid care by sex,census_2011_lc
+NM_1406_1,LC3407EW - Long-term health problem or disability by car or van availability by age,census_2011_lc
+NM_1407_1,LC3307EW - Provision of unpaid care by general health by households with people who have a long-term health problem or disability,census_2011_lc
+NM_1408_1,LC3306EW - Provision of unpaid care by households with people with a long-term health problem or disability by economic activity by sex,census_2011_lc
+NM_1410_1,LC3102EW - Long-term health problem or disability by number of children in family,census_2011_lc
+NM_1411_1,LC2122EW - Country of birth by number of children in family,census_2011_lc
+NM_1412_1,LC2123EW - Religion of dependent child by sex,census_2011_lc
+NM_1413_1,LC2124EW - Proficiency in English of dependent child by sex,census_2011_lc
+NM_1414_1,LC1117EW - Sex by age,census_2011_lc
+NM_1420_1,"CR03 - Acreage, population, private families and dwellings [1921 census]",census_1921_cr
+NM_1421_1,CR14 - Ages (five-year age groups) and marital condition [and sex] [1921 census],census_1921_cr
+NM_1423_1,"CR12 - Institutions: Number, total population and inmates [1921 census]",census_1921_cr
+NM_1424_1,CR24 - Orphanhood of children aged less than 15 [1921 census],census_1921_cr
+NM_1425_1,CR16i - Occupation status by sex of persons aged 12 years and over [1921 census],census_1921_cr
+NM_1426_1,CR16ii - Occupations by sex of persons aged 12 years and over [1921 census],census_1921_cr
+NM_1428_1,CR21 - Birthplaces of the Population [1921 census],census_1921_cr
+NM_1429_1,CR22 - Foreign born population by country of birth and nationality [1921 census],census_1921_cr
+NM_1500_1,KS103UK - Marital and civil partnership status,census_2011_ksuk
+NM_1501_1,KS104UK - Living arrangements,census_2011_ksuk
+NM_1502_1,KS105UK - Household composition,census_2011_ksuk
+NM_1503_1,KS107UK - Lone parent households with dependent children,census_2011_ksuk
+NM_1504_1,KS201UK - Ethnic group,census_2011_ksuk
+NM_1505_1,KS301UK - Health and provision of unpaid care,census_2011_ksuk
+NM_1506_1,"KS401UK - Dwellings, household spaces and accommodation type",census_2011_ksuk
+NM_1507_1,KS402UK - Tenure,census_2011_ksuk
+NM_1508_1,KS404UK - Car or van availability,census_2011_ksuk
+NM_1509_1,KS405UK - Communal establishment residents,census_2011_ksuk
+NM_1510_1,KS501UK - Qualifications and students,census_2011_ksuk
+NM_1511_1,KS601UK - Economic activity,census_2011_ksuk
+NM_1512_1,KS602UK - Economic activity - Males,census_2011_ksuk
+NM_1513_1,KS603UK - Economic activity - Females,census_2011_ksuk
+NM_1514_1,KS604UK - Hours worked,census_2011_ksuk
+NM_1515_1,KS605UK - Industry,census_2011_ksuk
+NM_1516_1,KS606UK - Industry - Males,census_2011_ksuk
+NM_1517_1,KS607UK - Industry - Females,census_2011_ksuk
+NM_1518_1,KS608UK - Occupation,census_2011_ksuk
+NM_1519_1,KS609UK - Occupation - Males,census_2011_ksuk
+NM_1520_1,KS610UK - Occupation - Females,census_2011_ksuk
+NM_1521_1,KS611UK - NS-SeC,census_2011_ksuk
+NM_1522_1,KS612UK - NS-SeC - Males,census_2011_ksuk
+NM_1523_1,KS613UK - NS-SeC - Females,census_2011_ksuk
+NM_1530_1,QS101UK - Residence type,census_2011_qsuk
+NM_1531_1,QS103UK - Age by single year,census_2011_qsuk
+NM_1532_1,QS104UK - Sex,census_2011_qsuk
+NM_1533_1,QS105UK - Schoolchildren and full-time students at their non term-time address,census_2011_qsuk
+NM_1534_1,QS108UK - Living arrangements,census_2011_qsuk
+NM_1535_1,QS110UK - Adult lifestage (alternative adult definition),census_2011_qsuk
+NM_1536_1,QS111UK - Household lifestage,census_2011_qsuk
+NM_1537_1,QS112UK - Household composition - People,census_2011_qsuk
+NM_1538_1,QS113UK - Household composition - Households,census_2011_qsuk
+NM_1539_1,QS114UK - Household composition (alternative child and adult definitions)  - People,census_2011_qsuk
+NM_1540_1,QS115UK - Household composition (alternative child/adult definitions)  - Households,census_2011_qsuk
+NM_1541_1,QS117UK - People aged 18 to 64 living in a one adult household,census_2011_qsuk
+NM_1542_1,QS118UK - Families with dependent children,census_2011_qsuk
+NM_1543_1,QS202UK - Multiple ethnic group,census_2011_qsuk
+NM_1544_1,QS203UK - Country of birth,census_2011_qsuk
+NM_1545_1,QS301UK - Provision of unpaid care,census_2011_qsuk
+NM_1546_1,QS302UK - General health,census_2011_qsuk
+NM_1547_1,QS303UK - Long-term health problem or disability,census_2011_qsuk
+NM_1548_1,QS401UK - Accommodation type - People,census_2011_qsuk
+NM_1549_1,QS402UK - Accommodation type - Households,census_2011_qsuk
+NM_1550_1,QS403UK - Tenure - People,census_2011_qsuk
+NM_1551_1,QS404UK - Tenure - Household Reference Person aged 65 and over,census_2011_qsuk
+NM_1552_1,QS405UK - Tenure - Households,census_2011_qsuk
+NM_1553_1,QS406UK - Household size,census_2011_qsuk
+NM_1554_1,QS407UK - Number of rooms,census_2011_qsuk
+NM_1555_1,QS408UK - Occupancy rating,census_2011_qsuk
+NM_1556_1,QS409UK - Persons per room - Households,census_2011_qsuk
+NM_1557_1,QS410UK - Persons per room - People,census_2011_qsuk
+NM_1558_1,QS415UK - Central heating,census_2011_qsuk
+NM_1559_1,QS417UK - Household spaces,census_2011_qsuk
+NM_1560_1,QS418UK - Dwellings,census_2011_qsuk
+NM_1561_1,QS419UK - Position in communal establishment,census_2011_qsuk
+NM_1562_1,QS420UK - Communal establishment management and type -  Communal establishments,census_2011_qsuk
+NM_1563_1,QS421UK - Communal establishment management and type - People,census_2011_qsuk
+NM_1564_1,QS501UK - Highest level of qualification,census_2011_qsuk
+NM_1565_1,QS601UK - Economic activity,census_2011_qsuk
+NM_1566_1,QS603UK - Economic activity - Full-time students,census_2011_qsuk
+NM_1567_1,QS604UK - Hours worked,census_2011_qsuk
+NM_1568_1,QS605UK - Industry,census_2011_qsuk
+NM_1569_1,QS606UK - Occupation,census_2011_qsuk
+NM_1570_1,QS607UK - NS-SeC,census_2011_qsuk
+NM_1571_1,QS608UK - NS-SeC of Household Reference Person (HRP) - People aged under 65,census_2011_qsuk
+NM_1572_1,QS609UK - NS-SeC of Household Reference Person (HRP) - People,census_2011_qsuk
+NM_1573_1,QS610UK - NS-SeC of Household Reference Person (HRP) - HRP aged under 65,census_2011_qsuk
+NM_1574_1,QS611UK - Approximated social grade - Household Reference Person (HRP) aged 16 - 64,census_2011_qsuk
+NM_1575_1,QS612UK - Year last worked,census_2011_qsuk
+NM_1602_1,KS002 - Age structure,census_2001_ks
+NM_1603_1,KS003 - Living arrangements,census_2001_ks
+NM_1604_1,KS004 - Marital Status,census_2001_ks
+NM_1605_1,KS005 - Country of birth,census_2001_ks
+NM_1606_1,KS006 - Ethnic group,census_2001_ks
+NM_1607_1,KS007 - Religion,census_2001_ks
+NM_1608_1,KS008 - Health and provision of unpaid care,census_2001_ks
+NM_1609_1,KS009a - Economic activity,census_2001_ks
+NM_1610_1,KS009b - Economic activity - males,census_2001_ks
+NM_1611_1,KS009c - Economic activity - females,census_2001_ks
+NM_1612_1,KS010 - Hours worked,census_2001_ks
+NM_1613_1,KS011a - Industry of employment,census_2001_ks
+NM_1614_1,KS011b - Industry of employment - males,census_2001_ks
+NM_1615_1,KS011c - Industry of employment - females,census_2001_ks
+NM_1616_1,KS012a - Occupation groups,census_2001_ks
+NM_1617_1,KS012b - Occupation groups - males,census_2001_ks
+NM_1618_1,KS012c - Occupation groups - females,census_2001_ks
+NM_1619_1,KS013 - Qualifications and students,census_2001_ks
+NM_1620_1,KS014a - NS-SeC,census_2001_ks
+NM_1621_1,KS014b - NS-SeC - males,census_2001_ks
+NM_1622_1,KS014c - NS-SeC - females,census_2001_ks
+NM_1623_1,KS015 - Travel to work,census_2001_ks
+NM_1624_1,KS016 - Household spaces and accommodation type,census_2001_ks
+NM_1625_1,KS017 - Cars or Vans,census_2001_ks
+NM_1626_1,KS018 - Tenure,census_2001_ks
+NM_1627_1,"KS019 - Rooms, amenities, central heating and lowest floor level",census_2001_ks
+NM_1628_1,KS020 - Household composition,census_2001_ks
+NM_1629_1,KS021 - Households with LLTI and dependent children,census_2001_ks
+NM_1630_1,KS022 - Lone parent households with dependent children,census_2001_ks
+NM_1631_1,KS023 - Communal establishment residents,census_2001_ks
+NM_1632_1,KS024 - Migration,census_2001_ks
+NM_1633_1,KS025 - Knowledge of Welsh,census_2001_ks
+NM_1634_1,KS001 - Usual resident population,census_2001_ks
+NM_1635_1,UV001 - Population,census_2001_uv
+NM_1636_1,UV003 - Sex,census_2001_uv
+NM_1637_1,UV004 - Age,census_2001_uv
+NM_1638_1,UV005 - Schoolchildren and students in full time education living away from home during term-time,census_2001_uv
+NM_1639_1,UV006 - Dependent children,census_2001_uv
+NM_1640_1,UV007 - Marital status,census_2001_uv
+NM_1641_1,UV008 - Country of birth,census_2001_uv
+NM_1642_1,UV009 - Ethnic group,census_2001_uv
+NM_1643_1,UV013 - Knowledge of Welsh,census_2001_uv
+NM_1644_1,UV015 - Religion,census_2001_uv
+NM_1645_1,UV020 - General health,census_2001_uv
+NM_1646_1,UV021 - Provision of unpaid care,census_2001_uv
+NM_1647_1,UV022 - Limiting long-term illness,census_2001_uv
+NM_1648_1,UV023 - Migration,census_2001_uv
+NM_1649_1,UV024 - Qualifications,census_2001_uv
+NM_1650_1,UV027 - Time since last worked,census_2001_uv
+NM_1651_1,UV028 - Economic activity,census_2001_uv
+NM_1652_1,UV029 - Economic activity - full time students,census_2001_uv
+NM_1653_1,UV030 - Occupation,census_2001_uv
+NM_1654_1,UV031 - NS-SeC,census_2001_uv
+NM_1655_1,UV032 - NS-SeC of Household Reference Person (HRP),census_2001_uv
+NM_1656_1,UV033 - NS-SeC of Household Reference Person (All people),census_2001_uv
+NM_1657_1,UV034 - Industry,census_2001_uv
+NM_1658_1,UV035 - Distance travelled to work,census_2001_uv
+NM_1659_1,UV037 - Method of travel to work,census_2001_uv
+NM_1660_1,UV039 - Method of travel to work - resident population,census_2001_uv
+NM_1661_1,UV041 - Hours Worked,census_2001_uv
+NM_1662_1,UV042 - Accommodation type (people),census_2001_uv
+NM_1663_1,UV043 - Tenure,census_2001_uv
+NM_1664_1,UV045 - Tenure of pensioners,census_2001_uv
+NM_1665_1,UV046 - Household composition (People),census_2001_uv
+NM_1666_1,UV047 - Household composition (People) (alternative classification),census_2001_uv
+NM_1667_1,UV048 - People aged 18-64 in single adult households,census_2001_uv
+NM_1668_1,UV050 - Approximated social grade,census_2001_uv
+NM_1669_1,UV051 - Number of people living in households,census_2001_uv
+NM_1670_1,UV052 - Migration (households),census_2001_uv
+NM_1671_1,UV053 - Housing stock,census_2001_uv
+NM_1672_1,UV055 - Dwellings,census_2001_uv
+NM_1673_1,UV056 - Accommodation type (households),census_2001_uv
+NM_1674_1,UV057 - Number of rooms,census_2001_uv
+NM_1675_1,UV058 - Persons per room,census_2001_uv
+NM_1676_1,UV059 - Occupancy,census_2001_uv
+NM_1677_1,UV060 - Amenities,census_2001_uv
+NM_1678_1,UV061 - Lowest floor level,census_2001_uv
+NM_1679_1,UV062 - Cars or vans,census_2001_uv
+NM_1680_1,UV063 - Tenure households,census_2001_uv
+NM_1681_1,UV065 - Household composition (households),census_2001_uv
+NM_1682_1,UV066 - Household Composition (Households) (Alternative Classification),census_2001_uv
+NM_1683_1,UV067 - Households By Selected Household Characteristics,census_2001_uv
+NM_1684_1,UV068 - Household type,census_2001_uv
+NM_1685_1,UV069 - Multiple Ethnic Groups,census_2001_uv
+NM_1686_1,UV070 - Communal Establishments,census_2001_uv
+NM_1687_1,UV071 - Communal establishment residents,census_2001_uv
+NM_1688_1,UV073 - All People In Communal Establishments,census_2001_uv
+NM_1689_1,UV075 - Age (workplace population),census_2001_uv
+NM_1690_1,UV076 - NS-SeC (workplace population),census_2001_uv
+NM_1691_1,UV078 - Approximated Social Grade (Workplace Population),census_2001_uv
+NM_1692_1,UV080 - Distance Travelled To Work (Workplace Population),census_2001_uv
+NM_1693_1,UV082 - Living Arrangements,census_2001_uv
+NM_1694_1,UV083 - Persons per room,census_2001_uv
+NM_1695_1,UV085 - Residents In Households By NS-Sec Of Household Reference Person Under Pensionable Age,census_2001_uv
+NM_1696_1,UV093 - Same-Sex Couples,census_2001_uv
+NM_1697_1,UV002 - Population density,census_2001_uv
+NM_1698_1,UV081 - Armed forces,census_2001_uv
+NM_1701_1,CS001 - Age by sex and resident type,census_2001_cs
+NM_1702_1,CS002 - Age by sex and marital status,census_2001_cs
+NM_1703_1,CS003 - Age of Household Reference Person (HRP) by sex and marital status,census_2001_cs
+NM_1704_1,CS004 - Age by sex and living arrangements,census_2001_cs
+NM_1705_1,CS005 - Age of Household Reference Person (HRP) by sex and living arrangements,census_2001_cs
+NM_1707_1,CS007 - Age of Family Reference Person (FRP) and number and age of dependent children by family type,census_2001_cs
+NM_1708_1,CS008 - Resident type and age by migration (OA/Ward Only),census_2001_cs
+NM_1709_1,CS009 - Age (of HRP) and number of dependent children by migration of households (OA/Ward Only),census_2001_cs
+NM_1710_1,CS010 - Household composition by migration of households (OA/Ward Only),census_2001_cs
+NM_1711_1,CS011 - Family composition by age of Family Reference Person (FRP),census_2001_cs
+NM_1712_1,CS012 - Schoolchildren and students in full-time education living away from home in term-time by age,census_2001_cs
+NM_1713_1,CS013 - Age of Household Reference Person (HRP) and tenure by economic activity of HRP,census_2001_cs
+NM_1714_1,CS014 - Age and dependent children by household type (adults),census_2001_cs
+NM_1715_1,CS015 - Country of birth by sex,census_2001_cs
+NM_1716_1,CS016 - Sex and age by general health and limiting long-term illness,census_2001_cs
+NM_1717_1,CS017 - Tenure and age by general health and limiting long-term illness,census_2001_cs
+NM_1718_1,CS018 - Sex and amenities and central heating by general health and limiting long-term illness,census_2001_cs
+NM_1719_1,CS019 - General health and limiting long-term illness and occupancy rating by age,census_2001_cs
+NM_1720_1,CS020 - Limiting long-term illness and age by accommodation type and lowest floor level of accommodation,census_2001_cs
+NM_1721_1,CS021 - Economic activity by sex and limiting long-term illness,census_2001_cs
+NM_1722_1,CS022 - Sex and number of cars or vans in household by general health and limiting long-term illness,census_2001_cs
+NM_1723_1,CS023 - Age and general health by NS-Sec,census_2001_cs
+NM_1724_1,CS024 - Age and limiting long-term illness by NS-SeC,census_2001_cs
+NM_1725_1,CS025 - Sex and age by general health and provision of unpaid care,census_2001_cs
+NM_1726_1,CS026 - Sex and economic activity by general health and provision of unpaid care,census_2001_cs
+NM_1727_1,CS027 - Households with a person with limiting long-term illness (LLTI) and their age by number of carers in household and economic activity,census_2001_cs
+NM_1728_1,CS028 - Sex and age by economic activity,census_2001_cs
+NM_1729_1,CS029 - sex and age by hours worked,census_2001_cs
+NM_1730_1,CS030 - Sex and economic activity by living arrangements,census_2001_cs
+NM_1731_1,CS031 - Family composition and number of dependent children by economic activity,census_2001_cs
+NM_1732_1,CS032 - Sex and age and level of qualifications by economic activity,census_2001_cs
+NM_1733_1,CS033 - Sex and occupation by age,census_2001_cs
+NM_1734_1,CS034 - Former occupation by age,census_2001_cs
+NM_1735_1,CS035 - Sex and occupation by employment status and hours worked,census_2001_cs
+NM_1736_1,CS036 - Sex and industry by age,census_2001_cs
+NM_1737_1,CS037 - Former industry by age,census_2001_cs
+NM_1738_1,CS038 - Sex and industry by employment status and hours worked,census_2001_cs
+NM_1739_1,CS039 - Occupation by industry,census_2001_cs
+NM_1740_1,CS040 - Sex and occupation by hours worked,census_2001_cs
+NM_1741_1,CS041 - Economic activity and time since last worked by age,census_2001_cs
+NM_1742_1,CS042 - NS-SeC by age,census_2001_cs
+NM_1743_1,CS043 - NS-SeC by economic activity,census_2001_cs
+NM_1744_1,CS044 - NS-SeC of Household Reference Person (HRP) by household composition,census_2001_cs
+NM_1745_1,CS045 - NS-SeC of Household Reference Person (HRP) by age (HRP),census_2001_cs
+NM_1746_1,CS046 - NS-SeC of Household Reference Person (HRP) by tenure,census_2001_cs
+NM_1747_1,CS047 - NS-SeC by tenure,census_2001_cs
+NM_1748_1,CS048 - Dwelling type and accommodation type by household space type,census_2001_cs
+NM_1749_1,CS049 - Dwelling type and accommodation type by tenure (households and dwellings),census_2001_cs
+NM_1750_1,CS050 - Dwelling type and accommodation type by tenure (people),census_2001_cs
+NM_1751_1,CS051 - Tenure and household size by number of rooms,census_2001_cs
+NM_1752_1,CS052 - Tenure and persons per room by accommodation type,census_2001_cs
+NM_1753_1,CS053 - Household composition by tenure and occupancy rating,census_2001_cs
+NM_1754_1,CS054 - Shared/unshared dwelling and central heating and occupancy rating by age,census_2001_cs
+NM_1755_1,CS055 - Dwelling type and accommodation type and central heating by tenure,census_2001_cs
+NM_1756_1,CS056 - Tenure and amenities by household composition,census_2001_cs
+NM_1757_1,CS057 - Tenure and lowest floor level by household composition,census_2001_cs
+NM_1759_1,CS059 - Accommodation type and car or van availability by number of people aged 17 or over in the household,census_2001_cs
+NM_1760_1,CS060 - Tenure and car or van availability by number of people aged 17 or over in the household,census_2001_cs
+NM_1761_1,CS061 - Tenure and car or van availability by economic activity,census_2001_cs
+NM_1762_1,CS062 - Household composition by number of cars or vans available,census_2001_cs
+NM_1763_1,CS063 - Economic activity and age of full time students by household type,census_2001_cs
+NM_1764_1,CS064 - Households with full time students away from home and age of student by number of students,census_2001_cs
+NM_1765_1,CS065 - Sex and age by general health and limiting long-term illness,census_2001_cs
+NM_1766_1,CS066 - Sex and approximated social grade by age,census_2001_cs
+NM_1767_1,CS067 - Age of Household Reference Person (HRP) and dependent children by approximated social grade,census_2001_cs
+NM_1768_1,CS068 - Age and dependent children by household type (HRPs),census_2001_cs
+NM_1769_1,CS103 - Sex and age by religion,census_2001_cs
+NM_1770_1,CS105 - Age by highest level of qualification,census_2001_cs
+NM_1771_1,CS113 - Occupation by highest level of qualification,census_2001_cs
+NM_1772_1,CS114 - NS-Sec by highest level of qualification,census_2001_cs
+NM_1773_1,CS118 - Number of employed people and method of travel to work by number of cars or vans in household,census_2001_cs
+NM_1774_1,CS119 - Sex and age by method of travel to work,census_2001_cs
+NM_1775_1,CS120 - Sex and age by distance travelled to work,census_2001_cs
+NM_1776_1,CS121 - Sex and distance travelled to work by method of travel to work,census_2001_cs
+NM_1777_1,CS122 - NS-Sec by method of travel to work,census_2001_cs
+NM_1778_1,CS126 - Type of Communal Establishment by resident type and sex,census_2001_cs
+NM_1779_1,CS133 - Sex and age by knowledge of Welsh,census_2001_cs
+NM_1780_1,CS145 - Type of communal establishment by knowledge of Welsh,census_2001_cs
+NM_1781_1,CS146 - Sex and age by ability to speak Welsh,census_2001_cs
+NM_1782_1,CS147 - Type of communal establishment by ability to speak Welsh,census_2001_cs
+NM_1783_1,CT001 - Theme table on all dependent children in households,census_2001_ct
+NM_1784_1,CT002 - Theme table on people aged 50 and over,census_2001_ct
+NM_1785_1,CT003 - Theme table on ethnic group - people,census_2001_ct
+NM_1786_1,CT004 - Theme table on ethnic group of Household Reference Person(HRP) - households,census_2001_ct
+NM_1787_1,CT005 - Theme table on all persons,census_2001_ct
+NM_1788_1,CT006 - Theme table on Welsh language,census_2001_ct
+NM_1789_1,CT009 - Theme table on ability to speak Welsh,census_2001_ct
+NM_1790_1,CT010 - Theme table on religion - people,census_2001_ct
+NM_1791_1,CT011 - Theme table on religion of Household Reference Person (HRP) - households,census_2001_ct
+NM_1801_1,ST001 - Age by sex and resident type,census_2001_st
+NM_1802_1,ST002 - Age by sex and marital status,census_2001_st
+NM_1803_1,ST003 - Age of Household Reference Person (HRP) by sex and marital status (Headship),census_2001_st
+NM_1804_1,ST004 - Age by sex and living arrangements,census_2001_st
+NM_1805_1,ST005 - Age of household reference person (HRP) by sex and living arrangements,census_2001_st
+NM_1806_1,ST006 - Age of Family Reference Person (FRP) and number of dependent children by family type,census_2001_st
+NM_1807_1,ST007 - Age of Family Reference (FRP) and number and age of dependent children by family type,census_2001_st
+NM_1808_1,ST008 - Resident type and sex and age by migration,census_2001_st
+NM_1809_1,ST009 - Age of Household Reference Person (HRP) and number of dependent children by migration of households,census_2001_st
+NM_1810_1,ST010 - Household composition by migration of households,census_2001_st
+NM_1811_1,ST011 - Family composition by age of Family Reference Person (FRP),census_2001_st
+NM_1812_1,ST012 - Schoolchildren and students in full-time education living away from home in term-time by age,census_2001_st
+NM_1813_1,ST013 - Age of Household Reference Person (HRP) and tenure by economic activity,census_2001_st
+NM_1814_1,ST014 - Age and dependent children by household type (Adults),census_2001_st
+NM_1815_1,ST015 - Country of birth by sex and age,census_2001_st
+NM_1816_1,ST016 - Sex and age by general health and limiting long-term illness,census_2001_st
+NM_1817_1,ST017 - Tenure and age by general health and limiting long-term illness,census_2001_st
+NM_1818_1,ST018 - Sex and amenities and central heating by general health and limiting long-term illness,census_2001_st
+NM_1819_1,ST019 - General health and limiting long-term illness and occupancy rating by age,census_2001_st
+NM_1820_1,ST020 - Limiting long-term illness and age by accommodation type and lowest floor level of accommodation,census_2001_st
+NM_1821_1,ST021 - Economic activity and hours worked by sex and limiting long-term illness,census_2001_st
+NM_1822_1,ST022 - Sex and number of cars in household by general health and limiting long-term illness,census_2001_st
+NM_1823_1,ST023 - Sex and age and general health by NS-SeC,census_2001_st
+NM_1824_1,ST024 - Sex and age and limiting long-term illness by NS-SeC,census_2001_st
+NM_1825_1,ST025 - Sex and age by general health and provision of unpaid care,census_2001_st
+NM_1826_1,ST026 - Sex and economic activity by general health and provision of unpaid care,census_2001_st
+NM_1827_1,ST027 - Households with a person with a LLTI and their age by number of carers in household and economic activity,census_2001_st
+NM_1828_1,ST028 - Sex and age by economic activity,census_2001_st
+NM_1829_1,ST029 - Sex and age by hours worked,census_2001_st
+NM_1830_1,ST030 - Sex and economic activity by living arrangements,census_2001_st
+NM_1831_1,ST031 - Family composition and number of dependent children by sex and economic activity,census_2001_st
+NM_1832_1,ST032 - Sex and age and level of qualifications by economic activity,census_2001_st
+NM_1833_1,ST033 - Sex and occupation by age,census_2001_st
+NM_1834_1,ST034 - Sex and former occupation by age,census_2001_st
+NM_1835_1,ST035 - Sex and occupation by employment status and hours worked,census_2001_st
+NM_1836_1,ST036 - Sex and industry by age,census_2001_st
+NM_1837_1,ST037 - Sex and former industry by age,census_2001_st
+NM_1838_1,ST038 - Sex and industry by employment status and hours worked,census_2001_st
+NM_1839_1,ST039 - Occupation by industry,census_2001_st
+NM_1840_1,ST040 - Sex and occupation by hours worked,census_2001_st
+NM_1841_1,ST041 - Sex and economic activity and time since last worked by age,census_2001_st
+NM_1842_1,ST042 - NS-SeC by age,census_2001_st
+NM_1843_1,ST043 - Sex and NS-SeC by economic activity,census_2001_st
+NM_1844_1,ST044 - NS-SeC of Household Reference Person (HRP) by household composition,census_2001_st
+NM_1845_1,ST045 - NS-SeC of Household Reference Person (HRP) by age (of HRP),census_2001_st
+NM_1846_1,ST046 - NS-SeC of Household Reference Person (HRP) by tenure,census_2001_st
+NM_1847_1,ST047 - NS-SeC by tenure,census_2001_st
+NM_1848_1,ST048 - Dwelling type and accommodation type by household space type,census_2001_st
+NM_1849_1,ST049 - Dwelling type and accommodation type by tenure (households and dwellings),census_2001_st
+NM_1850_1,ST050 - Dwelling type and accommodation type by tenure (people),census_2001_st
+NM_1851_1,ST051 - Tenure and household size by number of rooms,census_2001_st
+NM_1852_1,ST052 - Tenure and persons per room by accommodation type,census_2001_st
+NM_1853_1,ST053 - Household composition by tenure and occupancy rating,census_2001_st
+NM_1854_1,ST054 - Shared/unshared dwelling and central heating and occupancy rating by age,census_2001_st
+NM_1855_1,ST055 - Dwelling type and accommodation type and central heating by tenure,census_2001_st
+NM_1856_1,ST056 - Tenure and amenities by household composition,census_2001_st
+NM_1857_1,ST057 - Tenure and lowest floor level by household composition,census_2001_st
+NM_1858_1,ST058 - Households in a shared dwelling and amenities and household size by central heating and number of rooms,census_2001_st
+NM_1859_1,ST059 - Accommodation type and car or van availability by number of people aged 17 or over in the household,census_2001_st
+NM_1860_1,ST060 - Tenure and car or van availability by number of people aged 17 or over in the household,census_2001_st
+NM_1861_1,ST061 - Tenure and car or van availability by economic activity,census_2001_st
+NM_1862_1,ST062 - Household composition by number of cars or vans available,census_2001_st
+NM_1863_1,ST063 - Economic activity and age of full-time students by household type and tenure,census_2001_st
+NM_1864_1,ST064 - NS-SeC of Household Reference Person (HRP) by households with full-time students away from home and age of student,census_2001_st
+NM_1865_1,ST065 - Sex and age by general health and limiting long-term illness,census_2001_st
+NM_1866_1,ST066 - Sex and approximated social grade by age,census_2001_st
+NM_1867_1,ST067 - Age of household reference person (HRP) and dependent children by approximated social grade,census_2001_st
+NM_1868_1,ST068 - Age and dependent children by household type (HRPs),census_2001_st
+NM_1869_1,ST101 - Sex and age by ethnic group,census_2001_st
+NM_1870_1,ST102 - Sex and country of birth by ethnic group,census_2001_st
+NM_1871_1,ST103 - Sex and age by religion,census_2001_st
+NM_1872_1,ST104 - Ethnic group by religion,census_2001_st
+NM_1873_1,ST105 - Sex and age by highest level of qualification,census_2001_st
+NM_1874_1,ST106 - Household composition by ethnic group of Household Reference Person (HRP),census_2001_st
+NM_1875_1,ST107 - Sex and age and limiting long-term illness and general health by ethnic group,census_2001_st
+NM_1876_1,ST108 - Sex and age and economic activity by ethnic group,census_2001_st
+NM_1877_1,ST109 - Sex and occupation by ethnic group,census_2001_st
+NM_1878_1,ST110 - Sex and industry by ethnic group,census_2001_st
+NM_1879_1,ST111 - Tenure and number of cars or vans by ethnic group of Household Reference Person (HRP),census_2001_st
+NM_1880_1,ST112 - Sex and NS-SeC by ethnic group,census_2001_st
+NM_1881_1,ST113 - Sex and occupation by highest level of qualification,census_2001_st
+NM_1882_1,ST114 - Sex and NS-SeC by highest level of qualification,census_2001_st
+NM_1883_1,ST115 - Count of qualifications by sex,census_2001_st
+NM_1884_1,ST116 -  Employment activity and sex and professional qualifications by occupation,census_2001_st
+NM_1885_1,ST117 - Age and highest level of qualification by ethnic group,census_2001_st
+NM_1886_1,ST118 - Number of employed people and method of travel to work by number of cars or vans in household,census_2001_st
+NM_1887_1,ST119 - Sex and age by method of travel to work,census_2001_st
+NM_1888_1,ST120 - Sex and age by distance travelled to work,census_2001_st
+NM_1889_1,ST121 - Sex and distance travelled to work by method of travel to work,census_2001_st
+NM_1890_1,ST122 - Sex and NS-SeC by method of travel to work,census_2001_st
+NM_1891_1,ST123 - Shared /unshared dwelling and central heating and occupancy rating by ethnic group,census_2001_st
+NM_1892_1,ST124 - Shared/unshared dwelling and central heating and occupancy rating by ethnic group of Household Reference Person (HRP),census_2001_st
+NM_1893_1,ST125 - Sex and type of communal establishment by resident type and ethnic group,census_2001_st
+NM_1894_1,ST126 - Type of communal establishment and sex by resident type and age,census_2001_st
+NM_1895_1,ST127 - Type of communal establishment by type of resident and whether or not resident one year ago,census_2001_st
+NM_1896_1,ST128 - Residents (non-staff) in communal establishments and sex and limiting long-term illness and type of,census_2001_st
+NM_1897_1,ST129 - Sex and distance travelled to work by method of travel to work (workplace population),census_2001_st
+NM_1898_1,ST130 - Sex and industry by distance travelled to work (workplace population; no ward data),census_2001_st
+NM_1899_1,ST131 - Sex and industry by highest level of qualification (workplace population; no ward data),census_2001_st
+NM_1900_1,ST132 - Sex and industry by occupation (workplace population; no ward data),census_2001_st
+NM_1901_1,ST133 - Sex and age by country of birth and knowledge of Welsh,census_2001_st
+NM_1902_1,ST134 - Sex and knowledge of Welsh and age by migration within Wales,census_2001_st
+NM_1903_1,ST135 - Migration of Welsh speaking households within Wales by age of Household Reference Person (HRP) and presence of dependent children,Census Customer Services
+NM_1904_1,ST136 - Age of household reference person (HRP) and tenure by knowledge of Welsh of household reference person (HRP),Census Customer Services
+NM_1905_1,ST137 - Sex and age and limiting long-term illness and general health by knowledge of Welsh,Census Customer Services
+NM_1906_1,ST138 - Sex and occupation by knowledge of Welsh,Census Customer Services
+NM_1907_1,ST139 - Welsh speakers and economic activity and year last worked by age,Census Customer Services
+NM_1908_1,ST140 - Sex and industry by knowledge of Welsh,Census Customer Services
+NM_1909_1,ST141 - Sex and NS-SeC by knowledge of Welsh,Census Customer Services
+NM_1910_1,ST142 - Age and highest level of qualification by knowledge of Welsh,Census Customer Services
+NM_1911_1,ST143 - Children speaking Welsh in Welsh speaking households,Census Customer Services
+NM_1912_1,ST144 - Welsh speaking adults in households by age of youngest dependent child,Census Customer Services
+NM_1913_1,ST145 - Type of Communal Establishment by knowledge of Welsh,Census Customer Services
+NM_1914_1,ST146 - Sex and ability to speak Welsh and age by migration within Wales,Census Customer Services
+NM_1915_1,ST147 - Age of Household Reference Person (HRP) and tenure by ability to speak Welsh,Census Customer Services
+NM_1916_1,ST148 - Type of communal establishment by ability to speak Welsh,Census Customer Services
+NM_1917_1,ST149 - Sex and age by religion,census_2001_st
+NM_1918_1,ST150 - Sex and country of birth by religion,census_2001_st
+NM_1919_1,ST151 - Household composition by religion of Household Reference Person (HRP),census_2001_st
+NM_1920_1,ST152 - Sex and age and limiting long-term illness and general health by religion,census_2001_st
+NM_1921_1,ST153 - Sex and age and economic activity by religion,census_2001_st
+NM_1922_1,ST154 - Sex and occupation by religion,census_2001_st
+NM_1923_1,ST155 - Sex and industry by religion,census_2001_st
+NM_1924_1,ST156 - Tenure and number of cars or vans by religion of Household Reference Person (HRP),census_2001_st
+NM_1925_1,ST157 - Sex and NS-SeC by religion,census_2001_st
+NM_1926_1,ST158 - Age and highest level of qualification by religion,census_2001_st
+NM_1927_1,ST159 - Shared/unshared dwelling and central heating and occupancy rating by religion,census_2001_st
+NM_1928_1,ST160 - Shared/unshared dwelling and central heating and occupancy rating by religion of Household Reference Person,census_2001_st
+NM_1929_1,ST161 - Sex and type of communal establishment by resident type and religion,census_2001_st
+NM_1930_1,TT001 - Theme table on dependent children,census_2001_tt
+NM_1931_1,TT002 - Theme table on students and schoolchildren,census_2001_tt
+NM_1932_1,TT003 - Theme table on people aged 16 to 29 years,census_2001_tt
+NM_1933_1,TT004 - Theme table on people aged 30 to 49 years,census_2001_tt
+NM_1934_1,TT005 - Theme table on people aged 50 and over,census_2001_tt
+NM_1935_1,TT006 - Theme table on pensioner households,census_2001_tt
+NM_1936_1,TT007 - Theme table on all people,census_2001_tt
+NM_1937_1,TT008 - Theme table on households,census_2001_tt
+NM_1938_1,TT009 - Theme table on Communal establishment residents,census_2001_tt
+NM_1939_1,"TT010 - Theme table on resident, workplace and daytime population",census_2001_tt
+NM_1940_1,TT011 - Theme table on travel to work,census_2001_tt
+NM_1941_1,TT012 - Theme table on ethnicity of dependent children in households,census_2001_tt
+NM_1942_1,TT013 - Theme table on ethnicity,census_2001_tt
+NM_1943_1,TT015 - Theme table on Welsh language,census_2001_tt
+NM_1944_1,TT033 - Theme table on migration - people,census_2001_tt
+NM_1945_1,TT034 - Theme table on migration - households,census_2001_tt
+NM_1946_1,TT039 - Theme table on ability to speak Welsh,census_2001_tt
+NM_1947_1,TT052 - Theme table on religion of all dependent children in households,census_2001_tt
+NM_1948_1,TT053 - Theme table on religion,census_2001_tt
+NM_2002_1,Population estimates - local authority based by single year of age,pest
+NM_2006_1,Population projections - local authority based by single year of age,pest
+NM_2009_1,National population projections: 2022-based,pest
+NM_2010_1,Population estimates - small area (2011 based) by single year of age - England and Wales,Nomis
+NM_2014_1,Population estimates - small area (2021 based) by single year of age - England and Wales,pest
+NM_2017_1,TS060A - Industry,Census Customer Services
+NM_2018_1,TS007B - Age by broad age bands,Census Customer Services
+NM_2019_1,TS004A - Country of Birth,Census Customer Services
+NM_2020_1,TS007A - Age by five-year age bands,census_2021_ts
+NM_2021_1,TS001 - Number of usual residents in households and communal establishments,census_2021_ts
+NM_2022_1,TS002 - Legal partnership status,census_2021_ts
+NM_2023_1,TS003 - Household composition,census_2021_ts
+NM_2024_1,TS004 - Country of birth,census_2021_ts
+NM_2025_1,TS005 - Passports held,census_2021_ts
+NM_2026_1,TS006 - Population density,census_2021_ts
+NM_2027_1,TS007 - Age by single year,census_2021_ts
+NM_2028_1,TS008 - Sex,census_2021_ts
+NM_2029_1,TS009 - Sex by single year of age,census_2021_ts
+NM_2030_1,TS010 - Living arrangements,census_2021_ts
+NM_2031_1,TS011 - Households by deprivation dimensions,census_2021_ts
+NM_2032_1,TS012 - Country of birth (detailed),census_2021_ts
+NM_2033_1,TS013 - Passports held (detailed),census_2021_ts
+NM_2035_1,TS015 - Year of arrival in UK,census_2021_ts
+NM_2036_1,TS016 - Length of residence,census_2021_ts
+NM_2037_1,TS017 - Household size,census_2021_ts
+NM_2038_1,TS018 - Age of arrival in the UK,census_2021_ts
+NM_2039_1,TS019 - Migrant Indicator,census_2021_ts
+NM_2040_1,TS020 - Number of non-UK short-term residents by sex,census_2021_ts
+NM_2041_1,TS021 - Ethnic group,census_2021_ts
+NM_2042_1,TS023 - Multiple ethnic group,census_2021_ts
+NM_2043_1,TS024 - Main language (detailed),census_2021_ts
+NM_2044_1,TS025 - Household language,census_2021_ts
+NM_2045_1,TS026 - Multiple main languages in household,census_2021_ts
+NM_2046_1,TS027 - National identity - UK,census_2021_ts
+NM_2047_1,TS028 - National identity (detailed),census_2021_ts
+NM_2048_1,TS029 - Proficiency in English,census_2021_ts
+NM_2049_1,TS030 - Religion,census_2021_ts
+NM_2050_1,TS032 - Welsh language skills (detailed),census_2021_ts
+NM_2051_1,TS033 - Welsh language skills (speaking),census_2021_ts
+NM_2052_1,TS034 - Welsh language skills (writing),census_2021_ts
+NM_2053_1,TS035 - Welsh language skills (reading),census_2021_ts
+NM_2054_1,TS036 - Welsh language skills (understanding),census_2021_ts
+NM_2055_1,TS037 - General health,census_2021_ts
+NM_2056_1,TS038 - Disability,census_2021_ts
+NM_2057_1,TS039 - Provision of unpaid care,census_2021_ts
+NM_2058_1,TS040 - Number of disabled people in the household,census_2021_ts
+NM_2059_1,TS041 - Number of Households,census_2021_ts
+NM_2060_1,TS077 - Sexual orientation,census_2021_ts
+NM_2061_1,TS078 - Gender identity,census_2021_ts
+NM_2062_1,TS044 - Accommodation type,census_2021_ts
+NM_2063_1,TS045 - Car or van availability,census_2021_ts
+NM_2064_1,TS046 - Central heating,
+NM_2065_1,TS047 - Communal establishment residents by age and sex,census_2021_ts
+NM_2066_1,TS048 - Communal establishment management and type,census_2021_ts
+NM_2068_1,TS050 - Number of bedrooms,census_2021_ts
+NM_2069_1,TS051 -  Number of rooms,census_2021_ts
+NM_2070_1,TS052 - Occupancy rating for bedrooms,census_2021_ts
+NM_2071_1,TS053 - Occupancy rating for rooms,census_2021_ts
+NM_2072_1,TS054 - Tenure,census_2021_ts
+NM_2073_1,TS055 - Purpose of second address,census_2021_ts
+NM_2074_1,TS056 - Second address indicator,census_2021_ts
+NM_2075_1,TS058 - Distance travelled to work,census_2021_ts
+NM_2076_1,TS059 - Hours worked,census_2021_ts
+NM_2077_1,TS060 - Industry,census_2021_ts
+NM_2078_1,TS061 - Method used to travel to work,census_2021_ts
+NM_2079_1,TS062 - NS-SeC,census_2021_ts
+NM_2080_1,TS063 - Occupation,census_2021_ts
+NM_2081_1,TS064 - Occupation - minor groups,census_2021_ts
+NM_2082_1,TS065 - Employment history,census_2021_ts
+NM_2083_1,TS066 - Economic activity status,census_2021_ts
+NM_2084_1,TS067 - Highest level of qualification,census_2021_ts
+NM_2085_1,TS068 - Schoolchildren and full-time students,census_2021_ts
+NM_2086_1,TS079 - Sexual orientation (detailed),census_2021_ts
+NM_2087_1,TS070 - Gender identity (detailed),census_2021_ts
+NM_2088_1,TS071 - Previously served in the UK armed forces,census_2021_ts
+NM_2089_1,TS072 - Number of people in household who have previously served in UK armed forces,census_2021_ts
+NM_2090_1,TS073 - Population who have previously served in UK armed forces in communal establishments and in households,census_2021_ts
+NM_2091_1,TS074 - Household Reference Person indicator of previous service in UK armed forces,census_2021_ts
+NM_2092_1,TS037ASP - General health - Age-standardised proportions,census_2021_ts
+NM_2093_1,TS038ASP - Disability - Age-standardised proportions,census_2021_ts
+NM_2094_1,TS039ASP - Provision of unpaid care - Age-standardised proportions,census_2021_ts
+NM_2095_1,TS022 - Ethnic group (detailed),census_2021_ts
+NM_2096_1,TS031 - Religion (detailed),census_2021_ts
+NM_2097_1,TS075 - Multi religion households,census_2021_ts
+NM_2098_1,TS076 - Welsh language skills (speaking) by single year of age,census_2021_ts
+NM_2099_1,TS048NP - Communal establishment management and type - National Parks,census_2021_ts
+NM_2100_1,TS060NP - Industry - National Parks,census_2021_ts
+NM_2101_1,RM001 - Accommodation type by car or van availability by number of usual residents aged 17 years or over in household,census_2021_rm
+NM_2102_1,RM002 - Accommodation type by household size,census_2021_rm
+NM_2103_1,RM003 - Accommodation type by type of central heating in household by tenure,census_2021_rm
+NM_2106_1,RM006 - Age of youngest dependent child by household type,census_2021_rm
+NM_2108_1,RM008 - Car or van availability by household composition,census_2021_rm
+NM_2109_1,RM009 - Concealed family status by family type by dependent children by age of Family Reference Person,census_2021_rm
+NM_2111_1,RM011 - Country of birth by age,census_2021_rm
+NM_2112_1,RM012 - Dependent children by ethnic group of Household Reference Person by age,census_2021_rm
+NM_2114_1,RM014 - Distance travelled to work by age,census_2021_rm
+NM_2115_1,RM015 - Distance travelled to work by car or van availability,census_2021_rm
+NM_2116_1,RM016 - Distance travelled to work by occupation,census_2021_rm
+NM_2117_1,RM017 - Economic activity status by country of birth,census_2021_rm
+NM_2118_1,RM018 - Economic activity status by ethnic group,census_2021_rm
+NM_2119_1,RM019 - Economic activity status by hours worked by disability,census_2021_rm
+NM_2120_1,RM020 - Economic activity status by living arrangements,census_2021_rm
+NM_2121_1,RM021 - Economic activity status by passports held,census_2021_rm
+NM_2122_1,RM022 - Economic activity status by provision of unpaid care by general health,census_2021_rm
+NM_2123_1,RM023 - Economic activity status by religion,census_2021_rm
+NM_2124_1,RM024 - Economic activity status by sex by age,census_2021_rm
+NM_2125_1,RM025 - Economic activity status by sex by employment history,census_2021_rm
+NM_2126_1,RM026 - Ethnic group by accommodation type,census_2021_rm
+NM_2127_1,RM027 - Ethnic group by age of arrival in the UK,census_2021_rm
+NM_2128_1,RM028 - Ethnic group by occupancy rating (bedrooms),census_2021_rm
+NM_2129_1,RM029 - Ethnic group by occupancy rating (rooms),census_2021_rm
+NM_2130_1,RM030 - Ethnic group by provision of unpaid care by general health,census_2021_rm
+NM_2131_1,RM031 - Ethnic group by religion,census_2021_rm
+NM_2132_1,RM032 - Ethnic group by sex by age,census_2021_rm
+NM_2133_1,RM033 - Ethnic group of dependent child by sex,census_2021_rm
+NM_2134_1,RM034 - Family status by number of parents working by economic activity status,census_2021_rm
+NM_2135_1,RM035 - Gender identity by age,census_2021_rm
+NM_2136_1,RM036 - Gender identity by disability,census_2021_rm
+NM_2137_1,RM037 - Gender identity by economic activity status,census_2021_rm
+NM_2138_1,RM038 - Gender identity by ethnic group,census_2021_rm
+NM_2139_1,RM039 - Gender identity by general health,census_2021_rm
+NM_2140_1,RM040 - Gender identity by legal partnership status,census_2021_rm
+NM_2141_1,RM041 - Gender identity by occupation,census_2021_rm
+NM_2142_1,RM042 - General health by car or van availability by sex,census_2021_rm
+NM_2143_1,RM043 - General health by ethnic group by age,census_2021_rm
+NM_2144_1,RM044 - General health by NS-SEC,census_2021_rm
+NM_2145_1,RM045 - General health by religion by age,census_2021_rm
+NM_2146_1,RM046 - General health by tenure by age,census_2021_rm
+NM_2147_1,RM047 - Highest level of qualification by country of birth,census_2021_rm
+NM_2148_1,RM048 - Highest level of qualification by economic activity status,census_2021_rm
+NM_2149_1,RM049 - Highest level of qualification by ethnic group,census_2021_rm
+NM_2151_1,RM051 - Highest level of qualification by household composition,census_2021_rm
+NM_2152_1,RM052 - Highest level of qualification by disability,census_2021_rm
+NM_2153_1,RM053 - Highest level of qualification by main language,census_2021_rm
+NM_2154_1,RM054 - Highest level of qualification by religion,census_2021_rm
+NM_2155_1,RM055 - Highest level of qualification by sex,census_2021_rm
+NM_2156_1,RM056 - Hours worked by sex by age,census_2021_rm
+NM_2157_1,RM057 - Household composition by age,census_2021_rm
+NM_2158_1,RM058 - Household composition by ethnic group of Household Reference Person,census_2021_rm
+NM_2159_1,RM059 - Household composition by number of bedrooms,census_2021_rm
+NM_2160_1,RM060 - Household composition by number of people in household with a disability,census_2021_rm
+NM_2161_1,RM061 - Household composition by religion of Household Reference Person,census_2021_rm
+NM_2162_1,RM062 - Industry by age,census_2021_rm
+NM_2163_1,RM063 - Industry by economic activity status,census_2021_rm
+NM_2164_1,RM064 - Industry by ethnic group,census_2021_rm
+NM_2165_1,RM065 - Industry by sex,census_2021_rm
+NM_2166_1,RM066 - Living arrangements by age - Household Reference Person,census_2021_rm
+NM_2167_1,RM067 - Living arrangements by sex by age,census_2021_rm
+NM_2168_1,RM068 - Disability by car or van availability,census_2021_rm
+NM_2169_1,RM069 - Disability by general health by age,census_2021_rm
+NM_2170_1,RM070 - Disability by NS-SEC by age,census_2021_rm
+NM_2171_1,RM071 - Disability by provision of unpaid care by sex,census_2021_rm
+NM_2172_1,RM072 - Disability by religion by sex,census_2021_rm
+NM_2173_1,RM073 - Disability by sex by age,census_2021_rm
+NM_2174_1,RM074 - Legal partnership status by sex by age,census_2021_rm
+NM_2175_1,RM075 - Method used to travel to work by age,census_2021_rm
+NM_2176_1,RM076 - Method used to travel to work by car or van availability,census_2021_rm
+NM_2177_1,RM077 - Method used to travel to work by distance travelled to work,census_2021_rm
+NM_2178_1,RM078 - Method used to travel to work by industry,census_2021_rm
+NM_2179_1,RM079 - Method used to travel to work by occupation,census_2021_rm
+NM_2180_1,RM080 - Multi-language households by ethnic group of Household Reference Person,census_2021_rm
+NM_2181_1,RM081 - Multi-language households by occupation of Household Reference Person,census_2021_rm
+NM_2182_1,RM082 - Multi-language households by tenure,census_2021_rm
+NM_2183_1,RM083 - Multi-religion households by ethnic group of Household Reference Person,census_2021_rm
+NM_2184_1,RM084 - Multi-religion households by occupation of Household Reference Person,census_2021_rm
+NM_2185_1,RM085 - Multi-religion households by tenure,census_2021_rm
+NM_2186_1,RM086 - National identity by age,census_2021_rm
+NM_2187_1,RM087 - National identity by ethnic group,census_2021_rm
+NM_2188_1,RM088 - National identity by religion,census_2021_rm
+NM_2189_1,RM089 - National Identity by sex by age,census_2021_rm
+NM_2190_1,RM090 - NS-SEC by age,census_2021_rm
+NM_2191_1,RM091 - NS-SEC by economic activity status,census_2021_rm
+NM_2192_1,RM092 - NS-SEC by religion,census_2021_rm
+NM_2193_1,RM093 - NS-SEC by sex,census_2021_rm
+NM_2194_1,RM094 - NS-SEC of Household Reference Person by household composition,census_2021_rm
+NM_2195_1,RM095 - Number of bedrooms by accommodation type by age of dependent children,census_2021_rm
+NM_2196_1,RM096 - Number of bedrooms by tenure by age of dependent children,census_2021_rm
+NM_2197_1,RM097 - Occupancy rating (bedrooms) by ethnic group of Household Reference Person,census_2021_rm
+NM_2198_1,RM098 - Occupancy rating (bedrooms) by household composition,census_2021_rm
+NM_2199_1,RM099 - Occupancy rating (bedrooms) by tenure,census_2021_rm
+NM_2200_1,RM100 - Occupancy rating (rooms) by household composition,census_2021_rm
+NM_2201_1,RM101 - Occupancy rating (rooms) by tenure,census_2021_rm
+NM_2202_1,RM102 - Occupation by age,census_2021_rm
+NM_2203_1,RM103 - Occupation by economic activity status,census_2021_rm
+NM_2204_1,RM104 - Occupation by ethnic group,census_2021_rm
+NM_2205_1,RM105 - Occupation by hours worked,census_2021_rm
+NM_2206_1,RM106 - Occupation by religion,census_2021_rm
+NM_2207_1,RM107 - Occupation by sex,census_2021_rm
+NM_2208_1,RM108 - Passports held by country of birth,census_2021_rm
+NM_2209_1,RM109 - Passports held by age,census_2021_rm
+NM_2210_1,RM110 - Passports held by year of arrival in the UK,census_2021_rm
+NM_2211_1,RM111 - Proficiency in English by age,census_2021_rm
+NM_2212_1,RM112 - Proficiency in English by economic activity status,census_2021_rm
+NM_2213_1,RM113 - Provision of unpaid care by age,census_2021_rm
+NM_2214_1,RM114 - Provision of unpaid care by general health by households with people who have a disability,census_2021_rm
+NM_2215_1,RM115 - Provision of unpaid care by general health by age,census_2021_rm
+NM_2216_1,RM116 - Provision of unpaid care by households with people with a disability by economic activity status,census_2021_rm
+NM_2217_1,RM117 - Religion by accommodation type,census_2021_rm
+NM_2218_1,RM118 - Religion by age,census_2021_rm
+NM_2219_1,RM119 - Residence type by age,census_2021_rm
+NM_2220_1,RM120 - Residence type by sex by age,census_2021_rm
+NM_2221_1,RM121 - Sex by age,census_2021_rm
+NM_2222_1,RM122 - Sexual orientation by age and sex,census_2021_rm
+NM_2223_1,RM123 - Sexual orientation by disability,census_2021_rm
+NM_2224_1,RM124 - Sexual orientation by economic activity status,census_2021_rm
+NM_2225_1,RM125 - Sexual orientation by ethnic group,census_2021_rm
+NM_2226_1,RM126 - Sexual orientation by general health,census_2021_rm
+NM_2227_1,RM127 - Sexual orientation by legal partnership status,census_2021_rm
+NM_2228_1,RM128 - Sexual orientation by occupation,census_2021_rm
+NM_2229_1,RM129 - Student accommodation by age,census_2021_rm
+NM_2230_1,RM130 - Tenure by car or van availability by ethnic group of Household Reference Person,census_2021_rm
+NM_2231_1,RM131 - Tenure by car or van availability by number of usual residents aged 17 or over in household,census_2021_rm
+NM_2232_1,RM132 - Tenure by dependent children in household,census_2021_rm
+NM_2233_1,RM133 - Tenure by economic activity status - Household Reference Persons,census_2021_rm
+NM_2234_1,RM134 - Tenure by ethnic group - Household Reference Persons,census_2021_rm
+NM_2235_1,RM135 - Tenure by household composition,census_2021_rm
+NM_2236_1,RM136 - Tenure by household size by number of bedrooms,census_2021_rm
+NM_2237_1,RM137 - Tenure by number of rooms,census_2021_rm
+NM_2238_1,RM138 - Tenure by NS-SEC - Household Reference Persons,census_2021_rm
+NM_2239_1,RM139 - Tenure by number of people per room in household by accommodation type,census_2021_rm
+NM_2240_1,RM140 - Tenure by occupation - Household Reference Persons,census_2021_rm
+NM_2241_1,RM141 - Type of central heating in household by occupancy rating (rooms) by age,census_2021_rm
+NM_2242_1,RM142 - Veteran households by tenure,census_2021_rm
+NM_2243_1,RM143 - Veterans by disability,census_2021_rm
+NM_2244_1,RM144 - Veterans by economic activity status,census_2021_rm
+NM_2245_1,RM145 - Veterans by general health,census_2021_rm
+NM_2246_1,RM146 - Veterans by occupation,census_2021_rm
+NM_2247_1,RM147 - Veterans by age,census_2021_rm
+NM_2248_1,RM148 - Year last worked by age,census_2021_rm
+NM_2249_1,RM149 - Ability to speak Welsh by industry,census_2021_rm
+NM_2250_1,RM150 - Ability to speak Welsh by national identity by age,census_2021_rm
+NM_2251_1,RM151 - Ability to speak Welsh by NS-SEC,census_2021_rm
+NM_2252_1,RM152 - Ability to speak Welsh by occupation,census_2021_rm
+NM_2253_1,RM153 - Ability to speak Welsh by tenure - Household Reference Persons,census_2021_rm
+NM_2254_1,RM154 - Ability to speak Welsh by employment history,census_2021_rm
+NM_2255_1,RM155 - Family type by parents' ability to speak Welsh by age and ability to speak Welsh of dependent child,census_2021_rm
+NM_2256_1,RM156 - General health by ability to speak Welsh by age,census_2021_rm
+NM_2257_1,RM157 - Disability by ability to speak Welsh by age,census_2021_rm
+NM_2258_1,RM158 - Number of people who can speak Welsh by household size,census_2021_rm
+NM_2259_1,RM159 - Welsh household composition by age of youngest dependent child,census_2021_rm
+NM_2260_1,RM160 - Welsh language skills by country of birth,census_2021_rm
+NM_2261_1,RM161 - Welsh language skills by sex by age,census_2021_rm
+NM_2262_1,RM162 - Welsh language skills by tenure - Household Reference Persons,census_2021_rm
+NM_2263_1,RM163 - Gender identity by age by sex,census_2021_rm
+NM_2264_1,RM164 - Gender identity by type of central heating in household,census_2021_rm
+NM_2265_1,RM165 - Gender identity by dwelling type,census_2021_rm
+NM_2266_1,RM166 - Gender identity by family composition,census_2021_rm
+NM_2267_1,RM167 - Gender identity by highest qualification held,census_2021_rm
+NM_2268_1,RM168 - Gender identity by hours worked,census_2021_rm
+NM_2269_1,RM169 - Gender identity by industry,census_2021_rm
+NM_2270_1,RM170 - Gender identity by NS-SEC,census_2021_rm
+NM_2271_1,RM171 - Gender identity by occupancy rating (bedrooms),census_2021_rm
+NM_2272_1,RM172 - Gender identity by occupancy rating (rooms),census_2021_rm
+NM_2273_1,RM173 - Gender identity by religion,census_2021_rm
+NM_2274_1,RM174 - Gender identity by sex,census_2021_rm
+NM_2275_1,RM175 - Gender identity by sexual orientation,census_2021_rm
+NM_2276_1,RM176 - Gender identity by tenure,census_2021_rm
+NM_2277_1,RM177 - Sexual orientation by age,census_2021_rm
+NM_2278_1,RM178 - Sexual orientation by unpaid carer status,census_2021_rm
+NM_2279_1,RM179 - Sexual orientation by type of central heating in household,census_2021_rm
+NM_2280_1,RM180 - Sexual orientation by dwelling type,census_2021_rm
+NM_2281_1,RM181 - Sexual orientation by family composition,census_2021_rm
+NM_2282_1,RM182 - Sexual orientation by highest qualification held,census_2021_rm
+NM_2283_1,RM183 - Sexual orientation by hours worked,census_2021_rm
+NM_2284_1,RM184 - Sexual orientation by industry,census_2021_rm
+NM_2285_1,RM185 - Sexual orientation by NS-SEC,census_2021_rm
+NM_2286_1,RM186 - Sexual orientation by occupancy rating (bedrooms),census_2021_rm
+NM_2287_1,RM187 - Sexual orientation by occupancy rating (rooms),census_2021_rm
+NM_2288_1,RM188 - Sexual orientation by religion,census_2021_rm
+NM_2289_1,RM189 - Sexual orientation by sex,census_2021_rm
+NM_2290_1,RM190 - Sexual orientation by tenure,census_2021_rm
+NM_2291_1,RM191 - Gender identity by unpaid carer status,census_2021_rm
+NM_2292_1,RM192 - Number of dwellings that are houses in multiple occupation (HMO),census_2021_rm
+NM_2293_1,RM193 - Number of households in houses in multiple occupation (HMO) by accommodation type,census_2021_rm
+NM_2294_1,RM194 - Number of households in houses in multiple occupation (HMO) by type of central heating in household,census_2021_rm
+NM_2295_1,RM195 - Number of households in houses in multiple occupation (HMO) by type of occupancy rating (bedrooms),census_2021_rm
+NM_2296_1,RM196 - Communal establishment management and type,census_2021_rm
+NM_2297_1,RM197 - Number of multi-generational households by household tenure,census_2021_rm
+NM_2298_1,RM198 - Number of multi-generational households by bedroom occupancy ratings,census_2021_rm
+NM_2300_1,RM200 - Sex by single year of age (detailed),census_2021_rm
+NM_2301_1,RM201 - Tenure by age - Household Reference Persons,census_2021_rm
+NM_2302_1,RM202 - Household size by number of rooms,census_2021_rm
+NM_2303_1,RM203 -  Legal partnership status by sex by age - Communal establishment residents,census_2021_rm
+NM_2304_1,RM204 - Number of Dwellings,census_2021_rm
+NM_2305_1,RM205 - Dwelling type,census_2021_rm
+NM_2306_1,RM206 - Full-time students by age,census_2021_rm
+NM_2307_1,RM207 - Accommodation type,census_2021_rm
+NM_2308_1,RM208 - Economic activity status by hours worked by sex by long-term health problem or disability,census_2021_rm
+NM_2311_1,SG001 - Approximated social grade - Household Reference Persons aged 16 to 64 years,census_2021_asg
+NM_2312_1,SG002 - Approximated Social Grade,census_2021_asg
+NM_2313_1,SG003 - Approximated Social Grade by adult lifestage - Household Reference Persons,census_2021_asg
+NM_2314_1,SG004 - Approximated social grade by adult lifestage (detailed),census_2021_asg
+NM_2315_1,SG005 - Approximated social grade by country of birth,census_2021_asg
+NM_2316_1,SG006 - Approximated social grade by ethnic group,census_2021_asg
+NM_2317_1,SG007 - Approximated social grade by household family composition - Household Reference Persons,census_2021_asg
+NM_2318_1,SG008 - Approximated social grade by passports held,census_2021_asg
+NM_2319_1,SG009 - Approximated social grade by tenure by car or van availability,census_2021_asg
+NM_2320_1,SG010 - Approximated social grade by sex by age (detailed),census_2021_asg
+NM_2321_1,SG011 - Dependent children's ability to speak Welsh by Welsh household composition by approximated social grade,census_2021_asg
+NM_2322_1,SG012 - Approximated social grade by adult lifestage,census_2021_asg
+NM_2323_1,SG013 - Approximated social grade by sex by age,census_2021_asg
+NM_2324_1,TS045A - Number of cars or vans in the area,census_2021_ts
+NM_2331_1,ST001 - Number of non-UK born short-term residents by residence type,census_2021_st
+NM_2332_1,ST002 - Number of non-UK born short-term residents by sex by age,census_2021_st
+NM_2333_1,ST003 - Number of non-UK born short-term residents by ethnicity,census_2021_st
+NM_2334_1,ST004 - Number of non-UK born short-term residents by country of birth,census_2021_st
+NM_2335_1,ST005 - Number of non-UK born short-term residents by main language,census_2021_st
+NM_2336_1,ST006 - Number of non-UK born short-term residents by passports held (detailed),census_2021_st
+NM_2337_1,ST007 - Number of non-UK born short-term residents by general health,census_2021_st
+NM_2338_1,ST008 - Number of non-UK born short-term residents in household spaces by tenure,census_2021_st
+NM_2339_1,ST009 - Number of non-UK born short-term residents by economic activity,census_2021_st
+NM_2340_1,ST010 - Number of non-UK born short-term residents by industry,census_2021_st
+NM_2341_1,ST011 - Number of non-UK born short-term residents by occupation,census_2021_st
+NM_2342_1,ST012 - Number of non-UK born short-term residents by NS-SEC,census_2021_st
+NM_2343_1,ST013 - Number of non-UK born short-term residents by sex by single year of age,census_2021_st
+NM_2351_1,PP001 - Number of Households,census_2021_pp
+NM_2352_1,PP002 - Sex,census_2021_pp
+NM_2353_1,PP003 - Disability,census_2021_pp
+NM_2354_1,PP004 - Economic activity,census_2021_pp
+NM_2355_1,PP005 - Ethnic group,census_2021_pp
+NM_2356_1,PP006 - General health,census_2021_pp
+NM_2357_1,PP007 - Household composition,census_2021_pp
+NM_2358_1,PP008 - Tenure,census_2021_pp
+NM_2359_1,PP009 - Industry,census_2021_pp
+NM_2360_1,PP010 - Car or van availability,census_2021_pp
+NM_2361_1,PP011 - Occupation,census_2021_pp
+NM_2362_1,PP012 - Age,census_2021_pp
+NM_2363_1,PP013 - Travel to work,census_2021_pp
+NM_2364_1,PP014 - Welsh speaking ability,census_2021_pp
+NM_2400_1,UK small area gross value added estimates,ra
+NM_2401_1,Energy efficiency of housing,housing
+NM_2402_1,Residential property sales,housing

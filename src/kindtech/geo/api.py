@@ -133,7 +133,7 @@ def get_field_info(
 
     layer_url = f"{url}/0"
     try:
-        response = requests.get(layer_url, params={"f": "json"})
+        response = requests.get(layer_url, params={"f": "json"}, timeout=60)
         response.raise_for_status()
         data = response.json()
         return data.get("fields", [])
@@ -197,7 +197,7 @@ def _query_arcgis_service(
 
     try:
         logger.info("Querying ArcGIS service: %s", layer_url)
-        response = requests.get(layer_url + "/query", params=params)
+        response = requests.get(layer_url + "/query", params=params, timeout=60)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:

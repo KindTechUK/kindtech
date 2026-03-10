@@ -1,0 +1,11 @@
+id: no-print-statements
+message: Use `logging` instead of `print()` in library code.
+severity: warning
+language: python
+rule:
+  pattern: print($$$ARGS)
+files:
+  - "src/**/*.py"
+ignoreFiles:
+  - "**/_ingestion.py"
+  - "**/tests/**"

@@ -1,0 +1,6 @@
+id: no-requests-without-timeout
+message: Always pass `timeout=` to `requests.get()` to avoid hanging forever.
+severity: warning
+language: python
+rule:
+  pattern: requests.get($URL)
