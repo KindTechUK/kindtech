@@ -63,6 +63,12 @@ If both are installed, polars is preferred (it's faster and more memory-efficien
 
 You bring the DataFrame library. KindTech brings the data.
 
+## Why does this exist?
+
+UK public data is powerful but painful to access programmatically. The ONS ArcGIS Geoportal has no developer documentation — just a point-and-click GUI. The REST API endpoint was discovered buried in the source code of an obscure UK government R package. NOMIS is slightly better documented but requires deep knowledge of SDMX query syntax and dataset codes that aren't surfaced anywhere obvious.
+
+Every charity, social enterprise, and researcher working with UK geographic or statistical data ends up reverse-engineering the same APIs independently. KindTech wraps them so you don't have to — two function calls instead of hours of documentation archaeology.
+
 ## Modules
 
 - [**Geographic Data**](api/geo.md) — UK boundary data from ArcGIS (LAD, LSOA, etc.)
