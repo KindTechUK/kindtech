@@ -39,6 +39,12 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - tables
+
 # Navigation structure
 nav:
   - Home: index.md
@@ -49,7 +55,10 @@ nav:
   - Case Studies:
     - Overview: case-studies/index.md
     - CAL Vulnerable Client Analysis: case-studies/cal-vulnerable-client.md
-    - SOBUS BAME referral mapping:  case-studies/sobus-bame-analysis.md
+    - SOBUS BAME referral mapping: case-studies/sobus-bame-analysis.md
     - Material Focus Recycling: case-studies/material-focus-recycling.md
+    - Smart Works Women & Unemployment: case-studies/smart-works-woman-unemployment.md
+    - Starlight Children's Foundation: case-studies/starlight-children-mapping.md
   - Blog:
     - blog/index.md
+    - Introduction: blog/introduction.md
