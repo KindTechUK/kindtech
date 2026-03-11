@@ -47,7 +47,13 @@ def _fetch_all(
     response = requests.get(url, timeout=120)
     response.raise_for_status()
 
-    keyfamilies = response.json()["structure"]["keyfamilies"]["keyfamily"]
+    try:
+        keyfamilies = response.json()["structure"]["keyfamilies"]["keyfamily"]
+    except (KeyError, TypeError) as exc:
+        raise RuntimeError(
+            "Unexpected NOMIS API response structure: missing "
+            "structure.keyfamilies.keyfamily"
+        ) from exc
     logger.info("Found %d datasets", len(keyfamilies))
 
     return [
@@ -68,6 +74,12 @@ def ingest_nomis_tables(base_url: str = NOMIS_BASE_URL) -> int:
         Number of tables saved.
     """
     tables = _fetch_all(base_url)
+
+    if not tables:
+        raise RuntimeError(
+            "No datasets returned from NOMIS API; refusing to "
+            "overwrite existing CSV with empty data"
+        )
 
     fieldnames = ["id", "name", "sourceName"]
     DEFAULT_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)

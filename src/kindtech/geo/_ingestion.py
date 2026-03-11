@@ -204,7 +204,9 @@ def ingest_arcgis_services(
     seen_ids: set[str] = set()
 
     for raw_name in names:
-        # Strip trailing underscores (typo variants in the catalog)
+        # Strip trailing underscores present on some catalog entries
+        # (e.g. "LAD_DEC_2021_UK_BFC_" → "LAD_DEC_2021_UK_BFC").
+        # These appear to be data-entry typos in the ONS ArcGIS catalog.
         name = raw_name.rstrip("_")
         parsed = _parse_service(name)
         if not parsed or parsed["arcgis_id"] in seen_ids:
