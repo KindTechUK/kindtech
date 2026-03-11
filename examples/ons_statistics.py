@@ -33,6 +33,9 @@ def _(mo):
     - Searching the 1,600+ NOMIS dataset catalog
     - Loading data with `load_ons()`
     - Filtering by geography, time, and measures
+
+    > **Note:** This example uses **pandas**. kindtech also supports
+    > polars — see the docs for BYODF (Bring Your Own DataFrame).
     """)
     return
 

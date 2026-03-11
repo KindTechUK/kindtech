@@ -31,6 +31,9 @@ def _(mo):
 
     We'll load Local Authority District (LAD) boundaries and
     join them with a NOMIS dataset to see statistics by area.
+
+    > **Note:** This example uses **pandas**. kindtech also supports
+    > polars — see the docs for BYODF (Bring Your Own DataFrame).
     """)
     return
 

@@ -61,9 +61,10 @@ def _(get_available_geography_types, mo):
 @app.cell
 def _(geo_types, mo):
     geo_options = {f"{g['code']} — {g['description']}": g["code"] for g in geo_types}
+    _geo_codes = list(geo_options.values())
     geo_dropdown = mo.ui.dropdown(
         options=geo_options,
-        value="LAD",
+        value="LAD" if "LAD" in _geo_codes else _geo_codes[0],
         label="Geography type",
     )
     geo_dropdown
@@ -76,9 +77,10 @@ def _(get_available_boundary_types, mo):
     boundary_options = {
         f"{b['code']} — {b['description']}": b["code"] for b in boundary_types
     }
+    _boundary_codes = list(boundary_options.values())
     boundary_dropdown = mo.ui.dropdown(
         options=boundary_options,
-        value="BGC",
+        value="BGC" if "BGC" in _boundary_codes else _boundary_codes[0],
         label="Boundary resolution",
     )
     boundary_dropdown
@@ -167,15 +169,26 @@ def _(
     load_geodata,
     mo,
 ):
+    _reserved = {"geography_type", "year", "month", "coverage", "boundary_type"}
+    _field = filter_field.value.strip()
+    _value = filter_value.value.strip()
+
     mo.stop(
-        not filter_field.value.strip() or not filter_value.value.strip(),
+        not _field or not _value,
         mo.md("*Enter a field name and value to filter.*"),
+    )
+    mo.stop(
+        _field in _reserved,
+        mo.md(
+            f"*`{_field}` is a reserved `load_geodata()` parameter "
+            f"— choose a feature property name instead.*"
+        ),
     )
 
     filtered = load_geodata(
         geography_type=geo_dropdown.value,
         boundary_type=boundary_dropdown.value,
-        **{filter_field.value.strip(): filter_value.value.strip()},
+        **{_field: _value},
     )
     n_filtered = len(filtered.get("features", []))
     mo.md(
