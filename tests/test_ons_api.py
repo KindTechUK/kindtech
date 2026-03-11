@@ -107,9 +107,11 @@ def test_list_tables_filter_by_name():
 @mock.patch("kindtech.ons.api.requests.get")
 def test_load_ons_truncation_warning(mock_get, caplog):
     """Test that a warning is logged when exactly 25,000 rows are returned."""
-    # Build a CSV with exactly 25,000 data rows
+    # Build a CSV with exactly 25,000 data rows using a fixed-width
+    # row to avoid slow f-string interpolation for each row.
+    row = "1,v\n"
+    rows = row * 25000
     header = "A,B\n"
-    rows = "".join(f"{i},val\n" for i in range(25000))
     mock_response = mock.MagicMock()
     mock_response.text = header + rows
     mock_response.raise_for_status = mock.MagicMock()
@@ -128,7 +130,8 @@ def test_load_ons_truncation_warning(mock_get, caplog):
 def test_load_ons_csv_parse_error(mock_get):
     """Test that unparseable CSV raises ValueError."""
     mock_response = mock.MagicMock()
-    # narwhals/pandas will fail on completely empty text
+    # Empty text triggers an EmptyDataError from pandas, which gets
+    # wrapped as a ValueError by load_ons.
     mock_response.text = ""
     mock_response.raise_for_status = mock.MagicMock()
     mock_get.return_value = mock_response

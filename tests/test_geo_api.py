@@ -14,6 +14,8 @@ from kindtech.geo import (
     BoundaryType,
     CoverageArea,
     GeographyType,
+    get_available_boundary_types,
+    get_available_coverage_areas,
     get_available_geography_types,
     get_field_info,
     load_geodata,
@@ -207,8 +209,6 @@ def test_get_available_geography_types():
 
 def test_get_available_boundary_types():
     """Test that available boundary types returns expected structure."""
-    from kindtech.geo import get_available_boundary_types
-
     types = get_available_boundary_types()
 
     assert len(types) > 0
@@ -220,8 +220,6 @@ def test_get_available_boundary_types():
 
 def test_get_available_coverage_areas():
     """Test that available coverage areas returns expected structure."""
-    from kindtech.geo import get_available_coverage_areas
-
     types = get_available_coverage_areas()
 
     assert len(types) > 0
