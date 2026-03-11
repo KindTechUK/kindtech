@@ -118,6 +118,82 @@ def test_get_field_info(mock_get):
     assert result[1]["name"] == "LAD21NM"
 
 
+@mock.patch("kindtech.geo.api.requests.get")
+def test_load_geodata_with_year(mock_get):
+    """Test loading geodata with a specific year."""
+    mock_response = mock.MagicMock()
+    mock_response.json.return_value = GEOJSON_RESPONSE
+    mock_get.return_value = mock_response
+
+    result = load_geodata(geography_type="LAD", year="2021", boundary_type="BGC")
+
+    assert result["type"] == "FeatureCollection"
+    mock_get.assert_called_once()
+
+
+@mock.patch("kindtech.geo.api.requests.get")
+def test_load_geodata_with_year_and_month_fallback(mock_get):
+    """Test that month filter is dropped when no exact match found."""
+    mock_response = mock.MagicMock()
+    mock_response.json.return_value = GEOJSON_RESPONSE
+    mock_get.return_value = mock_response
+
+    # Use a real geography type with a year, plus a month that won't match.
+    # The code should fall back to searching without the month filter.
+    result = load_geodata(
+        geography_type="LAD", year="2021", month="JAN", boundary_type="BGC"
+    )
+
+    assert result["type"] == "FeatureCollection"
+
+
+@mock.patch("kindtech.geo.api.requests.get")
+def test_load_geodata_with_numeric_filter(mock_get):
+    """Test filter clause with numeric value."""
+    mock_response = mock.MagicMock()
+    mock_response.json.return_value = GEOJSON_RESPONSE
+    mock_get.return_value = mock_response
+
+    load_geodata(geography_type="LAD", OBJECTID=42)
+
+    call_params = mock_get.call_args[1]["params"]
+    assert call_params["where"] == "OBJECTID = 42"
+
+
+@mock.patch("kindtech.geo.api.requests.get")
+def test_load_geodata_with_list_filter(mock_get):
+    """Test filter clause with list value (IN clause)."""
+    mock_response = mock.MagicMock()
+    mock_response.json.return_value = GEOJSON_RESPONSE
+    mock_get.return_value = mock_response
+
+    load_geodata(geography_type="LAD", LAD21NM=["Manchester", "Leeds"])
+
+    call_params = mock_get.call_args[1]["params"]
+    assert "IN" in call_params["where"]
+    assert "'Manchester'" in call_params["where"]
+    assert "'Leeds'" in call_params["where"]
+
+
+@mock.patch("kindtech.geo.api.requests.get")
+def test_get_field_info_no_matching_service(mock_get):
+    """Test get_field_info returns empty list when no service matches."""
+    result = get_field_info(geography_type="NONEXISTENT")
+
+    assert result == []
+    mock_get.assert_not_called()
+
+
+@mock.patch("kindtech.geo.api.requests.get")
+def test_get_field_info_request_error(mock_get):
+    """Test get_field_info returns empty list on request error."""
+    mock_get.side_effect = requests.exceptions.RequestException("Connection error")
+
+    result = get_field_info(geography_type="LAD")
+
+    assert result == []
+
+
 def test_get_available_geography_types():
     """Test that available geography types returns expected structure."""
     types = get_available_geography_types()
@@ -127,3 +203,29 @@ def test_get_available_geography_types():
     codes = [t["code"] for t in types]
     assert "LAD" in codes
     assert "LSOA" in codes
+
+
+def test_get_available_boundary_types():
+    """Test that available boundary types returns expected structure."""
+    from kindtech.geo import get_available_boundary_types
+
+    types = get_available_boundary_types()
+
+    assert len(types) > 0
+    assert all("code" in t and "description" in t for t in types)
+    codes = [t["code"] for t in types]
+    assert "BGC" in codes
+    assert "BFC" in codes
+
+
+def test_get_available_coverage_areas():
+    """Test that available coverage areas returns expected structure."""
+    from kindtech.geo import get_available_coverage_areas
+
+    types = get_available_coverage_areas()
+
+    assert len(types) > 0
+    assert all("code" in t and "description" in t for t in types)
+    codes = [t["code"] for t in types]
+    assert "UK" in codes
+    assert "EW" in codes

@@ -12,3 +12,4 @@ wheels/
 # Mac DS_Store
 *.DS_Store
 site/
+.coverage

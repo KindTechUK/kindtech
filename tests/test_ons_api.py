@@ -102,3 +102,51 @@ def test_list_tables_filter_by_name():
     assert isinstance(result, pd.DataFrame)
     assert len(result) > 0
     assert all("population" in row.lower() for row in result["name"])
+
+
+@mock.patch("kindtech.ons.api.requests.get")
+def test_load_ons_truncation_warning(mock_get, caplog):
+    """Test that a warning is logged when exactly 25,000 rows are returned."""
+    # Build a CSV with exactly 25,000 data rows
+    header = "A,B\n"
+    rows = "".join(f"{i},val\n" for i in range(25000))
+    mock_response = mock.MagicMock()
+    mock_response.text = header + rows
+    mock_response.raise_for_status = mock.MagicMock()
+    mock_get.return_value = mock_response
+
+    import logging
+
+    with caplog.at_level(logging.WARNING, logger="kindtech.ons.api"):
+        result = load_ons("NM_1_1")
+
+    assert len(result) == 25000
+    assert "truncated" in caplog.text.lower()
+
+
+@mock.patch("kindtech.ons.api.requests.get")
+def test_load_ons_csv_parse_error(mock_get):
+    """Test that unparseable CSV raises ValueError."""
+    mock_response = mock.MagicMock()
+    # narwhals/pandas will fail on completely empty text
+    mock_response.text = ""
+    mock_response.raise_for_status = mock.MagicMock()
+    mock_get.return_value = mock_response
+
+    with pytest.raises(ValueError, match="Failed to parse"):
+        load_ons("NM_1_1")
+
+
+def test_list_tables_filter_by_source():
+    """Test filtering tables by source name."""
+    result = list_tables(source="nomis")
+
+    assert isinstance(result, pd.DataFrame)
+
+
+def test_is_valid_dataset():
+    """Test the is_valid_dataset catalog function."""
+    from kindtech.ons._catalog import is_valid_dataset
+
+    assert is_valid_dataset("NM_1_1") is True
+    assert is_valid_dataset("TOTALLY_FAKE_999") is False
