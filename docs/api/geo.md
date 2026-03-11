@@ -104,7 +104,7 @@ All enums accept both string codes and enum values. They have `.code` and `.desc
 
 ## How it works
 
-1. The bundled CSV catalog (`geo/data/arcgis_services.csv`, 70 services) maps geography type + year + coverage + boundary to an ArcGIS service ID
+1. The bundled CSV catalog (`geo/data/arcgis_services.csv`, 615 services across 24 geography types) maps geography type + year + coverage + boundary to an ArcGIS service ID
 2. `load_geodata()` finds the best matching service (most recent year if not specified)
 3. Queries the ArcGIS FeatureServer REST API for GeoJSON
 4. Returns the raw GeoJSON FeatureCollection
