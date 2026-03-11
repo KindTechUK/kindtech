@@ -1,182 +1,234 @@
 """
 ArcGIS REST Services ingestion module.
 
-This module provides functions to load ArcGIS REST Services data from the web and save
-it to a CSV file.
-
-The CSV file is later used as the main lookup table to find the relevant data.
+Fetches the FeatureServer catalog from the ONS ArcGIS REST API and
+extracts geography metadata (type, year, month, region, resolution)
+into a CSV lookup table used at runtime by ``_catalog.py``.
 
 Usage:
     uv run python -m kindtech.geo._ingestion
 """
 
-import calendar
+import csv
 import logging
+import re
 from pathlib import Path
-from typing import Any
 
-import polars as pl
 import requests
-from bs4 import BeautifulSoup
 
-# Set up logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-# Constants
-ARCGIS_BASE_URL = "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/"
+ARCGIS_BASE_URL = "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services"
 DEFAULT_OUTPUT_PATH = Path(__file__).parent / "data" / "arcgis_services.csv"
 
-# Lookup tables for parsing
-MONTH = {}
-for idx, name in enumerate(calendar.month_name):  # '' then 'January'…
-    if name:
-        MONTH[name.upper()[:3]] = idx  # JAN, FEB, …
-        MONTH[name.upper()] = idx  # JANUARY, FEBRUARY …
+# All geography codes from GeographyType enum (longest first)
+_GEO_CODES = (
+    "CTYUA|BUASD|NHSER|DCELLS|CAUTH|CTRY|LSOA|MSOA|TTWA"
+    "|BUA|CAL|CCG|CED|CSP|CTY|EER|FRA|ICB|ITL|LAD"
+    "|OA|RGN|WD|DZ|ED|IZ"
+)
 
-REGION = {"UK", "GB", "EW"}
-RES = {"BFC", "BFE", "BGC", "BSC"}
-DROP = {
-    "LOCAL",
-    "AUTHORITY",
-    "DISTRICT",
-    "DISTRICTS",
-    "BOUNDARY",
-    "BOUNDARIES",
-    "WITH",
-    "AND",
-    "IN",
+# Map long-form name prefixes to geography codes.
+# Longer prefixes first to avoid false matches.
+_LONG_NAME_TO_CODE: dict[str, str] = {
+    "Counties_and_Unitary_Authorit": "CTYUA",
+    "Lower_Layer_Super_Output_Area": "LSOA",
+    "Middle_Layer_Super_Output_Area": "MSOA",
+    "Lower_Super_Output_Area": "LSOA",
+    "Middle_Super_Output_Area": "MSOA",
+    "Local_Authority_District": "LAD",
+    "County_Electoral_Division": "CED",
+    "Community_Safety_Partnership": "CSP",
+    "Clinical_Commissioning_Group": "CCG",
+    "Combined_Authorit": "CAUTH",
+    "Cancer_Alliance": "CAL",
+    "Fire_and_Rescue_Authorit": "FRA",
+    "European_Electoral_Region": "EER",
+    "Integrated_Care_Board": "ICB",
+    "NHS_England_Region": "NHSER",
+    "Travel_to_Work_Area": "TTWA",
+    "Built_up_Area_Sub": "BUASD",
+    "Built_Up_Area_Sub": "BUASD",
+    "Built_up_Area": "BUA",
+    "Built_Up_Area": "BUA",
+    "Output_Area": "OA",
+    "Countries_": "CTRY",
+    "Counties_": "CTY",
+    "Regions_": "RGN",
+    "Wards_": "WD",
 }
 
+_MONTHS = (
+    "JAN(?:UARY)?|FEB(?:RUARY)?|MAR(?:CH)?|APR(?:IL)?|MAY"
+    "|JUN(?:E)?|JUL(?:Y)?|AUG(?:UST)?|SEP(?:TEMBER)?"
+    "|OCT(?:OBER)?|NOV(?:EMBER)?|DEC(?:EMBER)?"
+)
+_REGIONS = "UK|GB|EW|EN|WA|SC|NI"
+_RESOLUTIONS = "BFC|BFE|BGC|BSC|BUC|NC"
 
-def _load_arcgis_data(url: str = ARCGIS_BASE_URL) -> str:
+# Old-style resolution codes used in long-form names
+_RES_ALIASES: dict[str, str] = {
+    "FCB": "BFC",
+    "FEB": "BFE",
+    "GCB": "BGC",
+    "SGCB": "BSC",
+    "UGCB": "BUC",
+}
+
+_SHORT_RE = re.compile(
+    rf"(?i)^({_GEO_CODES})"
+    rf"_(?:({_MONTHS})_)?"
+    rf"(\d{{2,4}})"
+    rf"_(?:[A-Za-z]+_)*?"
+    rf"({_REGIONS})"
+    rf"_(?:[A-Za-z0-9]+_)*?"
+    rf"({_RESOLUTIONS})"
+    rf"(?:_.*)?$"
+)
+
+_YEAR_RE = re.compile(r"(?:^|_)(\d{4})(?:_|$)")
+_MONTH_RE = re.compile(rf"(?:^|_)({_MONTHS})(?:_|$)", re.IGNORECASE)
+_REGION_RE = re.compile(rf"(?:^|_)({_REGIONS})(?:_|$)")
+_RES_RE = re.compile(rf"(?:^|_)({_RESOLUTIONS}|FCB|FEB|GCB|SGCB|UGCB)(?:_|$)")
+
+
+def _normalise_year(raw: str) -> int:
+    """Convert 2- or 4-digit year string to a 4-digit int."""
+    y = int(raw)
+    if y < 100:
+        return y + 2000 if y <= 30 else y + 1900
+    return y
+
+
+def _normalise_resolution(raw: str) -> str:
+    """Map old resolution aliases to standard codes."""
+    upper = raw.upper()
+    return _RES_ALIASES.get(upper, upper)
+
+
+def _normalise_month(raw: str) -> str:
+    """Truncate full month names to 3-letter codes."""
+    return raw.upper()[:3] if raw else ""
+
+
+def _fetch_services(
+    base_url: str = ARCGIS_BASE_URL,
+) -> list[str]:
+    """Fetch FeatureServer names from the ArcGIS REST JSON API."""
+    logger.info("Fetching service catalog from %s", base_url)
+    resp = requests.get(base_url, params={"f": "json"}, timeout=120)
+    resp.raise_for_status()
+    services = resp.json().get("services", [])
+    names = [s["name"] for s in services if s.get("type") == "FeatureServer"]
+    logger.info("Found %d FeatureServer services", len(names))
+    return names
+
+
+def _parse_short_form(name: str) -> dict[str, str] | None:
+    """Parse CODE_[MONTH_]YEAR_REGION_RES style names."""
+    m = _SHORT_RE.match(name)
+    if not m:
+        return None
+    return {
+        "arcgis_id": name,
+        "geography": m.group(1).upper(),
+        "year": str(_normalise_year(m.group(3))),
+        "month": _normalise_month(m.group(2) or ""),
+        "region": m.group(4).upper(),
+        "resolution": m.group(5).upper(),
+    }
+
+
+def _parse_long_form(name: str) -> dict[str, str] | None:
+    """Parse long-form names via prefix mapping."""
+    geo_code = None
+    for prefix, code in _LONG_NAME_TO_CODE.items():
+        if name.startswith(prefix):
+            geo_code = code
+            break
+    if not geo_code:
+        return None
+
+    year_m = _YEAR_RE.search(name)
+    res_m = _RES_RE.search(name)
+    region_m = _REGION_RE.search(name)
+    if not (year_m and res_m and region_m):
+        return None
+
+    month_m = _MONTH_RE.search(name)
+    return {
+        "arcgis_id": name,
+        "geography": geo_code,
+        "year": str(_normalise_year(year_m.group(1))),
+        "month": _normalise_month(month_m.group(1) if month_m else ""),
+        "region": region_m.group(1).upper(),
+        "resolution": _normalise_resolution(res_m.group(1)),
+    }
+
+
+def _parse_service(name: str) -> dict[str, str] | None:
+    """Extract metadata from a service name."""
+    return _parse_short_form(name) or _parse_long_form(name)
+
+
+def ingest_arcgis_services(
+    base_url: str = ARCGIS_BASE_URL,
+    output_path: Path = DEFAULT_OUTPUT_PATH,
+) -> int:
     """
-    Load ArcGIS REST Services catalog HTML from the given URL.
+    Fetch the ArcGIS catalog and write parsed metadata to CSV.
 
     Args:
-        url: The URL of the ArcGIS REST Services catalog.
+        base_url: ArcGIS REST services endpoint.
+        output_path: Where to write the CSV.
 
     Returns:
-        The HTML content of the catalog page.
-
-    Raises:
-        requests.RequestException: If the request fails.
+        Number of services written.
     """
-    logger.info(f"Loading ArcGIS data from {url}")
-    try:
-        response = requests.get(url, timeout=60)
-        response.raise_for_status()
-        return response.text
-    except requests.RequestException as e:
-        logger.error(f"Failed to load ArcGIS data: {e}")
-        raise
+    names = _fetch_services(base_url)
+    rows: list[dict[str, str]] = []
+    seen: set[str] = set()
 
+    for name in names:
+        parsed = _parse_service(name)
+        if not parsed or parsed["arcgis_id"] in seen:
+            continue
+        seen.add(parsed["arcgis_id"])
+        rows.append(parsed)
 
-def _parse_html_for_services(html_content: str) -> list[dict[str, Any]]:
-    """
-    Parse the HTML content to extract FeatureServer services and their metadata.
-
-    Args:
-        html_content: The HTML content to parse.
-
-    Returns:
-        List of service name strings.
-    """
-    logger.info("Parsing HTML for services")
-    kept = []
-
-    soup = BeautifulSoup(html_content, "html.parser")
-    services_list = soup.find("ul", id="servicesList")
-
-    if not services_list:
-        logger.warning("No services list found in HTML content")
-        return kept
-
-    for li in services_list.find_all("li"):
-        link = li.find("a")
-        if link and "FeatureServer" in link["href"]:
-            service_name = link.text
-            kept.append(service_name)
-
-    logger.info(f"Total FeatureServer services found: {len(kept)}")
-    return kept
-
-
-def _process_and_save(services: list) -> int:
-    df = pl.DataFrame({"arcgis_id": services})
-
-    to_skip = [
-        "LAD_Dec_1961_in_England_and_Wales_BFC_Boundaries_2022",
-        "LAD_JUN_1921_EW_BGC",
-        "LAD_PT_JUN_1921_EW_BGC",
-        "LAD_DEC_2021_EW_BFE_RUC",
-        "LAD_DEC_2024_EW_BFE_RUC",
-    ]
-
-    # case-insensitive, allow "noise" tokens between the key bits
-    pattern = r"""(?ix)                             # i = ignore-case, x = verbose
-    ^(?:LAD|LOCAL_AUTHORITY_DISTRICTS).*?_
-    (?:                                             # ── optional month ────────────
-    (?P<month>JAN(?:UARY)?|FEB(?:RUARY)?|MAR(?:CH)?|APR(?:IL)?|
-                MAY|JUN(?:E)?|JUL(?:Y)?|AUG(?:UST)?|
-                SEP(?:TEMBER)?|OCT(?:OBER)?|NOV(?:EMBER)?|DEC(?:EMBER)?)
-    _
-    )?                                              # ──────────────────────────────
-    (?P<year>\d{2}(?:\d{2})?)_                      # 24  or  2024, 1961, …
-    (?:[A-Z]+_)*?                                   # skip words like BOUNDARIES
-    (?P<region>UK|GB|EW)_
-    (?:[A-Z]+_)*?                                   # more noise
-    (?P<res>BFC|BFE|BGC|BSC)                        # resolution code
-    (?:_.*)?$                                       # allow V3_2022 etc. at the end
-    """
-
-    df = df.filter(
-        (pl.col("arcgis_id").str.contains(pattern))
-        & (~pl.col("arcgis_id").is_in(to_skip))
-    ).with_columns(
-        [
-            pl.lit("LAD").alias("geography"),
-            pl.col("arcgis_id")
-            .str.extract(pattern, group_index=2)
-            .cast(pl.Int16)
-            .alias("year"),
-            pl.col("arcgis_id").str.extract(pattern, group_index=1).alias("month"),
-            pl.col("arcgis_id").str.extract(pattern, group_index=3).alias("region"),
-            pl.col("arcgis_id").str.extract(pattern, group_index=4).alias("resolution"),
-        ]
+    rows.sort(
+        key=lambda r: (
+            r["geography"],
+            -int(r["year"]),
+            r["region"],
+        ),
     )
 
-    df.write_csv(DEFAULT_OUTPUT_PATH)
+    fieldnames = [
+        "arcgis_id",
+        "geography",
+        "year",
+        "month",
+        "region",
+        "resolution",
+    ]
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
 
-    logger.info(f"Saved {df.height} services to {DEFAULT_OUTPUT_PATH}")
-    return df.height
-
-
-def ingest_arcgis_services(url: str = ARCGIS_BASE_URL) -> int:
-    """
-    Main function to ingest ArcGIS services from the web and save them to a CSV file.
-
-    Args:
-        url: The URL of the ArcGIS REST Services catalog.
-
-    Returns:
-        The number of services ingested.
-    """
-    try:
-        html_content = _load_arcgis_data(url)
-        services = _parse_html_for_services(html_content)
-        nrows = _process_and_save(services)
-        return nrows
-    except Exception as e:
-        logger.error(f"Error during ingestion: {e}")
-        raise
+    logger.info("Saved %d services to %s", len(rows), output_path)
+    return len(rows)
 
 
 if __name__ == "__main__":
     try:
         count = ingest_arcgis_services()
-        print(f"Successfully ingested {count} ArcGIS services to {DEFAULT_OUTPUT_PATH}")
+        print(f"Successfully ingested {count} services to {DEFAULT_OUTPUT_PATH}")
     except Exception as e:
         print(f"Failed to ingest ArcGIS services: {e}")
