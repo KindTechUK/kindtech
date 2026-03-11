@@ -7,7 +7,10 @@ Returns DataFrames in whatever backend you have installed (pandas or polars).
 Examples:
     >>> from kindtech.ons import load_ons
     >>>
-    >>> # Using geography_type (ergonomic — no NOMIS TYPE codes needed)
+    >>> # Using a friendly alias
+    >>> df = load_ons("population", geography_type="LAD", time="latest")
+    >>>
+    >>> # Using geography_type (no NOMIS TYPE codes needed)
     >>> df = load_ons("NM_1_1", geography_type="LAD", time="latest")
     >>>
     >>> # Using raw NOMIS TYPE code (still works)
@@ -114,7 +117,8 @@ def load_ons(
     Load data from the ONS NOMIS API.
 
     Args:
-        dataset_id: NOMIS dataset code (e.g., ``"NM_1_1"``).
+        dataset_id: NOMIS dataset code (e.g., ``"NM_1_1"``) or
+            a friendly alias (e.g., ``"population"``).
         geography_type: Geography type code (e.g., ``"LAD"``) or
             ``GeographyType`` enum. Resolved to a NOMIS TYPE code
             automatically. Cannot be used with ``geography=``.
@@ -132,6 +136,11 @@ def load_ons(
             can't be parsed, or conflicting geography params are given.
         ImportError: If neither pandas nor polars is installed.
     """
+    # Resolve dataset alias
+    from kindtech._mapping import resolve_dataset_id
+
+    dataset_id = resolve_dataset_id(dataset_id)
+
     # Resolve geography_type to NOMIS TYPE code
     if geography_type is not None:
         if "geography" in kwargs:

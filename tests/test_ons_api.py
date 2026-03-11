@@ -73,7 +73,7 @@ def test_load_ons_html_error(mock_get):
     mock_get.return_value = mock_response
 
     with pytest.raises(ValueError, match="does not exist"):
-        load_ons("INVALID_ID")
+        load_ons("NM_INVALID_999")
 
 
 @mock.patch("kindtech.ons.api.requests.get")
