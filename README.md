@@ -5,7 +5,7 @@ Ergonomic access to UK public data — geographic boundaries (ONS Geoportal) and
 ## Installation
 
 ```bash
-uv add kindtech[pandas]   # or kindtech[polars]
+uv add kindtech
 ```
 
 ## Examples

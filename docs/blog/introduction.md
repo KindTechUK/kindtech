@@ -18,7 +18,7 @@ KindTech is a lightweight Python library for accessing UK public data. It wraps 
 ## Getting Started
 
 ```bash
-uv add kindtech[pandas]   # or kindtech[polars]
+uv add kindtech
 ```
 
 ```python

@@ -88,11 +88,10 @@ DataFrame with columns: `id`, `name`, `sourceName`.
 
 ## Bring Your Own DataFrame
 
-The ONS module uses [narwhals](https://narwhals-dev.github.io/narwhals/) for DataFrame interoperability. Install your preferred backend:
+The ONS module uses [narwhals](https://narwhals-dev.github.io/narwhals/) for DataFrame interoperability. Install your preferred backend alongside kindtech:
 
 ```bash
-uv add kindtech[pandas]   # for pandas DataFrames
-uv add kindtech[polars]   # for polars DataFrames
+uv add pandas   # or polars
 ```
 
 The return type automatically matches your installed backend:

@@ -50,8 +50,8 @@ def _get_native_namespace() -> Any:
         pass
     msg = (
         "No DataFrame backend found. "
-        "Install pandas or polars: `uv add kindtech[pandas]` "
-        "or `uv add kindtech[polars]`"
+        "Install pandas or polars: `uv add pandas` "
+        "or `uv add polars`"
     )
     raise ImportError(msg)
 
