@@ -14,7 +14,10 @@ from kindtech.ons import load_ons
 # Basic usage
 df = load_ons("NM_1_1")
 
-# With filters
+# Using geography_type (recommended — no NOMIS TYPE codes needed)
+df = load_ons("NM_1_1", geography_type="LAD", time="latest")
+
+# Using raw NOMIS TYPE code (still works)
 df = load_ons(
     "NM_1_1",
     geography="TYPE480",
@@ -31,12 +34,13 @@ df = load_ons("NM_1_1", measures=[20100, 20201])
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `dataset_id` | `str` | *required* | NOMIS dataset code (e.g., `"NM_1_1"`) |
+| `geography_type` | `str` or `GeographyType` or `None` | `None` | Geography type (e.g., `"LAD"`, `"LSOA"`). Resolved to a NOMIS TYPE code automatically. Cannot be used with `geography=`. |
 | `base_url` | `str` | NOMIS API URL | Override the API base URL |
 | `**kwargs` | keyword args | | Query parameters passed to the NOMIS API |
 
 Common query parameters:
 
-- `geography` — Geography type (e.g., `"TYPE480"` for local authorities)
+- `geography` — Raw NOMIS geography type (e.g., `"TYPE480"`). Prefer `geography_type` instead.
 - `time` — Time period (e.g., `"latest"`, `"2023"`)
 - `measures` — Measure codes (e.g., `20100` for value)
 - `select` — Columns to return (list of strings)

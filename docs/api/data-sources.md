@@ -251,6 +251,86 @@ wrappers are community-built:
 
 ---
 
+## Geography Crosswalk
+
+The geo module uses ONS geography type codes (`LAD`, `LSOA`, `MSOA`, etc.)
+while NOMIS uses internal TYPE codes (`TYPE424`, `TYPE151`, etc.). KindTech
+maps between them so you don't have to.
+
+### Using `geography_type` in `load_ons()`
+
+Instead of looking up NOMIS TYPE codes, pass the same geography type you
+use with `load_geodata()`:
+
+```python
+from kindtech import load_geodata, load_ons
+
+# Same geography concept, different APIs
+boundaries = load_geodata(geography_type="LAD", year="2024")
+statistics = load_ons("NM_1_1", geography_type="LAD", time="latest")
+```
+
+The raw `geography="TYPE424"` parameter still works if you need it.
+
+### TYPE code mapping
+
+NOMIS assigns different TYPE codes to the same geography at different time
+points. KindTech resolves these automatically based on the `time` parameter:
+
+| Geography | Year range | NOMIS TYPE |
+|-----------|-----------|------------|
+| LAD | 2023+ | TYPE424 |
+| LAD | 2021-2022 | TYPE431 |
+| LAD | 2019-2020 | TYPE434 |
+| LAD | 2015-2018 | TYPE446 |
+| LAD | pre-2015 | TYPE464 |
+| CTYUA | 2023+ | TYPE423 |
+| CTYUA | 2021-2022 | TYPE431 |
+| CTYUA | 2015-2020 | TYPE446 |
+| CTYUA | pre-2015 | TYPE463 |
+| LSOA | 2021+ | TYPE151 |
+| LSOA | pre-2021 | TYPE304 |
+| MSOA | 2021+ | TYPE152 |
+| MSOA | pre-2021 | TYPE305 |
+| RGN | all | TYPE480 |
+| CTRY | all | TYPE499 |
+| WD | 2025+ | TYPE182 |
+| CAUTH | 2025+ | TYPE442 |
+| TTWA | 2011+ | TYPE447 |
+| TTWA | pre-2011 | TYPE444 |
+| ITL | 2025+ | TYPE419 |
+| ITL | 2021-2024 | TYPE421 |
+
+Source: NOMIS geography dimension metadata. To list all mappings
+programmatically:
+
+```python
+from kindtech import list_geography_mappings
+
+for m in list_geography_mappings():
+    print(m)
+```
+
+### Join keys
+
+Both APIs return standard ONS geography codes (e.g. `E06000001`):
+
+- **ArcGIS** returns fields like `LAD24CD` (code) and `LAD24NM` (name),
+  where the field name includes a 2-digit year suffix
+- **NOMIS** returns `GEOGRAPHY_CODE` and `GEOGRAPHY_NAME` columns
+
+The `geo_code_field()` and `geo_name_field()` helpers derive the ArcGIS
+field names:
+
+```python
+from kindtech._mapping import geo_code_field, geo_name_field
+
+geo_code_field("LAD", 2024)  # "LAD24CD"
+geo_name_field("LAD", 2024)  # "LAD24NM"
+```
+
+---
+
 ## Architecture
 
 KindTech ingests from two completely separate APIs into two independent CSV

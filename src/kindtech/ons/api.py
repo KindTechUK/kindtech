@@ -7,13 +7,16 @@ Returns DataFrames in whatever backend you have installed (pandas or polars).
 Examples:
     >>> from kindtech.ons import load_ons
     >>>
-    >>> # Load all data from a dataset (returns pandas or polars DataFrame)
-    >>> df = load_ons("NM_1_1")
+    >>> # Using geography_type (ergonomic — no NOMIS TYPE codes needed)
+    >>> df = load_ons("NM_1_1", geography_type="LAD", time="latest")
     >>>
-    >>> # Filter and select columns
+    >>> # Using raw NOMIS TYPE code (still works)
+    >>> df = load_ons("NM_1_1", geography="TYPE480", time="latest")
+    >>>
+    >>> # With filters and column selection
     >>> df = load_ons(
     ...     "NM_1_1",
-    ...     geography="TYPE480",
+    ...     geography_type="LAD",
     ...     time="latest",
     ...     measures=20100,
     ...     select=["geography_name", "sex_name", "obs_value"],
@@ -84,8 +87,26 @@ def _dicts_to_frame(data: list[dict]) -> nw.DataFrame:
     return nw.from_native(native_df, eager_only=True)
 
 
+def _extract_code(value: Any) -> str | None:
+    """Extract string code from an enum or pass through a string."""
+    if value is None:
+        return None
+    return value.code if hasattr(value, "code") else value
+
+
+def _extract_year_from_time(time_value: Any) -> int | None:
+    """Try to extract a year from a NOMIS time parameter."""
+    if time_value is None:
+        return None
+    s = str(time_value).strip()
+    if s.isdigit() and len(s) == 4:
+        return int(s)
+    return None
+
+
 def load_ons(
     dataset_id: str,
+    geography_type: Any | None = None,
     base_url: str = NOMIS_BASE_URL,
     **kwargs: Any,
 ) -> Any:
@@ -93,19 +114,38 @@ def load_ons(
     Load data from the ONS NOMIS API.
 
     Args:
-        dataset_id: NOMIS dataset code (e.g., "NM_1_1").
+        dataset_id: NOMIS dataset code (e.g., ``"NM_1_1"``).
+        geography_type: Geography type code (e.g., ``"LAD"``) or
+            ``GeographyType`` enum. Resolved to a NOMIS TYPE code
+            automatically. Cannot be used with ``geography=``.
         base_url: NOMIS API base URL.
         **kwargs: Query parameters passed to the NOMIS API
             (e.g., geography="TYPE480", time="latest", measures=20100).
-            Lists are joined with commas. See https://www.nomisweb.co.uk/api/v01/help
+            Lists are joined with commas.
+            See https://www.nomisweb.co.uk/api/v01/help
 
     Returns:
         DataFrame (pandas or polars, depending on what's installed).
 
     Raises:
-        ValueError: If the dataset ID doesn't exist or the response can't be parsed.
+        ValueError: If the dataset ID doesn't exist, the response
+            can't be parsed, or conflicting geography params are given.
         ImportError: If neither pandas nor polars is installed.
     """
+    # Resolve geography_type to NOMIS TYPE code
+    if geography_type is not None:
+        if "geography" in kwargs:
+            msg = (
+                "Cannot specify both 'geography_type' and "
+                "'geography'. Use one or the other."
+            )
+            raise ValueError(msg)
+        from kindtech._mapping import resolve_nomis_geography
+
+        geo_code = _extract_code(geography_type)
+        year = _extract_year_from_time(kwargs.get("time"))
+        kwargs["geography"] = resolve_nomis_geography(geo_code, year)
+
     # Build query params
     params: dict[str, str] = {}
     for key, value in kwargs.items():
