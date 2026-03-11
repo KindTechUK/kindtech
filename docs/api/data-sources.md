@@ -227,7 +227,7 @@ bulk listing. The remaining 43 genuinely lack source information.
 
 NOMIS is a long-term statistical archive, not just current data.
 
-### ONS ingestion
+### NOMIS ingestion
 
 Makes **one HTTP request** to `dataset/def.sdmx.json`, extracts IDs, names,
 and source annotations. Completes in ~6 seconds for 1,615 datasets.
