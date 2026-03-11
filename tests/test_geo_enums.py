@@ -7,7 +7,6 @@ from kindtech.geo._enums import (
     CoverageArea,
     GeographyType,
     Month,
-    ThematicType,
 )
 
 
@@ -43,6 +42,6 @@ def test_enum_code_and_description_attributes():
     assert lad.code == "LAD"
     assert lad.description == "Local Authority Districts"
 
-    dep = ThematicType.DEPRIVATION
-    assert dep.code == "DEPRIVATION"
-    assert dep.description == "Deprivation Indices"
+    month = Month.JAN
+    assert month.code == "JAN"
+    assert month.description == "January"

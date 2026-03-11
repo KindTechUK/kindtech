@@ -25,17 +25,12 @@ from typing import Any
 
 import requests
 
+from kindtech._mapping import extract_code
+
 from . import _catalog
 from ._enums import BoundaryType, CoverageArea, GeographyType, Month
 
 logger = logging.getLogger(__name__)
-
-
-def _extract_code(value: Any) -> str | None:
-    """Extract string code from an enum or pass through a string."""
-    if value is None:
-        return None
-    return value.code if hasattr(value, "code") else value
 
 
 def _resolve_service_url(
@@ -46,10 +41,10 @@ def _resolve_service_url(
     boundary_type: str | BoundaryType | None = None,
 ) -> str | None:
     """Find the best matching service and return its FeatureServer URL."""
-    geo = _extract_code(geography_type)
-    mon = _extract_code(month)
-    cov = _extract_code(coverage)
-    bnd = _extract_code(boundary_type)
+    geo = extract_code(geography_type)
+    mon = extract_code(month)
+    cov = extract_code(coverage)
+    bnd = extract_code(boundary_type)
 
     if year:
         matches = _catalog.find_services(

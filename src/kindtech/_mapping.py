@@ -16,6 +16,16 @@ codes, not names.
 
 from __future__ import annotations
 
+from typing import Any
+
+
+def extract_code(value: Any) -> str | None:
+    """Extract string code from an enum or pass through a string."""
+    if value is None:
+        return None
+    return value.code if hasattr(value, "code") else value
+
+
 # Each value is a list of (min_year, max_year, nomis_type_code) tuples,
 # sorted newest-first. The first match for a given year wins.
 # Source: NOMIS geography dimension metadata via

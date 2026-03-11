@@ -9,7 +9,6 @@ from ._enums import (
     CoverageArea,
     GeographyType,
     Month,
-    ThematicType,
 )
 from .api import (
     get_available_boundary_types,
@@ -24,7 +23,6 @@ __all__ = [
     "CoverageArea",
     "GeographyType",
     "Month",
-    "ThematicType",
     "get_available_boundary_types",
     "get_available_coverage_areas",
     "get_available_geography_types",

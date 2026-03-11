@@ -99,17 +99,6 @@ class GeographyType(ONSGeoEnum):
     ITL = ("ITL", "International Territorial Level")
 
 
-class ThematicType(ONSGeoEnum):
-    """Thematic data categories."""
-
-    DEPRIVATION = ("DEPRIVATION", "Deprivation Indices")
-    HEALTH = ("HEALTH", "Health Statistics")
-    DEMOGRAPHICS = ("DEMOGRAPHICS", "Demographic Statistics")
-    LOOKUP = ("LOOKUP", "Lookup Tables")
-    TRANSPORT = ("TRANSPORT", "Transport Data")
-    BROADBAND = ("BROADBAND", "Broadband Coverage")
-
-
 class Month(ONSGeoEnum):
     """Month indicators used in dataset release dates."""
 

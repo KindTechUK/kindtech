@@ -33,7 +33,7 @@ from typing import Any
 import narwhals.stable.v2 as nw
 import requests
 
-from kindtech._mapping import resolve_dataset_id, resolve_nomis_geography
+from kindtech._mapping import extract_code, resolve_dataset_id, resolve_nomis_geography
 
 from . import _catalog
 
@@ -67,12 +67,7 @@ def _get_native_namespace() -> Any:
 def _csv_text_to_frame(text: str) -> nw.DataFrame:
     """Parse CSV text into a narwhals DataFrame using the available backend."""
     native_ns = _get_native_namespace()
-
-    if native_ns.__name__ == "polars":
-        native_df = native_ns.read_csv(StringIO(text))
-    else:
-        native_df = native_ns.read_csv(StringIO(text))
-
+    native_df = native_ns.read_csv(StringIO(text))
     return nw.from_native(native_df, eager_only=True)
 
 
@@ -83,20 +78,8 @@ def _dicts_to_frame(data: list[dict]) -> nw.DataFrame:
 
     columns = {key: [row[key] for row in data] for key in data[0]}
     native_ns = _get_native_namespace()
-
-    if native_ns.__name__ == "polars":
-        native_df = native_ns.DataFrame(columns)
-    else:
-        native_df = native_ns.DataFrame(columns)
-
+    native_df = native_ns.DataFrame(columns)
     return nw.from_native(native_df, eager_only=True)
-
-
-def _extract_code(value: Any) -> str | None:
-    """Extract string code from an enum or pass through a string."""
-    if value is None:
-        return None
-    return value.code if hasattr(value, "code") else value
 
 
 def _extract_year_from_time(time_value: Any) -> int | None:
@@ -148,7 +131,7 @@ def load_ons(
                 "'geography'. Use one or the other."
             )
             raise ValueError(msg)
-        geo_code = _extract_code(geography_type)
+        geo_code = extract_code(geography_type)
         year = _extract_year_from_time(kwargs.get("time"))
         kwargs["geography"] = resolve_nomis_geography(geo_code, year)
 
