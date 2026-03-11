@@ -251,6 +251,51 @@ wrappers are community-built:
 
 ---
 
+## Dataset Aliases
+
+Instead of remembering NOMIS dataset IDs like `NM_2002_1`, you can use
+friendly aliases:
+
+```python
+from kindtech import load_ons
+
+# These are equivalent
+df = load_ons("population", geography_type="LAD", time="latest")
+df = load_ons("NM_2002_1", geography_type="LAD", time="latest")
+```
+
+Raw `NM_*` IDs are passed through unchanged — aliases are just a convenience.
+
+### Available aliases
+
+| Alias | NOMIS ID | Description |
+|-------|----------|-------------|
+| `population` | NM_2002_1 | Mid-year population estimates |
+| `population_by_age` | NM_2002_1 | Same as `population` |
+| `population_by_age_band` | NM_31_1 | Population by broad age band |
+| `population_lsoa` | NM_2014_1 | Population estimates (LSOA level) |
+| `jsa` | NM_1_1 | Jobseeker's Allowance |
+| `claimant_count` | NM_162_1 | Claimant count |
+| `annual_population_survey` | NM_17_1 | Annual Population Survey |
+| `earnings` | NM_30_1 | Annual Survey of Hours and Earnings |
+| `jobs_density` | NM_57_1 | Jobs density |
+| `vacancies` | NM_19_1 | Vacancy survey |
+| `vat_registrations` | NM_29_1 | VAT registrations/deregistrations |
+| `census_2021` | NM_2021_1 | Census 2021 |
+| `census_2011` | NM_144_1 | Census 2011 |
+| `census_2001` | NM_58_1 | Census 2001 |
+
+To list aliases programmatically:
+
+```python
+from kindtech import list_dataset_aliases
+
+for a in list_dataset_aliases():
+    print(f"{a['alias']:30s} → {a['dataset_id']}")
+```
+
+---
+
 ## Geography Crosswalk
 
 The geo module uses ONS geography type codes (`LAD`, `LSOA`, `MSOA`, etc.)
@@ -376,11 +421,12 @@ boundaries (maps), the other provides statistical tables (numbers).
 │                              │                                      │
 │  RUNTIME (user-facing)       │  RUNTIME (user-facing)                │
 │                              │                                      │
-│  load_geodata("LAD")         │  load_ons("NM_1_1", time="latest")   │
-│    → look up CSV catalog     │    → look up CSV catalog              │
-│    → query ArcGIS            │    → query NOMIS                      │
-│      FeatureServer           │      dataset/{id}.data.csv            │
-│    → return GeoJSON dict     │    → return DataFrame                 │
+│  load_geodata("LAD")         │  load_ons("population",              │
+│    → look up CSV catalog     │           geography_type="LAD")       │
+│    → query ArcGIS            │    → resolve alias → NM_2002_1        │
+│      FeatureServer           │    → resolve geography → TYPE424      │
+│    → return GeoJSON dict     │    → query NOMIS .data.csv            │
+│                              │    → return DataFrame                 │
 │                              │      (pandas or polars)               │
 │                              │                                      │
 └──────────────────────────────┴──────────────────────────────────────┘
