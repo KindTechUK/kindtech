@@ -33,6 +33,8 @@ from typing import Any
 import narwhals.stable.v2 as nw
 import requests
 
+from kindtech._mapping import resolve_dataset_id, resolve_nomis_geography
+
 from . import _catalog
 
 NOMIS_BASE_URL = "https://www.nomisweb.co.uk/api/v01"
@@ -136,9 +138,6 @@ def load_ons(
             can't be parsed, or conflicting geography params are given.
         ImportError: If neither pandas nor polars is installed.
     """
-    # Resolve dataset alias
-    from kindtech._mapping import resolve_dataset_id
-
     dataset_id = resolve_dataset_id(dataset_id)
 
     # Resolve geography_type to NOMIS TYPE code
@@ -149,8 +148,6 @@ def load_ons(
                 "'geography'. Use one or the other."
             )
             raise ValueError(msg)
-        from kindtech._mapping import resolve_nomis_geography
-
         geo_code = _extract_code(geography_type)
         year = _extract_year_from_time(kwargs.get("time"))
         kwargs["geography"] = resolve_nomis_geography(geo_code, year)
