@@ -191,13 +191,15 @@ def ingest_arcgis_services(
     """
     names = _fetch_services(base_url)
     rows: list[dict[str, str]] = []
-    seen: set[str] = set()
+    seen_ids: set[str] = set()
 
-    for name in names:
+    for raw_name in names:
+        # Strip trailing underscores (typo variants in the catalog)
+        name = raw_name.rstrip("_")
         parsed = _parse_service(name)
-        if not parsed or parsed["arcgis_id"] in seen:
+        if not parsed or parsed["arcgis_id"] in seen_ids:
             continue
-        seen.add(parsed["arcgis_id"])
+        seen_ids.add(parsed["arcgis_id"])
         rows.append(parsed)
 
     rows.sort(
