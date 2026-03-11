@@ -14,9 +14,11 @@ app = marimo.App(width="medium")
 
 @app.cell
 def _():
+    import inspect
+
     import marimo as mo
 
-    return (mo,)
+    return (inspect, mo)
 
 
 @app.cell
@@ -60,6 +62,8 @@ def _(get_available_geography_types, mo):
 
 @app.cell
 def _(geo_types, mo):
+    mo.stop(not geo_types, mo.md("*No geography types available from the API.*"))
+
     geo_options = {f"{g['code']} — {g['description']}": g["code"] for g in geo_types}
     _geo_codes = list(geo_options.values())
     geo_dropdown = mo.ui.dropdown(
@@ -74,6 +78,11 @@ def _(geo_types, mo):
 @app.cell
 def _(get_available_boundary_types, mo):
     boundary_types = get_available_boundary_types()
+    mo.stop(
+        not boundary_types,
+        mo.md("*No boundary types available from the API.*"),
+    )
+
     boundary_options = {
         f"{b['code']} — {b['description']}": b["code"] for b in boundary_types
     }
@@ -166,10 +175,11 @@ def _(
     filter_field,
     filter_value,
     geo_dropdown,
+    inspect,
     load_geodata,
     mo,
 ):
-    _reserved = {"geography_type", "year", "month", "coverage", "boundary_type"}
+    _reserved = set(inspect.signature(load_geodata).parameters)
     _field = filter_field.value.strip()
     _value = filter_value.value.strip()
 
