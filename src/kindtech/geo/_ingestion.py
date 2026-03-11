@@ -33,7 +33,9 @@ _GEO_CODES = (
 )
 
 # Map long-form name prefixes to geography codes.
-# Longer prefixes first to avoid false matches.
+# IMPORTANT: longer prefixes MUST come before shorter ones that share a
+# common start (e.g. "Built_up_Area_Sub" before "Built_up_Area") so
+# the first-match loop in _parse_long_form picks the most specific code.
 _LONG_NAME_TO_CODE: dict[str, str] = {
     "Counties_and_Unitary_Authorit": "CTYUA",
     "Lower_Layer_Super_Output_Area": "LSOA",
@@ -122,8 +124,16 @@ def _fetch_services(
     logger.info("Fetching service catalog from %s", base_url)
     resp = requests.get(base_url, params={"f": "json"}, timeout=120)
     resp.raise_for_status()
-    services = resp.json().get("services", [])
-    names = [s["name"] for s in services if s.get("type") == "FeatureServer"]
+    data = resp.json()
+    if "services" not in data:
+        logger.warning("API response missing 'services' key; returning empty list")
+        return []
+    services = data["services"]
+    names = [
+        s["name"]
+        for s in services
+        if s.get("type") == "FeatureServer" and s.get("name")
+    ]
     logger.info("Found %d FeatureServer services", len(names))
     return names
 
@@ -201,6 +211,12 @@ def ingest_arcgis_services(
             continue
         seen_ids.add(parsed["arcgis_id"])
         rows.append(parsed)
+
+    if not rows:
+        raise RuntimeError(
+            "No services parsed from ArcGIS catalog; refusing to "
+            "overwrite existing CSV with empty data"
+        )
 
     rows.sort(
         key=lambda r: (
