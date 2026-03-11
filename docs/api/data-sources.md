@@ -253,25 +253,57 @@ wrappers are community-built:
 
 ## Architecture
 
+KindTech ingests from two completely separate APIs into two independent CSV
+catalogs. They share no data or endpoints — one provides geographic
+boundaries (maps), the other provides statistical tables (numbers).
+
 ```
-                    Ingestion (dev-time)              Runtime
-                    ┌─────────────────┐    ┌──────────────────────────┐
-ArcGIS REST API ──> │ geo/_ingestion  │──> │ data/arcgis_services.csv │
-  ?f=json           │ parse names     │    │ (615 services)           │
-  (~3,700 services) │ normalise codes │    │         ↓                │
-                    └─────────────────┘    │ _catalog.find_services() │
-                                           │         ↓                │
-                                           │ api.load_geodata()       │
-                                           │   → ArcGIS query         │
-                    ┌─────────────────┐    │                          │
-NOMIS SDMX JSON ──>│ ons/_ingestion  │──> │ data/nomis_tables.csv    │
-  def.sdmx.json     │ extract annots  │    │ (1,615 datasets)         │
-  (1 request)       │                 │    │         ↓                │
-                    └─────────────────┘    │ _catalog.list_tables()   │
-                                           │         ↓                │
-                                           │ api.load_ons()           │
-                                           │   → NOMIS CSV download   │
-                                           └──────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                        TWO SEPARATE DATA SOURCES                    │
+├──────────────────────────────┬──────────────────────────────────────┤
+│                              │                                      │
+│  ONS Open Geography Portal   │  NOMIS                               │
+│  (ArcGIS FeatureServer)      │  (Durham University for ONS)         │
+│  geoportal.statistics.gov.uk │  nomisweb.co.uk                      │
+│                              │                                      │
+│  What: UK boundary maps      │  What: UK statistics                  │
+│  Format: GeoJSON polygons    │  Format: CSV tabular data             │
+│                              │                                      │
+├──────────────────────────────┼──────────────────────────────────────┤
+│                              │                                      │
+│  INGESTION (dev-time)        │  INGESTION (dev-time)                 │
+│                              │                                      │
+│  Source URL:                 │  Source URL:                           │
+│  services1.arcgis.com/       │  nomisweb.co.uk/api/v01/              │
+│    ESMARspQHYMw9BZ9/         │    dataset/def.sdmx.json              │
+│    arcgis/rest/services      │                                      │
+│    ?f=json                   │  1 HTTP request → parse JSON          │
+│                              │  → extract id, name, source           │
+│  1 HTTP request → parse JSON │    from annotations                   │
+│  → regex-parse ~3,700        │                                      │
+│    service names             │  Output:                              │
+│  → normalise resolution      │  ons/data/nomis_tables.csv            │
+│    codes                     │  (1,615 datasets)                     │
+│                              │                                      │
+│  Output:                     │  uv run python -m                     │
+│  geo/data/arcgis_services.csv│    kindtech.ons._ingestion            │
+│  (615 boundary datasets)     │                                      │
+│                              │                                      │
+│  uv run python -m            │                                      │
+│    kindtech.geo._ingestion   │                                      │
+│                              │                                      │
+├──────────────────────────────┼──────────────────────────────────────┤
+│                              │                                      │
+│  RUNTIME (user-facing)       │  RUNTIME (user-facing)                │
+│                              │                                      │
+│  load_geodata("LAD")         │  load_ons("NM_1_1", time="latest")   │
+│    → look up CSV catalog     │    → look up CSV catalog              │
+│    → query ArcGIS            │    → query NOMIS                      │
+│      FeatureServer           │      dataset/{id}.data.csv            │
+│    → return GeoJSON dict     │    → return DataFrame                 │
+│                              │      (pandas or polars)               │
+│                              │                                      │
+└──────────────────────────────┴──────────────────────────────────────┘
 ```
 
 Both ingestion scripts are stdlib-only (`csv`, `re`, `requests`). The
@@ -282,7 +314,10 @@ a DataFrame.
 To refresh the catalogs when ONS publishes updates:
 
 ```bash
+# Geo boundaries — from ArcGIS
 uv run python -m kindtech.geo._ingestion
+
+# Statistics — from NOMIS
 uv run python -m kindtech.ons._ingestion
 ```
 
