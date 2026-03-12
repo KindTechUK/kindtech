@@ -14,13 +14,14 @@ from kindtech._mapping import (
     list_geography_mappings,
 )
 from kindtech.geo import geodata_to_properties, load_geodata
-from kindtech.ons import load_ons
+from kindtech.ons import list_tables, load_ons
 
 # Define what's available when using `from kindtech import *`
 __all__ = [
     "geodata_to_properties",
     "list_dataset_aliases",
     "list_geography_mappings",
+    "list_tables",
     "load_geodata",
     "load_ons",
 ]

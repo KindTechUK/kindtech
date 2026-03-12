@@ -118,12 +118,19 @@ def test_load_ons_truncation_warning(mock_get, caplog):
     mock_get.return_value = mock_response
 
     import logging
+    import warnings
 
-    with caplog.at_level(logging.WARNING, logger="kindtech.ons.api"):
+    with (
+        caplog.at_level(logging.WARNING, logger="kindtech.ons.api"),
+        warnings.catch_warnings(record=True) as w,
+    ):
+        warnings.simplefilter("always")
         result = load_ons("NM_1_1")
 
     assert len(result) == 25000
     assert "truncated" in caplog.text.lower()
+    # Also check warnings.warn was triggered
+    assert any("truncated" in str(warning.message) for warning in w)
 
 
 @mock.patch("kindtech.ons.api.requests.get")

@@ -4,6 +4,7 @@
 #     "marimo",
 #     "kindtech",
 #     "pandas>=2.0.0",
+#     "altair",
 # ]
 # ///
 
@@ -175,6 +176,61 @@ def _(geo_df, mo, ons_df, pd):
 @app.cell
 def _(merged, mo):
     mo.ui.table(merged.head(20), selection=None)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md("""
+    ## Step 4: Choropleth map
+
+    Visualise the joined data on a map, coloured by `obs_value`.
+    """)
+    return
+
+
+@app.cell
+def _(geo_df, geojson, merged):
+    import altair as alt
+
+    # Map geography_code → obs_value from the merged DataFrame
+    code_to_value = dict(
+        zip(merged["geography_code"], merged["obs_value"], strict=False)
+    )
+
+    # Enrich GeoJSON features with obs_value using geo_df's
+    # normalised geography_code (avoids hardcoding LAD24CD etc.)
+    enriched = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                **f,
+                "properties": {
+                    **f["properties"],
+                    "obs_value": code_to_value[code],
+                },
+            }
+            for f, code in zip(
+                geojson["features"], geo_df["geography_code"], strict=False
+            )
+            if code in code_to_value
+        ],
+    }
+
+    chart = (
+        alt.Chart(alt.Data(values=enriched["features"]))
+        .mark_geoshape(stroke="white", strokeWidth=0.3)
+        .encode(
+            color=alt.Color("properties.obs_value:Q", title="Value"),
+            tooltip=[
+                "properties.geography_code:N",
+                "properties.obs_value:Q",
+            ],
+        )
+        .project(type="mercator")
+        .properties(width=500, height=700)
+    )
+    chart
     return
 
 

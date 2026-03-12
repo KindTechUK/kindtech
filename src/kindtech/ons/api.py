@@ -113,9 +113,17 @@ def load_ons(
             :func:`~kindtech.geo.api.geodata_to_properties`
             (e.g. ``GEOGRAPHY_CODE`` → ``geography_code``).
             Defaults to ``True``.
-        **kwargs: Query parameters passed to the NOMIS API
-            (e.g., geography="TYPE480", time="latest", measures=20100).
+        **kwargs: Query parameters passed to the NOMIS API.
             Lists are joined with commas.
+            Common parameters:
+
+            - ``time`` — ``"latest"``, ``"2021"``, or a range
+              ``"2018...2022"`` (NOMIS syntax).
+            - ``geography`` — raw NOMIS type (``"TYPE480"``).
+              Prefer *geography_type* instead.
+            - ``measures`` — measure code (e.g. ``20100``).
+            - ``select`` — columns to return (list of strings).
+
             See https://www.nomisweb.co.uk/api/v01/help
 
     Returns:
@@ -175,11 +183,16 @@ def load_ons(
         raise ValueError(msg) from e
 
     if len(df) == 25000:
-        logger.warning(
-            "Query may be truncated at 25,000 rows. "
-            "Provide a NOMIS UID (uid='0x...') to retrieve the full table. "
+        import warnings
+
+        truncation_msg = (
+            "Query returned exactly 25,000 rows and is likely "
+            "truncated. Provide a NOMIS UID (uid='0x...') to "
+            "retrieve the full table. "
             "See https://www.nomisweb.co.uk/api/v01/help"
         )
+        warnings.warn(truncation_msg, stacklevel=2)
+        logger.warning(truncation_msg)
 
     if normalize:
         df = df.rename({c: c.lower() for c in df.columns})

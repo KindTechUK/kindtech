@@ -123,6 +123,15 @@ def load_geodata(
     if not service:
         return {"type": "FeatureCollection", "features": []}
 
+    if year is None:
+        logger.warning(
+            "No year specified — using %s boundaries (year %d). "
+            "Pass year='%d' to silence this warning.",
+            service["geography"],
+            service["year"],
+            service["year"],
+        )
+
     return _query_arcgis_service(service["url"], filters or None)
 
 
@@ -161,10 +170,24 @@ def geodata_to_properties(
     name_field = geo_name_field(geo, yr)
 
     rows: list[dict[str, Any]] = []
+    warned = False
     for feature in geojson.get("features", []):
         props = feature.get("properties", {})
+        code_val = props.get(code_field, "")
+        if not code_val and not warned and props:
+            import warnings
+
+            warnings.warn(
+                f"Field '{code_field}' not found in GeoJSON "
+                f"properties. Check that geography_type="
+                f"'{geo}' and year={yr} match the data "
+                f"returned by load_geodata(). Available "
+                f"fields: {list(props.keys())}",
+                stacklevel=2,
+            )
+            warned = True
         row: dict[str, Any] = {
-            "geography_code": props.get(code_field, ""),
+            "geography_code": code_val,
             "geography_name": props.get(name_field, ""),
         }
         row.update(props)
