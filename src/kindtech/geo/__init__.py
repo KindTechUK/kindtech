@@ -11,6 +11,7 @@ from ._enums import (
     Month,
 )
 from .api import (
+    geodata_to_properties,
     get_available_boundary_types,
     get_available_coverage_areas,
     get_available_geography_types,
@@ -23,6 +24,7 @@ __all__ = [
     "CoverageArea",
     "GeographyType",
     "Month",
+    "geodata_to_properties",
     "get_available_boundary_types",
     "get_available_coverage_areas",
     "get_available_geography_types",

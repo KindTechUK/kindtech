@@ -96,6 +96,7 @@ def load_ons(
     dataset_id: str,
     geography_type: Any | None = None,
     base_url: str = NOMIS_BASE_URL,
+    normalize: bool = True,
     **kwargs: Any,
 ) -> Any:
     """
@@ -108,6 +109,10 @@ def load_ons(
             ``GeographyType`` enum. Resolved to a NOMIS TYPE code
             automatically. Cannot be used with ``geography=``.
         base_url: NOMIS API base URL.
+        normalize: Lowercase column names so they align with
+            :func:`~kindtech.geo.api.geodata_to_properties`
+            (e.g. ``GEOGRAPHY_CODE`` → ``geography_code``).
+            Defaults to ``True``.
         **kwargs: Query parameters passed to the NOMIS API
             (e.g., geography="TYPE480", time="latest", measures=20100).
             Lists are joined with commas.
@@ -115,6 +120,7 @@ def load_ons(
 
     Returns:
         DataFrame (pandas or polars, depending on what's installed).
+        Column names are lowercased when *normalize* is True.
 
     Raises:
         ValueError: If the dataset ID doesn't exist, the response
@@ -174,6 +180,9 @@ def load_ons(
             "Provide a NOMIS UID (uid='0x...') to retrieve the full table. "
             "See https://www.nomisweb.co.uk/api/v01/help"
         )
+
+    if normalize:
+        df = df.rename({c: c.lower() for c in df.columns})
 
     return nw.to_native(df)
 

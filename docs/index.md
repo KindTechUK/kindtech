@@ -13,17 +13,18 @@ KindTech is lightweight (~500KB) — just requests + narwhals. You bring your ow
 ## Quick start
 
 ```python
-from kindtech.geo import load_geodata, GeographyType
-from kindtech.ons import load_ons, list_tables
+from kindtech import load_geodata, load_ons, geodata_to_properties
+import pandas as pd  # or polars
 
-# Load Local Authority District boundaries (GeoJSON)
-boundaries = load_geodata(geography_type="LAD", coverage="UK")
+# Load LAD boundaries (GeoJSON) and extract properties
+geojson = load_geodata(geography_type="LAD")
+geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
 
-# Load ONS statistics (returns your preferred DataFrame type)
-df = load_ons("NM_1_1", geography="TYPE480", time="latest")
+# Load ONS statistics — columns are normalised automatically
+ons_df = load_ons("population", geography_type="LAD", time="latest")
 
-# Browse available datasets
-tables = list_tables(name="population")
+# Join on the shared geography_code column
+merged = geo_df.merge(ons_df, on="geography_code")
 ```
 
 ## Bring Your Own DataFrame

@@ -48,8 +48,8 @@ def get_most_recent_service(
     geography_type: str,
     coverage: str,
     boundary_type: str | None = None,
-) -> str | None:
-    """Return the arcgis_id of the most recent matching service."""
+) -> dict | None:
+    """Return the full metadata dict of the most recent matching service."""
     matches = find_services(
         geography_type=geography_type,
         coverage=coverage,
@@ -61,7 +61,7 @@ def get_most_recent_service(
         key=lambda s: int(s["year"]) if s["year"].isdigit() else 0,
         reverse=True,
     )
-    return matches[0]["arcgis_id"]
+    return matches[0]
 
 
 def get_service_url(service_name: str) -> str:

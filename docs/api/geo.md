@@ -102,9 +102,55 @@ All enums accept both string codes and enum values. They have `.code` and `.desc
 | `CoverageArea` | UK, GB, EW | `CoverageArea.UK` |
 | `Month` | JAN through DEC | `Month.DEC` |
 
+---
+
+### `geodata_to_properties()`
+
+Extract feature properties from GeoJSON with normalised column names for easy joins with ONS data.
+
+```python
+from kindtech import load_geodata, geodata_to_properties
+import pandas as pd
+
+geojson = load_geodata(geography_type="LAD")
+rows = geodata_to_properties(geojson, "LAD", 2024)
+geo_df = pd.DataFrame(rows)
+# geo_df has 'geography_code' and 'geography_name' columns
+# plus all original ArcGIS properties (LAD24CD, LAD24NM, etc.)
+```
+
+#### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `geojson` | `dict` | *required* | GeoJSON FeatureCollection from `load_geodata()` |
+| `geography_type` | `str` or `GeographyType` | *required* | Geography level (e.g., `"LAD"`, `"LSOA"`) |
+| `year` | `int` or `str` | *required* | Year of the data (e.g., `2024`) |
+
+#### Returns
+
+`list[dict]` — One dict per feature, containing:
+
+- `geography_code` — normalised geography code (e.g. `E06000001`), derived from the year-stamped ArcGIS field (e.g. `LAD24CD`)
+- `geography_name` — normalised geography name (e.g. `Hartlepool`), derived from the year-stamped ArcGIS field (e.g. `LAD24NM`)
+- All original ArcGIS properties preserved as-is
+
+The normalised `geography_code` column matches the column produced by `load_ons(normalize=True)`, enabling trivial joins:
+
+```python
+from kindtech import load_geodata, load_ons, geodata_to_properties
+import pandas as pd
+
+geojson = load_geodata(geography_type="LAD")
+geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
+ons_df = load_ons("population", geography_type="LAD", time="latest")
+merged = geo_df.merge(ons_df, on="geography_code")
+```
+
 ## How it works
 
 1. The bundled CSV catalog (`geo/data/arcgis_services.csv`, 615 services across 24 geography types) maps geography type + year + coverage + boundary to an ArcGIS service ID
 2. `load_geodata()` finds the best matching service (most recent year if not specified)
 3. Queries the ArcGIS FeatureServer REST API for GeoJSON
 4. Returns the raw GeoJSON FeatureCollection
+5. `geodata_to_properties()` extracts feature properties and adds normalised `geography_code` / `geography_name` columns using `geo_code_field()` and `geo_name_field()` from the internal mapping module

@@ -28,7 +28,7 @@ def test_load_ons_basic(mock_get):
 
     assert isinstance(result, pd.DataFrame)
     assert len(result) == 2
-    assert "OBS_VALUE" in result.columns
+    assert "obs_value" in result.columns
     mock_get.assert_called_once()
     call_url = mock_get.call_args[0][0]
     assert "NM_1_1" in call_url
@@ -145,6 +145,35 @@ def test_list_tables_filter_by_source():
     result = list_tables(source="nomis")
 
     assert isinstance(result, pd.DataFrame)
+
+
+@mock.patch("kindtech.ons.api.requests.get")
+def test_load_ons_normalize_false(mock_get):
+    """Test that normalize=False preserves original UPPER_CASE columns."""
+    mock_response = mock.MagicMock()
+    mock_response.text = CSV_RESPONSE
+    mock_response.raise_for_status = mock.MagicMock()
+    mock_get.return_value = mock_response
+
+    result = load_ons("NM_1_1", normalize=False)
+
+    assert "OBS_VALUE" in result.columns
+    assert "GEOGRAPHY_NAME" in result.columns
+
+
+@mock.patch("kindtech.ons.api.requests.get")
+def test_load_ons_normalize_default(mock_get):
+    """Test that columns are lowercased by default."""
+    mock_response = mock.MagicMock()
+    mock_response.text = CSV_RESPONSE
+    mock_response.raise_for_status = mock.MagicMock()
+    mock_get.return_value = mock_response
+
+    result = load_ons("NM_1_1")
+
+    assert "obs_value" in result.columns
+    assert "geography_name" in result.columns
+    assert "OBS_VALUE" not in result.columns
 
 
 def test_is_valid_dataset():

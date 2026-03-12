@@ -25,7 +25,7 @@ from typing import Any
 
 import requests
 
-from kindtech._mapping import extract_code
+from kindtech._mapping import extract_code, geo_code_field, geo_name_field
 
 from . import _catalog
 from ._enums import BoundaryType, CoverageArea, GeographyType, Month
@@ -33,36 +33,49 @@ from ._enums import BoundaryType, CoverageArea, GeographyType, Month
 logger = logging.getLogger(__name__)
 
 
-def _resolve_service_url(
+def _resolve_service(
     geography_type: str | GeographyType,
     year: str | None = None,
     month: str | Month | None = None,
     coverage: str | CoverageArea | None = None,
     boundary_type: str | BoundaryType | None = None,
-) -> str | None:
-    """Find the best matching service and return its FeatureServer URL."""
+) -> dict | None:
+    """Find the best matching service and return its metadata.
+
+    Returns:
+        Dict with ``url``, ``geography``, ``year`` keys,
+        or ``None`` if no match found.
+    """
     geo = extract_code(geography_type)
     mon = extract_code(month)
     cov = extract_code(coverage)
     bnd = extract_code(boundary_type)
 
+    match: dict | None = None
     if year:
         matches = _catalog.find_services(
-            geography_type=geo, year=year, month=mon, coverage=cov, boundary_type=bnd
+            geography_type=geo,
+            year=year,
+            month=mon,
+            coverage=cov,
+            boundary_type=bnd,
         )
         if not matches and mon:
             matches = _catalog.find_services(
-                geography_type=geo, year=year, coverage=cov, boundary_type=bnd
+                geography_type=geo,
+                year=year,
+                coverage=cov,
+                boundary_type=bnd,
             )
-        service_name = matches[0]["arcgis_id"] if matches else None
+        match = matches[0] if matches else None
     else:
-        service_name = _catalog.get_most_recent_service(
+        match = _catalog.get_most_recent_service(
             geography_type=geo,
             coverage=cov or "UK",
             boundary_type=bnd,
         )
 
-    if not service_name:
+    if not match:
         logger.warning(
             "No matching service found for: geography_type=%s, year=%s, coverage=%s",
             geo,
@@ -70,7 +83,12 @@ def _resolve_service_url(
             cov,
         )
         return None
-    return _catalog.get_service_url(service_name)
+
+    return {
+        "url": _catalog.get_service_url(match["arcgis_id"]),
+        "geography": match["geography"],
+        "year": int(match["year"]),
+    }
 
 
 def load_geodata(
@@ -95,11 +113,63 @@ def load_geodata(
     Returns:
         GeoJSON FeatureCollection as a dictionary.
     """
-    url = _resolve_service_url(geography_type, year, month, coverage, boundary_type)
-    if not url:
+    service = _resolve_service(
+        geography_type,
+        year,
+        month,
+        coverage,
+        boundary_type,
+    )
+    if not service:
         return {"type": "FeatureCollection", "features": []}
 
-    return _query_arcgis_service(url, filters or None)
+    return _query_arcgis_service(service["url"], filters or None)
+
+
+def geodata_to_properties(
+    geojson: dict[str, Any],
+    geography_type: str | GeographyType,
+    year: int | str,
+) -> list[dict[str, Any]]:
+    """Extract feature properties with normalised column names.
+
+    Adds ``geography_code`` and ``geography_name`` keys derived
+    from the year-stamped ArcGIS field names (e.g. ``LAD24CD``),
+    so they match ``geography_code`` / ``geography_name`` from
+    :func:`~kindtech.ons.api.load_ons`.
+
+    Args:
+        geojson: GeoJSON FeatureCollection returned by
+            :func:`load_geodata`.
+        geography_type: Geography type used in the original query
+            (e.g., ``"LAD"``).
+        year: Data vintage year (e.g., ``2024`` or ``"2024"``).
+
+    Returns:
+        List of property dicts, each with ``geography_code`` and
+        ``geography_name`` prepended.
+
+    Example::
+
+        geo = load_geodata("LAD")
+        rows = geodata_to_properties(geo, "LAD", 2024)
+        # rows[0]["geography_code"] == "E06000001"
+    """
+    geo = extract_code(geography_type)
+    yr = int(year)
+    code_field = geo_code_field(geo, yr)
+    name_field = geo_name_field(geo, yr)
+
+    rows: list[dict[str, Any]] = []
+    for feature in geojson.get("features", []):
+        props = feature.get("properties", {})
+        row: dict[str, Any] = {
+            "geography_code": props.get(code_field, ""),
+            "geography_name": props.get(name_field, ""),
+        }
+        row.update(props)
+        rows.append(row)
+    return rows
 
 
 def get_field_info(
@@ -120,13 +190,16 @@ def get_field_info(
     Returns:
         List of field info dicts with name, type, alias, etc.
     """
-    url = _resolve_service_url(
-        geography_type, year, coverage=coverage, boundary_type=boundary_type
+    service = _resolve_service(
+        geography_type,
+        year,
+        coverage=coverage,
+        boundary_type=boundary_type,
     )
-    if not url:
+    if not service:
         return []
 
-    layer_url = f"{url}/0"
+    layer_url = f"{service['url']}/0"
     try:
         response = requests.get(layer_url, params={"f": "json"}, timeout=60)
         response.raise_for_status()

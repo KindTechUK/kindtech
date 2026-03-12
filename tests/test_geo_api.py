@@ -14,6 +14,7 @@ from kindtech.geo import (
     BoundaryType,
     CoverageArea,
     GeographyType,
+    geodata_to_properties,
     get_available_boundary_types,
     get_available_coverage_areas,
     get_available_geography_types,
@@ -227,3 +228,60 @@ def test_get_available_coverage_areas():
     codes = [t["code"] for t in types]
     assert "UK" in codes
     assert "EW" in codes
+
+
+def test_geodata_to_properties_basic():
+    """Test extracting normalised properties from GeoJSON."""
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "properties": {
+                    "LAD24CD": "E06000001",
+                    "LAD24NM": "Hartlepool",
+                    "Shape__Area": 123.45,
+                }
+            },
+            {
+                "properties": {
+                    "LAD24CD": "E08000003",
+                    "LAD24NM": "Manchester",
+                    "Shape__Area": 678.9,
+                }
+            },
+        ],
+    }
+
+    rows = geodata_to_properties(geojson, "LAD", 2024)
+
+    assert len(rows) == 2
+    assert rows[0]["geography_code"] == "E06000001"
+    assert rows[0]["geography_name"] == "Hartlepool"
+    # Original properties are preserved
+    assert rows[0]["LAD24CD"] == "E06000001"
+    assert rows[0]["Shape__Area"] == 123.45
+    assert rows[1]["geography_code"] == "E08000003"
+
+
+def test_geodata_to_properties_empty():
+    """Test with empty FeatureCollection."""
+    geojson = {"type": "FeatureCollection", "features": []}
+
+    rows = geodata_to_properties(geojson, "LAD", 2024)
+
+    assert rows == []
+
+
+def test_geodata_to_properties_with_enum():
+    """Test that enum geography types work."""
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            {"properties": {"LSOA21CD": "E01000001", "LSOA21NM": "City of London 001A"}}
+        ],
+    }
+
+    rows = geodata_to_properties(geojson, GeographyType.LSOA, "2021")
+
+    assert rows[0]["geography_code"] == "E01000001"
+    assert rows[0]["geography_name"] == "City of London 001A"

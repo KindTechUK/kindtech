@@ -364,8 +364,26 @@ Both APIs return standard ONS geography codes (e.g. `E06000001`):
   where the field name includes a 2-digit year suffix
 - **NOMIS** returns `GEOGRAPHY_CODE` and `GEOGRAPHY_NAME` columns
 
-The `geo_code_field()` and `geo_name_field()` helpers derive the ArcGIS
-field names:
+KindTech normalises both sources so they share a common `geography_code`
+column:
+
+- `load_ons(normalize=True)` (the default) lowercases NOMIS columns,
+  producing `geography_code` and `geography_name`
+- `geodata_to_properties()` maps year-stamped ArcGIS fields (e.g.
+  `LAD24CD`) to `geography_code` and `geography_name`
+
+```python
+from kindtech import load_geodata, load_ons, geodata_to_properties
+import pandas as pd
+
+geojson = load_geodata(geography_type="LAD")
+geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
+ons_df = load_ons("population", geography_type="LAD", time="latest")
+merged = geo_df.merge(ons_df, on="geography_code")
+```
+
+Under the hood, `geo_code_field()` and `geo_name_field()` derive the
+ArcGIS field names:
 
 ```python
 from kindtech._mapping import geo_code_field, geo_name_field
