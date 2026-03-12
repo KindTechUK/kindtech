@@ -67,6 +67,8 @@ def _resolve_service(
                 coverage=cov,
                 boundary_type=bnd,
             )
+        if matches:
+            matches.sort(key=lambda m: int(m["year"]), reverse=True)
         match = matches[0] if matches else None
     else:
         match = _catalog.get_most_recent_service(

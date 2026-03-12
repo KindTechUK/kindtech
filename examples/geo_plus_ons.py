@@ -190,7 +190,7 @@ def _(mo):
 
 
 @app.cell
-def _(geo_df, geojson, merged):
+def _(geojson, merged):
     import altair as alt
 
     # Map geography_code → obs_value from the merged DataFrame
@@ -198,8 +198,17 @@ def _(geo_df, geojson, merged):
         zip(merged["geography_code"], merged["obs_value"], strict=False)
     )
 
-    # Enrich GeoJSON features with obs_value using geo_df's
-    # normalised geography_code (avoids hardcoding LAD24CD etc.)
+    # Build a geography_code → feature index so we don't rely
+    # on positional alignment between geojson and geo_df
+    code_to_feature: dict = {}
+    for f in geojson["features"]:
+        props = f.get("properties", {})
+        # Find the code field (ends with "CD", e.g. LAD24CD)
+        for key, val in props.items():
+            if key.endswith("CD") and val in code_to_value:
+                code_to_feature[val] = f
+                break
+
     enriched = {
         "type": "FeatureCollection",
         "features": [
@@ -210,10 +219,7 @@ def _(geo_df, geojson, merged):
                     "obs_value": code_to_value[code],
                 },
             }
-            for f, code in zip(
-                geojson["features"], geo_df["geography_code"], strict=False
-            )
-            if code in code_to_value
+            for code, f in code_to_feature.items()
         ],
     }
 
