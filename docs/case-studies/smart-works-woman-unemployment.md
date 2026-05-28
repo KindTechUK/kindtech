@@ -69,6 +69,75 @@ Smart Works needed to identify gaps in their service provision and optimize thei
 4. **Demographic Comparison**: Compare Smart Works client demographics to overall unemployed women population
 5. **Gap Analysis**: Identify areas with high need but low service provision
 
+### Reproduction
+
+A runnable, end-to-end reproduction lives in
+[`examples/smart_works_unemployment.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/smart_works_unemployment.py)
+(a [marimo](https://marimo.io/) notebook). It uses only the public KindTech
+API plus a deterministic synthetic client list (the real client records are
+private):
+
+```python
+from kindtech import geodata_to_properties, load_geodata, load_ons
+
+# Female, unemployed, by age band, all LADs — Census 2021 table RM024
+unemp = load_ons(
+    "NM_2124_1",
+    geography_type="LAD",
+    time="latest",
+    c2021_eastat_7=2,  # Unemployed
+    c_sex=1,           # Female
+    c2021_age_7=[2, 3, 4, 5],  # 16-24, 25-34, 35-49, 50-64
+)
+
+# LAD boundaries with centroids, normalised to share `geography_code`
+geojson = load_geodata(geography_type="LAD", year="2025", boundary_type="BUC")
+```
+
+!!! note "Why Census 2021, not the Annual Population Survey?"
+    APS unemployment *counts* by sex are suppressed for small samples — only
+    ~40 of 350 Local Authorities return data, and age bands are sparser still.
+    Census 2021 (table RM024, `NM_2124_1`) covers **every** LAD in England &
+    Wales (318 areas, ~580,000 unemployed women), making it the reliable
+    source for a choropleth.
+
+Synthetic client numbers are modelled so reach **decays with distance** from
+Smart Works' real centre cities (Birmingham, Manchester, Leeds, Newcastle,
+Reading, Bristol, London, etc.), scaled by local female unemployment. This
+deliberately reproduces the case study's structure: high-need areas far from
+any centre end up under-served.
+
+**Geographic gap** — female unemployment (the need) vs Smart Works reach
+(clients per 100 unemployed women). Areas that are dark on the left but pale
+on the right are the service gaps:
+
+![Reproduced Smart Works maps](../images/case-studies/smart-works-reproduced-maps.png)
+*Figure 2: Female unemployment by Local Authority (left) vs synthetic Smart
+Works reach (right). The most under-served high-need areas — Cornwall,
+Plymouth, the rural east, and coastal towns — sit far from any centre.*
+
+**Demographic gap** — the age profile of unemployment (need) vs the age
+profile of clients reached:
+
+![Reproduced age comparison](../images/case-studies/smart-works-reproduced-age.png)
+*Figure 3: The 16-24 band is ~22% of need but only ~12% of clients reached,
+flagging young women as under-served — matching the original finding.*
+
+To go from synthetic to real client data, swap `clients_total` for a
+`postcode → LAD` aggregation of the real client list. The Census join, the
+gap metric, and the maps stay identical.
+
 ## Lessons Learned
 
-Key takeaways and recommendations.
+- **The right source matters more than the obvious one.** The original brief
+  named the Annual Population Survey, but APS small-area suppression makes it
+  unusable for a full LAD map — Census 2021 is the correct primary source.
+- **Distance-decayed reach reproduces the real pattern.** Modelling client
+  reach as a function of distance to the nearest centre surfaces exactly the
+  high-need, low-provision areas the charity cared about.
+- **Normalisation removes the busywork.** Because `load_ons` and
+  `load_geodata` both expose `geography_code`, joining statistics to
+  boundaries is a single `merge` — no manual column matching.
+- **Per-need normalisation reveals gaps counts hide.** "Clients per 100
+  unemployed women" exposes under-served areas that a raw client count would
+  mask behind population size.
