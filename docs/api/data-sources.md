@@ -251,6 +251,68 @@ wrappers are community-built:
 
 ---
 
+## postcodes.io
+
+[postcodes.io](https://postcodes.io/) is a free, open-source REST API that
+resolves UK postcodes to administrative and statistical geographies. KindTech's
+`postcodes` module wraps it so client address data joins to the same
+`geography_code` used by the geo and ONS modules.
+
+### Why a third-party API (not ONS directly)
+
+ONS publishes the underlying data — the
+[ONS Postcode Directory (ONSPD)](https://geoportal.statistics.gov.uk/datasets/ons::ons-postcode-directory-may-2024/about)
+and
+[National Statistics Postcode Lookup (NSPL)](https://geoportal.statistics.gov.uk/datasets/national-statistics-postcode-lookup-2021-census/about)
+— but only as bulk ZIP downloads of ~2.6 million postcodes (hundreds of MB),
+which is too large to ship in the package. postcodes.io is built on exactly
+these products (plus Ordnance Survey Open Names and the Scottish Postcode
+Directory) and serves per-postcode lookups over HTTP, so KindTech can stay a
+thin wrapper with no bundled data and no ingestion step.
+
+### Endpoints
+
+Base URL: `https://api.postcodes.io`
+
+| Endpoint | Description |
+|---|---|
+| `POST /postcodes` | Bulk lookup, up to **100 postcodes** per request |
+| `GET /postcodes/{postcode}` | Single postcode lookup |
+| `GET /postcodes?lon={lon}&lat={lat}` | Reverse geocode — nearest postcodes to a point |
+| `GET /outcodes/{outcode}` | Outcode info: spanned Local Authorities + centroid |
+
+No authentication is required. KindTech batches bulk lookups at 100 per request
+and preserves input order.
+
+### Returned geography codes
+
+A postcode lookup returns a `codes` object with standard ONS GSS codes.
+KindTech surfaces these aligned to its geography types:
+
+| KindTech level | postcodes.io `codes` key | Example |
+|---|---|---|
+| LSOA | `lsoa21` | `E01034394` |
+| MSOA | `msoa21` | `E02007008` |
+| OA | `oa21` | `E00182613` |
+| LAD | `admin_district` | `E09000023` |
+| WD (ward) | `admin_ward` | `E05013727` |
+| ICB | `icb` | `E54000030` |
+| TTWA | `ttwa` | `E30000234` |
+
+2021 Census geographies (`lsoa21`, `msoa21`, `oa21`) are preferred so codes
+match Census 2021 statistics and current boundary data.
+
+### Licensing
+
+postcodes.io code is MIT licensed; the underlying data is
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/),
+containing OS data © Crown copyright and database right, Royal Mail data
+© Royal Mail copyright and database right, and National Statistics data
+© Crown copyright and database right. Maintained by
+[Ideal Postcodes](https://ideal-postcodes.co.uk/).
+
+---
+
 ## Dataset Aliases
 
 Instead of remembering NOMIS dataset IDs like `NM_2002_1`, you can use
