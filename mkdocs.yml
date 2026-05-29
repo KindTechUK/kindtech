@@ -11,16 +11,16 @@ theme:
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: indigo
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -28,6 +28,7 @@ theme:
     # Top navigation bar
     - navigation.tabs
     - navigation.tabs.sticky
+    - navigation.sections
     - navigation.top
 
     # Other features
@@ -37,10 +38,16 @@ theme:
     - content.tooltips
     - search.suggest
     - search.highlight
+    - toc.follow
   icon:
     repo: fontawesome/brands/github
 
+extra_css:
+  - stylesheets/extra.css
+
 markdown_extensions:
+  - attr_list
+  - md_in_html
   - admonition
   - pymdownx.details
   - pymdownx.superfences

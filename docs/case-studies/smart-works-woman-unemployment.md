@@ -11,12 +11,14 @@ Smart Works needed to identify gaps in their service provision and optimize thei
 **Key Challenge**: With over 632,500 unemployed women in their operating areas, Smart Works was not reaching all potential beneficiaries and struggled to identify service gaps.
 
 **Key objectives:**
+
 - Map the distribution of Smart Works clients across Local Authorities
 - Identify areas with high unemployment but low client numbers
 - Analyze demographic disparities between clients and national unemployment data
 - Optimize outreach strategy and inform future center locations
 
 **Research Questions:**
+
 - Which Local Authorities have high unemployment rates but low Smart Works client numbers?
 - Are there specific demographic groups (age, ethnicity) that Smart Works is under-serving?
 - Where should Smart Works focus their efforts or consider opening new centers?
@@ -25,6 +27,7 @@ Smart Works needed to identify gaps in their service provision and optimize thei
 ## Dataset Involved
 
 **Primary Data Sources**:
+
 - **Census 2021**: Comprehensive demographic and employment data by Local Authority
 - **Annual Population Survey**: Current unemployment statistics and trends
 - **Smart Works Internal Data**: Client records with geographic and demographic information
@@ -32,6 +35,7 @@ Smart Works needed to identify gaps in their service provision and optimize thei
 **Data Integration**: Publicly available 'open data' from Census 2021 and Annual Population Survey was mapped to show women's unemployment rates by Local Authority and compared to Smart Works client distribution.
 
 **Analysis Scope**:
+
 - Geographic comparison of unemployment rates vs. client numbers
 - Demographic analysis comparing Smart Works clients to overall unemployed women population
 
@@ -52,11 +56,13 @@ Smart Works needed to identify gaps in their service provision and optimize thei
 ### Data Requirements
 
 **Internal Dataset**: Smart Works client records with:
+
 - Geographic location (Local Authority)
 - Demographic information (age, ethnicity)
 - Service usage patterns
 
 **External Datasets**:
+
 - **Census 2021**: Local Authority-level unemployment and demographic data
 - **Annual Population Survey**: Current unemployment statistics
 - **Local Authority Boundaries**: Geographic polygons for spatial analysis and mapping
