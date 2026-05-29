@@ -77,6 +77,10 @@ A runnable, end-to-end reproduction lives in
 API plus a deterministic synthetic client list (the real client records are
 private):
 
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/smart_works_unemployment.py)
+&nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
+data), or locally with `uv run marimo edit examples/smart_works_unemployment.py`.
+
 ```python
 from kindtech import geodata_to_properties, load_geodata, load_ons
 
