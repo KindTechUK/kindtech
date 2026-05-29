@@ -52,6 +52,52 @@ Citizens Advice Lewisham (CAL) needed to identify 'vulnerability hotspots' - are
 4. **Spatial Analysis**: Overlay client density with IMD scores
 5. **Visualization**: Create comparative maps showing deprivation vs. service usage
 
+### Reproduction
+
+A runnable, end-to-end reproduction lives in
+[`examples/cal_vulnerable_client.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py)
+(a [marimo](https://marimo.io/) notebook). It chains three KindTech connectors,
+all joining on the 2021 LSOA `geography_code`:
+
+```python
+from kindtech import postcodes_to_geography, load_imd, load_geodata
+
+# 1. Client postcodes -> LSOA (the step real client data would use)
+clients = postcodes_to_geography(client_postcodes, geography_type="LSOA")
+
+# 2. Deprivation + population per LSOA (IoD 2025, on 2021 LSOAs)
+imd = load_imd(nation="England")  # imd_decile, imd_score, population
+```
+
+!!! note "Everything is on 2021 LSOAs — no crosswalk"
+    The postcode connector returns 2021 LSOA codes, **IMD 2025** is published on
+    2021 LSOAs (and ships a population denominator), and the default LSOA
+    boundaries are 2021. So deprivation, population and client geography line up
+    on one `geography_code` with no vintage conversion. (The older composite
+    `load_imd(year=2019)` is on 2011 LSOAs and would need a crosswalk.)
+
+Client records are private, so the notebook generates synthetic clients per
+LSOA at a rate that **rises with deprivation**, then normalises to clients per
+1,000 residents.
+
+**Hotspots vs usage** — deprivation (left) and CAL client rate (right). Shared
+dark areas mean clients come from the most-deprived LSOAs:
+
+![Reproduced CAL maps](../images/case-studies/cal-reproduced-maps.png)
+*Figure 2: IMD 2025 decile (left, dark = most deprived) vs synthetic CAL clients
+per 1,000 residents (right). The hotspots align.*
+
+**Does usage track deprivation?** Each LSOA's deprivation score against its
+client rate:
+
+![Reproduced CAL scatter](../images/case-studies/cal-reproduced-scatter.png)
+*Figure 3: A clear positive correlation between deprivation and clients per
+capita — the direction the original study found, validating CAL's targeting.*
+
+To run on real data, feed the real client postcodes through step 1 and
+aggregate per `geography_code`; the IMD join, per-capita maths and maps are
+unchanged.
+
 ## Lessons Learned
 
 **Key takeaways and recommendations:**
