@@ -56,6 +56,10 @@ A runnable, end-to-end reproduction lives in
 (a [marimo](https://marimo.io/) notebook). It chains three KindTech connectors,
 all joining on the 2021 LSOA `geography_code`:
 
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/sobus_bame_referrals.py)
+&nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
+data), or locally with `uv run marimo edit examples/sobus_bame_referrals.py`.
+
 ```python
 from kindtech import outcode_to_geography, load_ons, load_geodata
 
