@@ -102,3 +102,77 @@ def test_dataset_cached_across_calls(mock_get):
 
     # Fetched once despite three calls — the parsed frame is cached.
     mock_get.assert_called_once()
+
+
+# --- year=2025 (latest national index) -------------------------------------
+
+_ENGLAND_2025_CSV = (
+    "LSOA code (2021),LSOA name (2021),"
+    "Local Authority District code (2024),Local Authority District name (2024),"
+    "Index of Multiple Deprivation (IMD) Score,"
+    "Index of Multiple Deprivation (IMD) Rank (where 1 is most deprived),"
+    "Index of Multiple Deprivation (IMD) Decile "
+    "(where 1 is most deprived 10% of LSOAs),"
+    "Income Score (rate),"
+    "Income Decile (where 1 is most deprived 10% of LSOAs),"
+    "Employment Score (rate),"
+    "Employment Decile (where 1 is most deprived 10% of LSOAs),"
+    '"Education, Skills and Training Score",'
+    '"Education, Skills and Training Decile (where 1 is most deprived 10% of LSOAs)",'
+    "Health Deprivation and Disability Score,"
+    "Health Deprivation and Disability Decile (where 1 is most deprived 10% of LSOAs),"
+    "Crime Score,"
+    "Crime Decile (where 1 is most deprived 10% of LSOAs),"
+    "Barriers to Housing and Services Score,"
+    "Barriers to Housing and Services Decile (where 1 is most deprived 10% of LSOAs),"
+    "Living Environment Score,"
+    "Living Environment Decile (where 1 is most deprived 10% of LSOAs)\n"
+    "E01000001,City of London 001A,E09000001,City of London,"
+    "8.7,26525,8,0.013,9,0.02,8,0.1,7,0.2,6,0.3,5,0.4,4,0.5,3\n"
+)
+
+
+@mock.patch("kindtech.imd.api.requests.get")
+def test_england_2025_on_2021_lsoas_with_domains(mock_get):
+    resp = mock.MagicMock()
+    resp.raise_for_status = mock.MagicMock()
+    resp.text = _ENGLAND_2025_CSV
+    mock_get.return_value = resp
+
+    df = load_imd(nation="England", year=2025)
+
+    assert df.loc[0, "geography_code"] == "E01000001"  # 2021 LSOA
+    assert df.loc[0, "nation"] == "E"
+    assert df.loc[0, "imd_decile"] == 8
+    # All seven domains surfaced as score + decile.
+    for domain in [
+        "income",
+        "employment",
+        "education",
+        "health",
+        "crime",
+        "housing",
+        "living_environment",
+    ]:
+        assert f"{domain}_decile" in df.columns
+        assert f"{domain}_score" in df.columns
+
+
+def test_year_2025_uk_wide_raises():
+    with pytest.raises(ValueError, match="per-nation"):
+        load_imd(nation="UK", year=2025)
+
+
+def test_year_2025_scotland_raises_no_release():
+    with pytest.raises(ValueError, match="No 2025 deprivation index"):
+        load_imd(nation="Scotland", year=2025)
+
+
+def test_year_2025_wales_pending():
+    with pytest.raises(ValueError, match="WIMD 2025"):
+        load_imd(nation="Wales", year=2025)
+
+
+def test_unknown_year_raises():
+    with pytest.raises(ValueError, match="year must be"):
+        load_imd(nation="England", year=2024)

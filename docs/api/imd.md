@@ -24,13 +24,22 @@ which re-ranks every area on one UK-wide scale.
 
 ## `load_imd()`
 
+Two vintages are available via `year`:
+
+| `year` | Source | Geography | Comparable across UK? |
+|---|---|---|---|
+| `2019` *(default)* | Composite UK IMD (2017–2020 indices) | LSOA 2011 / DZ / SOA | **Yes** — one UK ranking |
+| `2025` | Latest national index | **LSOA 2021** | No — within-nation |
+
 ```python
 from kindtech import load_imd
 
-uk = load_imd()                      # all four nations, one UK ranking
-england = load_imd(nation="England") # English LSOAs (2011) only
-scotland = load_imd(nation="Scotland")
+uk = load_imd()                                  # composite, all four nations
+england = load_imd(nation="England")             # composite, English areas only
+england_25 = load_imd(nation="England", year=2025)  # latest, 2021 LSOAs + domains
 ```
+
+### `year=2019` — composite UK (default)
 
 Returns one row per area with:
 
@@ -46,6 +55,30 @@ Returns one row per area with:
 
 `nation` accepts `"UK"` (default), `"England"`, `"Wales"`, `"Scotland"`,
 `"Northern Ireland"`, or the single-letter codes `E`/`W`/`S`/`N`.
+
+### `year=2025` — latest national index
+
+The four nations refresh on independent cycles, so 2025 is **per-nation**, not
+UK-wide:
+
+| Nation | Latest | `year=2025` |
+|---|---|---|
+| England | IMD 2025 (2021 LSOAs) | ✅ supported |
+| Wales | WIMD 2025 (2021 LSOAs) | ⏳ pending — StatsWales has no stable machine-readable download yet |
+| Scotland | SIMD 2020 | ❌ no 2025 release — use `year=2019` |
+| N. Ireland | NIMDM 2017 | ❌ no 2025 release — use `year=2019` |
+
+```python
+imd25 = load_imd(nation="England", year=2025)
+```
+
+Returns `geography_code` (**2021** LSOA), `geography_name`, `nation`,
+`lad_code`, `lad_name`, the overall `imd_score`/`imd_rank`/`imd_decile`, and a
+score + decile for each of the **seven domains**: `income`, `employment`,
+`education`, `health`, `crime`, `housing` (barriers to housing & services),
+`living_environment`. Deciles are within-nation (1 = most deprived 10% of
+English LSOAs). Calling `year=2025` for the UK, Wales, Scotland or NI raises a
+`ValueError` explaining what to use instead.
 
 ## Joining to boundaries and statistics
 
@@ -64,10 +97,14 @@ mapped = geo.merge(imd, on="geography_code", how="left")
 ```
 
 !!! warning "LSOA vintage"
-    English and Welsh IMD are published on **2011** LSOAs, while Census 2021 and
-    the default LSOA boundaries are **2021** LSOAs. Join IMD to 2011 boundaries,
-    map client postcodes via `lsoa11` (see [Postcodes](postcodes.md)), or use the
-    planned 2011→2021 crosswalk. Scottish Data Zones and NI SOAs are unaffected.
+    The **composite (`year=2019`)** is on **2011** LSOAs, while Census 2021 and
+    the default LSOA boundaries are **2021** LSOAs. To join the composite,
+    either use 2011 boundaries (`load_geodata("LSOA", year="2011")`) or map
+    client postcodes via `lsoa11` (see [Postcodes](postcodes.md)).
+
+    The **latest data (`year=2025`)** is already on **2021** LSOAs, so it joins
+    natively to Census 2021 and the default boundaries — no crosswalk needed.
+    This is the easiest path for English analysis.
 
 ## Licensing
 

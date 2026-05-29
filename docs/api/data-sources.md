@@ -346,6 +346,23 @@ The composite dataset is licensed
 are Open Government Licence v3.0 (MHCLG, Welsh Government, Scottish Government,
 NISRA). The composite code is MIT licensed.
 
+### Latest national indices (`year=2025`)
+
+The composite is built on the 2017–2020 indices. For the latest figures on
+current (2021) geographies, `load_imd(year=2025)` fetches a nation's newest
+official index directly:
+
+| Nation | Index | Geography | Source | `year=2025` |
+|---|---|---|---|---|
+| England | IoD 2025 (30 Oct 2025) | LSOA 2021 | gov.uk File 7 (CSV, OGL) | ✅ |
+| Wales | WIMD 2025 (27 Nov 2025) | LSOA 2021 | StatsWales | ⏳ no stable download endpoint yet |
+| Scotland | SIMD 2020 | Data Zone 2011 | gov.scot | ❌ no 2025 release |
+| N. Ireland | NIMDM 2017 | SOA | NISRA | ❌ no 2025 release |
+
+England's File 7 (`assets.publishing.service.gov.uk/.../File_7_IoD2025_...csv`)
+is fetched live and cached for the session. These national rankings are
+**within-nation** — for cross-nation comparison use the composite (`year=2019`).
+
 ---
 
 ## Dataset Aliases
