@@ -127,9 +127,10 @@ _ENGLAND_2025_CSV = (
     "Barriers to Housing and Services Score,"
     "Barriers to Housing and Services Decile (where 1 is most deprived 10% of LSOAs),"
     "Living Environment Score,"
-    "Living Environment Decile (where 1 is most deprived 10% of LSOAs)\n"
+    "Living Environment Decile (where 1 is most deprived 10% of LSOAs),"
+    "Total population: mid 2022\n"
     "E01000001,City of London 001A,E09000001,City of London,"
-    "8.7,26525,8,0.013,9,0.02,8,0.1,7,0.2,6,0.3,5,0.4,4,0.5,3\n"
+    "8.7,26525,8,0.013,9,0.02,8,0.1,7,0.2,6,0.3,5,0.4,4,0.5,3,1523\n"
 )
 
 
@@ -157,6 +158,8 @@ def test_england_2025_on_2021_lsoas_with_domains(mock_get):
     ]:
         assert f"{domain}_decile" in df.columns
         assert f"{domain}_score" in df.columns
+    # Population denominator surfaced for per-capita work.
+    assert df.loc[0, "population"] == 1523
 
 
 @mock.patch("kindtech.imd.api.requests.get")

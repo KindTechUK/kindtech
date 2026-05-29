@@ -93,6 +93,8 @@ def _england_2025_columns() -> dict[str, str]:
     for prefix, (score_col, label) in _ENGLAND_2025_DOMAINS.items():
         columns[score_col] = f"{prefix}_score"
         columns[f"{label} {_DECILE_SUFFIX}"] = f"{prefix}_decile"
+    # Population denominator (same LSOA vintage) — handy for per-capita work.
+    columns["Total population: mid 2022"] = "population"
     return columns
 
 
