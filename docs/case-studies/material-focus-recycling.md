@@ -54,6 +54,77 @@ Or
 1. Locate the recycling points and generate average travel time to the nearest recycling point within LAD
 2. Combine with LAD boundary data to create a map of the UK
 
+### Reproduction
+
+A runnable, end-to-end reproduction lives in
+[`examples/material_focus_recycling.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py)
+(a [marimo](https://marimo.io/) notebook). It builds the headline travel-time
+map from two KindTech connectors, joining on `geography_code`:
+
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py)
+&nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
+data), or locally with `uv run marimo edit examples/material_focus_recycling.py`.
+
+```python
+from kindtech import load_geodata, geodata_to_properties, load_ons
+import pandas as pd
+
+# LAD boundaries carry LAT/LONG centroids
+geojson = load_geodata(geography_type="LAD", year="2025", boundary_type="BUC")
+geo = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2025))
+
+# Total population per LAD — so the headline is people-weighted, not area-weighted
+pop = load_ons("population", geography_type="LAD", time="latest",
+               measures=20100, gender=0, c_age=200)
+```
+
+The real collection-point list isn't public, so the notebook scatters 300
+synthetic points *where people live* (supermarket take-back follows population)
+and measures the straight-line distance from each LAD centroid to the nearest
+one.
+
+!!! warning "Straight-line distance, not road routing"
+    The original mapped **road travel time**. This reproduction approximates it
+    with **haversine** distance converted to minutes at an effective 40 km/h,
+    capped at 20 minutes. That reproduces the *pattern* and the headline
+    statistic well, but it is not a true drive-time. A faithful road travel-time
+    map needs a **routing engine** (e.g. [OSRM](https://project-osrm.org/) or
+    [OpenRouteService](https://openrouteservice.org/)); KindTech does not wrap
+    one yet. If more case studies need real travel time, a small `kindtech`
+    routing connector would be worth adding.
+
+**Travel-time map** — minutes to the nearest recycling point per LAD:
+
+![Reproduced Material Focus map](../images/case-studies/material-focus-reproduced-map.png)
+*Figure 2: Approximate travel time (minutes) to the nearest recycling point.
+~76% of people are within a 12-minute trip, with a long tail of harder-to-reach
+rural authorities (dark) — candidates for new collection points.*
+
+**Does proximity influence recycling?** Each LAD's travel time against a
+synthetic participation rate:
+
+![Reproduced Material Focus scatter](../images/case-studies/material-focus-reproduced-scatter.png)
+*Figure 3: A real-but-loose downward trend — recycling falls as travel time
+rises, the direction Material Focus argued, with proximity one driver among
+several (car ownership, kerbside collection, demographics).*
+
+To run on real data, swap the synthetic points for Material Focus's actual
+collection-point coordinates and the synthetic rate for measured participation;
+the population join and maps are unchanged.
+
 ## Lessons Learned
 
-Key takeaways and recommendations.
+**Key takeaways and recommendations:**
+
+- **People-weighting matters**: averaging travel time per area over-counts large
+  rural authorities. Weighting by population reproduces the people-based
+  headline ("most within 12 minutes") that an unweighted map would miss.
+- **Distance is a first-order proxy, routing is the refinement**: straight-line
+  distance gets the pattern and the access statistic right cheaply; a routing
+  engine is only needed when the literal drive-time figure is the deliverable.
+- **Maps turn coverage into targets**: ranking authorities by travel time points
+  directly at where a new collection point cuts the longest trips — the evidence
+  the campaign needed to lobby local authorities.
+- **Composable connectors**: boundaries + population join on `geography_code`
+  with no glue code, so the same workflow extends to car ownership, housing type
+  or deprivation as further explanatory factors.
