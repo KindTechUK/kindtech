@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, format & types
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Ruff lint
+        run: uv run --group dev ruff check .
+
+      - name: Ruff format check
+        run: uv run --group dev ruff format --check .
+
+      - name: ast-grep scan
+        run: uv run --with ast-grep-cli ast-grep scan --config .ast-grep/sgconfig.yml src/
+
+      # Non-blocking for now: src/ has 4 known `str | None` type-narrowing
+      # diagnostics. Flip to blocking once they're cleared.
+      - name: Type check (ty)
+        run: uv run --group dev ty check src
+        continue-on-error: true
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run tests
+        run: uv run --group dev pytest
