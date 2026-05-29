@@ -13,3 +13,6 @@ wheels/
 *.DS_Store
 site/
 .coverage
+
+# marimo runtime cache
+__marimo__/
