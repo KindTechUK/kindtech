@@ -1,6 +1,6 @@
 # API Reference
 
-KindTech provides three modules for accessing UK public data:
+KindTech provides four modules for accessing UK public data:
 
 ## Modules
 
@@ -37,6 +37,18 @@ from kindtech.postcodes import postcodes_to_geography
 
 # Postcodes -> LSOA, ready to join on `geography_code`
 located = postcodes_to_geography(["SE13 7HX", "SE6 4RU"], geography_type="LSOA")
+```
+
+### [Deprivation (IMD)](imd.md) — `kindtech.imd`
+
+Load the composite UK Index of Multiple Deprivation — the four nations' indices
+harmonised onto one UK-wide ranking — keyed on geography codes. Returns pandas or
+polars DataFrames.
+
+```python
+from kindtech.imd import load_imd
+
+imd = load_imd(nation="England")  # join on `geography_code`
 ```
 
 ## Design principles

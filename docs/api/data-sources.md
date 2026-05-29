@@ -301,6 +301,53 @@ containing OS data © Crown copyright and database right, Royal Mail data
 
 ---
 
+## Composite UK IMD
+
+KindTech's `imd` module loads the
+[composite UK Index of Multiple Deprivation](https://github.com/mysociety/composite_uk_imd),
+a research dataset by [mySociety](https://www.mysociety.org/) that harmonises the
+four nations' official deprivation indices onto a single UK-wide ranking.
+
+### Why a composite is needed
+
+The four official indices each rank areas only *within* their own nation, on
+different geographies and methodologies, so their ranks and deciles are not
+comparable across the UK:
+
+| Nation | Index | Publisher | Geography |
+|---|---|---|---|
+| England | IMD 2019 | MHCLG | LSOA (2011) |
+| Wales | WIMD 2019 | Welsh Government | LSOA (2011) |
+| Scotland | SIMD 2020 | Scottish Government | Data Zone (2011) |
+| Northern Ireland | NIMDM 2017 | NISRA | Super Output Area |
+
+The composite re-ranks every area (42,619 in total) on one scale using the
+income and employment domains shared by all four indices.
+
+### Source
+
+| Item | Value |
+|---|---|
+| File | `data/uk_index/UK_IMD_E.csv` (England-anchored) |
+| Host | `raw.githubusercontent.com/mysociety/composite_uk_imd` |
+| Rows | 42,619 (England 32,844 · Scotland 6,976 · Wales 1,909 · NI 890) |
+| Key column | `lsoa` — LSOA/Data Zone/SOA code depending on nation |
+| UK ranking | `UK_IMD_E_rank`, `UK_IMD_E_pop_decile`, `UK_IMD_E_pop_quintile` |
+
+KindTech fetches this CSV live and caches it in-process for the session (it is a
+static research release). Column names are mapped to KindTech's conventions
+(`lsoa` → `geography_code`, etc.).
+
+### Licensing and attribution
+
+The composite dataset is licensed
+[Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
+— **attribute mySociety** when redistributing. The underlying national indices
+are Open Government Licence v3.0 (MHCLG, Welsh Government, Scottish Government,
+NISRA). The composite code is MIT licensed.
+
+---
+
 ## Dataset Aliases
 
 Instead of remembering NOMIS dataset IDs like `NM_2002_1`, you can use
