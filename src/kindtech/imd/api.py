@@ -112,6 +112,10 @@ _NATION_CODES = {
 }
 _NATION_NAMES = {"E": "England", "W": "Wales", "S": "Scotland", "N": "Northern Ireland"}
 
+# Latest year available per nation (None nation = UK-wide -> composite only).
+# England has IoD 2025 on 2021 LSOAs; the others' latest sits in the composite.
+_LATEST_YEAR = {"E": 2025}
+
 logger = logging.getLogger(__name__)
 
 # In-process cache of fetched CSVs, keyed by URL — these are static releases,
@@ -186,7 +190,7 @@ def _load_national_2025(nation_code: str | None, url: str) -> Any:
 
 def load_imd(
     nation: str | None = "UK",
-    year: int = 2019,
+    year: int | None = None,
     url: str | None = None,
 ) -> Any:
     """Load UK deprivation data.
@@ -195,9 +199,11 @@ def load_imd(
         nation: ``"UK"`` (default, composite only), or a nation —
             ``"England"``, ``"Wales"``, ``"Scotland"``,
             ``"Northern Ireland"`` (codes ``E``/``W``/``S``/``N`` also work).
-        year: ``2019`` for the composite UK index (default; the only
-            UK-comparable option, and useful for change analysis), or ``2025``
-            for the latest national index on 2021 LSOAs (England; Wales pending).
+        year: ``2019`` for the composite UK index (the only UK-comparable
+            option, and useful for change analysis), or ``2025`` for the latest
+            national index on 2021 LSOAs (England; Wales pending). Defaults to
+            the **latest available** for the chosen nation — ``2025`` for
+            England, ``2019`` otherwise.
         url: Override the source URL (mainly for testing).
 
     Returns:
@@ -219,6 +225,8 @@ def load_imd(
         ImportError: If neither pandas nor polars is installed.
     """
     nation_code = _resolve_nation(nation)
+    if year is None:
+        year = _LATEST_YEAR.get(nation_code, 2019)
     if year == 2019:
         return _load_composite(nation_code, url or COMPOSITE_IMD_URL)
     if year == 2025:

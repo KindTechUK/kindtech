@@ -28,15 +28,18 @@ Two vintages are available via `year`:
 
 | `year` | Source | Geography | Comparable across UK? |
 |---|---|---|---|
-| `2019` *(default)* | Composite UK IMD (2017–2020 indices) | LSOA 2011 / DZ / SOA | **Yes** — one UK ranking |
+| `2019` | Composite UK IMD (2017–2020 indices) | LSOA 2011 / DZ / SOA | **Yes** — one UK ranking |
 | `2025` | Latest national index | **LSOA 2021** | No — within-nation |
+
+`year` defaults to the **latest available** for the chosen nation: `2025` for
+England, `2019` (composite) for the UK as a whole and for Wales/Scotland/NI.
 
 ```python
 from kindtech import load_imd
 
-uk = load_imd()                                  # composite, all four nations
-england = load_imd(nation="England")             # composite, English areas only
-england_25 = load_imd(nation="England", year=2025)  # latest, 2021 LSOAs + domains
+uk = load_imd()                              # composite (no UK-wide 2025 exists)
+england = load_imd(nation="England")         # IoD 2025 — latest, 2021 LSOAs + domains
+england_19 = load_imd(nation="England", year=2019)  # composite English areas
 ```
 
 ### `year=2019` — composite UK (default)
@@ -89,9 +92,9 @@ or merges with population for per-capita work:
 import pandas as pd
 from kindtech import load_imd, load_geodata, geodata_to_properties
 
-imd = load_imd(nation="England")
-# English IMD is on 2011 LSOAs — use matching boundaries
-geo = pd.DataFrame(geodata_to_properties(load_geodata("LSOA", year="2011"), "LSOA", 2011))
+imd = load_imd(nation="England")  # IoD 2025, on 2021 LSOAs
+# Default boundaries are 2021 LSOAs — a native join, no crosswalk
+geo = pd.DataFrame(geodata_to_properties(load_geodata("LSOA"), "LSOA", 2021))
 
 mapped = geo.merge(imd, on="geography_code", how="left")
 ```

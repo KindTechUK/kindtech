@@ -70,8 +70,9 @@ def test_geography_code_and_rank_mapping(mock_get):
 def test_nation_filter_by_name_and_code(mock_get):
     mock_get.return_value = _mock_get()
 
-    by_name = load_imd(nation="England")
-    by_code = load_imd(nation="E")
+    # year=2019 forces the composite path (England defaults to 2025).
+    by_name = load_imd(nation="England", year=2019)
+    by_code = load_imd(nation="E", year=2019)
 
     assert list(by_name["geography_code"]) == ["E01021988"]
     assert list(by_code["geography_code"]) == ["E01021988"]
@@ -156,6 +157,31 @@ def test_england_2025_on_2021_lsoas_with_domains(mock_get):
     ]:
         assert f"{domain}_decile" in df.columns
         assert f"{domain}_score" in df.columns
+
+
+@mock.patch("kindtech.imd.api.requests.get")
+def test_england_defaults_to_2025(mock_get):
+    resp = mock.MagicMock()
+    resp.raise_for_status = mock.MagicMock()
+    resp.text = _ENGLAND_2025_CSV
+    mock_get.return_value = resp
+
+    # No year -> England resolves to the latest (2025), with domain columns.
+    df = load_imd(nation="England")
+
+    assert "income_decile" in df.columns  # 2025 schema, not the composite
+    assert df.loc[0, "geography_code"] == "E01000001"
+
+
+@mock.patch("kindtech.imd.api.requests.get")
+def test_uk_defaults_to_composite(mock_get):
+    mock_get.return_value = _mock_get()
+
+    # No year, UK-wide -> composite (no UK 2025 exists).
+    df = load_imd()
+
+    assert "nation_decile" in df.columns  # composite schema
+    assert len(df) == 4
 
 
 def test_year_2025_uk_wide_raises():
