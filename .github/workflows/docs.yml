@@ -9,19 +9,17 @@ on:
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
-# Allow the GITHUB_TOKEN to deploy to GitHub Pages.
+# Push the built site to the gh-pages branch (served by GitHub Pages).
+# Explicit contents:write elevates the token even though the org default is read.
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
-# One concurrent deployment; don't cancel an in-progress run.
 concurrency:
-  group: pages
+  group: docs-deploy
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -33,18 +31,11 @@ jobs:
       - name: Build site
         run: uv run --group dev mkdocs build --strict
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          folder: site
+          branch: gh-pages
+          # Don't wipe live PR previews when publishing production.
+          clean-exclude: pr-preview/
+          force: false
