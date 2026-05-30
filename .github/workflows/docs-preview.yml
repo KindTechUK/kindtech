@@ -1,0 +1,39 @@
+name: Deploy docs preview
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "examples/**"
+      - ".github/workflows/docs-preview.yml"
+
+# contents:write to push the preview to gh-pages; pull-requests:write for the sticky comment.
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency: preview-${{ github.ref }}
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        if: github.event.action != 'closed'
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build site
+        if: github.event.action != 'closed'
+        run: uv run --group dev mkdocs build --strict
+
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./site/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
