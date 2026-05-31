@@ -731,6 +731,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproduction
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1051,6 +1060,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproduction
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1120,6 +1138,46 @@
 <li><strong>Spatial Analysis</strong>: Overlay client density with IMD scores</li>
 <li><strong>Visualization</strong>: Create comparative maps showing deprivation vs. service usage</li>
 </ol>
+<h3 id="reproduction">Reproduction</h3>
+<p>A runnable, end-to-end reproduction lives in
+<a href="https://github.com/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py"><code>examples/cal_vulnerable_client.py</code></a>
+(a <a href="https://marimo.io/">marimo</a> notebook). It chains three KindTech connectors,
+all joining on the 2021 LSOA <code>geography_code</code>:</p>
+<p><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py"><img alt="Open in marimo" src="https://marimo.io/molab-shield.svg" /></a>
+&nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
+data), or locally with <code>uv run marimo edit examples/cal_vulnerable_client.py</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span><span class="p">,</span> <span class="n">load_imd</span><span class="p">,</span> <span class="n">load_geodata</span>
+
+<span class="c1"># 1. Client postcodes -&gt; LSOA (the step real client data would use)</span>
+<span class="n">clients</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">(</span><span class="n">client_postcodes</span><span class="p">,</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
+
+<span class="c1"># 2. Deprivation + population per LSOA (IoD 2025, on 2021 LSOAs)</span>
+<span class="n">imd</span> <span class="o">=</span> <span class="n">load_imd</span><span class="p">(</span><span class="n">nation</span><span class="o">=</span><span class="s2">&quot;England&quot;</span><span class="p">)</span>  <span class="c1"># imd_decile, imd_score, population</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Everything is on 2021 LSOAs — no crosswalk</p>
+<p>The postcode connector returns 2021 LSOA codes, <strong>IMD 2025</strong> is published on
+2021 LSOAs (and ships a population denominator), and the default LSOA
+boundaries are 2021. So deprivation, population and client geography line up
+on one <code>geography_code</code> with no vintage conversion. (The older composite
+<code>load_imd(year=2019)</code> is on 2011 LSOAs and would need a crosswalk.)</p>
+</div>
+<p>Client records are private, so the notebook generates synthetic clients per
+LSOA at a rate that <strong>rises with deprivation</strong>, then normalises to clients per
+1,000 residents.</p>
+<p><strong>Hotspots vs usage</strong> — deprivation (left) and CAL client rate (right). Shared
+dark areas mean clients come from the most-deprived LSOAs:</p>
+<p><img alt="Reproduced CAL maps" src="../../images/case-studies/cal-reproduced-maps.png" />
+<em>Figure 2: IMD 2025 decile (left, dark = most deprived) vs synthetic CAL clients
+per 1,000 residents (right). The hotspots align.</em></p>
+<p><strong>Does usage track deprivation?</strong> Each LSOA's deprivation score against its
+client rate:</p>
+<p><img alt="Reproduced CAL scatter" src="../../images/case-studies/cal-reproduced-scatter.png" />
+<em>Figure 3: A clear positive correlation between deprivation and clients per
+capita — the direction the original study found, validating CAL's targeting.</em></p>
+<p>To run on real data, feed the real client postcodes through step 1 and
+aggregate per <code>geography_code</code>; the IMD join, per-capita maths and maps are
+unchanged.</p>
 <h2 id="lessons-learned">Lessons Learned</h2>
 <p><strong>Key takeaways and recommendations:</strong></p>
 <ul>
