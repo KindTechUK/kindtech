@@ -15,6 +15,12 @@ from kindtech._mapping import (
 )
 from kindtech.geo import geodata_to_properties, load_geodata
 from kindtech.ons import list_tables, load_ons
+from kindtech.postcodes import (
+    lookup_outcodes,
+    lookup_postcodes,
+    outcode_to_geography,
+    postcodes_to_geography,
+)
 
 # Define what's available when using `from kindtech import *`
 __all__ = [
@@ -24,4 +30,8 @@ __all__ = [
     "list_tables",
     "load_geodata",
     "load_ons",
+    "lookup_outcodes",
+    "lookup_postcodes",
+    "outcode_to_geography",
+    "postcodes_to_geography",
 ]

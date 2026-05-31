@@ -53,6 +53,7 @@ nav:
     - Overview: api/index.md
     - Geographic Data: api/geo.md
     - ONS Data: api/ons.md
+    - Postcodes: api/postcodes.md
     - Data Sources: api/data-sources.md
   - Case Studies:
     - Overview: case-studies/index.md

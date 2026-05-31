@@ -27,12 +27,12 @@ Examples:
 """
 
 import logging
-from io import StringIO
 from typing import Any
 
 import narwhals.stable.v2 as nw
 import requests
 
+from kindtech._frames import csv_to_frame, dicts_to_frame
 from kindtech._mapping import extract_code, resolve_dataset_id, resolve_nomis_geography
 
 from . import _catalog
@@ -42,44 +42,14 @@ NOMIS_BASE_URL = "https://www.nomisweb.co.uk/api/v01"
 logger = logging.getLogger(__name__)
 
 
-def _get_native_namespace() -> Any:
-    """Detect the best available DataFrame backend."""
-    try:
-        import polars
-
-        return polars
-    except ImportError:
-        pass
-    try:
-        import pandas
-
-        return pandas
-    except ImportError:
-        pass
-    msg = (
-        "No DataFrame backend found. "
-        "Install pandas or polars: `uv add pandas` "
-        "or `uv add polars`"
-    )
-    raise ImportError(msg)
-
-
 def _csv_text_to_frame(text: str) -> nw.DataFrame:
     """Parse CSV text into a narwhals DataFrame using the available backend."""
-    native_ns = _get_native_namespace()
-    native_df = native_ns.read_csv(StringIO(text))
-    return nw.from_native(native_df, eager_only=True)
+    return nw.from_native(csv_to_frame(text), eager_only=True)
 
 
 def _dicts_to_frame(data: list[dict]) -> nw.DataFrame:
     """Convert a list of dicts to a narwhals DataFrame."""
-    if not data:
-        return nw.from_native(_get_native_namespace().DataFrame(), eager_only=True)
-
-    columns = {key: [row[key] for row in data] for key in data[0]}
-    native_ns = _get_native_namespace()
-    native_df = native_ns.DataFrame(columns)
-    return nw.from_native(native_df, eager_only=True)
+    return nw.from_native(dicts_to_frame(data), eager_only=True)
 
 
 def _extract_year_from_time(time_value: Any) -> int | None:
