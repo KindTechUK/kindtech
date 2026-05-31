@@ -1157,16 +1157,53 @@ for each of the <strong>seven domains</strong> (<code>income</code>, <code>emplo
 denominator. Ranks/deciles are within-England (rank 1 / decile 1 = most
 deprived).</p>
 <h3 id="nationwales-scotland-northern-ireland-official-within-nation"><code>nation="Wales"</code> / <code>"Scotland"</code> / <code>"Northern Ireland"</code> — official, within-nation</h3>
-<p>Returns <code>geography_code</code> (LSOA / Data Zone / SOA), <code>nation</code>, the official
-within-nation <code>imd_score</code> and <code>imd_decile</code>, and <code>income_score</code> /
-<code>employment_score</code>. (Full domain breakdowns for these nations are a future
-addition — see the note below.) <code>year</code> defaults to each nation's latest in the
-composite era (WIMD 2019, SIMD 2020, NIMDM 2017).</p>
+<p>Each nation's own official index, fetched from its government source (WIMD 2019,
+SIMD 2020, NIMDM 2017). These publish <strong>ranks</strong> (1 = most deprived), so the
+output is <code>geography_code</code> (LSOA / Data Zone / SOA), <code>geography_name</code>, <code>nation</code>,
+the overall <code>imd_rank</code>, a within-nation <code>imd_decile</code> derived from that rank, and
+a <code>&lt;domain&gt;_rank</code> for each of that nation's domains. The <strong>domain sets differ
+by nation</strong> (only income/employment/health/education/access are shared):</p>
+<table>
+<thead>
+<tr>
+<th>Nation</th>
+<th>Source</th>
+<th>Domains (<code>&lt;domain&gt;_rank</code>)</th>
+<th>Extra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wales (WIMD 2019)</td>
+<td>gov.wales (ODS)</td>
+<td>income, employment, health, education, access, housing, <strong>community_safety</strong>, <strong>physical_environment</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>Scotland (SIMD 2020)</td>
+<td>gov.scot (XLSX)</td>
+<td>income, employment, health, education, access, <strong>crime</strong>, housing</td>
+<td><code>population</code></td>
+</tr>
+<tr>
+<td>N. Ireland (NIMDM 2017)</td>
+<td>Open Data NI (CSV)</td>
+<td>income, employment, health, education, access, <strong>living_environment</strong>, <strong>crime_disorder</strong></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition note">
 <p class="admonition-title">2025 availability</p>
-<p>Only <strong>England</strong> has a 2025 index wired up. <code>load_imd(nation="Wales",
-year=2025)</code> raises — WIMD 2025 has no stable machine-readable download on
-StatsWales yet. Scotland and NI have no 2025 release at all.</p>
+<p>Only <strong>England</strong> has a 2025 index. <code>load_imd(nation="Wales", year=2025)</code>
+raises — WIMD 2025 has no stable machine-readable download on StatsWales
+yet. Scotland and NI have no 2025 release at all.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Reading XLSX/ODS sources</p>
+<p>Wales (ODS) and Scotland (XLSX) are spreadsheets, read via
+<a href="https://pypi.org/project/python-calamine/"><code>python-calamine</code></a> (a KindTech
+dependency). No extra setup needed.</p>
 </div>
 <h3 id="nationuk-composite-cross-nation-comparison"><code>nation="UK"</code> — composite (cross-nation comparison)</h3>
 <p>Returns <code>geography_code</code> (LSOA 2011 / Data Zone / SOA), <code>nation</code>, and:</p>
