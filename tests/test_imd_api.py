@@ -67,25 +67,30 @@ def test_geography_code_and_rank_mapping(mock_get):
 
 
 @mock.patch("kindtech.imd.api.requests.get")
-def test_nation_filter_by_name_and_code(mock_get):
+def test_single_nation_by_name_and_code(mock_get):
     mock_get.return_value = _mock_get()
 
-    # year=2019 forces the composite path (England defaults to 2025).
-    by_name = load_imd(nation="England", year=2019)
-    by_code = load_imd(nation="E", year=2019)
+    # Wales resolves the same whether named or coded (composite source).
+    by_name = load_imd(nation="Wales")
+    by_code = load_imd(nation="W")
 
-    assert list(by_name["geography_code"]) == ["E01021988"]
-    assert list(by_code["geography_code"]) == ["E01021988"]
+    assert list(by_name["geography_code"]) == ["W01000240"]
+    assert list(by_code["geography_code"]) == ["W01000240"]
 
 
 @mock.patch("kindtech.imd.api.requests.get")
-def test_nation_filter_scotland_uses_data_zones(mock_get):
+def test_single_nation_surfaces_official_within_nation_decile(mock_get):
     mock_get.return_value = _mock_get()
 
     scotland = load_imd(nation="Scotland")
 
     assert len(scotland) == 1
-    assert scotland.iloc[0]["geography_code"].startswith("S")
+    assert scotland.iloc[0]["geography_code"].startswith("S")  # Data Zone
+    # Headline decile is the official within-nation one (original_decile=2),
+    # NOT the UK composite re-ranking, and there is no UK-wide rank column.
+    assert scotland.iloc[0]["imd_decile"] == 2
+    assert "imd_rank" not in scotland.columns
+    assert "nation_decile" not in scotland.columns
 
 
 def test_unknown_nation_raises():
@@ -202,7 +207,7 @@ def test_uk_defaults_to_composite(mock_get):
 
 
 def test_year_2025_uk_wide_raises():
-    with pytest.raises(ValueError, match="per-nation"):
+    with pytest.raises(ValueError, match="composite"):
         load_imd(nation="UK", year=2025)
 
 
@@ -217,5 +222,50 @@ def test_year_2025_wales_pending():
 
 
 def test_unknown_year_raises():
-    with pytest.raises(ValueError, match="year must be"):
+    with pytest.raises(ValueError, match="year=2019 or year=2025"):
         load_imd(nation="England", year=2024)
+
+
+# England IoD 2019: official, on 2011 LSOAs.
+_ENGLAND_2019_CSV = (
+    "LSOA code (2011),LSOA name (2011),"
+    "Local Authority District code (2019),Local Authority District name (2019),"
+    f"Index of Multiple Deprivation (IMD) Score,"
+    f"Index of Multiple Deprivation (IMD) {_RANK},"
+    f"Index of Multiple Deprivation (IMD) {_DEC},"
+    f"Income Score (rate),Income {_RANK},Income {_DEC},"
+    f"Employment Score (rate),Employment {_RANK},Employment {_DEC},"
+    f'"Education, Skills and Training Score",'
+    f'"Education, Skills and Training {_RANK}",'
+    f'"Education, Skills and Training {_DEC}",'
+    f"Health Deprivation and Disability Score,"
+    f"Health Deprivation and Disability {_RANK},"
+    f"Health Deprivation and Disability {_DEC},"
+    f"Crime Score,Crime {_RANK},Crime {_DEC},"
+    f"Barriers to Housing and Services Score,"
+    f"Barriers to Housing and Services {_RANK},"
+    f"Barriers to Housing and Services {_DEC},"
+    f"Living Environment Score,Living Environment {_RANK},Living Environment {_DEC},"
+    "Total population: mid 2015 (excluding prisoners)\n"
+    "E01000001,City of London 001A,E09000001,City of London,"
+    "8.7,26525,8,"
+    "0.013,9001,9,0.02,9002,8,0.1,9003,7,0.2,9004,6,"
+    "0.3,9005,5,0.4,9006,4,0.5,9007,3,"
+    "1500\n"
+)
+
+
+@mock.patch("kindtech.imd.api.requests.get")
+def test_england_2019_official_on_2011_lsoas(mock_get):
+    resp = mock.MagicMock()
+    resp.raise_for_status = mock.MagicMock()
+    resp.text = _ENGLAND_2019_CSV
+    mock_get.return_value = resp
+
+    df = load_imd(nation="England", year=2019)
+
+    assert df.loc[0, "geography_code"] == "E01000001"  # 2011 LSOA
+    assert df.loc[0, "nation"] == "E"
+    assert df.loc[0, "imd_decile"] == 8
+    assert df.loc[0, "income_rank"] == 9001  # domains + ranks present
+    assert df.loc[0, "population"] == 1500  # mid-2015 denominator

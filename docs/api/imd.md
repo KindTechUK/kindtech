@@ -1,88 +1,87 @@
 # Deprivation (IMD)
 
-The `kindtech.imd` module loads the **composite UK Index of Multiple
-Deprivation** — the four nations' official deprivation indices harmonised onto a
-single UK-wide ranking — keyed on ONS geography codes so it joins to
-[boundaries](geo.md) and [statistics](ons.md).
+The `kindtech.imd` module loads UK deprivation data, keyed on ONS geography
+codes so it joins to [boundaries](geo.md) and [statistics](ons.md).
 
-## Why a composite (not four separate indices)
+**A single nation returns that nation's _official_ index. `"UK"` returns a
+composite — the only way to compare deprivation _across_ nations.**
 
-Each UK nation publishes its own index on its own geography:
+## Official per nation, composite for comparison
 
-| Nation | Index | Geography | Areas |
+Each UK nation publishes its own index, on its own geography, ranked **only
+within its own borders** — an English "decile 1" and a Scottish "decile 1" are
+not the same thing:
+
+| Nation | Official index | Geography | Areas |
 |---|---|---|---|
-| England | IMD 2019 | LSOA (2011) | 32,844 |
-| Wales | WIMD 2019 | LSOA (2011) | 1,909 |
-| Scotland | SIMD 2020 | Data Zone (2011) | 6,976 |
-| Northern Ireland | NIMDM 2017 | Super Output Area | 890 |
+| England | IoD 2025 (or 2019) | LSOA 2021 (2019: LSOA 2011) | 33,755 / 32,844 |
+| Wales | WIMD 2019 | LSOA 2011 | 1,909 |
+| Scotland | SIMD 2020 | Data Zone 2011 | 6,976 |
+| Northern Ireland | NIMDM 2017 | SOA | 890 |
 
-Crucially, each index ranks areas **only within its own nation** — an English
-"decile 1" and a Scottish "decile 1" are not the same thing. To compare
-deprivation across the UK you need a single ranking. KindTech uses the
-[mySociety composite UK IMD](https://github.com/mysociety/composite_uk_imd),
-which re-ranks every area on one UK-wide scale.
+To compare *across* nations you need one shared ranking. There is no official
+UK-wide index, so KindTech uses the
+[mySociety composite UK IMD](https://github.com/mysociety/composite_uk_imd)
+(`nation="UK"`), which re-ranks every area onto one scale. The composite is a
+third-party harmonisation, **not** a National Statistic — use it for
+comparison, and a nation's official index for within-nation work.
 
 ## `load_imd()`
-
-Two vintages are available via `year`:
-
-| `year` | Source | Geography | Comparable across UK? |
-|---|---|---|---|
-| `2019` | Composite UK IMD (2017–2020 indices) | LSOA 2011 / DZ / SOA | **Yes** — one UK ranking |
-| `2025` | Latest national index | **LSOA 2021** | No — within-nation |
-
-`year` defaults to the **latest available** for the chosen nation: `2025` for
-England, `2019` (composite) for the UK as a whole and for Wales/Scotland/NI.
 
 ```python
 from kindtech import load_imd
 
-uk = load_imd()                              # composite (no UK-wide 2025 exists)
-england = load_imd(nation="England")         # IoD 2025 — latest, 2021 LSOAs + domains
-england_19 = load_imd(nation="England", year=2019)  # composite English areas
+england = load_imd(nation="England")          # official IoD 2025, 2021 LSOAs
+england_19 = load_imd(nation="England", year=2019)  # official IoD 2019, 2011 LSOAs
+wales = load_imd(nation="Wales")              # official WIMD (within-nation)
+uk = load_imd()                               # composite, cross-nation comparison
 ```
 
-### `year=2019` — composite UK (default)
+`nation` accepts `"UK"` (default), `"England"`, `"Wales"`, `"Scotland"`,
+`"Northern Ireland"`, or the codes `E`/`W`/`S`/`N`.
 
-Returns one row per area with:
+### `nation="England"` — official English Indices of Deprivation
+
+The richest path: gov.uk **File 7** (all ranks, scores, deciles and population
+denominators). `year=2025` (default, **2021** LSOAs) or `year=2019` (**2011**
+LSOAs) — same schema, so 2019 → 2025 is a clean change comparison.
+
+Returns `geography_code`, `geography_name`, `nation`, `lad_code`, `lad_name`,
+the overall `imd_score`/`imd_rank`/`imd_decile`, a `score` + `rank` + `decile`
+for each of the **seven domains** (`income`, `employment`, `education`,
+`health`, `crime`, `housing` = barriers to housing & services,
+`living_environment`; e.g. `income_rank`, `income_decile`), and a `population`
+denominator. Ranks/deciles are within-England (rank 1 / decile 1 = most
+deprived).
+
+### `nation="Wales"` / `"Scotland"` / `"Northern Ireland"` — official, within-nation
+
+Returns `geography_code` (LSOA / Data Zone / SOA), `nation`, the official
+within-nation `imd_score` and `imd_decile`, and `income_score` /
+`employment_score`. (Full domain breakdowns for these nations are a future
+addition — see the note below.) `year` defaults to each nation's latest in the
+composite era (WIMD 2019, SIMD 2020, NIMDM 2017).
+
+!!! note "2025 availability"
+    Only **England** has a 2025 index wired up. `load_imd(nation="Wales",
+    year=2025)` raises — WIMD 2025 has no stable machine-readable download on
+    StatsWales yet. Scotland and NI have no 2025 release at all.
+
+### `nation="UK"` — composite (cross-nation comparison)
+
+Returns `geography_code` (LSOA 2011 / Data Zone / SOA), `nation`, and:
 
 | Column | Description |
 |---|---|
-| `geography_code` | LSOA (England/Wales, 2011), Data Zone (Scotland), or SOA (NI) |
-| `nation` | `E` / `W` / `S` / `N` |
-| `imd_rank` | UK-wide rank (1 = most deprived) |
-| `imd_decile` | UK-wide, population-weighted decile (1 = most deprived 10%) |
-| `imd_quintile` | UK-wide, population-weighted quintile |
-| `nation_decile` | Original within-nation decile (**not** comparable across nations) |
+| `imd_rank` | **UK-wide** rank (1 = most deprived) |
+| `imd_decile` | **UK-wide**, population-weighted decile |
+| `imd_quintile` | **UK-wide**, population-weighted quintile |
+| `nation_decile` | The official within-nation decile (**not** UK-comparable) |
 | `imd_score`, `income_score`, `employment_score`, `local_score` | Underlying scores |
 
-`nation` accepts `"UK"` (default), `"England"`, `"Wales"`, `"Scotland"`,
-`"Northern Ireland"`, or the single-letter codes `E`/`W`/`S`/`N`.
-
-### `year=2025` — latest national index
-
-The four nations refresh on independent cycles, so 2025 is **per-nation**, not
-UK-wide:
-
-| Nation | Latest | `year=2025` |
-|---|---|---|
-| England | IMD 2025 (2021 LSOAs) | ✅ supported |
-| Wales | WIMD 2025 (2021 LSOAs) | ⏳ pending — StatsWales has no stable machine-readable download yet |
-| Scotland | SIMD 2020 | ❌ no 2025 release — use `year=2019` |
-| N. Ireland | NIMDM 2017 | ❌ no 2025 release — use `year=2019` |
-
-```python
-imd25 = load_imd(nation="England", year=2025)
-```
-
-Returns `geography_code` (**2021** LSOA), `geography_name`, `nation`,
-`lad_code`, `lad_name`, the overall `imd_score`/`imd_rank`/`imd_decile`, and a
-`score` + `rank` + `decile` for each of the **seven domains**: `income`,
-`employment`, `education`, `health`, `crime`, `housing` (barriers to housing &
-services), `living_environment` (e.g. `income_rank`, `income_decile`). Ranks
-and deciles are within-nation (rank 1 / decile 1 = most deprived). Calling
-`year=2025` for the UK, Wales, Scotland or NI raises a `ValueError` explaining
-what to use instead.
+Use this only when comparing areas in different nations; its `imd_rank` /
+`imd_decile` are the UK re-ranking, not a nation's official figures (those are
+in `nation_decile`, or use the single-nation calls above).
 
 ## Joining to boundaries and statistics
 
@@ -101,14 +100,14 @@ mapped = geo.merge(imd, on="geography_code", how="left")
 ```
 
 !!! warning "LSOA vintage"
-    The **composite (`year=2019`)** is on **2011** LSOAs, while Census 2021 and
-    the default LSOA boundaries are **2021** LSOAs. To join the composite,
-    either use 2011 boundaries (`load_geodata("LSOA", year="2011")`) or map
-    postcodes via `lsoa11` (see [Postcodes](postcodes.md)).
+    **England IoD 2025** is on **2021** LSOAs, so it joins natively to Census
+    2021 and the default boundaries — no crosswalk needed. This is the easiest
+    path for English analysis.
 
-    The **latest data (`year=2025`)** is already on **2021** LSOAs, so it joins
-    natively to Census 2021 and the default boundaries — no crosswalk needed.
-    This is the easiest path for English analysis.
+    Everything else — **England IoD 2019**, the **composite (`nation="UK"`)**,
+    and Wales/Scotland/NI — is on **2011** geographies. To join those, either
+    use 2011 boundaries (`load_geodata("LSOA", year="2011")`) or map postcodes
+    via `lsoa11` (see [Postcodes](postcodes.md)).
 
 ## Licensing
 
