@@ -29,14 +29,14 @@ df = load_ons("NM_1_1", geography="TYPE480", time="latest")
 ### [Postcodes](postcodes.md) — `kindtech.postcodes`
 
 Resolve UK postcodes (and outcodes) to ONS geography codes via postcodes.io, so
-client address data joins to boundaries and statistics. Returns pandas or polars
+address data joins to boundaries and statistics. Returns pandas or polars
 DataFrames.
 
 ```python
 from kindtech.postcodes import postcodes_to_geography
 
 # Postcodes -> LSOA, ready to join on `geography_code`
-clients = postcodes_to_geography(["SE13 7HX", "SE6 4RU"], geography_type="LSOA")
+located = postcodes_to_geography(["SE13 7HX", "SE6 4RU"], geography_type="LSOA")
 ```
 
 ## Design principles

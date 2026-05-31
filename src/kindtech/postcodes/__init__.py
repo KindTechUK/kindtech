@@ -2,7 +2,7 @@
 KindTech Postcodes Package
 
 Turns UK postcodes and outcodes into ONS geography codes via postcodes.io, so
-client address data joins directly to KindTech boundaries and statistics.
+address data joins directly to KindTech boundaries and statistics.
 """
 
 from .api import (

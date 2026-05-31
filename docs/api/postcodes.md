@@ -18,7 +18,7 @@ Map postcodes to a single geography level, ready to join.
 ```python
 from kindtech import postcodes_to_geography
 
-clients = postcodes_to_geography(["SE13 7HX", "SE6 4RU"], geography_type="LSOA")
+located = postcodes_to_geography(["SE13 7HX", "SE6 4RU"], geography_type="LSOA")
 #    postcode geography_code geography_name
 # 0  SE13 7HX      E01034394  Lewisham 040C
 # 1   SE6 4RU      E01003318  Lewisham 020B
@@ -32,9 +32,9 @@ result merges directly:
 import pandas as pd
 from kindtech import postcodes_to_geography, load_geodata, load_ons, geodata_to_properties
 
-# 1. Clients -> LSOA counts
-clients = postcodes_to_geography(client_postcodes, "LSOA")
-per_lsoa = clients.groupby("geography_code").size().reset_index(name="clients")
+# 1. Postcodes -> counts per LSOA
+located = postcodes_to_geography(postcodes, "LSOA")
+per_lsoa = located.groupby("geography_code").size().reset_index(name="count")
 
 # 2. Population for per-capita, and boundaries for the map — same join key
 pop = load_ons("population_lsoa", geography_type="LSOA", time="latest")
@@ -100,7 +100,7 @@ outcode_to_geography(["SE13"], geography_type="LSOA")
 !!! warning "Outcode mapping is approximate"
     An outcode covers many LSOAs/wards. This returns the geography *containing
     the outcode's geometric centroid* — a rough stand-in, useful when your data
-    is only tagged by postcode prefix. For per-area analysis (e.g. referrals
+    is only tagged by postcode prefix. For per-area analysis (e.g. counts
     per capita by LSOA), prefer full postcodes via `postcodes_to_geography()`,
     or split an outcode's records across its constituent areas weighted by
     population.

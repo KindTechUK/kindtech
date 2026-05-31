@@ -10,13 +10,13 @@ needed.
 
 The returned ``geography_code`` column aligns with
 :func:`kindtech.geo.api.geodata_to_properties` and :func:`kindtech.ons.load_ons`,
-so a client postcode list joins directly to boundaries and statistics:
+so any list of postcodes joins directly to boundaries and statistics:
 
     >>> from kindtech import postcodes_to_geography, load_geodata, load_ons
     >>> import pandas as pd
     >>>
-    >>> clients = postcodes_to_geography(["SE13 7HX", "SE6 4RU"], "LSOA")
-    >>> per_lsoa = clients.groupby("geography_code").size()  # clients per LSOA
+    >>> located = postcodes_to_geography(["SE13 7HX", "SE6 4RU"], "LSOA")
+    >>> per_lsoa = located.groupby("geography_code").size()  # rows per LSOA
 """
 
 import logging
@@ -247,7 +247,7 @@ def outcode_to_geography(
     .. warning::
         An outcode covers many LSOAs/wards. This returns the geography
         *containing the outcode's geometric centroid* — a rough stand-in, not
-        an exact mapping. For per-area analysis (e.g. referrals per capita by
+        an exact mapping. For per-area analysis (e.g. counts per capita by
         LSOA) prefer full postcodes via :func:`postcodes_to_geography`, or a
         population-weighted split across the outcode's constituent areas.
 
