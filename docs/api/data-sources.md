@@ -301,53 +301,12 @@ containing OS data © Crown copyright and database right, Royal Mail data
 
 ---
 
-## Composite UK IMD
+## UK deprivation indices (IMD)
 
 KindTech's `imd` module serves each nation's **official** deprivation index for
-single-nation work (see [the official national indices](#official-national-indices)
-below), and the
-[composite UK Index of Multiple Deprivation](https://github.com/mysociety/composite_uk_imd)
-— a research dataset by [mySociety](https://www.mysociety.org/) that harmonises
-the four official indices onto one UK-wide ranking — for `nation="UK"`,
-cross-nation comparison.
-
-### Why a composite is needed
-
-The four official indices each rank areas only *within* their own nation, on
-different geographies and methodologies, so their ranks and deciles are not
-comparable across the UK:
-
-| Nation | Index | Publisher | Geography |
-|---|---|---|---|
-| England | IMD 2019 | MHCLG | LSOA (2011) |
-| Wales | WIMD 2019 | Welsh Government | LSOA (2011) |
-| Scotland | SIMD 2020 | Scottish Government | Data Zone (2011) |
-| Northern Ireland | NIMDM 2017 | NISRA | Super Output Area |
-
-The composite re-ranks every area (42,619 in total) on one scale using the
-income and employment domains shared by all four indices.
-
-### Source
-
-| Item | Value |
-|---|---|
-| File | `data/uk_index/UK_IMD_E.csv` (England-anchored) |
-| Host | `raw.githubusercontent.com/mysociety/composite_uk_imd` |
-| Rows | 42,619 (England 32,844 · Scotland 6,976 · Wales 1,909 · NI 890) |
-| Key column | `lsoa` — LSOA/Data Zone/SOA code depending on nation |
-| UK ranking | `UK_IMD_E_rank`, `UK_IMD_E_pop_decile`, `UK_IMD_E_pop_quintile` |
-
-KindTech fetches this CSV live and caches it in-process for the session (it is a
-static research release). Column names are mapped to KindTech's conventions
-(`lsoa` → `geography_code`, etc.).
-
-### Licensing and attribution
-
-The composite dataset is licensed
-[Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
-— **attribute mySociety** when redistributing. The underlying national indices
-are Open Government Licence v3.0 (MHCLG, Welsh Government, Scottish Government,
-NISRA). The composite code is MIT licensed.
+single-nation work, and the mySociety composite for comparing *across* nations.
+The official per-nation indices are the primary path; the composite exists only
+because there is no official UK-wide index.
 
 ### Official national indices
 
@@ -376,13 +335,44 @@ spreadsheet sources (Wales ODS, Scotland XLSX) are read with
 not wired up — StatsWales has no stable machine-readable download endpoint yet.
 Scotland and NI have no 2025 release.
 
-All single-nation rankings are **within-nation** — for cross-nation comparison
-use the composite (`nation="UK"`).
+**Licensing:** Open Government Licence v3.0 — England IoD (MHCLG), WIMD (Welsh
+Government), SIMD (Scottish Government), NIMDM (NISRA / Open Data NI).
 
-### Licensing (national indices)
+### Composite UK IMD
 
-Open Government Licence v3.0: England IoD (MHCLG), WIMD (Welsh Government), SIMD
-(Scottish Government), NIMDM (NISRA / Open Data NI).
+All single-nation rankings are **within-nation** — an English "decile 1" and a
+Scottish "decile 1" are not the same thing, because each official index ranks
+areas only within its own nation, on different geographies and methodologies:
+
+| Nation | Index | Publisher | Geography |
+|---|---|---|---|
+| England | IMD 2019 | MHCLG | LSOA (2011) |
+| Wales | WIMD 2019 | Welsh Government | LSOA (2011) |
+| Scotland | SIMD 2020 | Scottish Government | Data Zone (2011) |
+| Northern Ireland | NIMDM 2017 | NISRA | Super Output Area |
+
+To compare *across* nations you need one shared ranking, and there is no
+official UK-wide index. So for `nation="UK"` KindTech uses the
+[composite UK Index of Multiple Deprivation](https://github.com/mysociety/composite_uk_imd)
+— a research dataset by [mySociety](https://www.mysociety.org/) — which re-ranks
+every area (42,619 in total) onto one scale using the income and employment
+domains shared by all four indices.
+
+| Item | Value |
+|---|---|
+| File | `data/uk_index/UK_IMD_E.csv` (England-anchored) |
+| Host | `raw.githubusercontent.com/mysociety/composite_uk_imd` |
+| Rows | 42,619 (England 32,844 · Scotland 6,976 · Wales 1,909 · NI 890) |
+| Key column | `lsoa` — LSOA/Data Zone/SOA code depending on nation |
+| UK ranking | `UK_IMD_E_rank`, `UK_IMD_E_pop_decile`, `UK_IMD_E_pop_quintile` |
+
+Fetched live and cached in-process for the session (a static research release);
+column names are mapped to KindTech's conventions (`lsoa` → `geography_code`).
+
+**Licensing:** the composite is
+[Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
+— **attribute mySociety** when redistributing. The underlying national indices
+are Open Government Licence v3.0; the composite code is MIT licensed.
 
 ---
 
