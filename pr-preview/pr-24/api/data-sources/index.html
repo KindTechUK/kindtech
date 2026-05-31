@@ -809,9 +809,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#latest-national-indices-year2025" class="md-nav__link">
+  <a href="#latest-national-indices" class="md-nav__link">
     <span class="md-ellipsis">
-      Latest national indices (year=2025)
+      Latest national indices
     </span>
   </a>
   
@@ -1511,9 +1511,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#latest-national-indices-year2025" class="md-nav__link">
+  <a href="#latest-national-indices" class="md-nav__link">
     <span class="md-ellipsis">
-      Latest national indices (year=2025)
+      Latest national indices
     </span>
   </a>
   
@@ -2116,10 +2116,13 @@ containing OS data © Crown copyright and database right, Royal Mail data
 <a href="https://ideal-postcodes.co.uk/">Ideal Postcodes</a>.</p>
 <hr />
 <h2 id="composite-uk-imd">Composite UK IMD</h2>
-<p>KindTech's <code>imd</code> module loads the
-<a href="https://github.com/mysociety/composite_uk_imd">composite UK Index of Multiple Deprivation</a>,
-a research dataset by <a href="https://www.mysociety.org/">mySociety</a> that harmonises the
-four nations' official deprivation indices onto a single UK-wide ranking.</p>
+<p>KindTech's <code>imd</code> module serves each nation's <strong>official</strong> deprivation index for
+single-nation work (see <a href="#latest-national-indices">the latest national indices</a>
+below), and the
+<a href="https://github.com/mysociety/composite_uk_imd">composite UK Index of Multiple Deprivation</a>
+— a research dataset by <a href="https://www.mysociety.org/">mySociety</a> that harmonises
+the four official indices onto one UK-wide ranking — for <code>nation="UK"</code>,
+cross-nation comparison.</p>
 <h3 id="why-a-composite-is-needed">Why a composite is needed</h3>
 <p>The four official indices each rank areas only <em>within</em> their own nation, on
 different geographies and methodologies, so their ranks and deciles are not
@@ -2202,54 +2205,68 @@ static research release). Column names are mapped to KindTech's conventions
 — <strong>attribute mySociety</strong> when redistributing. The underlying national indices
 are Open Government Licence v3.0 (MHCLG, Welsh Government, Scottish Government,
 NISRA). The composite code is MIT licensed.</p>
-<h3 id="latest-national-indices-year2025">Latest national indices (<code>year=2025</code>)</h3>
-<p>The composite is built on the 2017–2020 indices. For the latest figures on
-current (2021) geographies, <code>load_imd(year=2025)</code> fetches a nation's newest
-official index directly:</p>
+<h3 id="latest-national-indices">Latest national indices</h3>
+<p>A single-nation call fetches that nation's official index directly (not the
+composite). England has the richest, most current path:</p>
 <table>
 <thead>
 <tr>
 <th>Nation</th>
+<th><code>load_imd(nation=...)</code></th>
 <th>Index</th>
 <th>Geography</th>
 <th>Source</th>
-<th><code>year=2025</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>England</td>
+<td><code>"England"</code> (default <code>year=2025</code>)</td>
 <td>IoD 2025 (30 Oct 2025)</td>
 <td>LSOA 2021</td>
 <td>gov.uk File 7 (CSV, OGL)</td>
-<td>✅</td>
+</tr>
+<tr>
+<td>England</td>
+<td><code>"England", year=2019</code></td>
+<td>IoD 2019</td>
+<td>LSOA 2011</td>
+<td>gov.uk File 7 (CSV, OGL)</td>
 </tr>
 <tr>
 <td>Wales</td>
-<td>WIMD 2025 (27 Nov 2025)</td>
-<td>LSOA 2021</td>
-<td>StatsWales</td>
-<td>⏳ no stable download endpoint yet</td>
+<td><code>"Wales"</code></td>
+<td>WIMD 2019</td>
+<td>LSOA 2011</td>
+<td>via composite</td>
 </tr>
 <tr>
 <td>Scotland</td>
+<td><code>"Scotland"</code></td>
 <td>SIMD 2020</td>
 <td>Data Zone 2011</td>
-<td>gov.scot</td>
-<td>❌ no 2025 release</td>
+<td>via composite</td>
 </tr>
 <tr>
 <td>N. Ireland</td>
+<td><code>"Northern Ireland"</code></td>
 <td>NIMDM 2017</td>
 <td>SOA</td>
-<td>NISRA</td>
-<td>❌ no 2025 release</td>
+<td>via composite</td>
 </tr>
 </tbody>
 </table>
-<p>England's File 7 (<code>assets.publishing.service.gov.uk/.../File_7_IoD2025_...csv</code>)
-is fetched live and cached for the session. These national rankings are
-<strong>within-nation</strong> — for cross-nation comparison use the composite (<code>year=2019</code>).</p>
+<p>England's File 7 (both years,
+<code>assets.publishing.service.gov.uk/.../File_7_...csv</code>) is fetched live and cached
+for the session, carrying all seven domains as score + rank + decile plus a
+population denominator. Wales/Scotland/NI currently surface the official
+within-nation decile and score from the composite source (full domain
+breakdowns for those nations are a future addition).</p>
+<p><strong>Pending:</strong> <code>load_imd(nation="Wales", year=2025)</code> (WIMD 2025, 27 Nov 2025) is
+not wired up — StatsWales has no stable machine-readable download endpoint yet.
+Scotland and NI have no 2025 release.</p>
+<p>All single-nation rankings are <strong>within-nation</strong> — for cross-nation comparison
+use the composite (<code>nation="UK"</code>).</p>
 <hr />
 <h2 id="dataset-aliases">Dataset Aliases</h2>
 <p>Instead of remembering NOMIS dataset IDs like <code>NM_2002_1</code>, you can use
