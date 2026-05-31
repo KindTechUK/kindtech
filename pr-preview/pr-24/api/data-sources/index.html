@@ -772,41 +772,14 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#composite-uk-imd" class="md-nav__link">
+  <a href="#uk-deprivation-indices-imd" class="md-nav__link">
     <span class="md-ellipsis">
-      Composite UK IMD
+      UK deprivation indices (IMD)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Composite UK IMD">
+    <nav class="md-nav" aria-label="UK deprivation indices (IMD)">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#why-a-composite-is-needed" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why a composite is needed
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#source" class="md-nav__link">
-    <span class="md-ellipsis">
-      Source
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#licensing-and-attribution" class="md-nav__link">
-    <span class="md-ellipsis">
-      Licensing and attribution
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#official-national-indices" class="md-nav__link">
@@ -818,9 +791,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#licensing-national-indices" class="md-nav__link">
+  <a href="#composite-uk-imd" class="md-nav__link">
     <span class="md-ellipsis">
-      Licensing (national indices)
+      Composite UK IMD
     </span>
   </a>
   
@@ -1483,41 +1456,14 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#composite-uk-imd" class="md-nav__link">
+  <a href="#uk-deprivation-indices-imd" class="md-nav__link">
     <span class="md-ellipsis">
-      Composite UK IMD
+      UK deprivation indices (IMD)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Composite UK IMD">
+    <nav class="md-nav" aria-label="UK deprivation indices (IMD)">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#why-a-composite-is-needed" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why a composite is needed
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#source" class="md-nav__link">
-    <span class="md-ellipsis">
-      Source
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#licensing-and-attribution" class="md-nav__link">
-    <span class="md-ellipsis">
-      Licensing and attribution
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#official-national-indices" class="md-nav__link">
@@ -1529,9 +1475,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#licensing-national-indices" class="md-nav__link">
+  <a href="#composite-uk-imd" class="md-nav__link">
     <span class="md-ellipsis">
-      Licensing (national indices)
+      Composite UK IMD
     </span>
   </a>
   
@@ -2133,96 +2079,11 @@ containing OS data © Crown copyright and database right, Royal Mail data
 © Crown copyright and database right. Maintained by
 <a href="https://ideal-postcodes.co.uk/">Ideal Postcodes</a>.</p>
 <hr />
-<h2 id="composite-uk-imd">Composite UK IMD</h2>
+<h2 id="uk-deprivation-indices-imd">UK deprivation indices (IMD)</h2>
 <p>KindTech's <code>imd</code> module serves each nation's <strong>official</strong> deprivation index for
-single-nation work (see <a href="#official-national-indices">the official national indices</a>
-below), and the
-<a href="https://github.com/mysociety/composite_uk_imd">composite UK Index of Multiple Deprivation</a>
-— a research dataset by <a href="https://www.mysociety.org/">mySociety</a> that harmonises
-the four official indices onto one UK-wide ranking — for <code>nation="UK"</code>,
-cross-nation comparison.</p>
-<h3 id="why-a-composite-is-needed">Why a composite is needed</h3>
-<p>The four official indices each rank areas only <em>within</em> their own nation, on
-different geographies and methodologies, so their ranks and deciles are not
-comparable across the UK:</p>
-<table>
-<thead>
-<tr>
-<th>Nation</th>
-<th>Index</th>
-<th>Publisher</th>
-<th>Geography</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>England</td>
-<td>IMD 2019</td>
-<td>MHCLG</td>
-<td>LSOA (2011)</td>
-</tr>
-<tr>
-<td>Wales</td>
-<td>WIMD 2019</td>
-<td>Welsh Government</td>
-<td>LSOA (2011)</td>
-</tr>
-<tr>
-<td>Scotland</td>
-<td>SIMD 2020</td>
-<td>Scottish Government</td>
-<td>Data Zone (2011)</td>
-</tr>
-<tr>
-<td>Northern Ireland</td>
-<td>NIMDM 2017</td>
-<td>NISRA</td>
-<td>Super Output Area</td>
-</tr>
-</tbody>
-</table>
-<p>The composite re-ranks every area (42,619 in total) on one scale using the
-income and employment domains shared by all four indices.</p>
-<h3 id="source">Source</h3>
-<table>
-<thead>
-<tr>
-<th>Item</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>File</td>
-<td><code>data/uk_index/UK_IMD_E.csv</code> (England-anchored)</td>
-</tr>
-<tr>
-<td>Host</td>
-<td><code>raw.githubusercontent.com/mysociety/composite_uk_imd</code></td>
-</tr>
-<tr>
-<td>Rows</td>
-<td>42,619 (England 32,844 · Scotland 6,976 · Wales 1,909 · NI 890)</td>
-</tr>
-<tr>
-<td>Key column</td>
-<td><code>lsoa</code> — LSOA/Data Zone/SOA code depending on nation</td>
-</tr>
-<tr>
-<td>UK ranking</td>
-<td><code>UK_IMD_E_rank</code>, <code>UK_IMD_E_pop_decile</code>, <code>UK_IMD_E_pop_quintile</code></td>
-</tr>
-</tbody>
-</table>
-<p>KindTech fetches this CSV live and caches it in-process for the session (it is a
-static research release). Column names are mapped to KindTech's conventions
-(<code>lsoa</code> → <code>geography_code</code>, etc.).</p>
-<h3 id="licensing-and-attribution">Licensing and attribution</h3>
-<p>The composite dataset is licensed
-<a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0</a>
-— <strong>attribute mySociety</strong> when redistributing. The underlying national indices
-are Open Government Licence v3.0 (MHCLG, Welsh Government, Scottish Government,
-NISRA). The composite code is MIT licensed.</p>
+single-nation work, and the mySociety composite for comparing <em>across</em> nations.
+The official per-nation indices are the primary path; the composite exists only
+because there is no official UK-wide index.</p>
 <h3 id="official-national-indices">Official national indices</h3>
 <p>A single-nation call fetches that nation's <strong>official</strong> index directly from its
 government source (not the composite):</p>
@@ -2286,11 +2147,90 @@ spreadsheet sources (Wales ODS, Scotland XLSX) are read with
 <p><strong>Pending:</strong> <code>load_imd(nation="Wales", year=2025)</code> (WIMD 2025, 27 Nov 2025) is
 not wired up — StatsWales has no stable machine-readable download endpoint yet.
 Scotland and NI have no 2025 release.</p>
-<p>All single-nation rankings are <strong>within-nation</strong> — for cross-nation comparison
-use the composite (<code>nation="UK"</code>).</p>
-<h3 id="licensing-national-indices">Licensing (national indices)</h3>
-<p>Open Government Licence v3.0: England IoD (MHCLG), WIMD (Welsh Government), SIMD
-(Scottish Government), NIMDM (NISRA / Open Data NI).</p>
+<p><strong>Licensing:</strong> Open Government Licence v3.0 — England IoD (MHCLG), WIMD (Welsh
+Government), SIMD (Scottish Government), NIMDM (NISRA / Open Data NI).</p>
+<h3 id="composite-uk-imd">Composite UK IMD</h3>
+<p>All single-nation rankings are <strong>within-nation</strong> — an English "decile 1" and a
+Scottish "decile 1" are not the same thing, because each official index ranks
+areas only within its own nation, on different geographies and methodologies:</p>
+<table>
+<thead>
+<tr>
+<th>Nation</th>
+<th>Index</th>
+<th>Publisher</th>
+<th>Geography</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>England</td>
+<td>IMD 2019</td>
+<td>MHCLG</td>
+<td>LSOA (2011)</td>
+</tr>
+<tr>
+<td>Wales</td>
+<td>WIMD 2019</td>
+<td>Welsh Government</td>
+<td>LSOA (2011)</td>
+</tr>
+<tr>
+<td>Scotland</td>
+<td>SIMD 2020</td>
+<td>Scottish Government</td>
+<td>Data Zone (2011)</td>
+</tr>
+<tr>
+<td>Northern Ireland</td>
+<td>NIMDM 2017</td>
+<td>NISRA</td>
+<td>Super Output Area</td>
+</tr>
+</tbody>
+</table>
+<p>To compare <em>across</em> nations you need one shared ranking, and there is no
+official UK-wide index. So for <code>nation="UK"</code> KindTech uses the
+<a href="https://github.com/mysociety/composite_uk_imd">composite UK Index of Multiple Deprivation</a>
+— a research dataset by <a href="https://www.mysociety.org/">mySociety</a> — which re-ranks
+every area (42,619 in total) onto one scale using the income and employment
+domains shared by all four indices.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>File</td>
+<td><code>data/uk_index/UK_IMD_E.csv</code> (England-anchored)</td>
+</tr>
+<tr>
+<td>Host</td>
+<td><code>raw.githubusercontent.com/mysociety/composite_uk_imd</code></td>
+</tr>
+<tr>
+<td>Rows</td>
+<td>42,619 (England 32,844 · Scotland 6,976 · Wales 1,909 · NI 890)</td>
+</tr>
+<tr>
+<td>Key column</td>
+<td><code>lsoa</code> — LSOA/Data Zone/SOA code depending on nation</td>
+</tr>
+<tr>
+<td>UK ranking</td>
+<td><code>UK_IMD_E_rank</code>, <code>UK_IMD_E_pop_decile</code>, <code>UK_IMD_E_pop_quintile</code></td>
+</tr>
+</tbody>
+</table>
+<p>Fetched live and cached in-process for the session (a static research release);
+column names are mapped to KindTech's conventions (<code>lsoa</code> → <code>geography_code</code>).</p>
+<p><strong>Licensing:</strong> the composite is
+<a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0</a>
+— <strong>attribute mySociety</strong> when redistributing. The underlying national indices
+are Open Government Licence v3.0; the composite code is MIT licensed.</p>
 <hr />
 <h2 id="dataset-aliases">Dataset Aliases</h2>
 <p>Instead of remembering NOMIS dataset IDs like <code>NM_2002_1</code>, you can use
