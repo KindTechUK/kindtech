@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://kindtechuk.github.io/kindtech/api/data-sources/">
       
       
-        <link rel="prev" href="../ons/">
+        <link rel="prev" href="../postcodes/">
       
       
         <link rel="next" href="../../case-studies/">
@@ -484,6 +484,29 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../postcodes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Postcodes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -673,6 +696,48 @@
   <a href="#community-packages" class="md-nav__link">
     <span class="md-ellipsis">
       Community packages
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#postcodesio" class="md-nav__link">
+    <span class="md-ellipsis">
+      postcodes.io
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="postcodes.io">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#endpoints_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returned-geography-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returned geography codes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#licensing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Licensing
     </span>
   </a>
   
@@ -1293,6 +1358,48 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#postcodesio" class="md-nav__link">
+    <span class="md-ellipsis">
+      postcodes.io
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="postcodes.io">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#endpoints_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returned-geography-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returned geography codes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#licensing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Licensing
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#dataset-aliases" class="md-nav__link">
     <span class="md-ellipsis">
       Dataset Aliases
@@ -1788,6 +1895,100 @@ wrappers are community-built:</p>
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="postcodesio">postcodes.io</h2>
+<p><a href="https://postcodes.io/">postcodes.io</a> is a free, open-source REST API that
+resolves UK postcodes to administrative and statistical geographies. KindTech's
+<code>postcodes</code> module wraps it so address data joins to the same
+<code>geography_code</code> used by the geo and ONS modules.</p>
+<h3 id="endpoints_2">Endpoints</h3>
+<p>Base URL: <code>https://api.postcodes.io</code></p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /postcodes</code></td>
+<td>Bulk lookup, up to <strong>100 postcodes</strong> per request</td>
+</tr>
+<tr>
+<td><code>GET /postcodes/{postcode}</code></td>
+<td>Single postcode lookup</td>
+</tr>
+<tr>
+<td><code>GET /postcodes?lon={lon}&amp;lat={lat}</code></td>
+<td>Reverse geocode — nearest postcodes to a point</td>
+</tr>
+<tr>
+<td><code>GET /outcodes/{outcode}</code></td>
+<td>Outcode info: spanned Local Authorities + centroid</td>
+</tr>
+</tbody>
+</table>
+<p>No authentication is required. KindTech batches bulk lookups at 100 per request
+and preserves input order.</p>
+<h3 id="returned-geography-codes">Returned geography codes</h3>
+<p>A postcode lookup returns a <code>codes</code> object with standard ONS GSS codes.
+KindTech surfaces these aligned to its geography types:</p>
+<table>
+<thead>
+<tr>
+<th>KindTech level</th>
+<th>postcodes.io <code>codes</code> key</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LSOA</td>
+<td><code>lsoa21</code></td>
+<td><code>E01034394</code></td>
+</tr>
+<tr>
+<td>MSOA</td>
+<td><code>msoa21</code></td>
+<td><code>E02007008</code></td>
+</tr>
+<tr>
+<td>OA</td>
+<td><code>oa21</code></td>
+<td><code>E00182613</code></td>
+</tr>
+<tr>
+<td>LAD</td>
+<td><code>admin_district</code></td>
+<td><code>E09000023</code></td>
+</tr>
+<tr>
+<td>WD (ward)</td>
+<td><code>admin_ward</code></td>
+<td><code>E05013727</code></td>
+</tr>
+<tr>
+<td>ICB</td>
+<td><code>icb</code></td>
+<td><code>E54000030</code></td>
+</tr>
+<tr>
+<td>TTWA</td>
+<td><code>ttwa</code></td>
+<td><code>E30000234</code></td>
+</tr>
+</tbody>
+</table>
+<p>2021 Census geographies (<code>lsoa21</code>, <code>msoa21</code>, <code>oa21</code>) are preferred so codes
+match Census 2021 statistics and current boundary data.</p>
+<h3 id="licensing">Licensing</h3>
+<p>postcodes.io code is MIT licensed; the underlying data is
+<a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>,
+containing OS data © Crown copyright and database right, Royal Mail data
+© Royal Mail copyright and database right, and National Statistics data
+© Crown copyright and database right. Maintained by
+<a href="https://ideal-postcodes.co.uk/">Ideal Postcodes</a>.</p>
 <hr />
 <h2 id="dataset-aliases">Dataset Aliases</h2>
 <p>Instead of remembering NOMIS dataset IDs like <code>NM_2002_1</code>, you can use
