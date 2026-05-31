@@ -55,7 +55,8 @@ _COMPOSITE_COLUMNS = {
 }
 
 # IoD2025 File 7 domains: kindtech prefix -> (Score column, domain label).
-# The decile column is "<label> Decile (where 1 is most deprived 10% of LSOAs)".
+# Each domain also has "<label> Rank (where 1 is most deprived)" and
+# "<label> Decile (where 1 is most deprived 10% of LSOAs)" columns.
 _ENGLAND_2025_DOMAINS = {
     "income": ("Income Score (rate)", "Income"),
     "employment": ("Employment Score (rate)", "Employment"),
@@ -75,6 +76,7 @@ _ENGLAND_2025_DOMAINS = {
     "living_environment": ("Living Environment Score", "Living Environment"),
 }
 
+_RANK_SUFFIX = "Rank (where 1 is most deprived)"
 _DECILE_SUFFIX = "Decile (where 1 is most deprived 10% of LSOAs)"
 _IMD = "Index of Multiple Deprivation (IMD)"
 
@@ -87,11 +89,12 @@ def _england_2025_columns() -> dict[str, str]:
         "Local Authority District code (2024)": "lad_code",
         "Local Authority District name (2024)": "lad_name",
         f"{_IMD} Score": "imd_score",
-        f"{_IMD} Rank (where 1 is most deprived)": "imd_rank",
+        f"{_IMD} {_RANK_SUFFIX}": "imd_rank",
         f"{_IMD} {_DECILE_SUFFIX}": "imd_decile",
     }
     for prefix, (score_col, label) in _ENGLAND_2025_DOMAINS.items():
         columns[score_col] = f"{prefix}_score"
+        columns[f"{label} {_RANK_SUFFIX}"] = f"{prefix}_rank"
         columns[f"{label} {_DECILE_SUFFIX}"] = f"{prefix}_decile"
     # Population denominator (same LSOA vintage) — handy for per-capita work.
     columns["Total population: mid 2022"] = "population"
@@ -217,9 +220,9 @@ def load_imd(
           (within-nation), and income/employment/local scores.
         - ``year=2025``: ``geography_code`` (2021 LSOA), ``geography_name``,
           ``nation``, ``lad_code``, ``lad_name``, ``imd_score``/``imd_rank``/
-          ``imd_decile``, and score+decile for the seven domains (income,
+          ``imd_decile``, and score+rank+decile for the seven domains (income,
           employment, education, health, crime, housing, living_environment).
-          Deciles are within-nation.
+          Ranks/deciles are within-nation (rank 1 = most deprived).
 
     Raises:
         ValueError: If ``nation`` is unrecognised, or ``year``/``nation`` name a

@@ -107,30 +107,39 @@ def test_dataset_cached_across_calls(mock_get):
 
 # --- year=2025 (latest national index) -------------------------------------
 
+_RANK = "Rank (where 1 is most deprived)"
+_DEC = "Decile (where 1 is most deprived 10% of LSOAs)"
+
 _ENGLAND_2025_CSV = (
     "LSOA code (2021),LSOA name (2021),"
     "Local Authority District code (2024),Local Authority District name (2024),"
-    "Index of Multiple Deprivation (IMD) Score,"
-    "Index of Multiple Deprivation (IMD) Rank (where 1 is most deprived),"
-    "Index of Multiple Deprivation (IMD) Decile "
-    "(where 1 is most deprived 10% of LSOAs),"
-    "Income Score (rate),"
-    "Income Decile (where 1 is most deprived 10% of LSOAs),"
-    "Employment Score (rate),"
-    "Employment Decile (where 1 is most deprived 10% of LSOAs),"
-    '"Education, Skills and Training Score",'
-    '"Education, Skills and Training Decile (where 1 is most deprived 10% of LSOAs)",'
-    "Health Deprivation and Disability Score,"
-    "Health Deprivation and Disability Decile (where 1 is most deprived 10% of LSOAs),"
-    "Crime Score,"
-    "Crime Decile (where 1 is most deprived 10% of LSOAs),"
-    "Barriers to Housing and Services Score,"
-    "Barriers to Housing and Services Decile (where 1 is most deprived 10% of LSOAs),"
-    "Living Environment Score,"
-    "Living Environment Decile (where 1 is most deprived 10% of LSOAs),"
+    f"Index of Multiple Deprivation (IMD) Score,"
+    f"Index of Multiple Deprivation (IMD) {_RANK},"
+    f"Index of Multiple Deprivation (IMD) {_DEC},"
+    f"Income Score (rate),Income {_RANK},Income {_DEC},"
+    f"Employment Score (rate),Employment {_RANK},Employment {_DEC},"
+    f'"Education, Skills and Training Score",'
+    f'"Education, Skills and Training {_RANK}",'
+    f'"Education, Skills and Training {_DEC}",'
+    f"Health Deprivation and Disability Score,"
+    f"Health Deprivation and Disability {_RANK},"
+    f"Health Deprivation and Disability {_DEC},"
+    f"Crime Score,Crime {_RANK},Crime {_DEC},"
+    f"Barriers to Housing and Services Score,"
+    f"Barriers to Housing and Services {_RANK},"
+    f"Barriers to Housing and Services {_DEC},"
+    f"Living Environment Score,Living Environment {_RANK},Living Environment {_DEC},"
     "Total population: mid 2022\n"
     "E01000001,City of London 001A,E09000001,City of London,"
-    "8.7,26525,8,0.013,9,0.02,8,0.1,7,0.2,6,0.3,5,0.4,4,0.5,3,1523\n"
+    "8.7,26525,8,"  # overall IMD: score, rank, decile
+    "0.013,9001,9,"  # income
+    "0.02,9002,8,"  # employment
+    "0.1,9003,7,"  # education
+    "0.2,9004,6,"  # health
+    "0.3,9005,5,"  # crime
+    "0.4,9006,4,"  # housing
+    "0.5,9007,3,"  # living environment
+    "1523\n"  # population
 )
 
 
@@ -146,7 +155,8 @@ def test_england_2025_on_2021_lsoas_with_domains(mock_get):
     assert df.loc[0, "geography_code"] == "E01000001"  # 2021 LSOA
     assert df.loc[0, "nation"] == "E"
     assert df.loc[0, "imd_decile"] == 8
-    # All seven domains surfaced as score + decile.
+    assert df.loc[0, "imd_rank"] == 26525
+    # All seven domains surfaced as score + rank + decile.
     for domain in [
         "income",
         "employment",
@@ -156,8 +166,12 @@ def test_england_2025_on_2021_lsoas_with_domains(mock_get):
         "housing",
         "living_environment",
     ]:
-        assert f"{domain}_decile" in df.columns
         assert f"{domain}_score" in df.columns
+        assert f"{domain}_rank" in df.columns
+        assert f"{domain}_decile" in df.columns
+    # Rank values land in the right columns.
+    assert df.loc[0, "income_rank"] == 9001
+    assert df.loc[0, "living_environment_rank"] == 9007
     # Population denominator surfaced for per-capita work.
     assert df.loc[0, "population"] == 1523
 

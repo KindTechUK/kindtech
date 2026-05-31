@@ -77,11 +77,12 @@ imd25 = load_imd(nation="England", year=2025)
 
 Returns `geography_code` (**2021** LSOA), `geography_name`, `nation`,
 `lad_code`, `lad_name`, the overall `imd_score`/`imd_rank`/`imd_decile`, and a
-score + decile for each of the **seven domains**: `income`, `employment`,
-`education`, `health`, `crime`, `housing` (barriers to housing & services),
-`living_environment`. Deciles are within-nation (1 = most deprived 10% of
-English LSOAs). Calling `year=2025` for the UK, Wales, Scotland or NI raises a
-`ValueError` explaining what to use instead.
+`score` + `rank` + `decile` for each of the **seven domains**: `income`,
+`employment`, `education`, `health`, `crime`, `housing` (barriers to housing &
+services), `living_environment` (e.g. `income_rank`, `income_decile`). Ranks
+and deciles are within-nation (rank 1 / decile 1 = most deprived). Calling
+`year=2025` for the UK, Wales, Scotland or NI raises a `ValueError` explaining
+what to use instead.
 
 ## Joining to boundaries and statistics
 
