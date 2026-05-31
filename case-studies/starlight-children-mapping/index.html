@@ -823,6 +823,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproduction
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1051,6 +1060,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproduction
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1133,8 +1151,60 @@
 <li><strong>Gap Analysis</strong>: Identify areas with high need but low service provision</li>
 <li><strong>Visualization</strong>: Create heat maps showing service distribution and need indicators</li>
 </ol>
+<h3 id="reproduction">Reproduction</h3>
+<p>A runnable, end-to-end reproduction lives in
+<a href="https://github.com/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py"><code>examples/starlight_play_provision.py</code></a>
+(a <a href="https://marimo.io/">marimo</a> notebook). It maps synthetic provision against
+need over England's real NHS commissioning geography:</p>
+<p><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py"><img alt="Open in marimo" src="https://marimo.io/molab-shield.svg" /></a>
+&nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
+data), or locally with <code>uv run marimo edit examples/starlight_play_provision.py</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="c1"># England&#39;s 42 Integrated Care Boards (the geography that replaced CCGs)</span>
+<span class="n">geojson</span> <span class="o">=</span> <span class="n">load_geodata</span><span class="p">(</span><span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;ICB&quot;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s2">&quot;2023&quot;</span><span class="p">,</span> <span class="n">coverage</span><span class="o">=</span><span class="s2">&quot;EN&quot;</span><span class="p">,</span> <span class="n">boundary_type</span><span class="o">=</span><span class="s2">&quot;BSC&quot;</span><span class="p">)</span>
+<span class="n">icbs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">geodata_to_properties</span><span class="p">(</span><span class="n">geojson</span><span class="p">,</span> <span class="s2">&quot;ICB&quot;</span><span class="p">,</span> <span class="mi">2023</span><span class="p">))</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">ICBs, not CCGs</p>
+<p>Clinical Commissioning Groups were abolished in July 2022 and replaced by
+<strong>Integrated Care Boards</strong>. KindTech serves the current ICB boundaries, so
+the reproduction uses the 42 ICBs as the commissioning unit; the workflow is
+identical to the original CCG analysis.</p>
+</div>
+<p>The original study's admission and provision figures came from FOI returns that
+aren't public, so the notebook generates a deterministic stand-in (<code>rng(3)</code>)
+where <strong>child admissions vary widely</strong> (the need) but <strong>boxes are distributed
+roughly evenly</strong> (the resource) — the exact pattern the study flagged.</p>
+<p><strong>Need vs provision</strong> — child admissions (left) and boxes distributed (right).
+The two maps <em>don't</em> share their dark areas, which is the point:</p>
+<p><img alt="Reproduced Starlight maps" src="../../images/case-studies/starlight-reproduced-maps.png" />
+<em>Figure 2: Child admissions (left, the need) vs Starlight boxes distributed
+(right, the resource) across England's 42 ICBs. Provision does not follow need.</em></p>
+<p><strong>Does provision follow need?</strong> Each ICB's admissions against its boxes:</p>
+<p><img alt="Reproduced Starlight scatter" src="../../images/case-studies/starlight-reproduced-scatter.png" />
+<em>Figure 3: A near-flat (slightly negative) relationship between need and
+provision — resources are spread evenly regardless of demand, the
+"be more strategic" opportunity the original study identified.</em></p>
+<p>To run on real data, replace the synthetic columns with Starlight's FOI returns
+keyed by ICB (or by trust, then mapped to ICB); the boundary join, coverage
+maths and maps are unchanged.</p>
 <h2 id="lessons-learned">Lessons Learned</h2>
-<p>Key takeaways and recommendations.</p>
+<p><strong>Key takeaways and recommendations:</strong></p>
+<ul>
+<li><strong>Map provision against need, not in isolation</strong>: plotting boxes alongside
+  admissions on the same geography immediately exposes the decoupling that a
+  provision-only view hides.</li>
+<li><strong>Even distribution is a finding, not a default</strong>: a near-flat
+  need-vs-provision relationship is itself the evidence that allocation could
+  be more strategic.</li>
+<li><strong>Coverage ratios rank the opportunity</strong>: boxes per 1,000 admissions turns
+  the gap into an ordered list of where redirecting resource helps most.</li>
+<li><strong>Stable geography matters</strong>: serving current ICB boundaries (post-CCG) keeps
+  the analysis aligned with how the NHS commissions today, with no manual
+  crosswalk.</li>
+</ul>
 
 
 
