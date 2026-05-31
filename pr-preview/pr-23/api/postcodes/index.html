@@ -1056,7 +1056,7 @@ OA, LAD, ward, ICB or TTWA — that joins straight to boundaries
 <p>Map postcodes to a single geography level, ready to join.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span>
 
-<span class="n">clients</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">([</span><span class="s2">&quot;SE13 7HX&quot;</span><span class="p">,</span> <span class="s2">&quot;SE6 4RU&quot;</span><span class="p">],</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
+<span class="n">located</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">([</span><span class="s2">&quot;SE13 7HX&quot;</span><span class="p">,</span> <span class="s2">&quot;SE6 4RU&quot;</span><span class="p">],</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
 <span class="c1">#    postcode geography_code geography_name</span>
 <span class="c1"># 0  SE13 7HX      E01034394  Lewisham 040C</span>
 <span class="c1"># 1   SE6 4RU      E01003318  Lewisham 020B</span>
@@ -1067,9 +1067,9 @@ result merges directly:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span><span class="p">,</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
 
-<span class="c1"># 1. Clients -&gt; LSOA counts</span>
-<span class="n">clients</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">(</span><span class="n">client_postcodes</span><span class="p">,</span> <span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
-<span class="n">per_lsoa</span> <span class="o">=</span> <span class="n">clients</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;geography_code&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;clients&quot;</span><span class="p">)</span>
+<span class="c1"># 1. Postcodes -&gt; counts per LSOA</span>
+<span class="n">located</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">(</span><span class="n">postcodes</span><span class="p">,</span> <span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
+<span class="n">per_lsoa</span> <span class="o">=</span> <span class="n">located</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;geography_code&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
 
 <span class="c1"># 2. Population for per-capita, and boundaries for the map — same join key</span>
 <span class="n">pop</span> <span class="o">=</span> <span class="n">load_ons</span><span class="p">(</span><span class="s2">&quot;population_lsoa&quot;</span><span class="p">,</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
@@ -1121,7 +1121,7 @@ touches plus the outcode's geometric centroid.</p>
 <p class="admonition-title">Outcode mapping is approximate</p>
 <p>An outcode covers many LSOAs/wards. This returns the geography <em>containing
 the outcode's geometric centroid</em> — a rough stand-in, useful when your data
-is only tagged by postcode prefix. For per-area analysis (e.g. referrals
+is only tagged by postcode prefix. For per-area analysis (e.g. counts
 per capita by LSOA), prefer full postcodes via <code>postcodes_to_geography()</code>,
 or split an outcode's records across its constituent areas weighted by
 population.</p>

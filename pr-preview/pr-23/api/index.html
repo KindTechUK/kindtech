@@ -1044,12 +1044,12 @@
 </code></pre></div>
 <h3 id="postcodes-kindtechpostcodes"><a href="postcodes/">Postcodes</a> — <code>kindtech.postcodes</code></h3>
 <p>Resolve UK postcodes (and outcodes) to ONS geography codes via postcodes.io, so
-client address data joins to boundaries and statistics. Returns pandas or polars
+address data joins to boundaries and statistics. Returns pandas or polars
 DataFrames.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.postcodes</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span>
 
 <span class="c1"># Postcodes -&gt; LSOA, ready to join on `geography_code`</span>
-<span class="n">clients</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">([</span><span class="s2">&quot;SE13 7HX&quot;</span><span class="p">,</span> <span class="s2">&quot;SE6 4RU&quot;</span><span class="p">],</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
+<span class="n">located</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">([</span><span class="s2">&quot;SE13 7HX&quot;</span><span class="p">,</span> <span class="s2">&quot;SE6 4RU&quot;</span><span class="p">],</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="design-principles">Design principles</h2>
 <ul>
