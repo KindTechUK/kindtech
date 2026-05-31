@@ -754,6 +754,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproduction
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1051,6 +1060,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproduction
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1121,7 +1139,78 @@
 <li><strong>Per-Capita Calculation</strong>: Compute the number of referrals per capita for each LSOA</li>
 <li><strong>Visualization</strong>: Create geographic maps showing referral density and ethnic distribution patterns</li>
 </ol>
+<h3 id="reproduction">Reproduction</h3>
+<p>A runnable, end-to-end reproduction lives in
+<a href="https://github.com/KindTechUK/kindtech/blob/main/examples/sobus_bame_referrals.py"><code>examples/sobus_bame_referrals.py</code></a>
+(a <a href="https://marimo.io/">marimo</a> notebook). It chains three KindTech connectors,
+all joining on the 2021 LSOA <code>geography_code</code>:</p>
+<p><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/sobus_bame_referrals.py"><img alt="Open in marimo" src="https://marimo.io/molab-shield.svg" /></a>
+&nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
+data), or locally with <code>uv run marimo edit examples/sobus_bame_referrals.py</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">outcode_to_geography</span><span class="p">,</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">load_geodata</span>
+
+<span class="c1"># 1. A referral&#39;s outcode -&gt; LSOA (the step real referral data would use)</span>
+<span class="n">outcode_to_geography</span><span class="p">([</span><span class="s2">&quot;W6&quot;</span><span class="p">,</span> <span class="s2">&quot;W12&quot;</span><span class="p">,</span> <span class="s2">&quot;W14&quot;</span><span class="p">],</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
+
+<span class="c1"># 2. Ethnic composition per LSOA (Census 2021 TS021), restricted to the borough</span>
+<span class="n">eth</span> <span class="o">=</span> <span class="n">load_ons</span><span class="p">(</span>
+    <span class="s2">&quot;NM_2041_1&quot;</span><span class="p">,</span>
+    <span class="n">geography</span><span class="o">=</span><span class="s2">&quot;1778385172TYPE151&quot;</span><span class="p">,</span>  <span class="c1"># LSOAs within Hammersmith &amp; Fulham</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">,</span>
+    <span class="n">c2021_eth_20</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1004</span><span class="p">],</span>  <span class="c1"># Total, White -&gt; BAME = Total - White</span>
+<span class="p">)</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Everything is on 2021 LSOAs — no crosswalk</p>
+<p>The postcode connector returns 2021 LSOA codes, <strong>Census 2021</strong> is on 2021
+LSOAs (and gives the population denominator <em>and</em> the BAME share), and the
+default LSOA boundaries are 2021. So ethnicity, population and referral
+geography line up on one <code>geography_code</code> with no vintage conversion.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Outcode → LSOA is a rough, centroid-based stand-in</p>
+<p>An outcode (e.g. <code>W6</code>) spans many LSOAs, so <code>outcode_to_geography</code> returns
+only the LSOA at its centroid — and a centroid can even fall in a
+neighbouring borough. With <strong>full</strong> postcodes use <code>postcodes_to_geography</code>
+for an exact mapping. The analysis below runs at true LSOA resolution from
+the census; the outcode step only demonstrates the mechanism.</p>
+</div>
+<p>Real NHS Trust referrals are confidential, so the notebook generates synthetic
+referrals per LSOA at a rate that <strong>rises with the area's BAME share</strong>, and
+models a BAME resident as more likely to be referred than a White resident —
+reproducing the over-representation the study tested for.</p>
+<p><strong>Where is the need?</strong> — BAME share of population (left) and synthetic referral
+rate (right). Shared dark areas mean referrals come from the most-BAME LSOAs:</p>
+<p><img alt="Reproduced Sobus maps" src="../../images/case-studies/sobus-reproduced-maps.png" />
+<em>Figure 2: BAME share of population (left) vs synthetic mental-health referrals
+per 1,000 residents (right) across Hammersmith &amp; Fulham's 115 LSOAs. The
+hotspots align.</em></p>
+<p><strong>Are BAME residents over-represented?</strong> Each LSOA's BAME share against its
+referral rate:</p>
+<p><img alt="Reproduced Sobus scatter" src="../../images/case-studies/sobus-reproduced-scatter.png" />
+<em>Figure 3: A clear positive correlation between BAME share and referrals per
+capita — the direction the original study found. Across the borough BAME
+residents are ~37% of the population but a higher share of referrals.</em></p>
+<p>To run on real data, feed each referral's postcode through
+<code>postcodes_to_geography(..., "LSOA")</code>, tag it with the patient's ethnicity, and
+aggregate per <code>geography_code</code>; the census join, per-capita maths and maps are
+unchanged.</p>
 <h2 id="lessons-learned">Lessons Learned</h2>
+<p><strong>Key takeaways and recommendations:</strong></p>
+<ul>
+<li><strong>Geography reveals disparity</strong>: mapping referrals against ethnic composition
+  at LSOA level exposes where need concentrates and quantifies
+  over-representation — the starting point Sobus wanted for addressing service
+  gaps.</li>
+<li><strong>Per-capita normalisation matters</strong>: raw referral counts track population
+  size; normalising by residents reveals true demand independent of how many
+  people live in each area.</li>
+<li><strong>Postcode resolution drives accuracy</strong>: full postcodes map cleanly to LSOAs;
+  outcodes only approximate via a centroid and can cross borough boundaries, so
+  the granularity of the source postcode caps the analysis.</li>
+<li><strong>Census is the denominator</strong>: 2021 ethnic-group data on 2021 LSOAs joins
+  natively to referral geography, no crosswalk needed.</li>
+</ul>
 
 
 
