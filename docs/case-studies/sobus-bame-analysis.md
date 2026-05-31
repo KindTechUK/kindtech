@@ -11,6 +11,7 @@ Sobus identified ongoing concerns about the disproportionate numbers of BAME (Bl
 **Key Challenge**: There was a lack of comprehensive local data mapping the BAME mental health landscape, making it difficult to understand the scope and nature of service gaps.
 
 **Research Questions**:
+
 - Was there a disproportionate representation of BAME people diagnosed and under the care of Mental Health Services?
 - What was the current service provision for the BAME community suffering from mental health issues?
 - How could data-driven insights inform more equitable mental health service delivery?

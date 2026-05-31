@@ -45,6 +45,23 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
+# Generate /llms.txt + /llms-full.txt and a "copy as Markdown" button per page
+# (LLM-friendly docs). `search` is listed so Material's search stays enabled.
+plugins:
+  - search
+  - llmstxt-md:
+      sections:
+        Home:
+          - index.md
+        Examples:
+          - examples.md
+        Case Studies:
+          - case-studies/*.md
+        User Guide:
+          - api/*.md
+        Blog:
+          - blog/*.md
+
 markdown_extensions:
   - attr_list
   - md_in_html
@@ -56,13 +73,7 @@ markdown_extensions:
 # Navigation structure
 nav:
   - Home: index.md
-  - API Reference:
-    - Overview: api/index.md
-    - Geographic Data: api/geo.md
-    - ONS Data: api/ons.md
-    - Postcodes: api/postcodes.md
-    - Deprivation (IMD): api/imd.md
-    - Data Sources: api/data-sources.md
+  - Examples: examples.md
   - Case Studies:
     - Overview: case-studies/index.md
     - CAL Vulnerable Client Analysis: case-studies/cal-vulnerable-client.md
@@ -70,6 +81,13 @@ nav:
     - Material Focus Recycling: case-studies/material-focus-recycling.md
     - Smart Works Women & Unemployment: case-studies/smart-works-woman-unemployment.md
     - Starlight Children's Foundation: case-studies/starlight-children-mapping.md
+  - User Guide:
+    - Overview: api/index.md
+    - Geographic Data: api/geo.md
+    - ONS Data: api/ons.md
+    - Postcodes: api/postcodes.md
+    - Deprivation (IMD): api/imd.md
+    - Data Sources: api/data-sources.md
   - Blog:
     - blog/index.md
     - Introduction: blog/introduction.md
