@@ -242,9 +242,7 @@ def _(mo):
 @app.cell
 def _(alt, base, geojson):
     def _choropleth(value_col, title, scheme, reverse):
-        code_to_value = dict(
-            zip(base["geography_code"], base[value_col], strict=False)
-        )
+        code_to_value = dict(zip(base["geography_code"], base[value_col], strict=False))
         features = []
         for f in geojson["features"]:
             props = f.get("properties", {})
@@ -287,9 +285,7 @@ def _(alt, base, geojson):
 
     # IMD decile: reverse so decile 1 (most deprived) is darkest.
     depr_map = _choropleth("imd_decile", "Deprivation (IMD decile)", "reds", True)
-    usage_map = _choropleth(
-        "clients_per_1000", "CAL clients per 1,000", "reds", False
-    )
+    usage_map = _choropleth("clients_per_1000", "CAL clients per 1,000", "reds", False)
     (depr_map | usage_map).resolve_scale(color="independent")
     return
 
@@ -323,9 +319,9 @@ def _(alt, base):
             title=f"Deprivation vs service usage (r = {correlation:.2f})",
         )
     )
-    scatter + scatter.transform_regression(
-        "imd_score", "clients_per_1000"
-    ).mark_line(color="steelblue")
+    scatter + scatter.transform_regression("imd_score", "clients_per_1000").mark_line(
+        color="steelblue"
+    )
     return (correlation,)
 
 
