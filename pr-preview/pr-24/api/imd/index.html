@@ -1228,11 +1228,12 @@ UK-wide:</p>
 </code></pre></div>
 <p>Returns <code>geography_code</code> (<strong>2021</strong> LSOA), <code>geography_name</code>, <code>nation</code>,
 <code>lad_code</code>, <code>lad_name</code>, the overall <code>imd_score</code>/<code>imd_rank</code>/<code>imd_decile</code>, and a
-score + decile for each of the <strong>seven domains</strong>: <code>income</code>, <code>employment</code>,
-<code>education</code>, <code>health</code>, <code>crime</code>, <code>housing</code> (barriers to housing &amp; services),
-<code>living_environment</code>. Deciles are within-nation (1 = most deprived 10% of
-English LSOAs). Calling <code>year=2025</code> for the UK, Wales, Scotland or NI raises a
-<code>ValueError</code> explaining what to use instead.</p>
+<code>score</code> + <code>rank</code> + <code>decile</code> for each of the <strong>seven domains</strong>: <code>income</code>,
+<code>employment</code>, <code>education</code>, <code>health</code>, <code>crime</code>, <code>housing</code> (barriers to housing &amp;
+services), <code>living_environment</code> (e.g. <code>income_rank</code>, <code>income_decile</code>). Ranks
+and deciles are within-nation (rank 1 / decile 1 = most deprived). Calling
+<code>year=2025</code> for the UK, Wales, Scotland or NI raises a <code>ValueError</code> explaining
+what to use instead.</p>
 <h2 id="joining-to-boundaries-and-statistics">Joining to boundaries and statistics</h2>
 <p><code>geography_code</code> matches the rest of KindTech, so deprivation overlays onto a map
 or merges with population for per-capita work:</p>
