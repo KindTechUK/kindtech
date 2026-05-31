@@ -10,7 +10,15 @@ from typing import Any
 
 
 def get_native_namespace() -> Any:
-    """Return the best available DataFrame backend module (polars or pandas)."""
+    """Return the DataFrame backend module to build native frames with.
+
+    KindTech depends only on ``narwhals`` (plus ``requests``), not on pandas or
+    polars — users bring whichever they already use. This detects what's
+    installed rather than forcing one: polars is tried first (faster, and the
+    narwhals-native backend) and pandas second. The order only matters when
+    *both* are installed; if neither is, a clear ImportError tells the user to
+    install one.
+    """
     try:
         import polars
 

@@ -4,8 +4,9 @@ The `kindtech.postcodes` module turns UK postcodes (and postcode outcodes) into
 the ONS geography codes the rest of KindTech joins on. It wraps
 [postcodes.io](https://postcodes.io/) — no API key required.
 
-This is the missing link for charity client data: a list of client postcodes
-becomes a `geography_code` column that joins straight to boundaries
+It's the layer that connects point-level address data to the common geography
+types: any list of postcodes becomes a `geography_code` column — at LSOA, MSOA,
+OA, LAD, ward, ICB or TTWA — that joins straight to boundaries
 ([`load_geodata`](geo.md)) and statistics ([`load_ons`](ons.md)).
 
 ## Functions

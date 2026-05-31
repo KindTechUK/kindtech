@@ -255,20 +255,8 @@ wrappers are community-built:
 
 [postcodes.io](https://postcodes.io/) is a free, open-source REST API that
 resolves UK postcodes to administrative and statistical geographies. KindTech's
-`postcodes` module wraps it so client address data joins to the same
+`postcodes` module wraps it so address data joins to the same
 `geography_code` used by the geo and ONS modules.
-
-### Why a third-party API (not ONS directly)
-
-ONS publishes the underlying data — the
-[ONS Postcode Directory (ONSPD)](https://geoportal.statistics.gov.uk/datasets/ons::ons-postcode-directory-may-2024/about)
-and
-[National Statistics Postcode Lookup (NSPL)](https://geoportal.statistics.gov.uk/datasets/national-statistics-postcode-lookup-2021-census/about)
-— but only as bulk ZIP downloads of ~2.6 million postcodes (hundreds of MB),
-which is too large to ship in the package. postcodes.io is built on exactly
-these products (plus Ordnance Survey Open Names and the Scottish Postcode
-Directory) and serves per-postcode lookups over HTTP, so KindTech can stay a
-thin wrapper with no bundled data and no ingestion step.
 
 ### Endpoints
 

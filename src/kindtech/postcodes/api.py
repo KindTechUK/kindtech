@@ -37,8 +37,8 @@ logger = logging.getLogger(__name__)
 
 # Which key in the postcodes.io ``codes`` dict holds the code for each
 # KindTech geography type, paired with the row column its name lands in.
-# 2021 census geographies are preferred to match Census 2021 and current
-# boundary data.
+# Where a level has both vintages, the 2021 geography is chosen so codes
+# align with the rest of KindTech (boundaries and statistics).
 _LEVEL_FIELDS: dict[str, tuple[str, str | None]] = {
     "LSOA": ("lsoa_code", "lsoa_name"),
     "MSOA": ("msoa_code", "msoa_name"),
