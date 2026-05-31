@@ -2,6 +2,38 @@
 
 Ergonomic Python access to UK public data. Geographic boundaries from the ONS ArcGIS Geoportal, statistics from the NOMIS API — with universal DataFrame support.
 
+## Try it now — no install
+
+Run a real notebook in your browser. Each one fetches live ONS data through the molab cloud runtime:
+
+<div class="grid cards" markdown>
+
+-   __ONS statistics__
+
+    ---
+
+    Browse and load datasets straight from the NOMIS API.
+
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/ons_statistics.py)
+
+-   __Geographic boundaries__
+
+    ---
+
+    Explore LAD, LSOA and other UK boundary data interactively.
+
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_boundaries.py)
+
+-   __Boundaries + statistics__
+
+    ---
+
+    Join geographic shapes with ONS data and map the result.
+
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_plus_ons.py)
+
+</div>
+
 ## Install
 
 ```bash
@@ -62,16 +94,6 @@ You bring the DataFrame library. KindTech brings the data.
 UK public data is powerful but painful to access programmatically. The ONS ArcGIS Geoportal has no developer documentation — just a point-and-click GUI. The REST API endpoint was discovered buried in the source code of an obscure UK government R package. NOMIS is slightly better documented but requires deep knowledge of SDMX query syntax and dataset codes that aren't surfaced anywhere obvious.
 
 Every charity, social enterprise, and researcher working with UK geographic or statistical data ends up reverse-engineering the same APIs independently. KindTech wraps them so you don't have to — two function calls instead of hours of documentation archaeology.
-
-## Interactive examples
-
-Try these notebooks in your browser — no install needed:
-
-| Notebook | Description |
-|----------|-------------|
-| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/ons_statistics.py) | Browse and load ONS datasets from the NOMIS API |
-| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_boundaries.py) | Explore UK geographic boundaries |
-| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_plus_ons.py) | Join boundaries with statistics |
 
 ## Modules
 

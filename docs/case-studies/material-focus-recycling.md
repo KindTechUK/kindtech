@@ -9,6 +9,7 @@
 Material Focus needed to gather evidence to demonstrate to stakeholders what interventions would make the greatest difference in increasing electrical item recycling rates across the UK.
 
 **Key Research Questions**:
+
 - Where in the UK could Material Focus achieve the greatest impact if small electricals were recycled through major supermarkets?
 - Do factors like proximity to collection points influence recycling rates in different areas?
 - What barriers prevent individuals from recycling electrical goods?
@@ -18,11 +19,13 @@ Material Focus needed to gather evidence to demonstrate to stakeholders what int
 ## Dataset Involved
 
 **Internal Data**:
+
 - Existing recycling rates for electronic goods and general recycling
 - Location of current recycling points across the UK
 - Travel times from residential areas to nearest recycling facilities
 
 **External Data**:
+
 - Population density by geographic area
 - Car ownership rates
 - Housing types and demographics
@@ -35,6 +38,7 @@ Material Focus needed to gather evidence to demonstrate to stakeholders what int
 **Key Finding**: The visualization revealed that a significant proportion of people across England have access to recycling points within 12 minutes of travel time, indicating good baseline infrastructure coverage.
 
 **Behavioral Analysis**: Material Focus was particularly interested in understanding what factors would influence new individuals to start recycling—not just optimizing for people already engaged in recycling. The analysis examined:
+
 - Travel distance to recycling facilities
 - Population density compared to recycling participation rates
 - Availability of kerbside collection services

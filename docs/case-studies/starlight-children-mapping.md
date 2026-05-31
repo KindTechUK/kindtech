@@ -9,12 +9,14 @@
 Starlight Children's Foundation needed to understand where there is overlap between their services, hospital play provision, and donors to make strategic decisions about service provision and fundraising efforts.
 
 **Key objectives:**
+
 - Map the distribution of Starlight services across the UK
 - Identify gaps in play provision and service coverage
 - Analyze disparities between different ethnicities and demographics
 - Optimize resource allocation based on demonstrated need
 
 **Research Questions:**
+
 - Where are the gaps between Starlight's services and areas of greatest need?
 - How does play provision vary across different regions and demographics?
 - What factors influence the distribution of hospital play services?
@@ -25,6 +27,7 @@ Starlight Children's Foundation needed to understand where there is overlap betw
 **Primary Data Collection**: Much of the data had to be collected through freedom of information (FOI) requests from 140 hospital trusts and health boards across the UK.
 
 **Data Types Collected:**
+
 - Number of child admissions by hospital
 - Level of play provision and specialist staff
 - Play budgets and resource allocation
@@ -51,6 +54,7 @@ Starlight Children's Foundation needed to understand where there is overlap betw
 ### Data Requirements
 
 **Synthetic Data Generation**: Create realistic datasets representing:
+
 - Play provision levels across clinical commissioning groups (CCGs)
 - Hospital admission rates for children
 - Geographic distribution of Starlight services

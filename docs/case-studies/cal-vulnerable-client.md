@@ -9,6 +9,7 @@
 Citizens Advice Lewisham (CAL) needed to identify 'vulnerability hotspots' - areas with high need but limited access to resources - to optimize service delivery.
 
 **Key objectives:**
+
 - Map vulnerability hotspots in Lewisham
 - Optimize service delivery based on geographic need
 - Validate service targeting effectiveness
@@ -35,11 +36,13 @@ Citizens Advice Lewisham (CAL) needed to identify 'vulnerability hotspots' - are
 ### Data Requirements
 
 **Internal Dataset:**
+
 - Individual client records with vulnerability factor scores
 - Postcode data for geographic mapping
 - Goal: Map postcodes to LSOAs to calculate clients per capita
 
 **External Datasets:**
+
 - **Index of Multiple Deprivation (IMD)**: LSOA-level deprivation scores for overlay analysis
 - **Census Data**: Population figures for per-capita calculations
 - **LSOA Boundaries**: Geographic polygons for spatial analysis and mapping
