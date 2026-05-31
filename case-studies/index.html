@@ -513,60 +513,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#how-each-study-is-structured" class="md-nav__link">
     <span class="md-ellipsis">
-      Overview
+      How each study is structured
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#featured-case-studies" class="md-nav__link">
+  <a href="#have-a-case-study-to-share" class="md-nav__link">
     <span class="md-ellipsis">
-      Featured Case Studies
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Featured Case Studies">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#coming-soon" class="md-nav__link">
-    <span class="md-ellipsis">
-      Coming Soon
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#submit-your-case-study" class="md-nav__link">
-    <span class="md-ellipsis">
-      Submit Your Case Study
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#case-study-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      Case Study Template
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#get-involved" class="md-nav__link">
-    <span class="md-ellipsis">
-      Get Involved
+      Have a case study to share?
     </span>
   </a>
   
@@ -1037,60 +995,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#how-each-study-is-structured" class="md-nav__link">
     <span class="md-ellipsis">
-      Overview
+      How each study is structured
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#featured-case-studies" class="md-nav__link">
+  <a href="#have-a-case-study-to-share" class="md-nav__link">
     <span class="md-ellipsis">
-      Featured Case Studies
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Featured Case Studies">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#coming-soon" class="md-nav__link">
-    <span class="md-ellipsis">
-      Coming Soon
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#submit-your-case-study" class="md-nav__link">
-    <span class="md-ellipsis">
-      Submit Your Case Study
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#case-study-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      Case Study Template
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#get-involved" class="md-nav__link">
-    <span class="md-ellipsis">
-      Get Involved
+      Have a case study to share?
     </span>
   </a>
   
@@ -1116,39 +1032,60 @@
 
 
 <h1 id="case-studies">Case Studies</h1>
-<p>Welcome to the KindTech case studies section. Here you'll find real-world examples of how organizations can leverage KindTech to solve data challenges and drive insights. Since kindtech is still in development, we are mainly showing hypothetical case studies from different resources but recreating the analysis with kindtech.</p>
-<h2 id="overview">Overview</h2>
-<p>Case studies demonstrate practical applications of KindTech's data ingestion, data processing and geo spatial visualisationcapabilities, showcasing how the library can be used for data analysis and data mapping for the charity sector.</p>
-<h2 id="featured-case-studies">Featured Case Studies</h2>
-<h3 id="coming-soon">Coming Soon</h3>
-<p>We're currently collecting and documenting case studies from our community. If you're using KindTech in your projects, we'd love to hear about it!</p>
-<h3 id="submit-your-case-study">Submit Your Case Study</h3>
-<p>To contribute a case study:</p>
-<ol>
-<li><strong>Document your use case</strong>: Describe the problem you solved</li>
-<li><strong>Share your approach</strong>: Explain how you used KindTech</li>
-<li><strong>Show results</strong>: Include code examples and outcomes</li>
-<li><strong>Contact us</strong>: Reach out through our GitHub repository</li>
-</ol>
-<h2 id="case-study-template">Case Study Template</h2>
-<p>When writing a case study, consider including:</p>
+<p>End-to-end reproductions of real <a href="https://www.datakind.org.uk/">DataKind UK</a>
+charity projects, rebuilt with KindTech. Each one chains several connectors on a
+shared <code>geography_code</code>, and — because real client data is private — pairs the
+public data with a transparent synthetic stand-in so the full analysis runs.</p>
+<p>Every study has a runnable <a href="https://marimo.io/">marimo</a> notebook: open it in the
+molab cloud runtime to run it <strong>in your browser</strong> (it fetches live ONS data), or
+locally with <code>uv run marimo edit examples/&lt;notebook&gt;.py</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Case study</th>
+<th>What it shows</th>
+<th>Run</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="smart-works-woman-unemployment/">Smart Works</a></td>
+<td>Women's unemployment vs service reach (Census 2021 + LAD boundaries)</td>
+<td><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/smart_works_unemployment.py"><img alt="Open in molab" src="https://marimo.io/molab-shield.svg" /></a></td>
+</tr>
+<tr>
+<td><a href="cal-vulnerable-client/">Citizens Advice Lewisham</a></td>
+<td>Deprivation vs service usage (postcodes + IMD + LSOA boundaries)</td>
+<td><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py"><img alt="Open in molab" src="https://marimo.io/molab-shield.svg" /></a></td>
+</tr>
+<tr>
+<td><a href="sobus-bame-analysis/">Sobus</a></td>
+<td>BAME mental-health referrals in Hammersmith &amp; Fulham (outcodes + Census ethnicity)</td>
+<td><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/sobus_bame_referrals.py"><img alt="Open in molab" src="https://marimo.io/molab-shield.svg" /></a></td>
+</tr>
+<tr>
+<td><a href="starlight-children-mapping/">Starlight</a></td>
+<td>Hospital play provision vs need across ICBs</td>
+<td><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py"><img alt="Open in molab" src="https://marimo.io/molab-shield.svg" /></a></td>
+</tr>
+<tr>
+<td><a href="material-focus-recycling/">Material Focus</a></td>
+<td>Travel time to the nearest recycling point (LAD boundaries + population)</td>
+<td><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py"><img alt="Open in molab" src="https://marimo.io/molab-shield.svg" /></a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-each-study-is-structured">How each study is structured</h2>
 <ul>
-<li><strong>Problem Statement</strong>: What is the question the charity is trying to answer?</li>
-<li><strong>Dataset involved</strong>: What opensourced and privatedatasets are involved in the analysis? Note that
-for private dataset we will have synthetic data to complement the analysis</li>
-<li><strong>Desired output</strong>: What was the output of the original analysis?</li>
-<li><strong>Replicating the output with kindtech</strong>: How did we replicate the output with kindtech?</li>
-<li><strong>Lessons Learned</strong>: Key takeaways and recommendations</li>
+<li><strong>Problem statement</strong> — the question the charity set out to answer.</li>
+<li><strong>Dataset involved</strong> — the open (and, where relevant, synthetic) data used.</li>
+<li><strong>Desired output</strong> — what the original analysis produced.</li>
+<li><strong>Reproduction with KindTech</strong> — the connector pipeline, with figures.</li>
+<li><strong>Lessons learned</strong> — takeaways and where the approach generalises.</li>
 </ul>
-<h2 id="get-involved">Get Involved</h2>
-<ul>
-<li>Join our community discussions</li>
-<li>Share your experiences</li>
-<li>Contribute to the documentation</li>
-<li>Help others learn from your success</li>
-</ul>
-<hr />
-<p><em>Have a case study to share? We'd love to feature it here!</em></p>
+<h2 id="have-a-case-study-to-share">Have a case study to share?</h2>
+<p>Using KindTech in your own work? We'd love to feature it — open an issue or PR
+on the <a href="https://github.com/KindTechUK/kindtech">GitHub repository</a>.</p>
         <div id="llms-copy-button" style="position: fixed; z-index: 1100; top: 80px; right: 20px;">
             <button onclick="copyMarkdownToClipboard()" style="cursor: pointer; background: #007acc; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Copy Markdown</button>
         </div>

@@ -169,48 +169,35 @@ projects, each chaining several connectors on `geography_code`. See the
 
 # Case Studies
 
-Welcome to the KindTech case studies section. Here you'll find real-world examples of how organizations can leverage KindTech to solve data challenges and drive insights. Since kindtech is still in development, we are mainly showing hypothetical case studies from different resources but recreating the analysis with kindtech.
+End-to-end reproductions of real [DataKind UK](https://www.datakind.org.uk/)
+charity projects, rebuilt with KindTech. Each one chains several connectors on a
+shared `geography_code`, and — because real client data is private — pairs the
+public data with a transparent synthetic stand-in so the full analysis runs.
 
-## Overview
+Every study has a runnable [marimo](https://marimo.io/) notebook: open it in the
+molab cloud runtime to run it **in your browser** (it fetches live ONS data), or
+locally with `uv run marimo edit examples/<notebook>.py`.
 
-Case studies demonstrate practical applications of KindTech's data ingestion, data processing and geo spatial visualisationcapabilities, showcasing how the library can be used for data analysis and data mapping for the charity sector.
+| Case study | What it shows | Run |
+|---|---|---|
+| [Smart Works](smart-works-woman-unemployment.md) | Women's unemployment vs service reach (Census 2021 + LAD boundaries) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/smart_works_unemployment.py) |
+| [Citizens Advice Lewisham](cal-vulnerable-client.md) | Deprivation vs service usage (postcodes + IMD + LSOA boundaries) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py) |
+| [Sobus](sobus-bame-analysis.md) | BAME mental-health referrals in Hammersmith & Fulham (outcodes + Census ethnicity) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/sobus_bame_referrals.py) |
+| [Starlight](starlight-children-mapping.md) | Hospital play provision vs need across ICBs | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py) |
+| [Material Focus](material-focus-recycling.md) | Travel time to the nearest recycling point (LAD boundaries + population) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py) |
 
-## Featured Case Studies
+## How each study is structured
 
-### Coming Soon
+- **Problem statement** — the question the charity set out to answer.
+- **Dataset involved** — the open (and, where relevant, synthetic) data used.
+- **Desired output** — what the original analysis produced.
+- **Reproduction with KindTech** — the connector pipeline, with figures.
+- **Lessons learned** — takeaways and where the approach generalises.
 
-We're currently collecting and documenting case studies from our community. If you're using KindTech in your projects, we'd love to hear about it!
+## Have a case study to share?
 
-### Submit Your Case Study
-
-To contribute a case study:
-
-1. **Document your use case**: Describe the problem you solved
-2. **Share your approach**: Explain how you used KindTech
-3. **Show results**: Include code examples and outcomes
-4. **Contact us**: Reach out through our GitHub repository
-
-## Case Study Template
-
-When writing a case study, consider including:
-
-- **Problem Statement**: What is the question the charity is trying to answer?
-- **Dataset involved**: What opensourced and privatedatasets are involved in the analysis? Note that
-for private dataset we will have synthetic data to complement the analysis
-- **Desired output**: What was the output of the original analysis?
-- **Replicating the output with kindtech**: How did we replicate the output with kindtech?
-- **Lessons Learned**: Key takeaways and recommendations
-
-## Get Involved
-
-- Join our community discussions
-- Share your experiences
-- Contribute to the documentation
-- Help others learn from your success
-
----
-
-*Have a case study to share? We'd love to feature it here!*
+Using KindTech in your own work? We'd love to feature it — open an issue or PR
+on the [GitHub repository](https://github.com/KindTechUK/kindtech).
 
 
 ## CAL Vulnerable Client Analysis
