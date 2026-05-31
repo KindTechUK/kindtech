@@ -5,7 +5,7 @@ backend the user has installed. These helpers centralise backend detection and
 construction so the ``ons`` and ``postcodes`` modules don't each reimplement it.
 """
 
-from io import StringIO
+from io import BytesIO, StringIO
 from typing import Any
 
 
@@ -54,3 +54,34 @@ def dicts_to_frame(rows: list[dict]) -> Any:
 def csv_to_frame(text: str) -> Any:
     """Parse CSV text into a native DataFrame using the available backend."""
     return get_native_namespace().read_csv(StringIO(text))
+
+
+def read_spreadsheet_rows(
+    content: bytes, sheet_name: str, header_row: int = 0
+) -> list[dict[str, Any]]:
+    """Read one sheet of an XLSX/ODS workbook into a list of row dicts.
+
+    Uses ``python-calamine`` (one fast reader for both formats). ``header_row``
+    is the 0-based index of the header line; rows above it are ignored. Header
+    cells are stringified and stripped; fully empty rows are dropped.
+    """
+    try:
+        from python_calamine import CalamineWorkbook
+    except ImportError as exc:
+        msg = (
+            "Reading XLSX/ODS sources needs python-calamine. "
+            "Install it: `uv add python-calamine`"
+        )
+        raise ImportError(msg) from exc
+
+    rows = (
+        CalamineWorkbook.from_filelike(BytesIO(content))
+        .get_sheet_by_name(sheet_name)
+        .to_python()
+    )
+    header = [str(cell).strip() for cell in rows[header_row]]
+    return [
+        dict(zip(header, row, strict=False))
+        for row in rows[header_row + 1 :]
+        if any(cell not in (None, "") for cell in row)
+    ]

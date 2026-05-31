@@ -14,6 +14,7 @@ from kindtech._mapping import (
     list_geography_mappings,
 )
 from kindtech.geo import geodata_to_properties, load_geodata
+from kindtech.imd import load_imd
 from kindtech.ons import list_tables, load_ons
 from kindtech.postcodes import (
     lookup_outcodes,
@@ -29,6 +30,7 @@ __all__ = [
     "list_geography_mappings",
     "list_tables",
     "load_geodata",
+    "load_imd",
     "load_ons",
     "lookup_outcodes",
     "lookup_postcodes",
