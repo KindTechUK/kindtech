@@ -504,6 +504,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#deprivation-imd-kindtechimd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprivation (IMD) — kindtech.imd
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -586,6 +595,29 @@
   
   <span class="md-ellipsis">
     Postcodes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="imd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Deprivation (IMD)
     
   </span>
   
@@ -992,6 +1024,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#deprivation-imd-kindtechimd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprivation (IMD) — kindtech.imd
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1026,7 +1067,7 @@
 
 
 <h1 id="api-reference">API Reference</h1>
-<p>KindTech provides three modules for accessing UK public data:</p>
+<p>KindTech provides four modules for accessing UK public data:</p>
 <h2 id="modules">Modules</h2>
 <h3 id="geographic-data-kindtechgeo"><a href="geo/">Geographic Data</a> — <code>kindtech.geo</code></h3>
 <p>Load UK geographic boundary data from the ONS ArcGIS Geoportal. Returns GeoJSON.</p>
@@ -1050,6 +1091,15 @@ DataFrames.</p>
 
 <span class="c1"># Postcodes -&gt; LSOA, ready to join on `geography_code`</span>
 <span class="n">located</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">([</span><span class="s2">&quot;SE13 7HX&quot;</span><span class="p">,</span> <span class="s2">&quot;SE6 4RU&quot;</span><span class="p">],</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="deprivation-imd-kindtechimd"><a href="imd/">Deprivation (IMD)</a> — <code>kindtech.imd</code></h3>
+<p>Load UK Indices of Multiple Deprivation, keyed on geography codes. A single
+nation returns its <strong>official</strong> index (England IoD 2025/2019 with all domains,
+or WIMD/SIMD/NIMDM); <code>nation="UK"</code> returns the mySociety composite for
+cross-nation comparison. Returns pandas or polars DataFrames.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.imd</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_imd</span>
+
+<span class="n">imd</span> <span class="o">=</span> <span class="n">load_imd</span><span class="p">(</span><span class="n">nation</span><span class="o">=</span><span class="s2">&quot;England&quot;</span><span class="p">)</span>  <span class="c1"># official IoD 2025; join on `geography_code`</span>
 </code></pre></div>
 <h2 id="design-principles">Design principles</h2>
 <ul>
