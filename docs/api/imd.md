@@ -103,7 +103,7 @@ mapped = geo.merge(imd, on="geography_code", how="left")
     The **composite (`year=2019`)** is on **2011** LSOAs, while Census 2021 and
     the default LSOA boundaries are **2021** LSOAs. To join the composite,
     either use 2011 boundaries (`load_geodata("LSOA", year="2011")`) or map
-    client postcodes via `lsoa11` (see [Postcodes](postcodes.md)).
+    postcodes via `lsoa11` (see [Postcodes](postcodes.md)).
 
     The **latest data (`year=2025`)** is already on **2021** LSOAs, so it joins
     natively to Census 2021 and the default boundaries — no crosswalk needed.
