@@ -26,10 +26,12 @@ _CSV = (
 
 @pytest.fixture(autouse=True)
 def _clear_cache():
-    """The connector caches the parsed dataset per URL — reset between tests."""
+    """The connector caches fetched data per URL — reset between tests."""
     imd_api._CACHE.clear()
+    imd_api._BYTES.clear()
     yield
     imd_api._CACHE.clear()
+    imd_api._BYTES.clear()
 
 
 def _mock_get():
@@ -66,31 +68,142 @@ def test_geography_code_and_rank_mapping(mock_get):
     assert df.loc[1, "nation"] == "W"
 
 
-@mock.patch("kindtech.imd.api.requests.get")
-def test_single_nation_by_name_and_code(mock_get):
-    mock_get.return_value = _mock_get()
+# Raw source rows (as the readers return them) for the three official indices.
+# Two rows each, most-deprived first, so the derived decile is checkable.
+_WALES_ROWS = [
+    {
+        "LSOA code": "W01000001",
+        "LSOA name (Eng)": "Area 1",
+        "WIMD 2019": 1,
+        "Income": 5,
+        "Employment": 6,
+        "Health": 7,
+        "Education": 8,
+        "Access to Services": 9,
+        "Housing": 10,
+        "Community Safety": 11,
+        "Physical Environment": 12,
+    },
+    {
+        "LSOA code": "W01000002",
+        "LSOA name (Eng)": "Area 2",
+        "WIMD 2019": 2,
+        "Income": 1,
+        "Employment": 2,
+        "Health": 3,
+        "Education": 4,
+        "Access to Services": 5,
+        "Housing": 6,
+        "Community Safety": 7,
+        "Physical Environment": 8,
+    },
+]
+_SCOTLAND_ROWS = [
+    {
+        "Data_Zone": "S01006506",
+        "SIMD2020v2_Rank": 1,
+        "SIMD2020v2_Income_Domain_Rank": 3,
+        "SIMD2020_Employment_Domain_Rank": 4,
+        "SIMD2020_Health_Domain_Rank": 5,
+        "SIMD2020_Education_Domain_Rank": 6,
+        "SIMD2020_Access_Domain_Rank": 7,
+        "SIMD2020_Crime_Domain_Rank": 8,
+        "SIMD2020_Housing_Domain_Rank": 9,
+        "Total_population": 894,
+    },
+    {
+        "Data_Zone": "S01006507",
+        "SIMD2020v2_Rank": 2,
+        "SIMD2020v2_Income_Domain_Rank": 30,
+        "SIMD2020_Employment_Domain_Rank": 40,
+        "SIMD2020_Health_Domain_Rank": 50,
+        "SIMD2020_Education_Domain_Rank": 60,
+        "SIMD2020_Access_Domain_Rank": 70,
+        "SIMD2020_Crime_Domain_Rank": 80,
+        "SIMD2020_Housing_Domain_Rank": 90,
+        "Total_population": 600,
+    },
+]
+_NI_ROWS = [
+    {
+        "SOA2001": "95AA01S1",
+        "SOA2001name": "Aldergrove_1",
+        "MDM_rank": 1,
+        "D1_Income_rank": 2,
+        "D2_Empl_rank": 3,
+        "D3_Health_rank": 4,
+        "P4_Education_rank": 5,
+        "P5_Access_rank": 6,
+        "D6_LivEnv_rank": 7,
+        "D7_CD_rank": 8,
+    },
+    {
+        "SOA2001": "95AA01S2",
+        "SOA2001name": "Aldergrove_2",
+        "MDM_rank": 2,
+        "D1_Income_rank": 20,
+        "D2_Empl_rank": 30,
+        "D3_Health_rank": 40,
+        "P4_Education_rank": 50,
+        "P5_Access_rank": 60,
+        "D6_LivEnv_rank": 70,
+        "D7_CD_rank": 80,
+    },
+]
 
-    # Wales resolves the same whether named or coded (composite source).
+
+def test_decile_from_rank_boundaries():
+    # Within-nation decile, 1 = most deprived 10%, over Scotland's 6976 zones.
+    assert imd_api._decile_from_rank(1, 6976) == 1
+    assert imd_api._decile_from_rank(698, 6976) == 1
+    assert imd_api._decile_from_rank(699, 6976) == 2
+    assert imd_api._decile_from_rank(6976, 6976) == 10
+
+
+@mock.patch("kindtech.imd.api._national_source_rows")
+def test_wales_official_domains(mock_rows):
+    mock_rows.return_value = _WALES_ROWS
+
     by_name = load_imd(nation="Wales")
     by_code = load_imd(nation="W")
 
-    assert list(by_name["geography_code"]) == ["W01000240"]
-    assert list(by_code["geography_code"]) == ["W01000240"]
+    assert list(by_name["geography_code"]) == list(by_code["geography_code"])
+    assert by_name.loc[0, "geography_code"] == "W01000001"
+    assert by_name.loc[0, "nation"] == "W"
+    assert by_name.loc[0, "imd_rank"] == 1
+    assert by_name.loc[0, "imd_decile"] == 1  # rank 1 (most deprived) -> decile 1
+    # Wales-specific domains surface as <domain>_rank.
+    for domain in ["community_safety", "physical_environment", "housing", "access"]:
+        assert f"{domain}_rank" in by_name.columns
+    # Within-nation only — no UK composite columns.
+    assert "nation_decile" not in by_name.columns
 
 
-@mock.patch("kindtech.imd.api.requests.get")
-def test_single_nation_surfaces_official_within_nation_decile(mock_get):
-    mock_get.return_value = _mock_get()
+@mock.patch("kindtech.imd.api._national_source_rows")
+def test_scotland_official_domains_with_population(mock_rows):
+    mock_rows.return_value = _SCOTLAND_ROWS
 
     scotland = load_imd(nation="Scotland")
 
-    assert len(scotland) == 1
-    assert scotland.iloc[0]["geography_code"].startswith("S")  # Data Zone
-    # Headline decile is the official within-nation one (original_decile=2),
-    # NOT the UK composite re-ranking, and there is no UK-wide rank column.
-    assert scotland.iloc[0]["imd_decile"] == 2
-    assert "imd_rank" not in scotland.columns
-    assert "nation_decile" not in scotland.columns
+    assert scotland.loc[0, "geography_code"] == "S01006506"  # Data Zone
+    assert scotland.loc[0, "imd_rank"] == 1
+    assert scotland.loc[0, "imd_decile"] == 1
+    assert scotland.loc[0, "crime_rank"] == 8
+    assert scotland.loc[0, "population"] == 894  # SIMD ships a denominator
+
+
+@mock.patch("kindtech.imd.api._national_source_rows")
+def test_ni_official_domains(mock_rows):
+    mock_rows.return_value = _NI_ROWS
+
+    ni = load_imd(nation="Northern Ireland")
+
+    assert ni.loc[0, "geography_code"] == "95AA01S1"  # SOA
+    assert ni.loc[0, "geography_name"] == "Aldergrove_1"
+    assert ni.loc[0, "imd_decile"] == 1
+    # NI-specific domains.
+    assert ni.loc[0, "living_environment_rank"] == 7
+    assert ni.loc[0, "crime_disorder_rank"] == 8
 
 
 def test_unknown_nation_raises():
@@ -99,14 +212,13 @@ def test_unknown_nation_raises():
 
 
 @mock.patch("kindtech.imd.api.requests.get")
-def test_dataset_cached_across_calls(mock_get):
+def test_composite_cached_across_calls(mock_get):
     mock_get.return_value = _mock_get()
 
-    load_imd()
-    load_imd(nation="Wales")
-    load_imd(nation="S")
+    load_imd()  # UK composite
+    load_imd(nation="UK")
 
-    # Fetched once despite three calls — the parsed frame is cached.
+    # Fetched once despite two calls — the parsed composite frame is cached.
     mock_get.assert_called_once()
 
 

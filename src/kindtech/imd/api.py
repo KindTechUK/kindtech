@@ -12,7 +12,8 @@ for cross-nation comparison:
   LSOAs); both carry all seven domains, ranks, deciles and a population
   denominator. Within-England rankings.
 - ``nation="Wales"``/``"Scotland"``/``"Northern Ireland"`` — the official
-  within-nation index (WIMD / SIMD / NIMDM), via the composite source.
+  within-nation index (WIMD 2019 / SIMD 2020 / NIMDM 2017), fetched from each
+  government source (gov.wales ODS, gov.scot XLSX, Open Data NI CSV).
 - ``nation="UK"`` (default) — the **composite UK IMD** by
   `mySociety <https://github.com/mysociety/composite_uk_imd>`_, which re-ranks
   all four nations' indices onto one UK-wide scale. This is the *only* way to
@@ -25,13 +26,15 @@ for cross-nation comparison:
     >>> england_19 = load_imd(nation="England", year=2019)  # official IoD 2019
 """
 
+import csv
 import logging
+from io import StringIO
 from typing import Any
 
 import narwhals.stable.v2 as nw
 import requests
 
-from kindtech._frames import csv_to_frame
+from kindtech._frames import csv_to_frame, dicts_to_frame, read_spreadsheet_rows
 
 # England-anchored composite (all four nations on one UK scale), 2017-2020.
 COMPOSITE_IMD_URL = (
@@ -50,6 +53,25 @@ ENGLAND_IMD_2019_URL = (
     "File_7_-_All_IoD2019_Scores__Ranks__Deciles_and_Population_Denominators_3.csv"
 )
 
+# Official Welsh / Scottish / NI indices (each on its own geography and domains).
+WALES_WIMD_2019_URL = (
+    "https://www.gov.wales/sites/default/files/statistics-and-research/2022-02/"
+    "welsh-index-multiple-deprivation-2019-index-and-domain-ranks-by-small-area.ods"
+)
+SCOTLAND_SIMD_2020_URL = (
+    "https://www.gov.scot/binaries/content/documents/govscot/publications/"
+    "statistics/2020/01/"
+    "scottish-index-of-multiple-deprivation-2020-ranks-and-domain-ranks/documents/"
+    "scottish-index-of-multiple-deprivation-2020-ranks-and-domain-ranks/"
+    "scottish-index-of-multiple-deprivation-2020-ranks-and-domain-ranks/"
+    "govscot%3Adocument/SIMD%2B2020v2%2B-%2Branks.xlsx"
+)
+NI_NIMDM_2017_URL = (
+    "https://admin.opendatani.gov.uk/dataset/"
+    "e202fde9-7f0b-4d88-8711-e18a8817cff8/resource/"
+    "60f31f62-53e7-424c-8fb5-d3b1c66ea277/download/nimdm2017-soa.csv"
+)
+
 # Composite columns -> KindTech names. Used ONLY for UK-wide, cross-nation
 # comparison: every area is re-ranked onto a single UK scale, so ``imd_rank`` /
 # ``imd_decile`` here are UK-wide, not a nation's official figures.
@@ -66,16 +88,66 @@ _COMPOSITE_COLUMNS = {
     "overall_local_score": "local_score",
 }
 
-# Single non-England nations: surface the OFFICIAL within-nation index that the
-# composite carries (``original_decile`` is the nation's own published decile,
-# ``overall_local_score`` its own score) — not the UK-wide re-ranking.
-_NATIONAL_FROM_COMPOSITE_COLUMNS = {
-    "lsoa": "geography_code",
-    "nation": "nation",
-    "overall_local_score": "imd_score",
-    "original_decile": "imd_decile",
-    "income_score": "income_score",
-    "employment_score": "employment_score",
+# Official within-nation indices for Wales / Scotland / NI. Each publishes ranks
+# (1 = most deprived) over its own geography and its own domain set; we derive a
+# within-nation decile from the overall rank. ``read`` returns raw source rows.
+_NATIONAL_SOURCES: dict[str, dict[str, Any]] = {
+    "W": {
+        "format": "ods",
+        "url": WALES_WIMD_2019_URL,
+        "sheet": "WIMD_2019_ranks",
+        "header_row": 2,
+        "code": "LSOA code",
+        "name": "LSOA name (Eng)",
+        "rank": "WIMD 2019",
+        "population": None,
+        "domains": {
+            "income": "Income",
+            "employment": "Employment",
+            "health": "Health",
+            "education": "Education",
+            "access": "Access to Services",
+            "housing": "Housing",
+            "community_safety": "Community Safety",
+            "physical_environment": "Physical Environment",
+        },
+    },
+    "S": {
+        "format": "xlsx",
+        "url": SCOTLAND_SIMD_2020_URL,
+        "sheet": "SIMD 2020v2 ranks",
+        "header_row": 0,
+        "code": "Data_Zone",
+        "name": None,
+        "rank": "SIMD2020v2_Rank",
+        "population": "Total_population",
+        "domains": {
+            "income": "SIMD2020v2_Income_Domain_Rank",
+            "employment": "SIMD2020_Employment_Domain_Rank",
+            "health": "SIMD2020_Health_Domain_Rank",
+            "education": "SIMD2020_Education_Domain_Rank",
+            "access": "SIMD2020_Access_Domain_Rank",
+            "crime": "SIMD2020_Crime_Domain_Rank",
+            "housing": "SIMD2020_Housing_Domain_Rank",
+        },
+    },
+    "N": {
+        "format": "csv",
+        "url": NI_NIMDM_2017_URL,
+        "code": "SOA2001",
+        "name": "SOA2001name",
+        "rank": "MDM_rank",
+        "population": None,
+        "domains": {
+            "income": "D1_Income_rank",
+            "employment": "D2_Empl_rank",
+            "health": "D3_Health_rank",
+            "education": "P4_Education_rank",
+            "access": "P5_Access_rank",
+            "living_environment": "D6_LivEnv_rank",
+            "crime_disorder": "D7_CD_rank",
+        },
+    },
 }
 
 # IoD2025 File 7 domains: kindtech prefix -> (Score column, domain label).
@@ -154,9 +226,11 @@ _NATION_NAMES = {"E": "England", "W": "Wales", "S": "Scotland", "N": "Northern I
 
 logger = logging.getLogger(__name__)
 
-# In-process cache of fetched CSVs, keyed by URL — these are static releases,
-# so one fetch per source per session is enough.
+# In-process caches keyed by URL — these are static releases, so one fetch per
+# source per session is enough. ``_CACHE`` holds parsed CSV frames; ``_BYTES``
+# holds raw spreadsheet (XLSX/ODS) bytes.
 _CACHE: dict[str, nw.DataFrame] = {}
+_BYTES: dict[str, bytes] = {}
 
 
 def _resolve_nation(nation: str | None) -> str | None:
@@ -181,6 +255,16 @@ def _fetch_raw(url: str) -> nw.DataFrame:
     return _CACHE[url]
 
 
+def _fetch_bytes(url: str) -> bytes:
+    """Fetch raw bytes (for XLSX/ODS sources), cached by URL."""
+    if url not in _BYTES:
+        logger.info("Fetching IMD data: %s", url)
+        response = requests.get(url, timeout=60)
+        response.raise_for_status()
+        _BYTES[url] = response.content
+    return _BYTES[url]
+
+
 def _renamed(url: str, columns: dict[str, str]) -> nw.DataFrame:
     """Fetch a source and rename/select to KindTech columns."""
     frame = _fetch_raw(url)
@@ -198,13 +282,47 @@ def _load_england(default_url: str, columns: dict[str, str], url: str | None) ->
     return frame.with_columns(nation=nw.lit("E")).to_native()
 
 
-def _load_national(nation_code: str, url: str) -> Any:
-    """Official within-nation index for Wales/Scotland/NI (from the composite).
+def _national_source_rows(nation_code: str) -> list[dict[str, Any]]:
+    """Fetch and parse the raw rows of a nation's official index."""
+    cfg = _NATIONAL_SOURCES[nation_code]
+    if cfg["format"] == "csv":
+        text = requests.get(cfg["url"], timeout=60).text
+        return list(csv.DictReader(StringIO(text)))
+    return read_spreadsheet_rows(
+        _fetch_bytes(cfg["url"]), cfg["sheet"], cfg["header_row"]
+    )
 
-    ``imd_decile`` is the nation's own published decile (not the UK re-ranking).
+
+def _decile_from_rank(rank: int, n_areas: int) -> int:
+    """Within-nation decile from a rank (1 = most deprived 10%)."""
+    return min(10, (rank - 1) * 10 // n_areas + 1)
+
+
+def _load_national(nation_code: str) -> Any:
+    """Official within-nation index for Wales/Scotland/NI.
+
+    Each nation publishes ranks (1 = most deprived) over its own geography and
+    domain set; ``imd_decile`` is derived within-nation from the overall rank.
     """
-    frame = _renamed(url, _NATIONAL_FROM_COMPOSITE_COLUMNS)
-    return frame.filter(nw.col("nation") == nation_code).to_native()
+    cfg = _NATIONAL_SOURCES[nation_code]
+    source_rows = _national_source_rows(nation_code)
+    n_areas = len(source_rows)
+    out: list[dict[str, Any]] = []
+    for row in source_rows:
+        rank = int(row[cfg["rank"]])
+        record: dict[str, Any] = {
+            "geography_code": row[cfg["code"]],
+            "geography_name": row[cfg["name"]] if cfg["name"] else None,
+            "nation": nation_code,
+            "imd_rank": rank,
+            "imd_decile": _decile_from_rank(rank, n_areas),
+        }
+        for prefix, source_col in cfg["domains"].items():
+            record[f"{prefix}_rank"] = int(row[source_col])
+        if cfg["population"]:
+            record["population"] = int(row[cfg["population"]])
+        out.append(record)
+    return dicts_to_frame(out)
 
 
 def _raise_no_2025(nation_code: str) -> None:
@@ -262,9 +380,10 @@ def load_imd(
           housing, living_environment) and a ``population`` denominator.
           Official within-England figures (rank 1 = most deprived).
         - ``nation="Wales"``/``"Scotland"``/``"Northern Ireland"``:
-          ``geography_code`` (LSOA / Data Zone / SOA), ``nation``, the official
-          within-nation ``imd_score``/``imd_decile``, and income/employment
-          scores.
+          ``geography_code`` (LSOA / Data Zone / SOA), ``geography_name``,
+          ``nation``, ``imd_rank`` and a within-nation ``imd_decile`` derived
+          from it, plus a ``<domain>_rank`` per domain (domain sets differ by
+          nation). Scotland also returns ``population``.
 
     Raises:
         ValueError: If ``nation`` is unrecognised, or ``year``/``nation`` name a
@@ -302,4 +421,4 @@ def load_imd(
         name = _NATION_NAMES[nation_code]
         msg = f"{name}'s official index is only available for year=2019."
         raise ValueError(msg)
-    return _load_national(nation_code, url or COMPOSITE_IMD_URL)
+    return _load_national(nation_code)

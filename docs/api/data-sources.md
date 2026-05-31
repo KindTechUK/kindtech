@@ -304,7 +304,7 @@ containing OS data © Crown copyright and database right, Royal Mail data
 ## Composite UK IMD
 
 KindTech's `imd` module serves each nation's **official** deprivation index for
-single-nation work (see [the latest national indices](#latest-national-indices)
+single-nation work (see [the official national indices](#official-national-indices)
 below), and the
 [composite UK Index of Multiple Deprivation](https://github.com/mysociety/composite_uk_imd)
 — a research dataset by [mySociety](https://www.mysociety.org/) that harmonises
@@ -349,25 +349,28 @@ The composite dataset is licensed
 are Open Government Licence v3.0 (MHCLG, Welsh Government, Scottish Government,
 NISRA). The composite code is MIT licensed.
 
-### Latest national indices
+### Official national indices
 
-A single-nation call fetches that nation's official index directly (not the
-composite). England has the richest, most current path:
+A single-nation call fetches that nation's **official** index directly from its
+government source (not the composite):
 
-| Nation | `load_imd(nation=...)` | Index | Geography | Source |
+| `load_imd(nation=...)` | Index | Geography | Source | Format |
 |---|---|---|---|---|
-| England | `"England"` (default `year=2025`) | IoD 2025 (30 Oct 2025) | LSOA 2021 | gov.uk File 7 (CSV, OGL) |
-| England | `"England", year=2019` | IoD 2019 | LSOA 2011 | gov.uk File 7 (CSV, OGL) |
-| Wales | `"Wales"` | WIMD 2019 | LSOA 2011 | via composite |
-| Scotland | `"Scotland"` | SIMD 2020 | Data Zone 2011 | via composite |
-| N. Ireland | `"Northern Ireland"` | NIMDM 2017 | SOA | via composite |
+| `"England"` (default `year=2025`) | IoD 2025 (30 Oct 2025) | LSOA 2021 | gov.uk File 7 | CSV |
+| `"England", year=2019` | IoD 2019 | LSOA 2011 | gov.uk File 7 | CSV |
+| `"Wales"` | WIMD 2019 | LSOA 2011 | gov.wales | ODS |
+| `"Scotland"` | SIMD 2020v2 | Data Zone 2011 | gov.scot | XLSX |
+| `"Northern Ireland"` | NIMDM 2017 | SOA 2001 | Open Data NI | CSV |
 
-England's File 7 (both years,
-`assets.publishing.service.gov.uk/.../File_7_...csv`) is fetched live and cached
-for the session, carrying all seven domains as score + rank + decile plus a
-population denominator. Wales/Scotland/NI currently surface the official
-within-nation decile and score from the composite source (full domain
-breakdowns for those nations are a future addition).
+England's File 7 carries all seven domains as score + rank + decile plus a
+population denominator. Wales/Scotland/NI publish **ranks** (1 = most deprived),
+so KindTech surfaces the overall `imd_rank`, a within-nation `imd_decile`
+derived from it, and a `<domain>_rank` per domain — with **nation-specific
+domain sets** (Wales adds community safety + physical environment, Scotland adds
+crime + a population denominator, NI adds living environment + crime &
+disorder). All sources are fetched live and cached for the session; the
+spreadsheet sources (Wales ODS, Scotland XLSX) are read with
+[`python-calamine`](https://pypi.org/project/python-calamine/).
 
 **Pending:** `load_imd(nation="Wales", year=2025)` (WIMD 2025, 27 Nov 2025) is
 not wired up — StatsWales has no stable machine-readable download endpoint yet.
@@ -375,6 +378,11 @@ Scotland and NI have no 2025 release.
 
 All single-nation rankings are **within-nation** — for cross-nation comparison
 use the composite (`nation="UK"`).
+
+### Licensing (national indices)
+
+Open Government Licence v3.0: England IoD (MHCLG), WIMD (Welsh Government), SIMD
+(Scottish Government), NIMDM (NISRA / Open Data NI).
 
 ---
 

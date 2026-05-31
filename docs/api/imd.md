@@ -56,16 +56,28 @@ deprived).
 
 ### `nation="Wales"` / `"Scotland"` / `"Northern Ireland"` — official, within-nation
 
-Returns `geography_code` (LSOA / Data Zone / SOA), `nation`, the official
-within-nation `imd_score` and `imd_decile`, and `income_score` /
-`employment_score`. (Full domain breakdowns for these nations are a future
-addition — see the note below.) `year` defaults to each nation's latest in the
-composite era (WIMD 2019, SIMD 2020, NIMDM 2017).
+Each nation's own official index, fetched from its government source (WIMD 2019,
+SIMD 2020, NIMDM 2017). These publish **ranks** (1 = most deprived), so the
+output is `geography_code` (LSOA / Data Zone / SOA), `geography_name`, `nation`,
+the overall `imd_rank`, a within-nation `imd_decile` derived from that rank, and
+a `<domain>_rank` for each of that nation's domains. The **domain sets differ
+by nation** (only income/employment/health/education/access are shared):
+
+| Nation | Source | Domains (`<domain>_rank`) | Extra |
+|---|---|---|---|
+| Wales (WIMD 2019) | gov.wales (ODS) | income, employment, health, education, access, housing, **community_safety**, **physical_environment** | — |
+| Scotland (SIMD 2020) | gov.scot (XLSX) | income, employment, health, education, access, **crime**, housing | `population` |
+| N. Ireland (NIMDM 2017) | Open Data NI (CSV) | income, employment, health, education, access, **living_environment**, **crime_disorder** | — |
 
 !!! note "2025 availability"
-    Only **England** has a 2025 index wired up. `load_imd(nation="Wales",
-    year=2025)` raises — WIMD 2025 has no stable machine-readable download on
-    StatsWales yet. Scotland and NI have no 2025 release at all.
+    Only **England** has a 2025 index. `load_imd(nation="Wales", year=2025)`
+    raises — WIMD 2025 has no stable machine-readable download on StatsWales
+    yet. Scotland and NI have no 2025 release at all.
+
+!!! note "Reading XLSX/ODS sources"
+    Wales (ODS) and Scotland (XLSX) are spreadsheets, read via
+    [`python-calamine`](https://pypi.org/project/python-calamine/) (a KindTech
+    dependency). No extra setup needed.
 
 ### `nation="UK"` — composite (cross-nation comparison)
 
