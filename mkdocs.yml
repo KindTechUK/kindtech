@@ -88,6 +88,7 @@ nav:
     - Postcodes: api/postcodes.md
     - Deprivation (IMD): api/imd.md
     - Data Sources: api/data-sources.md
+    - Recipes for agents: api/recipes.md
   - Blog:
     - blog/index.md
     - Introduction: blog/introduction.md

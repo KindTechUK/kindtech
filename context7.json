@@ -1,0 +1,15 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "KindTech",
+  "description": "Ergonomic Python access to UK public data — ONS/NOMIS statistics and ONS geographic boundaries, with pandas or polars output.",
+  "folders": ["docs"],
+  "excludeFolders": ["site", ".venv", "tests", "src/kindtech.egg-info"],
+  "excludeFiles": [],
+  "rules": [
+    "Install with `uv add kindtech` (never pip).",
+    "The API is flat functions — no classes to instantiate. Call load_geodata(), load_ons(), load_imd(), postcodes_to_geography() directly.",
+    "Everything joins on the `geography_code` column — this is the universal key across the geo, ONS, IMD and postcode connectors.",
+    "Resolve postcodes/outcodes to geography codes first (postcodes_to_geography / outcode_to_geography), then join to boundaries and statistics.",
+    "Bring your own DataFrame backend — narwhals returns pandas or polars depending on what is installed."
+  ]
+}
