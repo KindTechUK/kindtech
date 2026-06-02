@@ -14,6 +14,13 @@ dependencies = [
     "python-calamine>=0.2",
 ]
 
+[project.urls]
+Homepage = "https://kindtechuk.github.io/kindtech/"
+Documentation = "https://kindtechuk.github.io/kindtech/"
+Repository = "https://github.com/KindTechUK/kindtech"
+Issues = "https://github.com/KindTechUK/kindtech/issues"
+"llms.txt" = "https://kindtechuk.github.io/kindtech/llms.txt"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 

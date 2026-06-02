@@ -1,0 +1,17 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "KindTech",
+  "description": "Ergonomic Python toolkit for UK open-data analysis, mapping and dashboards. Four connectors — ONS/NOMIS statistics (incl. Census 2021), ONS ArcGIS geographic boundaries (GeoJSON), Indices of Multiple Deprivation (England IoD, Wales WIMD, Scotland SIMD, NI NIMDM, plus the mySociety UK composite) and postcode/outcode lookups (postcodes.io) — all keyed on a shared `geography_code` so they join to each other, across geography levels, and to your own first-party data. Output is pandas or polars via narwhals.",
+  "folders": ["docs"],
+  "excludeFolders": ["site", ".venv", "tests", "src/kindtech.egg-info"],
+  "excludeFiles": [],
+  "rules": [
+    "Install with `uv add kindtech` (never pip).",
+    "Four data sources: kindtech.ons (ONS statistics via the NOMIS API, incl. Census 2021), kindtech.geo (UK boundaries as GeoJSON from the ONS ArcGIS Geoportal), kindtech.imd (deprivation for all four UK nations plus the UK-wide composite) and kindtech.postcodes (postcode/outcode → geography via postcodes.io).",
+    "The API is flat functions — no classes to instantiate. Call load_ons(), load_geodata(), load_imd(), postcodes_to_geography() directly.",
+    "`geography_code` is the universal join key — it links every connector to each other AND to your own first-party data (client records, CSVs, databases), which is what makes custom analysis and dashboarding easy.",
+    "Works across UK geography classifications via geography_type — from Output Areas (OA), LSOA and MSOA up to wards (WD), Local Authority Districts (LAD), counties, regions and countries, plus health (ICB/NHS), electoral and Travel-to-Work-Area (TTWA) geographies. Resolve postcodes/outcodes to the level you need first (postcodes_to_geography / outcode_to_geography), then join.",
+    "Typical analysis/map/dashboard workflow: load statistics (load_ons) and/or deprivation (load_imd), pull boundaries (load_geodata, then geodata_to_properties for a tidy frame), join all on geography_code, then choropleth/plot or export. See the 'Recipes for agents' docs page and the case studies for end-to-end examples.",
+    "Bring your own DataFrame backend — narwhals returns pandas or polars depending on what is installed."
+  ]
+}

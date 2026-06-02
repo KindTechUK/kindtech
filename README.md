@@ -34,6 +34,16 @@ projects, each chaining several connectors on `geography_code`:
 See the [case studies](https://kindtechuk.github.io/kindtech/case-studies/) in
 the docs for the full write-ups and figures.
 
+## For AI agents / LLMs
+
+The docs ship machine-readable indexes:
+[`/llms.txt`](https://kindtechuk.github.io/kindtech/llms.txt) (a curated map) and
+[`/llms-full.txt`](https://kindtechuk.github.io/kindtech/llms-full.txt) (the full
+docs inlined). The library docs are also indexed on
+[Context7](https://context7.com/) for retrieval inside coding agents. See the
+[Recipes for agents](https://kindtechuk.github.io/kindtech/api/recipes/) page for
+copy-paste snippets.
+
 ## Development
 
 See [DEVELOPERS.md](DEVELOPERS.md) for development setup and workflow instructions.
