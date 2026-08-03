@@ -187,9 +187,11 @@ def geodata_to_properties(
                 stacklevel=2,
             )
             warned = True
-        row: dict[str, Any] = dict(props)
-        row["geography_code"] = code_val
-        row["geography_name"] = props.get(name_field, "")
+        row: dict[str, Any] = {
+            "geography_code": code_val,
+            "geography_name": props.get(name_field, ""),
+        }
+        row.update({key: value for key, value in props.items() if key not in row})
         rows.append(row)
     return rows
 

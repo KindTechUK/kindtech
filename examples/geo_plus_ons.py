@@ -78,6 +78,7 @@ def _(geo_button, geodata_to_properties, load_geodata, mo, pd):
 
     geojson = load_geodata(
         geography_type="LAD",
+        year="2024",
         boundary_type="BGC",
     )
     geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))

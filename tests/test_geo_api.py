@@ -254,6 +254,8 @@ def test_geodata_to_properties_basic():
                 "properties": {
                     "LAD24CD": "E06000001",
                     "LAD24NM": "Hartlepool",
+                    "geography_code": "source-value",
+                    "geography_name": "source-name",
                     "Shape__Area": 123.45,
                 }
             },
@@ -272,6 +274,7 @@ def test_geodata_to_properties_basic():
     assert len(rows) == 2
     assert rows[0]["geography_code"] == "E06000001"
     assert rows[0]["geography_name"] == "Hartlepool"
+    assert list(rows[0])[:2] == ["geography_code", "geography_name"]
     # Original properties are preserved
     assert rows[0]["LAD24CD"] == "E06000001"
     assert rows[0]["Shape__Area"] == 123.45
