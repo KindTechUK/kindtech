@@ -21,6 +21,7 @@ Examples:
 """
 
 import logging
+import warnings
 from typing import Any
 
 import requests
@@ -177,8 +178,6 @@ def geodata_to_properties(
         props = feature.get("properties", {})
         code_val = props.get(code_field, "")
         if not code_val and not warned and props:
-            import warnings
-
             warnings.warn(
                 f"Field '{code_field}' not found in GeoJSON "
                 f"properties. Check that geography_type="
@@ -188,11 +187,9 @@ def geodata_to_properties(
                 stacklevel=2,
             )
             warned = True
-        row: dict[str, Any] = {
-            "geography_code": code_val,
-            "geography_name": props.get(name_field, ""),
-        }
-        row.update(props)
+        row: dict[str, Any] = dict(props)
+        row["geography_code"] = code_val
+        row["geography_name"] = props.get(name_field, "")
         rows.append(row)
     return rows
 

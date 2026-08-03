@@ -7,6 +7,7 @@ import unittest.mock as mock
 import pytest
 
 from kindtech._mapping import (
+    extract_code,
     geo_code_field,
     geo_name_field,
     list_dataset_aliases,
@@ -14,6 +15,11 @@ from kindtech._mapping import (
     resolve_dataset_id,
     resolve_nomis_geography,
 )
+
+
+def test_extract_code_rejects_non_string_values():
+    with pytest.raises(TypeError, match="Expected a string"):
+        extract_code(42)
 
 
 class TestResolveNomisGeography:
@@ -114,6 +120,9 @@ class TestResolveDatasetId:
 
     def test_nm_id_passthrough(self):
         assert resolve_dataset_id("NM_1_1") == "NM_1_1"
+
+    def test_nm_id_is_trimmed_and_normalised(self):
+        assert resolve_dataset_id(" nm_1_1 ") == "NM_1_1"
 
     def test_population_alias(self):
         assert resolve_dataset_id("population") == "NM_2002_1"

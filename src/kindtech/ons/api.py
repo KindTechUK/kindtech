@@ -27,6 +27,7 @@ Examples:
 """
 
 import logging
+import re
 from typing import Any
 
 import narwhals.stable.v2 as nw
@@ -57,8 +58,9 @@ def _extract_year_from_time(time_value: Any) -> int | None:
     if time_value is None:
         return None
     s = str(time_value).strip()
-    if s.isdigit() and len(s) == 4:
-        return int(s)
+    match = re.match(r"^(\d{4})(?:$|\D)", s)
+    if match:
+        return int(match.group(1))
     return None
 
 

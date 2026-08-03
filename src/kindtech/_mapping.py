@@ -23,7 +23,11 @@ def extract_code(value: Any) -> str | None:
     """Extract string code from an enum or pass through a string."""
     if value is None:
         return None
-    return value.code if hasattr(value, "code") else value
+    code = value.code if hasattr(value, "code") else value
+    if not isinstance(code, str):
+        msg = f"Expected a string or enum-like code, got {type(value).__name__}"
+        raise TypeError(msg)
+    return code
 
 
 # Each value is a list of (min_year, max_year, nomis_type_code) tuples,
@@ -106,9 +110,10 @@ def resolve_dataset_id(dataset_id: str) -> str:
     Raises:
         ValueError: If the alias is not recognised.
     """
-    if dataset_id.startswith("NM_"):
-        return dataset_id
-    key = dataset_id.lower().strip()
+    cleaned = dataset_id.strip()
+    if cleaned.upper().startswith("NM_"):
+        return cleaned.upper()
+    key = cleaned.lower()
     if key in DATASET_ALIASES:
         return DATASET_ALIASES[key]
     available = ", ".join(sorted(DATASET_ALIASES))
