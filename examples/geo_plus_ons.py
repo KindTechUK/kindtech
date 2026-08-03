@@ -78,6 +78,7 @@ def _(geo_button, geodata_to_properties, load_geodata, mo, pd):
 
     geojson = load_geodata(
         geography_type="LAD",
+        year="2024",
         boundary_type="BGC",
     )
     geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
@@ -198,16 +199,16 @@ def _(geojson, merged):
         zip(merged["geography_code"], merged["obs_value"], strict=False)
     )
 
-    # Build a geography_code → feature index so we don't rely
-    # on positional alignment between geojson and geo_df
+    # This example loads LAD 2024 boundaries above, so use the
+    # corresponding ArcGIS code field instead of guessing among
+    # potentially several properties ending in "CD".
+    code_field = "LAD24CD"
     code_to_feature: dict = {}
     for f in geojson["features"]:
         props = f.get("properties", {})
-        # Find the code field (ends with "CD", e.g. LAD24CD)
-        for key, val in props.items():
-            if key.endswith("CD") and val in code_to_value:
-                code_to_feature[val] = f
-                break
+        code = props.get(code_field)
+        if code in code_to_value:
+            code_to_feature[code] = f
 
     enriched = {
         "type": "FeatureCollection",

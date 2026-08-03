@@ -12,8 +12,17 @@ import pytest
 import requests
 
 from kindtech.ons import list_tables, load_ons
+from kindtech.ons.api import _extract_year_from_time
 
 CSV_RESPONSE = "DATE,GEOGRAPHY_NAME,OBS_VALUE\n2023,England,12345\n2023,Wales,6789\n"
+
+
+@pytest.mark.parametrize(
+    ("time_value", "expected"),
+    [("2020", 2020), ("2018...2022", 2018), ("2020Q1", 2020), ("latest", None)],
+)
+def test_extract_year_from_time(time_value, expected):
+    assert _extract_year_from_time(time_value) == expected
 
 
 @mock.patch("kindtech.ons.api.requests.get")

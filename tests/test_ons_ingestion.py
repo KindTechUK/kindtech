@@ -64,6 +64,18 @@ def test_extract_source_skips_non_dict_annotation() -> None:
     assert _extract_source(kf) == "Census"
 
 
+def test_extract_source_accepts_single_annotation_dict() -> None:
+    kf = {
+        "annotations": {
+            "annotation": {
+                "annotationtitle": "contenttype/sources",
+                "annotationtext": "Census",
+            },
+        },
+    }
+    assert _extract_source(kf) == "Census"
+
+
 def test_extract_source_missing_text_returns_empty() -> None:
     kf = {
         "annotations": {

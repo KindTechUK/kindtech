@@ -29,7 +29,10 @@ DEFAULT_OUTPUT_PATH = Path(__file__).parent / "data" / "nomis_tables.csv"
 
 def _extract_source(keyfamily: dict) -> str:
     """Extract source name from a keyfamily's annotations."""
-    for annotation in keyfamily.get("annotations", {}).get("annotation", []):
+    annotations = keyfamily.get("annotations", {}).get("annotation", [])
+    if isinstance(annotations, dict):
+        annotations = [annotations]
+    for annotation in annotations:
         if (
             isinstance(annotation, dict)
             and annotation.get("annotationtitle") == "contenttype/sources"
