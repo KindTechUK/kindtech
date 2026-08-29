@@ -17,6 +17,10 @@ dependencies = [
 [tool.setuptools]
 package-dir = {"" = "src"}
 
+[tool.setuptools.package-data]
+"kindtech.geo" = ["data/*.csv"]
+"kindtech.ons" = ["data/*.csv"]
+
 [dependency-groups]
 dev = [
     "mkdocs>=1.6.1",
