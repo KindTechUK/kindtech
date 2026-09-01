@@ -36,6 +36,8 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
 ## Install
 
+When a release is available on PyPI, install it with:
+
 ```bash
 uv add kindtech
 ```

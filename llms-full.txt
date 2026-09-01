@@ -42,6 +42,8 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
 ## Install
 
+When a release is available on PyPI, install it with:
+
 ```bash
 uv add kindtech
 ```
@@ -2237,6 +2239,8 @@ KindTech is a lightweight Python library for accessing UK public data. It wraps 
 - **Bundled catalogs** — browse available datasets offline, data is fetched live from source
 
 ## Getting Started
+
+When a release is available on PyPI, install it with:
 
 ```bash
 uv add kindtech
