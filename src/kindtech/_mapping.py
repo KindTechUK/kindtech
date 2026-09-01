@@ -16,14 +16,23 @@ codes, not names.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import overload
 
 
-def extract_code(value: Any) -> str | None:
+@overload
+def extract_code(value: None) -> None: ...
+
+
+@overload
+def extract_code(value: object) -> str: ...
+
+
+def extract_code(value: object | None) -> str | None:
     """Extract string code from an enum or pass through a string."""
     if value is None:
         return None
-    return value.code if hasattr(value, "code") else value
+    code = value.code if hasattr(value, "code") else value
+    return str(code)
 
 
 # Each value is a list of (min_year, max_year, nomis_type_code) tuples,
