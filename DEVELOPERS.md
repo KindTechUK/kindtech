@@ -17,7 +17,7 @@ git clone https://github.com/KindTechUK/kindtech
 cd kindtech
 
 # Install the package in development mode with all dev dependencies
-uv sync --extra dev
+uv sync --group dev
 ```
 
 ## Code Quality Tools
@@ -28,22 +28,22 @@ We use Ruff for linting and formatting. Run:
 
 ```bash
 # Lint the code
-ruff check .
+uv run --group dev ruff check .
 
 # Format the code
-ruff format .
+uv run --group dev ruff format .
 ```
 
 ### Pre-commit
 
-We use pre-commit to ensure code quality before committing:
+We use prek to ensure code quality before committing:
 
 ```bash
 # Install pre-commit hooks
-pre-commit install
+uv run --group dev prek install
 
 # Run pre-commit on all files
-pre-commit run --all-files
+uv run --group dev prek run --all-files
 ```
 
 ## Documentation
@@ -52,8 +52,17 @@ Documentation is built using MkDocs:
 
 ```bash
 # Serve documentation locally
-mkdocs serve
+uv run --group dev mkdocs serve
 
 # Build documentation
-mkdocs build
+uv run --group dev mkdocs build --strict
 ```
+
+## Releases
+
+PyPI releases are published by `.github/workflows/release.yml` when a version tag
+such as `v0.1.0` is pushed. Before tagging, update `[project].version`, merge the
+change to `main`, and confirm CI passes. The workflow verifies that the tag matches
+the package version, builds and smoke-tests both distributions, generates
+attestations, and publishes through the `pypi` environment using Trusted
+Publishing. Do not upload distributions manually.

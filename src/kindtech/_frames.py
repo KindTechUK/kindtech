@@ -5,6 +5,7 @@ backend the user has installed. These helpers centralise backend detection and
 construction so the ``ons`` and ``postcodes`` modules don't each reimplement it.
 """
 
+from importlib import import_module
 from io import BytesIO, StringIO
 from typing import Any
 
@@ -20,15 +21,11 @@ def get_native_namespace() -> Any:
     install one.
     """
     try:
-        import polars
-
-        return polars
+        return import_module("polars")
     except ImportError:
         pass
     try:
-        import pandas
-
-        return pandas
+        return import_module("pandas")
     except ImportError:
         pass
     msg = (
