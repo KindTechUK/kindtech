@@ -4,6 +4,8 @@ Ergonomic access to UK public data — geographic boundaries (ONS Geoportal) and
 
 ## Installation
 
+KindTech is preparing its first PyPI release. After the package is published:
+
 ```bash
 uv add kindtech
 ```

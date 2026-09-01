@@ -17,6 +17,8 @@ KindTech is a lightweight Python library for accessing UK public data. It wraps 
 
 ## Getting Started
 
+KindTech is preparing its first PyPI release. After the package is published:
+
 ```bash
 uv add kindtech
 ```

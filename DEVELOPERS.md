@@ -66,3 +66,22 @@ change to `main`, and confirm CI passes. The workflow verifies that the tag matc
 the package version, builds and smoke-tests both distributions, generates
 attestations, and publishes through the `pypi` environment using Trusted
 Publishing. Do not upload distributions manually.
+
+### Does KindTech need separate PyPI registration?
+
+No. The configured pending publisher can create the project during the first
+trusted publish, so no priming upload is needed. A pending publisher does not
+reserve the project name before that first publish.
+
+### Why test installed wheel and source distributions?
+
+A successful build proves only that archives were created. CI installs the wheel
+and source distribution in isolation to verify their bundled data, then exercises
+the pandas and Polars backends separately.
+
+### What must the first release verify?
+
+Before pushing `v0.1.0`, confirm the tag matches the merged package version and
+that CI passes on the exact `main` commit. After the tag triggers the workflow,
+verify the published filenames and hashes on PyPI and clean-install the released
+artifacts before closing the release issue.
