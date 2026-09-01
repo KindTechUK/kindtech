@@ -36,7 +36,7 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
 ## Install
 
-KindTech is preparing its first PyPI release. After the package is published:
+When a release is available on PyPI, install it with:
 
 ```bash
 uv add kindtech
