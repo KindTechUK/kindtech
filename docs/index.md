@@ -36,13 +36,15 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
 ## Install
 
-When a release is available on PyPI, install it with:
+Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
 
 ```bash
 uv add kindtech
 ```
 
-KindTech is lightweight (~500KB) — just requests + narwhals. You bring your own DataFrame library (pandas or polars).
+KindTech depends on requests, narwhals, and python-calamine. You bring your own
+DataFrame library (pandas or polars). The [package FAQ](faq/README.md) explains
+which subpackages are included and how they are released.
 
 ## Quick start
 
@@ -80,16 +82,6 @@ type(df)  # <class 'polars.dataframe.frame.DataFrame'>
 ```
 
 If both are installed, polars is preferred (it's faster and more memory-efficient). The geo module returns plain GeoJSON dicts — no DataFrame backend needed.
-
-### Why narwhals?
-
-| | kindtech | typical data library |
-|---|---|---|
-| Install size | ~500KB (requests + narwhals) | ~30MB+ (pandas) |
-| Backend lock-in | None — use what you prefer | Forced into pandas |
-| Extra deps | 0 | numpy, pytz, ... |
-
-You bring the DataFrame library. KindTech brings the data.
 
 ## Why does this exist?
 
