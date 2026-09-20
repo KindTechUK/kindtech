@@ -4,11 +4,16 @@ Ergonomic access to UK public data — geographic boundaries (ONS Geoportal) and
 
 ## Installation
 
-When a release is available on PyPI, install it with:
+Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
 
 ```bash
 uv add kindtech
 ```
+
+The `kindtech` package includes `kindtech.geo`, `kindtech.ons`,
+`kindtech.postcodes`, and `kindtech.imd`. See the
+[package FAQ](https://kindtechuk.github.io/kindtech/faq/) for how these
+subpackages are installed and released together.
 
 ## Examples
 

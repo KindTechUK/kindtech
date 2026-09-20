@@ -59,6 +59,7 @@ plugins:
           - case-studies/*.md
         User Guide:
           - api/*.md
+          - faq/README.md
         Blog:
           - blog/*.md
 
@@ -88,6 +89,7 @@ nav:
     - Postcodes: api/postcodes.md
     - Deprivation (IMD): api/imd.md
     - Data Sources: api/data-sources.md
+    - Package FAQ: faq/README.md
   - Blog:
     - blog/index.md
     - Introduction: blog/introduction.md
