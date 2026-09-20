@@ -42,13 +42,15 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
 ## Install
 
-When a release is available on PyPI, install it with:
+Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
 
 ```bash
 uv add kindtech
 ```
 
-KindTech is lightweight (~500KB) — just requests + narwhals. You bring your own DataFrame library (pandas or polars).
+KindTech depends on requests, narwhals, and python-calamine. You bring your own
+DataFrame library (pandas or polars). The [package FAQ](faq/README.md) explains
+which subpackages are included and how they are released.
 
 ## Quick start
 
@@ -86,16 +88,6 @@ type(df)  # <class 'polars.dataframe.frame.DataFrame'>
 ```
 
 If both are installed, polars is preferred (it's faster and more memory-efficient). The geo module returns plain GeoJSON dicts — no DataFrame backend needed.
-
-### Why narwhals?
-
-| | kindtech | typical data library |
-|---|---|---|
-| Install size | ~500KB (requests + narwhals) | ~30MB+ (pandas) |
-| Backend lock-in | None — use what you prefer | Forced into pandas |
-| Extra deps | 0 | numpy, pytz, ... |
-
-You bring the DataFrame library. KindTech brings the data.
 
 ## Why does this exist?
 
@@ -2136,6 +2128,62 @@ See [Data Sources](data-sources.md#postcodesio) for the underlying datasets,
 licensing, and limits.
 
 
+## Package FAQ
+
+# Package FAQ
+
+## Is this `kindtech.geo`, and can we keep developing more subpackages?
+
+**Short answer:** `kindtech` is the package installed from PyPI. It includes
+`kindtech.geo`, `kindtech.ons`, `kindtech.postcodes`, and `kindtech.imd`.
+Each subpackage has its own Python import path, but all share one package
+version and release.
+
+```bash
+uv add kindtech
+```
+
+```python
+from kindtech.geo import load_geodata
+from kindtech.ons import load_ons
+```
+
+New modules can be added under `src/kindtech/<name>/` and included in future
+`kindtech` releases. Because they remain inside the same distribution, they do
+not need separate PyPI registrations. Add tests and API documentation alongside
+each new module, and include any bundled data in the package configuration.
+
+### Sources
+
+- [API reference](../api/index.md): available modules and their imports.
+- [Package configuration](https://github.com/KindTechUK/kindtech/blob/v0.1.0/pyproject.toml): one distribution name and version.
+- [Released package tree](https://github.com/KindTechUK/kindtech/tree/v0.1.0/src/kindtech): subpackages included in 0.1.0.
+
+Check the package configuration and tagged source tree when the package layout
+changes or a new release adds modules.
+
+_Created: 2026-09-20 · Updated: 2026-09-20 · Verified: 2026-09-20 · Scope/version: 0.1.0_
+
+## Does KindTech still need to be registered on PyPI?
+
+**Short answer:** No. [KindTech 0.1.0 is published on PyPI](https://pypi.org/project/kindtech/0.1.0/).
+Its first successful Trusted Publishing run created the project.
+
+Future releases use the existing GitHub workflow and PyPI publisher. Update the
+package version, complete the release checks, and push the corresponding `v*`
+tag when the release is approved. The workflow checks that the tag and package
+version match before publishing the wheel and source distribution.
+
+### Sources
+
+- [Successful first release](https://github.com/KindTechUK/kindtech/actions/runs/35527839991): the build and Trusted Publishing run.
+- [Release workflow](https://github.com/KindTechUK/kindtech/blob/v0.1.0/.github/workflows/release.yml): tag/version checks and publication steps.
+
+Recheck the PyPI project and workflow configuration before a future release.
+
+_Created: 2026-09-20 · Updated: 2026-09-20 · Verified: 2026-09-20 · Scope/version: 0.1.0_
+
+
 # Blog
 
 ## Blog
@@ -2240,7 +2288,7 @@ KindTech is a lightweight Python library for accessing UK public data. It wraps 
 
 ## Getting Started
 
-When a release is available on PyPI, install it with:
+Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
 
 ```bash
 uv add kindtech

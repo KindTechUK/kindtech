@@ -25,6 +25,7 @@
 - [Deprivation (IMD)](https://kindtechuk.github.io/kindtech/api/imd/index.md)
 - [ONS Data](https://kindtechuk.github.io/kindtech/api/ons/index.md)
 - [Postcodes](https://kindtechuk.github.io/kindtech/api/postcodes/index.md)
+- [Package FAQ](https://kindtechuk.github.io/kindtech/faq/index.md)
 
 ## Blog
 
