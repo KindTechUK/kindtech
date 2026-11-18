@@ -223,7 +223,7 @@ def place_postcodes(
         One area code per row, in row order. None where the row has no
         postcode, or one that is malformed or not found.
     """
-    tidy, blank, malformed = _read_postcode_column(values, trail)
+    tidy, blank, malformed = read_postcode_column(values, trail)
     usable = [postcode for postcode in tidy if postcode is not None]
     distinct = sorted(set(usable))
     lookup = _look_up_on_this_machine if use_table else _look_up_online
@@ -242,15 +242,16 @@ def place_postcodes(
             rows_out=found,
         )
     )
-    _warn_left_out(blank, malformed, not_found, use_table, trail)
+    warn_left_out(blank, malformed, not_found, use_table, trail)
     return placed
 
 
 def locate_postcodes(values: list[Any], trail: Trail) -> list[Position | None]:
     """Find where each row's postcode is, with postcodes.io.
 
-    The postcode table on this machine holds no positions, so the postcodes
-    are sent to postcodes.io, and the trail says so.
+    The distinct postcodes are sent to postcodes.io, and the trail says so.
+    To place them on this machine instead, see
+    :func:`kindtech.lenses._centres.locate_in_neighbourhoods`.
 
     Args:
         values: The postcode column.
@@ -260,7 +261,7 @@ def locate_postcodes(values: list[Any], trail: Trail) -> list[Position | None]:
         Latitude and longitude per row, in row order. None where the row has
         no postcode, or one that is malformed or not found.
     """
-    tidy, blank, malformed = _read_postcode_column(values, trail)
+    tidy, blank, malformed = read_postcode_column(values, trail)
     usable = [postcode for postcode in tidy if postcode is not None]
     distinct = sorted(set(usable))
     frame = nw.from_native(lookup_postcodes(distinct), eager_only=True)
@@ -286,9 +287,12 @@ def locate_postcodes(values: list[Any], trail: Trail) -> list[Position | None]:
             label="How postcodes were placed",
             value="postcodes.io, an online service",
             reason=(
-                "The postcode table on this machine holds no positions. To "
-                "send nothing, give a latitude and longitude for each row."
+                "No postcode table is installed on this machine. To send "
+                "nothing, install one with `uk-open-data postcodes download` "
+                "and keep the centres of neighbourhoods, or give a latitude "
+                "and longitude for each row."
             ),
+            option="postcode_lookup",
         )
     )
     placed = [None if postcode is None else found_for[postcode] for postcode in tidy]
@@ -306,11 +310,11 @@ def locate_postcodes(values: list[Any], trail: Trail) -> list[Position | None]:
             rows_out=found,
         )
     )
-    _warn_left_out(blank, malformed, not_found, False, trail)
+    warn_left_out(blank, malformed, not_found, False, trail)
     return placed
 
 
-def _read_postcode_column(
+def read_postcode_column(
     values: list[Any], trail: Trail
 ) -> tuple[list[str | None], int, int]:
     """Tidy the postcode column, and stop when no row can be used.
@@ -408,7 +412,7 @@ def _used_for(level: Level) -> str:
     return f"Finding the {level.singular} each postcode is in."
 
 
-def _warn_left_out(
+def warn_left_out(
     blank: int, malformed: int, not_found: int, use_table: bool, trail: Trail
 ) -> None:
     """Add a warning for each kind of row that could not be used."""

@@ -7,6 +7,10 @@ It follows the method of the Material Focus case study.
 
 The lens is about sites, not about people, so it hides no count. Distance is
 in a straight line: the package has no road or public transport times.
+
+Site postcodes can be placed without leaving this machine. With a postcode
+table installed and the centres of neighbourhoods kept, each site is placed at
+the centre of its neighbourhood and no postcode is sent anywhere.
 """
 
 from __future__ import annotations
@@ -18,7 +22,11 @@ from typing import Any
 import kindtech
 from kindtech.lenses._centres import centres_path as centres_path
 from kindtech.lenses._centres import clear_centres_cache as clear_centres_cache
-from kindtech.lenses._centres import distance_km, load_centres
+from kindtech.lenses._centres import (
+    distance_km,
+    load_centres,
+    locate_in_neighbourhoods,
+)
 from kindtech.lenses._centres import download_centres as download_centres
 from kindtech.lenses._centres import keep_centres as keep_centres
 from kindtech.lenses._inputs import is_blank
@@ -60,10 +68,12 @@ from kindtech.lenses._need import (
 )
 from kindtech.lenses._steps import (
     EVERYWHERE,
+    POSTCODE_LOOKUP,
     Position,
     Trail,
     locate_postcodes,
     percent,
+    use_postcode_table,
 )
 
 LENS_ID = "access-distance"
@@ -122,13 +132,17 @@ INFO = LensInfo(
         InputMode(
             name="site_postcodes",
             description=(
-                "One row per site, with its postcode. The postcodes are sent "
-                "to postcodes.io to find where they are."
+                "One row per site, with its postcode. With a postcode table "
+                "and the centres of neighbourhoods on this machine, each site "
+                "is placed at the centre of its neighbourhood and no postcode "
+                "is sent anywhere. Otherwise the postcodes are sent to "
+                "postcodes.io."
             ),
             roles=("postcode",),
         ),
     ),
     options=(
+        POSTCODE_LOOKUP,
         Option(
             name="need",
             description=(
@@ -180,6 +194,12 @@ CAVEATS = (
     "the people you see travel, or whether anyone far away needs you.",
 )
 
+PLACED_IN_NEIGHBOURHOODS = (
+    "Each site is placed at the centre of its neighbourhood, not at its "
+    "postcode. In a town that moves a site by a few hundred metres. In the "
+    "countryside it can move it by a few kilometres."
+)
+
 CHARTS = (
     Chart(
         id="people_in_priority_areas",
@@ -219,6 +239,7 @@ def run(lens_input: LensInput) -> LensResult:
     top = read_top(options)
     within = _within_km(options)
     measure = read_measure(options.get("need"))
+    use_table = use_postcode_table(options)
     mode = lens_input.mode.name
     trail = Trail()
     authorities = load_need(measure, trail)
@@ -229,7 +250,8 @@ def run(lens_input: LensInput) -> LensResult:
         )
     else:
         postcodes = lens_input.values["postcode"]
-        placed = locate_postcodes(postcodes, trail)
+        locate = locate_in_neighbourhoods if use_table else locate_postcodes
+        placed = locate(postcodes, trail)
         sites = _in_the_uk([p for p in placed if p is not None], trail)
         supplied = len(postcodes)
     compared = choose_compared(options.get("catchment"), authorities)
@@ -246,7 +268,7 @@ def run(lens_input: LensInput) -> LensResult:
         working=tuple(trail.working),
         choices=(*trail.choices, *_choices(measure, compared, within, top)),
         checks=_checks(measure, compared),
-        caveats=(*CAVEATS, measure.caveat),
+        caveats=(*CAVEATS, *_placing_caveat(mode, use_table), measure.caveat),
         warnings=tuple(trail.warnings),
         sources=tuple(trail.sources),
         privacy=Privacy(
@@ -282,6 +304,13 @@ def _within_km(options: dict[str, Any]) -> float:
         msg = f"The option 'within_km' must be above 0 and up to {MAX_WITHIN_KM}."
         raise LensInputError(msg)
     return value
+
+
+def _placing_caveat(mode: str, use_table: bool) -> tuple[str, ...]:
+    """The caveat for sites placed at the centre of their neighbourhood."""
+    if mode == "site_postcodes" and use_table:
+        return (PLACED_IN_NEIGHBOURHOODS,)
+    return ()
 
 
 # --- reading the input -----------------------------------------------------
