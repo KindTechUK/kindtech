@@ -184,7 +184,13 @@ def test_within_km_moves_the_line(kept):
 def test_the_reason_for_the_distance_fits_the_distance_used(kept):
     choice = next(c for c in _run().choices if c.id == "within_km")
     assert choice.value == "10 km"
-    assert choice.reason.startswith("No distance was given, so 10 km is used.")
+    assert choice.reason.startswith("10 km is what the lens uses when no distance")
+    # The reason is true for a person who set 10 themselves.
+    asked = next(
+        c for c in _run(options={"within_km": 10}).choices if c.id == "within_km"
+    )
+    assert asked.reason == choice.reason
+    assert "No distance was given" not in asked.reason
     # The lens measures no time, so no choice may speak of one.
     for result in (_run(), _run(options={"within_km": 3})):
         text = " ".join(f"{c.value} {c.reason}" for c in result.choices)
