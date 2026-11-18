@@ -136,7 +136,7 @@ def test_postcode_gives_its_neighbourhood_without_repeating_it(
 
     monkeypatch.setattr(places, "lookup_postcodes", lookup)
 
-    answer = describe_place(" zz99 9zz ")
+    answer = describe_place(" zz99 9kc ")
 
     assert asked == [fakes.SECRET_POSTCODE]
     assert answer["status"] == "found"
@@ -255,7 +255,7 @@ class TestWithAPostcodeTable:
     """With a table on this machine, no postcode is sent anywhere."""
 
     def test_postcode_is_placed_on_this_machine(self) -> None:
-        answer = describe_place("zz99 9zz")
+        answer = describe_place("zz99 9kc")
 
         assert answer["status"] == "found"
         assert answer["place"]["code"] == "E01000001"

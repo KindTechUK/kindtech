@@ -24,10 +24,12 @@ from kindtech.connector import (  # noqa: E402
     places,
 )
 from kindtech.connector.privacy import find_row_values  # noqa: E402
+from kindtech.lenses.need_reach import keep_need_figures  # noqa: E402
 
 POSTCODE = fakes.SECRET_POSTCODE
 PERSON = "Zebedee Quillfeather"
 AREA = "E01000001"
+COUNCIL = "Lewisham"
 
 # tool name -> cases of (arguments, values that must not come back)
 CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
@@ -79,6 +81,26 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
             },
             [AREA, PERSON],
         ),
+        ({"lens_id": "need-reach", "counts": [{"postcode": POSTCODE}]}, [POSTCODE]),
+        (
+            # A postcode or a name where a local authority should be.
+            {
+                "lens_id": "need-reach",
+                "counts": [
+                    {"local_authority": COUNCIL, "count": 30},
+                    {"local_authority": POSTCODE, "count": 12},
+                    {"local_authority": PERSON, "count": 9},
+                ],
+            },
+            [POSTCODE, PERSON],
+        ),
+        (
+            {
+                "lens_id": "need-reach",
+                "counts": [{"local_authority": POSTCODE, "count": 1}],
+            },
+            [POSTCODE],
+        ),
     ],
 }
 
@@ -86,6 +108,7 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
 @pytest.fixture(autouse=True)
 def _stand_ins(england: None, monkeypatch: pytest.MonkeyPatch) -> None:
     """Every case runs the real lenses against the small England."""
+    keep_need_figures("unemployed", fakes.NEED, "invented for a test.")
     monkeypatch.setattr(
         places, "lookup_postcodes", lambda postcode: fakes.postcode_frame(AREA)
     )
@@ -140,11 +163,28 @@ def test_good_calls_still_answer() -> None:
             },
         )
     )
+    second = json.loads(
+        _call(
+            "run_lens_on_counts",
+            {
+                "lens_id": "need-reach",
+                "counts": [
+                    {"local_authority": COUNCIL, "count": 30},
+                    {"local_authority": POSTCODE, "count": 12},
+                ],
+                "options": {"catchment": "England"},
+            },
+        )
+    )
 
     assert place["isError"] is False
     assert place["structuredContent"]["status"] == "found"
     assert run["isError"] is False
     assert run["structuredContent"]["status"] == "ok"
+    assert second["isError"] is False
+    assert second["structuredContent"]["status"] == "ok"
+    # A local authority is a public place, so the second lens may name it.
+    assert COUNCIL in json.dumps(second["structuredContent"]["result"]["tables"])
 
 
 @pytest.mark.usefixtures("postcode_table")

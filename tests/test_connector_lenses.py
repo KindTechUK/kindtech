@@ -1,14 +1,17 @@
 """Tests for the connector's "find a lens" and "run a lens on counts".
 
 A fake lens engine that follows the lens contract stands in for
-``kindtech.lenses``.
+``kindtech.lenses``, and then the real lenses run on small invented figures.
 """
 
 import json
 
+import connector_fakes as fakes
 import pytest
+import requests
 
 from kindtech.connector import PrivacyError, find_lens, run_lens_on_counts
+from kindtech.lenses import need_reach
 
 COUNTS = [
     {"lsoa_code": "E01000001", "count": 12},
@@ -82,7 +85,7 @@ class TestRunLensOnCounts:
         assert answer["known_lenses"] == ["reach-deprivation", "volunteer-travel"]
 
     def test_rows_about_people_are_refused_without_repeating_them(self) -> None:
-        answer = run_lens_on_counts("reach-deprivation", [{"postcode": "ZZ99 9ZZ"}])
+        answer = run_lens_on_counts("reach-deprivation", [{"postcode": "ZZ99 9KC"}])
 
         assert answer["status"] == "input_problem"
         assert "(lsoa_code, count)" in answer["problems"][0]
@@ -130,6 +133,44 @@ def test_result_that_repeats_an_input_value_is_withheld() -> None:
     assert "warnings[0]" in str(raised.value)
 
 
+@pytest.mark.usefixtures("leaky_lens_engine")
+class TestReportedRoles:
+    """A lens may list the public places it was given, and nothing else."""
+
+    def test_a_place_in_a_reported_role_may_come_back(self) -> None:
+        rows = [{"local_authority": "Lewisham", "count": 12}]
+
+        answer = run_lens_on_counts("reach-by-council", rows)
+
+        assert answer["status"] == "ok"
+        assert answer["result"]["warnings"] == ["Lewisham looks unusual"]
+
+    @pytest.mark.parametrize("postcode", ["ZZ99 9KC", "zz999kc"])
+    def test_a_postcode_in_a_reported_role_is_still_withheld(
+        self, postcode: str
+    ) -> None:
+        rows = [{"local_authority": postcode, "count": 12}]
+
+        with pytest.raises(PrivacyError) as raised:
+            run_lens_on_counts("reach-by-council", rows)
+
+        assert "ZZ99" not in str(raised.value).upper()
+
+
+def test_a_problem_that_repeats_an_input_value_is_withheld(
+    lens_engine: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def run_lens(lens_id: str, data: list[dict], **_: object) -> None:
+        raise fakes.LensInputError([f"{data[0]['lsoa_code']} is not a known area."])
+
+    monkeypatch.setattr("kindtech.connector.lenses.engine.run_lens", run_lens)
+
+    with pytest.raises(PrivacyError) as raised:
+        run_lens_on_counts("reach-deprivation", COUNTS)
+
+    assert "E01000001" not in str(raised.value)
+
+
 @pytest.mark.usefixtures("england")
 class TestWithTheRealLens:
     """The connector against ``kindtech.lenses`` and its first lens."""
@@ -165,7 +206,7 @@ class TestWithTheRealLens:
         assert "E01000001" not in json.dumps(result)
 
     def test_rows_about_people_are_refused(self) -> None:
-        answer = run_lens_on_counts("reach-deprivation", [{"postcode": "ZZ99 9ZZ"}])
+        answer = run_lens_on_counts("reach-deprivation", [{"postcode": "ZZ99 9KC"}])
 
         assert answer["status"] == "input_problem"
         assert "ZZ99" not in json.dumps(answer)
@@ -191,3 +232,70 @@ class TestWithTheRealLens:
 
         assert answer["status"] == "unknown_lens"
         assert "reach-deprivation" in answer["known_lenses"]
+
+
+COUNCIL_COUNTS = [
+    {"local_authority": "Lewisham", "count": 120},
+    {"local_authority": "E09000011", "count": 40},
+]
+
+
+class TestWithTheSecondLens:
+    """The connector against the need against reach lens.
+
+    The need figures are invented and kept in the test's data folder, so the
+    lens asks Nomis for nothing.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _need(self) -> None:
+        need_reach.keep_need_figures("unemployed", fakes.NEED, "invented for a test.")
+
+    def test_runs_on_local_authority_counts(self) -> None:
+        answer = run_lens_on_counts("need-reach", COUNCIL_COUNTS)
+
+        result = answer["result"]
+        assert answer["status"] == "ok"
+        assert result["input_mode"] == "area_counts"
+        assert result["privacy"]["sent_to_third_parties"] == []
+        assert result["checks"]
+
+    def test_the_places_passed_in_are_listed_in_the_result(self) -> None:
+        answer = run_lens_on_counts(
+            "need-reach", COUNCIL_COUNTS, options={"catchment": "England"}
+        )
+
+        tables = {table["id"]: table for table in answer["result"]["tables"]}
+        listed = {row["geography_name"] for row in tables["priority_areas"]["rows"]}
+        assert "Lewisham" in listed
+        assert tables["by_local_authority"]["rows"] == []
+
+    def test_rows_about_people_are_refused(self) -> None:
+        answer = run_lens_on_counts("need-reach", [{"postcode": "ZZ99 9KC"}])
+
+        assert answer["status"] == "input_problem"
+        assert "(local_authority, count)" in answer["problems"][0]
+        assert "ZZ99" not in json.dumps(answer)
+
+    def test_a_postcode_given_as_a_place_does_not_come_back(self) -> None:
+        rows = [*COUNCIL_COUNTS, {"local_authority": "ZZ99 9KC", "count": 7}]
+
+        answer = run_lens_on_counts("need-reach", rows)
+
+        assert answer["status"] == "ok"
+        assert "ZZ99" not in json.dumps(answer)
+
+
+def test_says_when_a_data_source_cannot_be_reached(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    def no_network(*args: object, **kwargs: object) -> None:
+        raise requests.ConnectionError("https://example.invalid/?geography=secret")
+
+    monkeypatch.setattr(need_reach, "load_ons", no_network)
+
+    answer = run_lens_on_counts("need-reach", COUNCIL_COUNTS)
+
+    assert answer["status"] == "unavailable"
+    assert "could not be reached" in answer["message"]
+    assert "secret" not in json.dumps(answer) + caplog.text

@@ -156,8 +156,8 @@ def handle_run_lens_on_counts(
         Field(
             description="One object per area, keyed by the role names of an "
             "input mode marked 'aggregated' in find_lens, for example "
-            "{'lsoa_code': 'E01003189', 'count': 12}. Totals only: never one "
-            "row per person."
+            "{'lsoa_code': 'E01003189', 'count': 12} or {'local_authority': "
+            "'Lewisham', 'count': 120}. Totals only: never one row per person."
         ),
     ],
     options: Annotated[
@@ -170,7 +170,9 @@ def handle_run_lens_on_counts(
     Returns headline figures, summary tables, the working, the choices the
     lens made, checks for the person to confirm, caveats and sources. Small
     counts are hidden. Show the checks and caveats with the figures and do not
-    answer the checks for the person. Rows about individuals are refused.
+    answer the checks for the person. Rows about individuals are refused. If
+    the status is 'unavailable', a data source could not be reached: say so
+    and try again later.
     """
     return run_lens_on_counts(lens_id, counts, options)
 
