@@ -96,17 +96,19 @@ class _Measure:
 
 
 # Census 2021 table RM024, economic activity status by sex by age. Status 2 is
-# unemployed, sex 1 is female and 2 is male, and ages 2 to 5 are the bands from
-# 16 to 64.
+# unemployed people who are not full-time students. Full-time students who
+# were looking for work are status 4 and are not counted. Sex 1 is female and
+# 2 is male. Ages 2 to 5 are the bands from 16 to 64.
 _RM024 = "NM_2124_1"
 _WORKING_AGE = (2, 3, 4, 5)
+_NOT_STUDENTS = "not counting full-time students"
 
 
 def _unemployed(measure_id: str, label: str, sexes: tuple[int, ...]) -> _Measure:
     """Describe an unemployment measure from the 2021 Census."""
     return _Measure(
         id=measure_id,
-        label=label,
+        label=f"{label}, {_NOT_STUDENTS}",
         dataset=_RM024,
         filters={
             "c2021_eastat_7": 2,
@@ -116,7 +118,8 @@ def _unemployed(measure_id: str, label: str, sexes: tuple[int, ...]) -> _Measure
         reason="The census counts every local authority, with nothing hidden.",
         caveat=(
             "The need figures describe census day, 21 March 2021. Unemployment "
-            "was affected by the pandemic then and has changed since."
+            "was affected by the pandemic then and has changed since. Full-time "
+            "students who were looking for work are not counted."
         ),
     )
 
