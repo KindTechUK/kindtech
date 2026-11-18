@@ -40,6 +40,23 @@ from kindtech.lenses._model import (
     Step,
     Table,
 )
+from kindtech.lenses._need import (
+    DEFAULT_TOP,
+    FEW_AREAS,
+    MAX_TOP,
+    MEASURES,
+    NEED_BANDS,
+    RESIDENTS,
+    Authority,
+    Compared,
+    Measure,
+    band_by_need,
+    choose_compared,
+    equal_parts,
+    load_need,
+    read_measure,
+    read_top,
+)
 from kindtech.lenses._privacy import DEFAULT_SUPPRESS_BELOW
 from kindtech.lenses._steps import (
     EVERYWHERE,
@@ -49,23 +66,6 @@ from kindtech.lenses._steps import (
     percent,
     place_postcodes,
     use_postcode_table,
-)
-from kindtech.lenses.need_reach import (
-    DEFAULT_TOP,
-    FEW_AREAS,
-    MAX_TOP,
-    MEASURES,
-    NEED_BANDS,
-    RESIDENTS,
-    _Authority,
-    _choose_compared,
-    _Compared,
-    _equal_parts,
-    _load_need,
-    _Measure,
-    _measure,
-    _need_bands,
-    _top,
 )
 
 LENS_ID = "provision-gap"
@@ -202,7 +202,7 @@ CHARTS = (
 class _Row:
     """One local authority in the comparison."""
 
-    authority: _Authority
+    authority: Authority
     volume: float
     high_need: bool
     need_band: str
@@ -217,11 +217,11 @@ class _Row:
 def run(lens_input: LensInput) -> LensResult:
     """Run the lens. Use :func:`kindtech.lenses.run_lens` to call it."""
     options = lens_input.options
-    top = _top(options)
-    measure = _measure(options.get("need"))
+    top = read_top(options)
+    measure = read_measure(options.get("need"))
     mode = lens_input.mode.name
     trail = Trail()
-    authorities = _load_need(measure, trail)
+    authorities = load_need(measure, trail)
     if mode == "area_volumes":
         volumes, supplied = _volume_by_authority(
             lens_input.values["local_authority"],
@@ -240,7 +240,7 @@ def run(lens_input: LensInput) -> LensResult:
             postcodes, amounts, use_postcode_table(options), trail
         )
     located = _keep_listed(volumes, authorities, trail)
-    compared = _choose_compared(options.get("catchment"), authorities)
+    compared = choose_compared(options.get("catchment"), authorities)
     rows = _rows(located, authorities, compared, trail)
     return LensResult(
         lens_id=LENS_ID,
@@ -330,7 +330,7 @@ def _volume_by_postcode(
 def _volume_by_authority(
     places: list[Any],
     raw: list[Any],
-    authorities: dict[str, _Authority],
+    authorities: dict[str, Authority],
     trail: Trail,
 ) -> tuple[Counter[str], float]:
     """Total the volume given for each local authority name or code."""
@@ -370,7 +370,7 @@ def _volume_by_authority(
 
 
 def _keep_listed(
-    volumes: Counter[str], authorities: dict[str, _Authority], trail: Trail
+    volumes: Counter[str], authorities: dict[str, Authority], trail: Trail
 ) -> dict[str, float]:
     """Keep the volume placed in a local authority the need figures list."""
     located: dict[str, float] = {
@@ -410,8 +410,8 @@ def _keep_listed(
 
 def _rows(
     located: dict[str, float],
-    authorities: dict[str, _Authority],
-    compared: _Compared,
+    authorities: dict[str, Authority],
+    compared: Compared,
     trail: Trail,
 ) -> list[_Row]:
     """Build one row per local authority compared."""
@@ -445,7 +445,7 @@ def _rows(
     _warn_about_area(sum(located.values()) - inside, with_provision, compared, trail)
     cut = median(need)
     high = [amount >= cut and amount > 0 for amount in need]
-    need_bands = _need_bands(need)
+    need_bands = band_by_need(need)
     provision_bands = _provision_bands(volume, need)
     trail.working.append(
         Step(
@@ -471,7 +471,7 @@ def _rows(
 
 
 def _warn_about_area(
-    outside: float, with_provision: int, compared: _Compared, trail: Trail
+    outside: float, with_provision: int, compared: Compared, trail: Trail
 ) -> None:
     """Warn when the area compared looks too wide, too narrow or too small."""
     if outside:
@@ -507,7 +507,7 @@ def _tidy(amount: float) -> float | int:
 def _provision_bands(volume: list[float], need: list[float]) -> list[str]:
     """Put each local authority with provision in a third by its rate."""
     shown = [i for i, amount in enumerate(volume) if amount > 0 and need[i] > 0]
-    part = _equal_parts([volume[i] / need[i] for i in shown], 3)
+    part = equal_parts([volume[i] / need[i] for i in shown], 3)
     bands = [NO_PROVISION] * len(volume)
     for position, i in enumerate(shown):
         bands[i] = PROVISION_BANDS[1 + part[position]]
@@ -630,7 +630,7 @@ def _map_spec() -> MapSpec:
 
 
 def _figures(
-    supplied: float, located: float, rows: list[_Row], measure: _Measure
+    supplied: float, located: float, rows: list[_Row], measure: Measure
 ) -> list[Figure]:
     """Build the headline figures."""
     volume = [row.volume for row in rows]
@@ -701,7 +701,7 @@ def _figures(
 # --- what the person needs to know -----------------------------------------
 
 
-def _choices(measure: _Measure, compared: _Compared, top: int) -> tuple[Choice, ...]:
+def _choices(measure: Measure, compared: Compared, top: int) -> tuple[Choice, ...]:
     """List the choices the lens made."""
     return (
         Choice(
@@ -734,7 +734,7 @@ def _choices(measure: _Measure, compared: _Compared, top: int) -> tuple[Choice, 
     )
 
 
-def _checks(mode: str, measure: _Measure, compared: _Compared) -> tuple[Check, ...]:
+def _checks(mode: str, measure: Measure, compared: Compared) -> tuple[Check, ...]:
     """List what a person must confirm before using the figures."""
     if mode == "site_list":
         first = Check(

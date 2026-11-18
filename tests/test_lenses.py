@@ -594,7 +594,7 @@ def test_every_chart_can_be_drawn_from_a_table_in_the_result(world, lens_id):
                 "obs_value": [9000, 8000],
             }
         )
-        with mock.patch("kindtech.lenses.need_reach.load_ons", return_value=need):
+        with mock.patch("kindtech.lenses._need.load_ons", return_value=need):
             result = run_lens(lens_id, [{"local_authority": "Lewisham", "count": 60}])
     assert result.charts
     for chart in result.charts:

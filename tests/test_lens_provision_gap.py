@@ -57,7 +57,7 @@ class _Nomis:
 def nomis():
     """Replace the need figures with the invented ones."""
     fake = _Nomis()
-    with mock.patch("kindtech.lenses.need_reach.load_ons", side_effect=fake.load):
+    with mock.patch("kindtech.lenses._need.load_ons", side_effect=fake.load):
         yield fake
 
 

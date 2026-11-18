@@ -67,7 +67,7 @@ class _Nomis:
 def nomis():
     """Replace the need figures with the invented ones."""
     fake = _Nomis()
-    with mock.patch("kindtech.lenses.need_reach.load_ons", side_effect=fake.load):
+    with mock.patch("kindtech.lenses._need.load_ons", side_effect=fake.load):
         yield fake
 
 
@@ -325,7 +325,7 @@ def test_bad_need_is_rejected(nomis, need):
 def test_a_table_nomis_does_not_have_is_an_input_error():
     with (
         mock.patch(
-            "kindtech.lenses.need_reach.load_ons",
+            "kindtech.lenses._need.load_ons",
             side_effect=ValueError("NOMIS dataset 'NM_0_0' does not exist."),
         ),
         pytest.raises(LensInputError, match="could not be loaded"),
@@ -347,7 +347,7 @@ def test_need_without_local_authorities_is_an_input_error():
         {"geography_code": ["S12000036"], "geography_name": ["x"], "obs_value": [5]}
     )
     with (
-        mock.patch("kindtech.lenses.need_reach.load_ons", return_value=empty),
+        mock.patch("kindtech.lenses._need.load_ons", return_value=empty),
         pytest.raises(LensInputError, match="no local authority"),
     ):
         _run(_counts(Lewisham=60))
@@ -553,7 +553,7 @@ def test_a_wide_comparison_is_flagged_when_people_are_in_few_places():
         }
     )
     rows = [{"Area": "Place 1", "Clients": 40}, {"Area": "Place 2", "Clients": 20}]
-    with mock.patch("kindtech.lenses.need_reach.load_ons", return_value=many):
+    with mock.patch("kindtech.lenses._need.load_ons", return_value=many):
         wide = _run(rows)
         named = _run(rows, options={"catchment": "England"})
     flag = "Your people live in 2 of the 30 local authorities compared."
