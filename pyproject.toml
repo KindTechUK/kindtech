@@ -24,6 +24,12 @@ Documentation = "https://kindtechuk.github.io/kindtech/"
 Repository = "https://github.com/KindTechUK/kindtech"
 Issues = "https://github.com/KindTechUK/kindtech/issues"
 
+[project.optional-dependencies]
+connector = [
+    "mcp>=2.3,<3",
+    "pandas>=2.0.0",
+]
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
@@ -33,6 +39,7 @@ package-dir = {"" = "src"}
 
 [dependency-groups]
 dev = [
+    "mcp>=2.3,<3",
     "mkdocs>=1.6.1",
     "mkdocs-llmstxt-md>=0.2.0",
     "mkdocs-material>=9.6.14",

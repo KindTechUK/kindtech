@@ -90,6 +90,7 @@ nav:
     - Deprivation (IMD): api/imd.md
     - Lenses: api/lenses.md
     - Command Line: api/cli.md
+    - Connector for chat assistants: api/connector.md
     - Data Sources: api/data-sources.md
     - Package FAQ: faq/README.md
   - Blog:
