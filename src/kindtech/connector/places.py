@@ -3,7 +3,9 @@
 A place is a local authority (by name or code), a neighbourhood (a 2021 LSOA
 code), a postcode district such as ``SE13``, or the postcode of a venue or
 office. The answer comes from the English Indices of Deprivation 2025 and never
-repeats a postcode that was passed in.
+repeats a postcode that was passed in. A postcode is looked up in the postcode
+table on this machine when one is installed, and through postcodes.io when not;
+the answer says which.
 
     >>> from kindtech.connector import describe_place
     >>> answer = describe_place("Lewisham")
@@ -22,8 +24,16 @@ import requests
 
 from kindtech.connector.privacy import ensure_totals_only
 from kindtech.imd import load_imd
-from kindtech.lenses.sources import IOD_2025, POSTCODES_IO
-from kindtech.postcodes import lookup_outcodes, lookup_postcodes
+from kindtech.lenses.sources import IOD_2025, POSTCODES_IO, ons_postcode_lookup
+from kindtech.postcodes import (
+    PostcodeTableError,
+    district_to_local_authorities,
+    lookup_outcodes,
+    lookup_postcodes,
+    postcode_table_info,
+    postcode_table_path,
+    postcode_to_lsoa,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +106,7 @@ def describe_place(place: str) -> dict[str, Any]:
     row_values = [text] if _POSTCODE.match(text) else []
     try:
         return ensure_totals_only(_describe(text), row_values)
-    except requests.RequestException as error:
+    except (requests.RequestException, PostcodeTableError) as error:
         # The error text can hold the address asked for, so only its kind is logged.
         logger.warning("A data source could not be reached: %s", type(error).__name__)
         return _status(
@@ -127,30 +137,22 @@ def _describe(text: str) -> dict[str, Any]:
 
 def _describe_postcode(postcode: str) -> dict[str, Any]:
     """Describe the neighbourhood a full postcode sits in, without repeating it."""
-    found = nw.from_native(lookup_postcodes(postcode), eager_only=True).rows(named=True)
-    code = found[0]["lsoa_code"] if found and found[0]["valid"] else None
+    code = _lsoa_for_postcode(postcode)
     if not code:
-        return _status("not_found", "That postcode was not found.")
-    if not str(code).startswith("E"):
+        return _status("not_found", "That postcode was not found in England.")
+    if not code.startswith("E"):
         return _not_covered()
-    answer = _describe_neighbourhood(str(code), matched_from="postcode")
-    return _sent_to_postcodes_io(answer, "One postcode")
+    answer = _describe_neighbourhood(code, matched_from="postcode")
+    return _record_lookup(answer, "One postcode")
 
 
 def _describe_outcode(outcode: str) -> dict[str, Any]:
     """Describe the local authority, or authorities, a postcode district covers."""
-    found = nw.from_native(lookup_outcodes(outcode), eager_only=True).rows(named=True)
-    districts = found[0]["admin_districts"] if found and found[0]["valid"] else None
-    if not districts:
+    found = _authorities_for_outcode(outcode)
+    if not found:
         return _status("not_found", "That postcode district was not found.")
-    listed = f", {districts}, ".casefold()
-    codes = sorted(
-        {
-            row["lad_code"]
-            for row in _neighbourhoods()
-            if f", {row['lad_name']}, ".casefold() in listed
-        }
-    )
+    names = _authority_names()
+    codes = [code for code in found if code in names]
     if not codes:
         return _not_covered()
     answer = _describe_authorities(codes, "postcode_district")
@@ -158,7 +160,38 @@ def _describe_outcode(outcode: str) -> dict[str, Any]:
         "A postcode district is not a statistical area. The figures are for the "
         "whole local authority it falls in."
     )
-    return _sent_to_postcodes_io(answer, "One postcode district")
+    return _record_lookup(answer, "One postcode district")
+
+
+def _lsoa_for_postcode(postcode: str) -> str | None:
+    """The neighbourhood code for a postcode, from this machine when it can be."""
+    if postcode_table_path() is not None:
+        return postcode_to_lsoa(postcode)
+    found = nw.from_native(lookup_postcodes(postcode), eager_only=True).rows(named=True)
+    code = found[0]["lsoa_code"] if found and found[0]["valid"] else None
+    return str(code) if code else None
+
+
+def _authorities_for_outcode(outcode: str) -> list[str]:
+    """Local authority codes a postcode district reaches, in and out of England.
+
+    Read from the postcode table on this machine when one is installed.
+    Otherwise postcodes.io is asked; it answers with names, so an authority
+    outside England comes back as its name and is dropped by the caller.
+    """
+    if postcode_table_path() is not None:
+        return district_to_local_authorities(outcode)
+    found = nw.from_native(lookup_outcodes(outcode), eager_only=True).rows(named=True)
+    districts = found[0]["admin_districts"] if found and found[0]["valid"] else None
+    if not districts:
+        return []
+    listed = f", {districts}, ".casefold()
+    codes = {
+        code
+        for code, name in _authority_names().items()
+        if f", {name}, ".casefold() in listed
+    }
+    return sorted(codes) or [districts]
 
 
 def _describe_authorities(codes: list[str], matched_from: str) -> dict[str, Any]:
@@ -463,16 +496,25 @@ def _privacy() -> dict[str, Any]:
     }
 
 
-def _sent_to_postcodes_io(answer: dict[str, Any], what: str) -> dict[str, Any]:
-    """Record that a lookup was sent to postcodes.io, when the answer has figures."""
+def _record_lookup(answer: dict[str, Any], what: str) -> dict[str, Any]:
+    """Say how a postcode was placed, and whether it left this machine."""
     if "privacy" not in answer:
         return answer
-    answer["privacy"]["sent_to_third_parties"] = [
-        f"{what} was sent to postcodes.io to find its area. It is not repeated "
-        "in this answer."
-    ]
+    if postcode_table_path() is not None:
+        info = postcode_table_info()
+        source = ons_postcode_lookup(str(info["edition"]), tuple(info["attribution"]))
+        answer["privacy"]["notes"].append(
+            f"{what} was looked up on this machine. It was not sent anywhere and "
+            "is not repeated in this answer."
+        )
+    else:
+        source = POSTCODES_IO
+        answer["privacy"]["sent_to_third_parties"] = [
+            f"{what} was sent to postcodes.io to find its area. It is not "
+            "repeated in this answer."
+        ]
     if answer["status"] == "found":
-        answer["sources"] = [*answer["sources"], asdict(POSTCODES_IO)]
+        answer["sources"] = [*answer["sources"], asdict(source)]
     return answer
 
 

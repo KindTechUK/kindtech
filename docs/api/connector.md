@@ -74,9 +74,15 @@ answer["sources"]           # publisher, edition, licence and link
 
 `status` is `found`, `choose` (several places match, listed in `matches`),
 `not_found`, `not_covered` (outside England) or `unavailable` (a data source
-could not be reached). A postcode is sent to postcodes.io to find its
-neighbourhood, which the answer says under `privacy`, and the postcode is never
-repeated in the answer.
+could not be reached).
+
+A postcode or postcode district is looked up in the
+[postcode table on this machine](postcodes.md) when one is installed, so it is
+not sent anywhere. Without a table it is sent to postcodes.io. Either way the
+answer says which happened under `privacy`, and the postcode is never repeated
+in the answer. When you host the connector, install the table when the image
+is built (`uk-open-data postcodes download`), so venue postcodes stay on your
+server.
 
 ### `run_lens_on_counts`
 

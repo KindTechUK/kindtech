@@ -147,6 +147,16 @@ def test_good_calls_still_answer() -> None:
     assert run["structuredContent"]["status"] == "ok"
 
 
+@pytest.mark.usefixtures("postcode_table")
+@pytest.mark.parametrize("place", [POSTCODE, "ZZ99 7VC", "CF10 1VC", "ZZ99"])
+def test_no_postcode_comes_back_when_placed_on_this_machine(place: str) -> None:
+    reply = _call("describe_place", {"place": place})
+
+    if len(place) > 4:
+        assert _squash(place) not in _squash(reply)
+    assert json.loads(reply)["isError"] is False
+
+
 @pytest.mark.usefixtures("leaky_lens_engine")
 def test_a_lens_that_repeats_input_is_stopped_at_the_connector() -> None:
     arguments = {

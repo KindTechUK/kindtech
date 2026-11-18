@@ -55,6 +55,16 @@ _AREAS = [
 SECRET_POSTCODE = "ZZ99 9ZZ"
 
 
+# The ONS postcode lookup in miniature: postcode, 2021 LSOA, local authority.
+# The last row is in Wales, which the table keeps and the connector does not cover.
+POSTCODE_LOOKUP_CSV = (
+    "pcd7,lsoa21cd,ladcd\n"
+    "ZZ999ZZ,E01000001,E09000023\n"
+    "ZZ998VC,E01000005,E08000021\n"
+    "CF101VC,W01000001,W06000015\n"
+)
+
+
 def england_frame() -> pd.DataFrame:
     """A ten-neighbourhood England in the shape ``load_imd`` returns."""
     rows = []

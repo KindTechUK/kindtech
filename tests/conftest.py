@@ -5,7 +5,7 @@ import pytest
 
 from kindtech.connector import lenses, places
 from kindtech.lenses import reach_deprivation
-from kindtech.postcodes import offline
+from kindtech.postcodes import build_postcode_table, install_postcode_table, offline
 
 
 @pytest.fixture(autouse=True)
@@ -38,3 +38,13 @@ def lens_engine(monkeypatch: pytest.MonkeyPatch) -> None:
 def leaky_lens_engine(monkeypatch: pytest.MonkeyPatch) -> None:
     """Install a fake lens engine that repeats an input value in its result."""
     monkeypatch.setattr(lenses, "engine", fakes.fake_engine(leak=True))
+
+
+@pytest.fixture
+def postcode_table(tmp_path, empty_data_dir) -> None:
+    """Install a three-postcode table, so postcodes are placed on this machine."""
+    source = tmp_path / "lookup.csv"
+    source.write_text(fakes.POSTCODE_LOOKUP_CSV, encoding="utf-8")
+    packed = tmp_path / "postcodes.ktpc.gz"
+    build_postcode_table(source, packed, "May 2026")
+    install_postcode_table(packed)
