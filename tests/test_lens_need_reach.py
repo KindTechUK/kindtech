@@ -224,8 +224,22 @@ def test_need_can_be_women_only(nomis):
     result = _run(_counts(Lewisham=60), options={"need": "unemployed_women"})
     assert nomis.asked[0][1]["c_sex"] == [1]
     choice = next(c for c in result.choices if c.id == "need")
-    assert choice.value == "Unemployed women aged 16 to 64"
+    assert choice.value == (
+        "Unemployed women aged 16 to 64, not counting full-time students"
+    )
     assert choice.option == "need"
+
+
+@pytest.mark.parametrize("need", ["unemployed", "unemployed_women", "unemployed_men"])
+def test_built_in_needs_say_that_full_time_students_are_not_counted(nomis, need):
+    result = _run(_counts(Lewisham=60), options={"need": need})
+    # Status 2 is unemployed people who are not full-time students.
+    assert nomis.asked[0][1]["c2021_eastat_7"] == 2
+    said = "not counting full-time students"
+    assert said in next(c for c in result.choices if c.id == "need").value
+    assert said in result.figure("people_in_need").label
+    assert said in next(c for c in result.checks if c.id == "need_fits").question
+    assert any("Full-time students" in caveat for caveat in result.caveats)
 
 
 def test_need_can_be_another_nomis_table(nomis):
