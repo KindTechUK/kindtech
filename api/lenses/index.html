@@ -876,6 +876,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#charts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Charts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#small-counts" class="md-nav__link">
     <span class="md-ellipsis">
       Small counts
@@ -1225,6 +1234,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#charts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Charts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#small-counts" class="md-nav__link">
     <span class="md-ellipsis">
       Small counts
@@ -1288,6 +1306,7 @@ returns figures you can check and reuse.</p>
 <li><strong>figures</strong>: the headline numbers</li>
 <li><strong>tables</strong>: totals behind the figures</li>
 <li><strong>a map description</strong>: which areas to draw and what to colour them by</li>
+<li><strong>chart descriptions</strong>: which table and columns to draw as a bar chart</li>
 <li><strong>the working</strong>: each step taken, with how many rows went in and came out</li>
 <li><strong>choices</strong>: what the lens decided for you, and the option that changes it</li>
 <li><strong>checks</strong>: what a person must confirm before using the figures</li>
@@ -1353,6 +1372,18 @@ value. The colours adapt to a dark page.</p>
 Portal. Only the public area codes of the catchment are sent. To draw without
 the network, pass <code>boundaries=</code> a GeoJSON FeatureCollection you already have;
 <code>load_map_boundaries(result)</code> fetches one you can save and reuse.</p>
+<h2 id="charts">Charts</h2>
+<p><code>result.charts</code> describes the charts a result is best shown with, so a page
+can draw them without knowing the lens. Each <code>Chart</code> names a table of the
+result, the column that names each group of bars (<code>category_column</code>) and one
+or more <code>series</code>, each a column with a label and a unit. Every series in a
+chart has the same unit, so one axis serves them all.</p>
+<div class="highlight"><pre><span></span><code><span class="n">chart</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">charts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">frame</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">chart</span><span class="o">.</span><span class="n">table</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+<span class="n">frame</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chart</span><span class="o">.</span><span class="n">category_column</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">column</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">chart</span><span class="o">.</span><span class="n">series</span><span class="p">])</span>
+</code></pre></div>
+<p>A value hidden to protect a small count is <code>None</code> in the table. Draw no bar
+for it.</p>
 <h2 id="small-counts">Small counts</h2>
 <p>A count from 1 to 4 that is about a named place or a group is returned as
 <code>None</code>, with <code>suppressed</code> set to <code>True</code>, and so is anything worked out from it.
@@ -1440,6 +1471,8 @@ table, and a warning says how many there are.</p>
 </tr>
 </tbody>
 </table>
+<p>The chart <code>people_by_decile</code> sets the share of your people in each decile
+against the share of catchment residents.</p>
 <table>
 <thead>
 <tr>
@@ -1567,6 +1600,24 @@ value of the area compared.</p>
 </tr>
 </tbody>
 </table>
+<p>The need figures are public. They are fetched from Nomis once for each need
+and then kept in memory for as long as the program runs;
+<code>clear_need_cache()</code> forgets them. To run with no request to Nomis at all,
+keep a copy on the machine, in the same data folder as the
+<a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses.need_reach</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_need_figures</span><span class="p">,</span> <span class="n">keep_need_figures</span>
+
+<span class="n">download_need_figures</span><span class="p">(</span><span class="s2">&quot;unemployed&quot;</span><span class="p">)</span>   <span class="c1"># fetch once, when a server is built</span>
+
+<span class="c1"># or keep figures of your own under a built-in need, for a demonstration</span>
+<span class="n">keep_need_figures</span><span class="p">(</span>
+    <span class="s2">&quot;unemployed&quot;</span><span class="p">,</span>
+    <span class="p">[(</span><span class="s2">&quot;E09000023&quot;</span><span class="p">,</span> <span class="s2">&quot;Lewisham&quot;</span><span class="p">,</span> <span class="mi">9000</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;E09000011&quot;</span><span class="p">,</span> <span class="s2">&quot;Greenwich&quot;</span><span class="p">,</span> <span class="mi">8000</span><span class="p">)],</span>
+    <span class="n">note</span><span class="o">=</span><span class="s2">&quot;invented for a demonstration.&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>A result that used a kept copy says so in its <code>sources</code> and its <code>working</code>,
+with the note the copy was kept with.</p>
 <p>By default every local authority in England and Wales is compared. If you
 serve a smaller area, name it with <code>catchment</code>, so that places you could not
 reach are not listed as gaps.</p>
@@ -1620,6 +1671,8 @@ reach are not listed as gaps.</p>
 </tr>
 </tbody>
 </table>
+<p>The charts <code>need_in_priority_areas</code> and <code>reach_in_priority_areas</code> show people
+in need and people reached per 100 in need for the places in <code>priority_areas</code>.</p>
 <table>
 <thead>
 <tr>
