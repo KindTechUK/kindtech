@@ -102,7 +102,7 @@ class _World:
                 "kindtech.lenses.reach_deprivation.load_imd", return_value=_index()
             ),
             mock.patch(
-                "kindtech.lenses.reach_deprivation.postcodes_to_geography",
+                "kindtech.lenses._steps.postcodes_to_geography",
                 side_effect=self.fake_lookup,
             ),
         ):

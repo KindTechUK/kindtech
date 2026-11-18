@@ -245,9 +245,7 @@ def _run(options=None):
     """Run the lens with the index replaced and the online lookup watched."""
     with (
         mock.patch("kindtech.lenses.reach_deprivation.load_imd", return_value=_index()),
-        mock.patch(
-            "kindtech.lenses.reach_deprivation.postcodes_to_geography"
-        ) as online,
+        mock.patch("kindtech.lenses._steps.postcodes_to_geography") as online,
     ):
         online.return_value = pd.DataFrame(
             {"geography_code": ["E01000002", "E01000001"]}
