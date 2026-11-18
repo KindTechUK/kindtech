@@ -792,13 +792,19 @@ def _map_spec(threshold: int) -> MapSpec:
                 value_column="imd_decile",
                 kind="sequential",
                 note="1 is the most deprived tenth of neighbourhoods in England.",
+                categories=DECILES,
+                emphasis="low",
             ),
             MapLayer(
                 id="people",
                 label="People reached",
                 value_column="people_band",
-                kind="categorical",
-                note="Bands, lowest first: " + "; ".join(band_labels(threshold)) + ".",
+                kind="ordinal",
+                note=(
+                    "The lowest band includes zero, so a neighbourhood with a "
+                    "few people looks the same as one with none."
+                ),
+                categories=tuple(band_labels(threshold)),
             ),
         ),
     )

@@ -29,6 +29,7 @@ from kindtech.lenses import (
     list_lenses,
     run_lens,
 )
+from kindtech.lenses.maps import render_map
 
 EXIT_OK = 0
 EXIT_INPUT_ERROR = 2
@@ -100,6 +101,17 @@ def _build_parser() -> argparse.ArgumentParser:
         help="With --json, leave out the rows of long tables such as map data.",
     )
     run.add_argument("--output", type=Path, help="Write to this file.")
+    run.add_argument(
+        "--map",
+        type=Path,
+        metavar="PATH",
+        help="Also draw the map and save it to this .svg file.",
+    )
+    run.add_argument(
+        "--map-layer",
+        metavar="LAYER",
+        help="What the map is coloured by. The first layer is used by default.",
+    )
     run.set_defaults(handler=_handle_run)
     return parser
 
@@ -133,6 +145,9 @@ def _handle_run(args: argparse.Namespace) -> str:
         for name, value in (_split_pair(pair, "--option") for pair in args.option)
     }
     result = run_lens(args.lens_id, rows, columns=columns, options=options)
+    if args.map is not None:
+        svg = render_map(result, layer=args.map_layer)
+        args.map.write_text(svg + "\n", encoding="utf-8")
     if args.json:
         return _to_json(result.to_dict(include_detail=not args.summary))
     return _report_text(info, result)
