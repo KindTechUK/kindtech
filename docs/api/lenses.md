@@ -165,6 +165,88 @@ result = run_lens(
     neighbourhoods, not people: someone who lives in a deprived neighbourhood
     is not necessarily deprived.
 
+## Need against reach
+
+`need-reach` answers: where is need high and our presence low? It covers
+England and Wales, by local authority, and is the method of the
+[Smart Works case study](../case-studies/smart-works-woman-unemployment.md)
+turned into a function.
+
+It accepts two shapes of data:
+
+| Input mode | Columns | What it is |
+| --- | --- | --- |
+| `postcodes` | `postcode` | One row per person or case, with a home postcode |
+| `area_counts` | `local_authority`, `count` | Already totalled by local authority, named or coded |
+
+Postcodes are placed as in the first lens: on your machine when the postcode
+table is installed, and with postcodes.io otherwise.
+
+The lens loads a count of **people in need** in every local authority from
+[Nomis](ons.md), divides the people you helped in each one by it, and lists
+the high-need local authorities where you reach the fewest people per 100 in
+need. A local authority is high need when its count is at or above the middle
+value of the area compared.
+
+Choose the need with the `need` option:
+
+| `need` | People counted |
+| --- | --- |
+| `"unemployed"` (default) | Unemployed people aged 16 to 64, Census 2021 |
+| `"unemployed_women"` | Unemployed women aged 16 to 64, Census 2021 |
+| `"unemployed_men"` | Unemployed men aged 16 to 64, Census 2021 |
+| `{"dataset": ..., "label": ..., "filters": {...}}` | Any table Nomis publishes by local authority. The filters are the category codes to add up |
+
+By default every local authority in England and Wales is compared. If you
+serve a smaller area, name it with `catchment`, so that places you could not
+reach are not listed as gaps.
+
+| Figure | Meaning |
+| --- | --- |
+| `people_supplied` | People in the data you gave |
+| `people_located` | People placed in a local authority in England or Wales |
+| `people_in_catchment` | People who live in the area compared |
+| `areas_compared` | Local authorities compared |
+| `people_in_need` | People in need in the area compared |
+| `reach_per_100_in_need` | People you reached per 100 people in need, across the area |
+| `high_need_areas` | Local authorities with high need |
+| `high_need_areas_without_people` | High-need local authorities where you reached nobody |
+| `share_of_people_in_high_need_areas` | Share of your people who live in high-need local authorities |
+| `share_of_need_in_high_need_areas` | Share of people in need who live there, for comparison |
+
+| Table | Rows |
+| --- | --- |
+| `priority_areas` | The high-need local authorities with the lowest reach, lowest first: people in need, people, people per 100 in need |
+| `by_local_authority` | One per local authority compared, with need and reach in bands. This feeds the map |
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `suppress_below` | `5` | Counts above zero and below this are hidden |
+| `postcode_lookup` | `"auto"` | As for the first lens |
+| `need` | `"unemployed"` | The need to compare your reach with |
+| `catchment` | England and Wales | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"` |
+| `top` | `10` | How many places to list, from 1 to 50 |
+
+```python
+result = run_lens(
+    "need-reach",
+    clients,
+    columns={"postcode": "Client postcode"},
+    options={"need": "unemployed_women"},
+)
+
+result.table("priority_areas").to_frame()
+```
+
+A local authority with a hidden count is still ranked. It is ranked as if it
+had the largest count that would be hidden, which depends on the threshold
+alone, so the order of the list gives nothing away.
+
+!!! note "Before you use the figures"
+    Read `result.checks` and `result.caveats`. Low reach is not the same as
+    unmet need: another organisation may already serve the place. Need is a
+    count of people, so large local authorities are more likely to be listed.
+
 ## Writing a lens
 
 A lens is a `LensInfo` and a function that takes a `LensInput` and returns a

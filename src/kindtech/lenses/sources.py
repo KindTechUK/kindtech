@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from kindtech.imd.api import ENGLAND_IMD_2025_URL
 from kindtech.lenses._model import Source
+from kindtech.ons._catalog import find_tables
+from kindtech.ons.api import NOMIS_BASE_URL
 from kindtech.postcodes.api import POSTCODES_BASE_URL
 from kindtech.postcodes.offline import SOURCE_NAME, SOURCE_URL
 
@@ -39,4 +41,24 @@ def ons_postcode_lookup(edition: str, attribution: tuple[str, ...]) -> Source:
         edition=edition,
         used_for="Finding the neighbourhood each postcode is in.",
         attribution=attribution,
+    )
+
+
+def nomis_table(dataset_id: str, used_for: str) -> Source:
+    """Describe a table read from Nomis, named as Nomis lists it."""
+    listed = [table for table in find_tables() if table["id"] == dataset_id]
+    name = listed[0]["name"] if listed else dataset_id
+    collection = (listed[0].get("sourceName") or "") if listed else ""
+    return Source(
+        id=f"nomis-{dataset_id.lower()}",
+        name=f"{name} ({dataset_id})",
+        publisher="Office for National Statistics, through Nomis",
+        url=f"{NOMIS_BASE_URL}/dataset/{dataset_id}.def.sdmx.json",
+        licence="Open Government Licence v3.0",
+        edition=(
+            "Census 2021, taken on 21 March 2021"
+            if collection.startswith("census_2021")
+            else "The latest period Nomis held on the day of the run"
+        ),
+        used_for=used_for,
     )

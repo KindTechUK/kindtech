@@ -25,6 +25,7 @@ from kindtech.postcodes import (
     postcode_table_info,
     postcode_table_path,
     postcode_to_lsoa,
+    postcodes_to_local_authority,
     postcodes_to_lsoa,
 )
 
@@ -141,6 +142,14 @@ def test_postcodes_to_lsoa_keeps_the_order_given(installed):
         "E01000005",
         None,
         "E01000001",
+    ]
+
+
+def test_postcodes_to_local_authority_keeps_the_order_given(installed):
+    assert postcodes_to_local_authority(["cf10 1vc", "EH1 1VC", "SE13 7VC"]) == [
+        "W06000015",
+        None,
+        "E09000023",
     ]
 
 

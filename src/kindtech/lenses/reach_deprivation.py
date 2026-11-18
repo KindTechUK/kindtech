@@ -41,7 +41,6 @@ from kindtech.lenses._privacy import (
     count_band,
     group_hidden,
 )
-from kindtech.lenses._registry import register_lens
 from kindtech.lenses._steps import (
     POSTCODE_LOOKUP,
     SUPPRESS_BELOW,
@@ -896,4 +895,4 @@ def _privacy(threshold: int, trail: Trail) -> Privacy:
     )
 
 
-LENS = register_lens(Lens(info=INFO, run=run))
+LENS = Lens(info=INFO, run=run)
