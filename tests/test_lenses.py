@@ -58,9 +58,15 @@ def _index() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+# Real postcodes never end in these letters, so the invented ones cannot be real.
+UNUSED_LETTERS = "CIKMOV"
+
+
 def _postcode(number: int) -> str:
-    """An invented, well-formed postcode."""
-    return f"SE{number // 26 + 1} 1A{chr(65 + number % 26)}"
+    """An invented postcode: the right shape, but it cannot exist."""
+    district, rest = divmod(number, 36)
+    first, second = divmod(rest, 6)
+    return f"SE{district + 1} 1{UNUSED_LETTERS[first]}{UNUSED_LETTERS[second]}"
 
 
 class _World:
@@ -162,10 +168,10 @@ def test_count_band_puts_zero_with_small_counts():
 @pytest.mark.parametrize(
     ("raw", "expected"),
     [
-        ("se137hx", "SE13 7HX"),
-        ("  SE13  7HX ", "SE13 7HX"),
-        ("M1 1AE", "M1 1AE"),
-        ("EC1A 1BB", "EC1A 1BB"),
+        ("se137vc", "SE13 7VC"),
+        ("  SE13  7VC ", "SE13 7VC"),
+        ("M1 1VC", "M1 1VC"),
+        ("EC1A 1VC", "EC1A 1VC"),
         ("not a postcode", None),
         ("SE13", None),
         ("", None),
@@ -343,7 +349,7 @@ def test_rows_that_cannot_be_used_are_counted_not_quoted(world):
     world.rows += [
         {"Client postcode": ""},
         {"Client postcode": "Flat 2, Secret Road"},
-        {"Client postcode": "ZZ99 9ZZ"},
+        {"Client postcode": "ZZ99 9VC"},
     ]
     result = world.run()
     assert result.figure("people_supplied").value == 73

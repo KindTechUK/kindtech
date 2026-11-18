@@ -70,7 +70,7 @@ INFO = LensInfo(
         Role(
             name="postcode",
             description="The home postcode of each person or case, one per row.",
-            example="SE13 7HX",
+            example="SE13 7VC",
         ),
         Role(
             name="lsoa_code",

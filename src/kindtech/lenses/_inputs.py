@@ -29,7 +29,7 @@ def is_blank(value: Any) -> bool:
 
 
 def tidy_postcode(value: Any) -> str | None:
-    """Return a postcode as ``SE13 7HX``, or None if it is not shaped like one.
+    """Return a postcode as ``SE13 7VC``, or None if it is not shaped like one.
 
     Only the shape is checked. Whether the postcode exists is found out when it
     is looked up.
