@@ -134,11 +134,13 @@ uses the network:
 from kindtech.postcodes import (
     district_to_local_authorities,
     postcode_to_lsoa,
+    postcodes_to_local_authority,
     postcodes_to_lsoa,
 )
 
 postcode_to_lsoa("se13 7vc")                # an LSOA code, or None
 postcodes_to_lsoa(["SE13 7VC", "M1 1VC"])   # one answer per postcode, in order
+postcodes_to_local_authority(["SE13 7VC"])  # local authority codes, in order
 district_to_local_authorities("SE13")       # local authority codes, sorted
 ```
 
@@ -148,6 +150,7 @@ district_to_local_authorities("SE13")       # local authority codes, sorted
 | `postcode_table_path()` | The installed table's path, or `None` |
 | `postcode_table_info()` | Edition, source, coverage, size and the credits to show |
 | `postcode_to_lsoa()`, `postcodes_to_lsoa()` | Postcode to 2021 LSOA code, or `None` when it is not in the table |
+| `postcodes_to_local_authority()` | Postcode to local authority code, or `None` when it is not in the table |
 | `district_to_local_authorities()` | The local authorities a postcode district reaches into |
 | `build_postcode_table()` | Builds a table from the ONS lookup file. Used to publish a new edition |
 

@@ -1331,11 +1331,13 @@ uses the network:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.postcodes</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">district_to_local_authorities</span><span class="p">,</span>
     <span class="n">postcode_to_lsoa</span><span class="p">,</span>
+    <span class="n">postcodes_to_local_authority</span><span class="p">,</span>
     <span class="n">postcodes_to_lsoa</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">postcode_to_lsoa</span><span class="p">(</span><span class="s2">&quot;se13 7vc&quot;</span><span class="p">)</span>                <span class="c1"># an LSOA code, or None</span>
 <span class="n">postcodes_to_lsoa</span><span class="p">([</span><span class="s2">&quot;SE13 7VC&quot;</span><span class="p">,</span> <span class="s2">&quot;M1 1VC&quot;</span><span class="p">])</span>   <span class="c1"># one answer per postcode, in order</span>
+<span class="n">postcodes_to_local_authority</span><span class="p">([</span><span class="s2">&quot;SE13 7VC&quot;</span><span class="p">])</span>  <span class="c1"># local authority codes, in order</span>
 <span class="n">district_to_local_authorities</span><span class="p">(</span><span class="s2">&quot;SE13&quot;</span><span class="p">)</span>       <span class="c1"># local authority codes, sorted</span>
 </code></pre></div>
 <table>
@@ -1361,6 +1363,10 @@ uses the network:</p>
 <tr>
 <td><code>postcode_to_lsoa()</code>, <code>postcodes_to_lsoa()</code></td>
 <td>Postcode to 2021 LSOA code, or <code>None</code> when it is not in the table</td>
+</tr>
+<tr>
+<td><code>postcodes_to_local_authority()</code></td>
+<td>Postcode to local authority code, or <code>None</code> when it is not in the table</td>
 </tr>
 <tr>
 <td><code>district_to_local_authorities()</code></td>
