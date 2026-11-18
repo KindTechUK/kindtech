@@ -22,7 +22,7 @@ from typing import Any
 import narwhals.stable.v2 as nw
 import requests
 
-from kindtech.connector.privacy import ensure_totals_only
+from kindtech.connector.privacy import ensure_totals_only, looks_like_postcode
 from kindtech.imd import load_imd
 from kindtech.lenses.sources import IOD_2025, POSTCODES_IO, ons_postcode_lookup
 from kindtech.postcodes import (
@@ -62,7 +62,6 @@ CAVEATS = [
 _LSOA_CODE = re.compile(r"^E01\d{6}$")
 _AUTHORITY_CODE = re.compile(r"^E0[6-9]\d{6}$")
 _OTHER_NATION_CODE = re.compile(r"^[WSN]\d{8}$|^95[A-Z]{2}\d{2}(S\d)?$")
-_POSTCODE = re.compile(r"^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$")
 _OUTCODE = re.compile(r"^[A-Z]{1,2}\d[A-Z\d]?$")
 _NAME_NOISE = re.compile(
     r"\b(?:(?:london |royal |metropolitan )?borough(?: council)?(?: of)?"
@@ -103,7 +102,7 @@ def describe_place(place: str) -> dict[str, Any]:
     text = " ".join(str(place).split()).upper()
     if not text:
         return _status("not_found", "Give a place name, a postcode or an area code.")
-    row_values = [text] if _POSTCODE.match(text) else []
+    row_values = [text] if looks_like_postcode(text) else []
     try:
         return ensure_totals_only(_describe(text), row_values)
     except (requests.RequestException, PostcodeTableError) as error:
@@ -128,7 +127,7 @@ def _describe(text: str) -> dict[str, Any]:
         return _describe_neighbourhood(text, matched_from="neighbourhood_code")
     if _AUTHORITY_CODE.match(text):
         return _describe_authorities(_by_authority_code(text), "local_authority_code")
-    if _POSTCODE.match(text):
+    if looks_like_postcode(text):
         return _describe_postcode(text)
     if _OUTCODE.match(text):
         return _describe_outcode(text)

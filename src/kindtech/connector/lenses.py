@@ -9,11 +9,16 @@ already-totalled input is accepted, and the privacy guard on what comes back.
     'reach-deprivation'
 """
 
+import logging
 import re
 from typing import Any
 
+import requests
+
 import kindtech.lenses as engine
-from kindtech.connector.privacy import ensure_totals_only
+from kindtech.connector.privacy import ensure_totals_only, looks_like_postcode
+
+logger = logging.getLogger(__name__)
 
 MAX_COUNT_ROWS = 50_000
 # "deprived" and "deprivation" should match, so words are compared by stem.
@@ -23,6 +28,10 @@ HOW_TO_RUN = (
     "Run a lens with run_lens_on_counts, passing rows that are already totals "
     "for areas (the roles of an input mode marked 'aggregated'). Never pass "
     "rows about individual people."
+)
+UNAVAILABLE = (
+    "A data source this lens needs could not be reached just now. Try again in "
+    "a minute."
 )
 SHOW_WITH_FIGURES = (
     "Show the checks and caveats next to the figures. The checks are for the "
@@ -105,9 +114,11 @@ def run_lens_on_counts(
 
     Returns:
         ``status`` is ``ok``, ``input_problem`` (``problems`` lists what to
-        fix) or ``unknown_lens``. When ok, ``result`` is the lens result as
-        plain JSON types without the rows of detail tables, and it never
-        repeats an area code that was passed in.
+        fix), ``unknown_lens`` or ``unavailable`` (a data source the lens
+        needs could not be reached). When ok, ``result`` is the lens result as
+        plain JSON types without the rows of detail tables. It never repeats a
+        value that was passed in, except the name or code of a public place in
+        a role the lens marks ``reported``, such as a local authority.
     """
     try:
         info = engine.describe_lens(lens_id).to_dict()
@@ -121,14 +132,19 @@ def run_lens_on_counts(
     problems = _count_problems(info, counts)
     if problems:
         return _input_problem(problems)
+    guarded = _guarded_values(info, counts)
     try:
         result = engine.run_lens(lens_id, counts, options=options or {})
     except engine.LensInputError as error:
-        return _input_problem(error.problems)
+        return ensure_totals_only(_input_problem(error.problems), guarded)
+    except requests.RequestException as error:
+        # The error text can hold a web address, so only its kind is logged.
+        logger.warning("A data source could not be reached: %s", type(error).__name__)
+        return {"status": "unavailable", "message": UNAVAILABLE}
     payload = result.to_dict(include_detail=False)
     return {
         "status": "ok",
-        "result": ensure_totals_only(payload, _area_values(counts)),
+        "result": ensure_totals_only(payload, guarded),
         "show_with_figures": SHOW_WITH_FIGURES,
     }
 
@@ -160,9 +176,22 @@ def _count_modes(info: dict[str, Any]) -> list[dict[str, Any]]:
     return [mode for mode in info.get("input_modes", []) if mode.get("aggregated")]
 
 
-def _area_values(counts: list[dict[str, Any]]) -> list[str]:
-    """Every text value in the rows, such as area codes, for the privacy guard."""
-    return [value for row in counts for value in row.values() if isinstance(value, str)]
+def _guarded_values(info: dict[str, Any], counts: list[dict[str, Any]]) -> list[str]:
+    """The text values in the rows that the result must not repeat.
+
+    A role the lens marks ``reported`` names public places, such as local
+    authorities, and the result lists those on purpose. Its values are left
+    out of the check, unless one has the shape of a postcode: a postcode is
+    never the name of such a place, so it is still guarded.
+    """
+    reported = {role["name"] for role in info.get("roles", []) if role.get("reported")}
+    return [
+        value
+        for row in counts
+        for role, value in row.items()
+        if isinstance(value, str)
+        and (role not in reported or looks_like_postcode(value))
+    ]
 
 
 def _input_problem(problems: list[str]) -> dict[str, Any]:

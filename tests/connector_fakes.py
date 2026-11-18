@@ -52,16 +52,30 @@ _AREAS = [
 ]
 
 # A postcode that must never appear in any tool result.
-SECRET_POSTCODE = "ZZ99 9ZZ"
+SECRET_POSTCODE = "ZZ99 9KC"
 
 
 # The ONS postcode lookup in miniature: postcode, 2021 LSOA, local authority.
 # The last row is in Wales, which the table keeps and the connector does not cover.
 POSTCODE_LOOKUP_CSV = (
     "pcd7,lsoa21cd,ladcd\n"
-    "ZZ999ZZ,E01000001,E09000023\n"
+    "ZZ999KC,E01000001,E09000023\n"
     "ZZ998VC,E01000005,E08000021\n"
     "CF101VC,W01000001,W06000015\n"
+)
+
+
+# Invented need figures for real local authority codes: code, name, people in
+# need. The middle value is 8,500, so the last four are high need.
+NEED = (
+    ("E06000053", "Isles of Scilly", 20),
+    ("E07000223", "Adur", 1000),
+    ("E06000001", "Hartlepool", 3000),
+    ("E09000011", "Greenwich", 8000),
+    ("E09000023", "Lewisham", 9000),
+    ("W06000015", "Cardiff", 10000),
+    ("E08000003", "Manchester", 20000),
+    ("E08000025", "Birmingham", 40000),
 )
 
 
@@ -170,14 +184,46 @@ VOLUNTEERS = {
 }
 
 
+COUNCILS = {
+    "id": "reach-by-council",
+    "title": "Reach by council",
+    "question": "Which councils do the people we help live in?",
+    "summary": "People you supplied by local authority.",
+    "version": "0.1",
+    "roles": [
+        {
+            "name": "local_authority",
+            "description": "A local authority name or code",
+            "example": "Lewisham",
+            "reported": True,
+        },
+        {"name": "count", "description": "People in the area", "example": 12},
+    ],
+    "input_modes": [
+        {
+            "name": "area_counts",
+            "description": "Already totalled by local authority",
+            "roles": ["local_authority", "count"],
+            "aggregated": True,
+        }
+    ],
+    "options": [],
+    "coverage": "England",
+}
+
+
 def fake_engine(*, leak: bool = False) -> SimpleNamespace:
     """A stand-in for ``kindtech.lenses``.
 
     Args:
-        leak: When true, results break the contract by repeating an input area
-            code in a warning, so the privacy guard can be tested.
+        leak: When true, results repeat the first row's area in a warning. That
+            breaks the contract unless the area's role is marked ``reported``,
+            so the privacy guard can be tested both ways. The council lens is
+            only offered here, so a search still finds two lenses otherwise.
     """
     lenses = {REACH["id"]: REACH, VOLUNTEERS["id"]: VOLUNTEERS}
+    if leak:
+        lenses[COUNCILS["id"]] = COUNCILS
 
     def list_lenses() -> list[SimpleNamespace]:
         return [describe_lens(lens_id) for lens_id in lenses]
@@ -195,7 +241,8 @@ def fake_engine(*, leak: bool = False) -> SimpleNamespace:
         if any(not isinstance(row["count"], int) for row in data):
             raise LensInputError(["Some counts are not whole numbers."])
         total = sum(row["count"] for row in data)
-        warnings = [f"{data[0]['lsoa_code']} looks unusual"] if leak else []
+        area = next(value for value in data[0].values() if isinstance(value, str))
+        warnings = [f"{area} looks unusual"] if leak else []
         payload = {
             "lens_id": lens_id,
             "input_mode": "neighbourhood_counts",

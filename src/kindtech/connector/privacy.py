@@ -6,12 +6,14 @@ from a person-level input (a postcode, a neighbourhood code attached to a small
 count) turns up anywhere in a result, the result is withheld.
 """
 
+import re
 from collections.abc import Iterable, Iterator
 from typing import Any
 
 # Shorter values match by accident (a count of "12" inside a year), so they are
 # not treated as identifying.
 MIN_ROW_VALUE_LENGTH = 4
+_POSTCODE = re.compile(r"^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$")
 
 
 class PrivacyError(RuntimeError):
@@ -45,6 +47,11 @@ def ensure_totals_only(
         msg = f"A value from the input rows appeared in the result at: {places}."
         raise PrivacyError(msg)
     return payload
+
+
+def looks_like_postcode(value: object) -> bool:
+    """Whether ``value`` has the shape of a full UK postcode, such as ``SE13 7VC``."""
+    return bool(_POSTCODE.match(" ".join(str(value).split()).upper()))
 
 
 def find_row_values(payload: object, row_values: Iterable[object]) -> list[str]:
