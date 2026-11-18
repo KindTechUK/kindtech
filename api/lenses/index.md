@@ -54,6 +54,10 @@ Returns a `LensInfo` for every lens: its `id`, `title`, the `question` it
 answers, a `summary`, its `roles` (the columns it can use), its `input_modes`
 (the shapes of data it accepts), its `options` and its `coverage`.
 
+A role with `reported` set to `True` names public places the result is about,
+such as local authorities, so the same names can appear in the result. Values
+of every other role are never repeated.
+
 ### `describe_lens(lens_id)`
 
 Returns the `LensInfo` for one lens. Raises `KeyError` for an unknown id.

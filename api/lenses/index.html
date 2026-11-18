@@ -1324,6 +1324,9 @@ leave a role out when your data already has a column with that name.</p>
 <p>Returns a <code>LensInfo</code> for every lens: its <code>id</code>, <code>title</code>, the <code>question</code> it
 answers, a <code>summary</code>, its <code>roles</code> (the columns it can use), its <code>input_modes</code>
 (the shapes of data it accepts), its <code>options</code> and its <code>coverage</code>.</p>
+<p>A role with <code>reported</code> set to <code>True</code> names public places the result is about,
+such as local authorities, so the same names can appear in the result. Values
+of every other role are never repeated.</p>
 <h3 id="describe_lenslens_id"><code>describe_lens(lens_id)</code></h3>
 <p>Returns the <code>LensInfo</code> for one lens. Raises <code>KeyError</code> for an unknown id.</p>
 <h3 id="run_lenslens_id-data-columnsnone-optionsnone"><code>run_lens(lens_id, data, columns=None, options=None)</code></h3>
