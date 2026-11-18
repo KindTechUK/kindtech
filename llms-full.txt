@@ -2205,6 +2205,12 @@ Returns a `LensInfo` for every lens: its `id`, `title`, the `question` it
 answers, a `summary`, its `roles` (the columns it can use), its `input_modes`
 (the shapes of data it accepts), its `options` and its `coverage`.
 
+An option that takes one of a fixed list of values lists them as `choices`,
+each with a `value` and a `label` a person can read, so a page can show a list
+to pick from. `choices` is empty when the option is free, such as a number or
+a place name. For the `need` option of the second lens the choices are the
+built-in needs; a table of your own is still given as a mapping.
+
 A role with `reported` set to `True` holds names the result uses too, such as
 local authorities, so the same names can appear in the result. Values of every
 other role are never repeated.

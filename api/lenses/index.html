@@ -1362,6 +1362,11 @@ leave a role out when your data already has a column with that name.</p>
 <p>Returns a <code>LensInfo</code> for every lens: its <code>id</code>, <code>title</code>, the <code>question</code> it
 answers, a <code>summary</code>, its <code>roles</code> (the columns it can use), its <code>input_modes</code>
 (the shapes of data it accepts), its <code>options</code> and its <code>coverage</code>.</p>
+<p>An option that takes one of a fixed list of values lists them as <code>choices</code>,
+each with a <code>value</code> and a <code>label</code> a person can read, so a page can show a list
+to pick from. <code>choices</code> is empty when the option is free, such as a number or
+a place name. For the <code>need</code> option of the second lens the choices are the
+built-in needs; a table of your own is still given as a mapping.</p>
 <p>A role with <code>reported</code> set to <code>True</code> holds names the result uses too, such as
 local authorities, so the same names can appear in the result. Values of every
 other role are never repeated.</p>
