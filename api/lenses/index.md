@@ -159,6 +159,11 @@ other column leaves your machine, and rows that are blank or not shaped like a
 postcode are never sent. The result says which happened, under `choices` and
 `privacy`. In `neighbourhood_counts` mode nothing leaves your machine.
 
+The deprivation index is downloaded from gov.uk, or read from a copy
+[kept on your machine](imd.md#keeping-the-english-index-on-this-machine) when
+there is one. A result that used a copy says so in its `sources` and its
+`working`, with the note the copy was kept with.
+
 The lens then works out your **catchment**: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
 are about the people who live there, so they can be set against everyone who
@@ -236,7 +241,7 @@ Choose the need with the `need` option:
 | `"unemployed"` (default) | Unemployed people aged 16 to 64, not counting full-time students, Census 2021 |
 | `"unemployed_women"` | Unemployed women aged 16 to 64, not counting full-time students, Census 2021 |
 | `"unemployed_men"` | Unemployed men aged 16 to 64, not counting full-time students, Census 2021 |
-| `{"dataset": ..., "label": ..., "filters": {...}}` | Any table Nomis publishes by local authority. The filters are the category codes to add up |
+| `{"dataset": ..., "label": ..., "filters": {...}}` | Any table Nomis publishes by local authority. The filters are the category codes to add up. Counts are asked for (`measures` 20100) unless the filters name another measure |
 
 The three built-in needs count the census group "Economically active
 (excluding full-time students): Unemployed", as the case study does. Full-time

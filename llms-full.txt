@@ -2111,6 +2111,31 @@ Use this only when comparing areas in different nations; its `imd_rank` /
 `imd_decile` are the UK re-ranking, not a nation's official figures (those are
 in `nation_decile`, or use the single-nation calls above).
 
+## Keeping the English index on this machine
+
+`load_imd(nation="England")` downloads the published file from gov.uk the
+first time a program asks for it. To run with no download, keep a copy in the
+data folder, the same one that holds the
+[postcode table](postcodes.md#looking-up-postcodes-on-this-machine):
+
+```python
+from kindtech.imd import download_imd, imd_path, keep_imd, load_imd
+
+download_imd()            # fetch the 2025 index once, when a server is built
+imd_path()                # where the copy is, or None
+
+load_imd(nation="England")   # reads the copy; nothing is downloaded
+```
+
+`keep_imd(table, note)` keeps a table of your own in its place, for a
+demonstration or a test. Give a DataFrame or a list of row dictionaries with
+at least `geography_code`, `geography_name`, `lad_code`, `lad_name`,
+`imd_decile` and `population`. Columns you leave out come back empty. The
+`note` says where the figures came from, and `kept_imd_note()` reads it back.
+
+Pass `year=2019` to any of these for the 2019 index. Only the English index
+can be kept. A `url` given to `load_imd` is always downloaded.
+
 ## Joining to boundaries and statistics
 
 `geography_code` matches the rest of KindTech, so deprivation overlays onto a map
@@ -2308,6 +2333,11 @@ other column leaves your machine, and rows that are blank or not shaped like a
 postcode are never sent. The result says which happened, under `choices` and
 `privacy`. In `neighbourhood_counts` mode nothing leaves your machine.
 
+The deprivation index is downloaded from gov.uk, or read from a copy
+[kept on your machine](imd.md#keeping-the-english-index-on-this-machine) when
+there is one. A result that used a copy says so in its `sources` and its
+`working`, with the note the copy was kept with.
+
 The lens then works out your **catchment**: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
 are about the people who live there, so they can be set against everyone who
@@ -2385,7 +2415,7 @@ Choose the need with the `need` option:
 | `"unemployed"` (default) | Unemployed people aged 16 to 64, not counting full-time students, Census 2021 |
 | `"unemployed_women"` | Unemployed women aged 16 to 64, not counting full-time students, Census 2021 |
 | `"unemployed_men"` | Unemployed men aged 16 to 64, not counting full-time students, Census 2021 |
-| `{"dataset": ..., "label": ..., "filters": {...}}` | Any table Nomis publishes by local authority. The filters are the category codes to add up |
+| `{"dataset": ..., "label": ..., "filters": {...}}` | Any table Nomis publishes by local authority. The filters are the category codes to add up. Counts are asked for (`measures` 20100) unless the filters name another measure |
 
 The three built-in needs count the census group "Economically active
 (excluding full-time students): Unemployed", as the case study does. Full-time

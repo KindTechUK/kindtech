@@ -844,6 +844,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keeping-the-english-index-on-this-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keeping the English index on this machine
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#joining-to-boundaries-and-statistics" class="md-nav__link">
     <span class="md-ellipsis">
       Joining to boundaries and statistics
@@ -1189,6 +1198,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keeping-the-english-index-on-this-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keeping the English index on this machine
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#joining-to-boundaries-and-statistics" class="md-nav__link">
     <span class="md-ellipsis">
       Joining to boundaries and statistics
@@ -1381,6 +1399,25 @@ dependency). No extra setup needed.</p>
 <p>Use this only when comparing areas in different nations; its <code>imd_rank</code> /
 <code>imd_decile</code> are the UK re-ranking, not a nation's official figures (those are
 in <code>nation_decile</code>, or use the single-nation calls above).</p>
+<h2 id="keeping-the-english-index-on-this-machine">Keeping the English index on this machine</h2>
+<p><code>load_imd(nation="England")</code> downloads the published file from gov.uk the
+first time a program asks for it. To run with no download, keep a copy in the
+data folder, the same one that holds the
+<a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.imd</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_imd</span><span class="p">,</span> <span class="n">imd_path</span><span class="p">,</span> <span class="n">keep_imd</span><span class="p">,</span> <span class="n">load_imd</span>
+
+<span class="n">download_imd</span><span class="p">()</span>            <span class="c1"># fetch the 2025 index once, when a server is built</span>
+<span class="n">imd_path</span><span class="p">()</span>                <span class="c1"># where the copy is, or None</span>
+
+<span class="n">load_imd</span><span class="p">(</span><span class="n">nation</span><span class="o">=</span><span class="s2">&quot;England&quot;</span><span class="p">)</span>   <span class="c1"># reads the copy; nothing is downloaded</span>
+</code></pre></div>
+<p><code>keep_imd(table, note)</code> keeps a table of your own in its place, for a
+demonstration or a test. Give a DataFrame or a list of row dictionaries with
+at least <code>geography_code</code>, <code>geography_name</code>, <code>lad_code</code>, <code>lad_name</code>,
+<code>imd_decile</code> and <code>population</code>. Columns you leave out come back empty. The
+<code>note</code> says where the figures came from, and <code>kept_imd_note()</code> reads it back.</p>
+<p>Pass <code>year=2019</code> to any of these for the 2019 index. Only the English index
+can be kept. A <code>url</code> given to <code>load_imd</code> is always downloaded.</p>
 <h2 id="joining-to-boundaries-and-statistics">Joining to boundaries and statistics</h2>
 <p><code>geography_code</code> matches the rest of KindTech, so deprivation overlays onto a map
 or merges with population for per-capita work:</p>

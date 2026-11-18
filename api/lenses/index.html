@@ -1456,6 +1456,10 @@ well-formed postcodes are sent to <a href="https://postcodes.io/">postcodes.io</
 other column leaves your machine, and rows that are blank or not shaped like a
 postcode are never sent. The result says which happened, under <code>choices</code> and
 <code>privacy</code>. In <code>neighbourhood_counts</code> mode nothing leaves your machine.</p>
+<p>The deprivation index is downloaded from gov.uk, or read from a copy
+<a href="../imd/#keeping-the-english-index-on-this-machine">kept on your machine</a> when
+there is one. A result that used a copy says so in its <code>sources</code> and its
+<code>working</code>, with the note the copy was kept with.</p>
 <p>The lens then works out your <strong>catchment</strong>: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
 are about the people who live there, so they can be set against everyone who
@@ -1628,7 +1632,7 @@ value of the area compared.</p>
 </tr>
 <tr>
 <td><code>{"dataset": ..., "label": ..., "filters": {...}}</code></td>
-<td>Any table Nomis publishes by local authority. The filters are the category codes to add up</td>
+<td>Any table Nomis publishes by local authority. The filters are the category codes to add up. Counts are asked for (<code>measures</code> 20100) unless the filters name another measure</td>
 </tr>
 </tbody>
 </table>
