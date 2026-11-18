@@ -2337,6 +2337,10 @@ hidden with it. So a hidden count is not always small: do not report a hidden
 cell as "fewer than 5". Every result says this in its privacy notes. Change
 the threshold with the `suppress_below` option; it cannot go below 3.
 
+A result says which threshold was used in `privacy.suppress_below`. The lenses
+about sites, provision gap and access and distance, hide nothing, and for them
+it is `None`.
+
 ## Reach against deprivation
 
 `reach-deprivation` answers: are we reaching people in the most deprived

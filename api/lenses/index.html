@@ -1463,6 +1463,9 @@ When hiding one cell would let it be worked out from a total, a second cell is
 hidden with it. So a hidden count is not always small: do not report a hidden
 cell as "fewer than 5". Every result says this in its privacy notes. Change
 the threshold with the <code>suppress_below</code> option; it cannot go below 3.</p>
+<p>A result says which threshold was used in <code>privacy.suppress_below</code>. The lenses
+about sites, provision gap and access and distance, hide nothing, and for them
+it is <code>None</code>.</p>
 <h2 id="reach-against-deprivation">Reach against deprivation</h2>
 <p><code>reach-deprivation</code> answers: are we reaching people in the most deprived
 neighbourhoods? It covers England, using the English Indices of Deprivation
