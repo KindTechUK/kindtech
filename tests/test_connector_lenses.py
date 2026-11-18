@@ -5,6 +5,7 @@ A fake lens engine that follows the lens contract stands in for
 """
 
 import json
+from types import SimpleNamespace
 
 import connector_fakes as fakes
 import pytest
@@ -140,6 +141,30 @@ class TestCountsGivenAsText:
     @pytest.mark.parametrize("count", ["12oo", "-1200", "0123", "1,2,3", "12.5", ""])
     def test_other_text_is_left_for_the_lens_to_refuse(self, count: str) -> None:
         rows = [{"lsoa_code": "E01000001", "count": count}]
+
+        answer = run_lens_on_counts("reach-deprivation", rows)
+
+        assert answer == {
+            "status": "input_problem",
+            "problems": ["Some counts are not whole numbers."],
+        }
+
+    @pytest.mark.parametrize("marker", [{"amount": False}, {}])
+    def test_a_role_the_lens_does_not_mark_as_an_amount_stays_text(
+        self, marker: dict, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # The example of the count role is a number, and that is not enough.
+        roles = [
+            {key: value for key, value in role.items() if key != "amount"} | marker
+            for role in fakes.REACH["roles"]
+        ]
+        unmarked = SimpleNamespace(
+            id="reach-deprivation", to_dict=lambda: {**fakes.REACH, "roles": roles}
+        )
+        monkeypatch.setattr(
+            "kindtech.connector.lenses.engine.describe_lens", lambda lens_id: unmarked
+        )
+        rows = [{"lsoa_code": "E01000001", "count": "1200"}]
 
         answer = run_lens_on_counts("reach-deprivation", rows)
 
