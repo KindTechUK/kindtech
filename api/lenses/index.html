@@ -14,7 +14,7 @@
         <link rel="prev" href="../imd/">
       
       
-        <link rel="next" href="../data-sources/">
+        <link rel="next" href="../cli/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -909,6 +909,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Command Line
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../data-sources/" class="md-nav__link">
         
   
@@ -1235,6 +1258,8 @@ from your data is repeated back, not even in a warning or an error message.</p>
 <p><code>data</code> can be a pandas or polars DataFrame, or a list of row dictionaries.
 <code>columns</code> maps each role the lens needs to one of your column names. You can
 leave a role out when your data already has a column with that name.</p>
+<p>To run a lens on a file without writing Python, use the
+<a href="../cli/">command line</a>.</p>
 <h2 id="functions">Functions</h2>
 <h3 id="list_lenses"><code>list_lenses()</code></h3>
 <p>Returns a <code>LensInfo</code> for every lens: its <code>id</code>, <code>title</code>, the <code>question</code> it
