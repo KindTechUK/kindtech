@@ -145,6 +145,7 @@ INFO = LensInfo(
                 "already totalled by local authority."
             ),
             example="Lewisham",
+            reported=True,
         ),
         Role(
             name="count",

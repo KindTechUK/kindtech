@@ -94,6 +94,10 @@ def test_lens_is_described():
         "top",
     }
     assert info.coverage == "England and Wales"
+    # Local authorities are public places the result names. Nothing else may
+    # come back from the input.
+    reported = {role.name: role.reported for role in info.roles}
+    assert reported == {"postcode": False, "local_authority": True, "count": False}
 
 
 # --- counts by local authority ---------------------------------------------
