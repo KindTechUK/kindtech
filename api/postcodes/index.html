@@ -821,6 +821,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#looking-up-postcodes-on-this-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Looking up postcodes on this machine
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#design" class="md-nav__link">
     <span class="md-ellipsis">
       Design
@@ -1157,6 +1166,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#looking-up-postcodes-on-this-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Looking up postcodes on this machine
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#design" class="md-nav__link">
     <span class="md-ellipsis">
       Design
@@ -1267,6 +1285,82 @@ per capita by LSOA), prefer full postcodes via <code>postcodes_to_geography()</c
 or split an outcode's records across its constituent areas weighted by
 population.</p>
 </div>
+<h2 id="looking-up-postcodes-on-this-machine">Looking up postcodes on this machine</h2>
+<p>The functions above send postcodes to postcodes.io. When the postcodes belong
+to the people a charity helps, you may not want them to leave your machine.
+The postcode table lets you look them up locally instead.</p>
+<p>The table is one file of a few megabytes that maps every postcode in
+England and Wales to its 2021 LSOA and local authority. It is built from the
+ONS best-fit postcode lookup. Fetch it once:</p>
+<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>postcodes<span class="w"> </span>download
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Before the first table is published</p>
+<p>The first table is published with version 0.2. Until then
+<code>postcodes download</code> has nothing to fetch on its own: build a table from
+the ONS lookup with <code>uk-open-data postcodes build</code>, host it, and pass
+<code>--url</code> and <code>--sha256</code>.</p>
+</div>
+<p>or from Python with <code>download_postcode_table()</code>. The file is public and the
+same for everyone, so fetching it says nothing about your data, and it is
+checked against a SHA-256 before it is installed. After that, nothing below
+uses the network:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.postcodes</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">district_to_local_authorities</span><span class="p">,</span>
+    <span class="n">postcode_to_lsoa</span><span class="p">,</span>
+    <span class="n">postcodes_to_lsoa</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">postcode_to_lsoa</span><span class="p">(</span><span class="s2">&quot;se13 7vc&quot;</span><span class="p">)</span>                <span class="c1"># an LSOA code, or None</span>
+<span class="n">postcodes_to_lsoa</span><span class="p">([</span><span class="s2">&quot;SE13 7VC&quot;</span><span class="p">,</span> <span class="s2">&quot;M1 1VC&quot;</span><span class="p">])</span>   <span class="c1"># one answer per postcode, in order</span>
+<span class="n">district_to_local_authorities</span><span class="p">(</span><span class="s2">&quot;SE13&quot;</span><span class="p">)</span>       <span class="c1"># local authority codes, sorted</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>download_postcode_table()</code></td>
+<td>Fetches and installs the table. Pass <code>url=</code> and <code>sha256=</code> to use a copy you host</td>
+</tr>
+<tr>
+<td><code>postcode_table_path()</code></td>
+<td>The installed table's path, or <code>None</code></td>
+</tr>
+<tr>
+<td><code>postcode_table_info()</code></td>
+<td>Edition, source, coverage, size and the credits to show</td>
+</tr>
+<tr>
+<td><code>postcode_to_lsoa()</code>, <code>postcodes_to_lsoa()</code></td>
+<td>Postcode to 2021 LSOA code, or <code>None</code> when it is not in the table</td>
+</tr>
+<tr>
+<td><code>district_to_local_authorities()</code></td>
+<td>The local authorities a postcode district reaches into</td>
+</tr>
+<tr>
+<td><code>build_postcode_table()</code></td>
+<td>Builds a table from the ONS lookup file. Used to publish a new edition</td>
+</tr>
+</tbody>
+</table>
+<p>The table lives in <code>~/.cache/kindtech</code>, or in the folder named by the
+<code>KINDTECH_DATA_DIR</code> environment variable. A server should fetch it when it is
+built, not when a request arrives.</p>
+<div class="admonition note">
+<p class="admonition-title">Coverage and credits</p>
+<p>The table covers England and Wales. Scotland and Northern Ireland are left
+out: neither has 2021 LSOAs, and Northern Ireland postcodes need a separate
+licence for commercial use. When you publish something made with the table,
+show the credits from <code>postcode_table_info()["attribution"]</code>: the ONS
+source line, and the OS and Royal Mail copyright lines.</p>
+</div>
+<p><a href="../lenses/">Lenses</a> use the table on their own when one is installed.</p>
 <h2 id="design">Design</h2>
 <p><code>kindtech.postcodes</code> is a thin runtime wrapper — unlike the <code>geo</code> and <code>ons</code>
 modules it ships no catalog and has no ingestion step, because postcodes.io

@@ -875,6 +875,33 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#postcodes-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      postcodes download
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postcodes-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      postcodes info
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postcodes-build-source-table-edition-edition" class="md-nav__link">
+    <span class="md-ellipsis">
+      postcodes build SOURCE TABLE --edition EDITION
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1133,6 +1160,33 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#postcodes-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      postcodes download
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postcodes-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      postcodes info
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postcodes-build-source-table-edition-edition" class="md-nav__link">
+    <span class="md-ellipsis">
+      postcodes build SOURCE TABLE --edition EDITION
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1223,6 +1277,14 @@ cannot say, the choices made, the working, the sources and a privacy summary.</p
 <td><code>--output PATH</code></td>
 <td>Write to a file instead of the screen</td>
 </tr>
+<tr>
+<td><code>--map PATH</code></td>
+<td>Also draw the map and save it as an <code>.svg</code> file</td>
+</tr>
+<tr>
+<td><code>--map-layer LAYER</code></td>
+<td>What the map is coloured by, for example <code>people</code>. The first layer is used by default</td>
+</tr>
 </tbody>
 </table>
 <p>An option value is read as JSON when it is JSON, and as text otherwise:</p>
@@ -1234,6 +1296,19 @@ cannot say, the choices made, the working, the sources and a privacy summary.</p
 <p>When the file, a column or an option cannot be used, the command prints what is
 wrong and exits with status 2. The message never repeats a value from your
 data, so it is safe to paste into a chat or an issue.</p>
+<h3 id="postcodes-download"><code>postcodes download</code></h3>
+<p>Fetches the postcode table, a few megabytes, so that lenses look postcodes up on
+your machine and send none of them out. Run it once. <code>--force</code> fetches it
+again, and <code>--url</code> with <code>--sha256</code> fetches a copy you host yourself.</p>
+<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>postcodes<span class="w"> </span>download
+</code></pre></div>
+<h3 id="postcodes-info"><code>postcodes info</code></h3>
+<p>Shows the installed table's edition, size and the credits to show when you
+publish something made with it.</p>
+<h3 id="postcodes-build-source-table-edition-edition"><code>postcodes build SOURCE TABLE --edition EDITION</code></h3>
+<p>Builds a table from the ONS best-fit postcode lookup (<code>.csv</code>, or the <code>.zip</code> it
+comes in) and prints its SHA-256. This is how a new edition is published; you
+do not need it to use the package.</p>
 <h2 id="using-it-from-an-assistant">Using it from an assistant</h2>
 <p>Give an assistant the JSON summary, not your file:</p>
 <div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>lens<span class="w"> </span>run<span class="w"> </span>reach-deprivation<span class="w"> </span>clients.csv<span class="w"> </span><span class="se">\</span>

@@ -867,6 +867,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#drawing-the-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawing the map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#small-counts" class="md-nav__link">
     <span class="md-ellipsis">
       Small counts
@@ -1175,6 +1184,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#drawing-the-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawing the map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#small-counts" class="md-nav__link">
     <span class="md-ellipsis">
       Small counts
@@ -1272,6 +1290,25 @@ answers, a <code>summary</code>, its <code>roles</code> (the columns it can use)
 <p>Raises <code>LensInputError</code> (a <code>ValueError</code>) when the data, the column mapping or
 an option cannot be used. The message is written for a person and
 <code>error.problems</code> lists each problem separately.</p>
+<h2 id="drawing-the-map">Drawing the map</h2>
+<p>A result describes its map; <code>render_map</code> draws it as an SVG picture with a
+legend and the credits the data licences ask for.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_map</span>
+
+<span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>                  <span class="c1"># the first layer: deprivation decile</span>
+<span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="s2">&quot;people&quot;</span><span class="p">)</span>  <span class="c1"># people reached, in bands</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;map.svg&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+    <span class="n">handle</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+</code></pre></div>
+<p>The picture is drawn from the result's own table of totals, so it shows
+nothing the result does not already hold. People are shown in bands, and the
+lowest band includes zero. Hover over an area in a browser to see its name and
+value. The colours adapt to a dark page.</p>
+<p><code>render_map</code> fetches the outline of each area from the ONS Open Geography
+Portal. Only the public area codes of the catchment are sent. To draw without
+the network, pass <code>boundaries=</code> a GeoJSON FeatureCollection you already have;
+<code>load_map_boundaries(result)</code> fetches one you can save and reuse.</p>
 <h2 id="small-counts">Small counts</h2>
 <p>A count from 1 to 4 that is about a named place or a group is returned as
 <code>None</code>, with <code>suppressed</code> set to <code>True</code>, and so is anything worked out from it.
@@ -1304,11 +1341,14 @@ neighbourhoods? It covers England, using the English Indices of Deprivation
 </tr>
 </tbody>
 </table>
-<p>In <code>postcodes</code> mode the distinct, well-formed postcodes are sent to
-<a href="https://postcodes.io/">postcodes.io</a> to find their neighbourhoods. No other
-column leaves your machine, and rows that are blank or not shaped like a
-postcode are never sent. In <code>neighbourhood_counts</code> mode nothing leaves your
-machine.</p>
+<p>In <code>postcodes</code> mode the lens looks postcodes up in the
+<a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table on your machine</a>
+when one is installed, and then no postcode is sent anywhere. Install it once
+with <code>uk-open-data postcodes download</code>. Without the table, the distinct,
+well-formed postcodes are sent to <a href="https://postcodes.io/">postcodes.io</a>; no
+other column leaves your machine, and rows that are blank or not shaped like a
+postcode are never sent. The result says which happened, under <code>choices</code> and
+<code>privacy</code>. In <code>neighbourhood_counts</code> mode nothing leaves your machine.</p>
 <p>The lens then works out your <strong>catchment</strong>: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
 are about the people who live there, so they can be set against everyone who
@@ -1391,6 +1431,11 @@ table, and a warning says how many there are.</p>
 <td><code>suppress_below</code></td>
 <td><code>5</code></td>
 <td>Counts above zero and below this are hidden</td>
+</tr>
+<tr>
+<td><code>postcode_lookup</code></td>
+<td><code>"auto"</code></td>
+<td><code>"offline"</code> uses the table on your machine and fails without one, <code>"online"</code> uses postcodes.io, <code>"auto"</code> uses the table when it is installed</td>
 </tr>
 <tr>
 <td><code>catchment</code></td>

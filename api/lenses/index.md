@@ -66,6 +66,31 @@ Raises `LensInputError` (a `ValueError`) when the data, the column mapping or
 an option cannot be used. The message is written for a person and
 `error.problems` lists each problem separately.
 
+## Drawing the map
+
+A result describes its map; `render_map` draws it as an SVG picture with a
+legend and the credits the data licences ask for.
+
+```python
+from kindtech.lenses import render_map
+
+svg = render_map(result)                  # the first layer: deprivation decile
+svg = render_map(result, layer="people")  # people reached, in bands
+
+with open("map.svg", "w", encoding="utf-8") as handle:
+    handle.write(svg)
+```
+
+The picture is drawn from the result's own table of totals, so it shows
+nothing the result does not already hold. People are shown in bands, and the
+lowest band includes zero. Hover over an area in a browser to see its name and
+value. The colours adapt to a dark page.
+
+`render_map` fetches the outline of each area from the ONS Open Geography
+Portal. Only the public area codes of the catchment are sent. To draw without
+the network, pass `boundaries=` a GeoJSON FeatureCollection you already have;
+`load_map_boundaries(result)` fetches one you can save and reuse.
+
 ## Small counts
 
 A count from 1 to 4 that is about a named place or a group is returned as
@@ -87,11 +112,14 @@ It accepts two shapes of data:
 | `postcodes` | `postcode` | One row per person or case, with a home postcode |
 | `neighbourhood_counts` | `lsoa_code`, `count` | Already totalled by 2021 LSOA |
 
-In `postcodes` mode the distinct, well-formed postcodes are sent to
-[postcodes.io](https://postcodes.io/) to find their neighbourhoods. No other
-column leaves your machine, and rows that are blank or not shaped like a
-postcode are never sent. In `neighbourhood_counts` mode nothing leaves your
-machine.
+In `postcodes` mode the lens looks postcodes up in the
+[postcode table on your machine](postcodes.md#looking-up-postcodes-on-this-machine)
+when one is installed, and then no postcode is sent anywhere. Install it once
+with `uk-open-data postcodes download`. Without the table, the distinct,
+well-formed postcodes are sent to [postcodes.io](https://postcodes.io/); no
+other column leaves your machine, and rows that are blank or not shaped like a
+postcode are never sent. The result says which happened, under `choices` and
+`privacy`. In `neighbourhood_counts` mode nothing leaves your machine.
 
 The lens then works out your **catchment**: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
@@ -119,6 +147,7 @@ table, and a warning says how many there are.
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `suppress_below` | `5` | Counts above zero and below this are hidden |
+| `postcode_lookup` | `"auto"` | `"offline"` uses the table on your machine and fails without one, `"online"` uses postcodes.io, `"auto"` uses the table when it is installed |
 | `catchment` | worked out | A local authority name or code, a list of them, or `"England"` |
 | `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out catchment |
 
