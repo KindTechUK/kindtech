@@ -58,7 +58,6 @@ from kindtech.lenses._need import (
     read_measure,
     read_top,
 )
-from kindtech.lenses._privacy import DEFAULT_SUPPRESS_BELOW
 from kindtech.lenses._steps import (
     EVERYWHERE,
     Position,
@@ -251,7 +250,7 @@ def run(lens_input: LensInput) -> LensResult:
         warnings=tuple(trail.warnings),
         sources=tuple(trail.sources),
         privacy=Privacy(
-            suppress_below=DEFAULT_SUPPRESS_BELOW,
+            suppress_below=None,
             cells_suppressed=0,
             row_level_output=False,
             sent_to_third_parties=tuple(trail.sent),

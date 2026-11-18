@@ -255,6 +255,9 @@ def test_volumes_are_shown_however_small(nomis):
     assert table["Lewisham"]["volume"] == 1
     assert table["Cardiff"]["volume"] == 0.5
     assert result.privacy.cells_suppressed == 0
+    # No threshold was used, so a page must not say that counts are hidden.
+    assert result.privacy.suppress_below is None
+    assert result.to_dict()["privacy"]["suppress_below"] is None
     assert all("suppressed" not in row for row in table.values())
     assert any("hides no count" in note for note in result.privacy.notes)
     assert any("one site" in note for note in result.privacy.notes)
@@ -546,3 +549,13 @@ def test_command_line_runs_the_lens(nomis, tmp_path, capsys):
     payload = json.loads(capsys.readouterr().out)
     assert payload["lens_id"] == LENS_ID
     assert nomis.asked[0][0] == "NM_2028_1"
+
+
+def test_command_line_report_does_not_say_counts_are_hidden(nomis, tmp_path, capsys):
+    path = tmp_path / "volumes.csv"
+    path.write_text("Area,Sessions\nLewisham,90\nGreenwich,40\n", encoding="utf-8")
+    columns = ["--column", "local_authority=Area", "--column", "volume=Sessions"]
+    assert main(["lens", "run", LENS_ID, str(path), *columns]) == EXIT_OK
+    report = capsys.readouterr().out
+    assert "are hidden" not in report
+    assert "hides no count" in report
