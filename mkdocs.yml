@@ -88,6 +88,7 @@ nav:
     - ONS Data: api/ons.md
     - Postcodes: api/postcodes.md
     - Deprivation (IMD): api/imd.md
+    - Lenses: api/lenses.md
     - Data Sources: api/data-sources.md
     - Package FAQ: faq/README.md
   - Blog:
