@@ -71,6 +71,13 @@ POSTCODE_LOOKUP = Option(
 )
 
 
+CHOSE_ONLINE = (
+    "You chose the online service. A postcode table is installed on this "
+    "machine: set the 'postcode_lookup' option to 'auto' or 'offline' to send "
+    "nothing."
+)
+
+
 @dataclass(frozen=True)
 class Level:
     """A size of area that postcodes can be placed in."""
@@ -286,7 +293,7 @@ def locate_postcodes(values: list[Any], trail: Trail) -> list[Position | None]:
             id="postcode_lookup",
             label="How postcodes were placed",
             value="postcodes.io, an online service",
-            reason=(
+            reason=_online_reason(
                 "No postcode table is installed on this machine. To send "
                 "nothing, install one with `uk-open-data postcodes download` "
                 "and keep the centres of neighbourhoods, or give a latitude "
@@ -393,7 +400,7 @@ def _look_up_online(
             id="postcode_lookup",
             label="How postcodes were placed",
             value="postcodes.io, an online service",
-            reason=(
+            reason=_online_reason(
                 "No postcode table is installed on this machine. Install one "
                 "with `uk-open-data postcodes download` to keep postcodes here."
             ),
@@ -405,6 +412,20 @@ def _look_up_online(
         for postcode, code in zip(postcodes, codes, strict=True)
     }
     return found, "with postcodes.io"
+
+
+def _online_reason(without_a_table: str) -> str:
+    """Say why postcodes went to the online service.
+
+    With a table installed, 'auto' would have used it, so the person chose
+    the online service.
+
+    Args:
+        without_a_table: The reason to give when no table is installed.
+    """
+    if postcode_table_path() is None:
+        return without_a_table
+    return CHOSE_ONLINE
 
 
 def _used_for(level: Level) -> str:

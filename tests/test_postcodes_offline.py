@@ -289,8 +289,16 @@ def test_lens_goes_online_when_no_table_is_installed():
 
 
 def test_lens_can_be_told_to_go_online(installed):
-    _, online = _run({"postcode_lookup": "online"})
+    result, online = _run({"postcode_lookup": "online"})
     online.assert_called_once()
+    reason = result.choices[0].reason
+    assert reason.startswith("You chose the online service.")
+    assert "No postcode table is installed" not in reason
+
+
+def test_lens_told_to_go_online_without_a_table_says_none_is_installed():
+    result, _ = _run({"postcode_lookup": "online"})
+    assert result.choices[0].reason.startswith("No postcode table is installed")
 
 
 def test_lens_told_to_stay_offline_fails_without_a_table():
