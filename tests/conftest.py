@@ -5,6 +5,7 @@ import pytest
 
 from kindtech.connector import lenses, places
 from kindtech.lenses import reach_deprivation
+from kindtech.lenses.access_distance import clear_centres_cache
 from kindtech.lenses.need_reach import clear_need_cache
 from kindtech.lenses.who_we_miss import clear_residents_cache
 from kindtech.postcodes import build_postcode_table, install_postcode_table, offline
@@ -57,6 +58,8 @@ def fresh_public_figures():
     """Start and end every test with no public figures kept from another test."""
     clear_need_cache()
     clear_residents_cache()
+    clear_centres_cache()
     yield
     clear_need_cache()
     clear_residents_cache()
+    clear_centres_cache()
