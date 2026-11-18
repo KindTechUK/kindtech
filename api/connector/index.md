@@ -108,6 +108,11 @@ The answer holds the lens result without the rows of its detail tables, so an
 assistant is not handed a row per neighbourhood. Rows about individual people,
 such as one postcode per person, are refused.
 
+A count given as text that is nothing but a number, such as `"1200"` or
+`"1,200"`, is read as a number, because assistants often send one that way.
+Any other text in a count is left for the lens, which says how many rows to
+correct.
+
 ```python
 from kindtech.connector import run_lens_on_counts
 
