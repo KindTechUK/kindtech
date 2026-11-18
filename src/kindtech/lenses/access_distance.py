@@ -615,7 +615,12 @@ def _choices(
             id="within_km",
             label="Distance that counts as within reach",
             value=f"{within:g} km",
-            reason="About a quarter of an hour by road in a town.",
+            reason=(
+                f"No distance was given, so {DEFAULT_WITHIN_KM} km is used. Set "
+                "the distance people will travel for what you offer."
+                if within == DEFAULT_WITHIN_KM
+                else "You set the distance."
+            ),
             option="within_km",
         ),
         Choice(
