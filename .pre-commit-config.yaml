@@ -19,7 +19,7 @@ repos:
     hooks:
       - id: ast-grep
         name: ast-grep
-        entry: uv run --with ast-grep-cli ast-grep scan --config .ast-grep/sgconfig.yml src/
+        entry: uv run --with "ast-grep-cli==0.51.3" ast-grep scan --config .ast-grep/sgconfig.yml src/
         language: system
         types: [python]
         pass_filenames: false
