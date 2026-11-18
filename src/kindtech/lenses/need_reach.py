@@ -108,6 +108,7 @@ INFO = LensInfo(
             name="count",
             description="How many people live in the local authority on that row.",
             example="12",
+            amount=True,
         ),
     ),
     input_modes=(
