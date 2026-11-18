@@ -27,6 +27,7 @@ from kindtech.lenses._privacy import DEFAULT_SUPPRESS_BELOW
 from kindtech.lenses.sources import POSTCODES_IO, ons_postcode_lookup
 from kindtech.postcodes import (
     PostcodeTableError,
+    lookup_postcodes,
     postcode_table_info,
     postcode_table_path,
     postcodes_to_geography,
@@ -39,6 +40,9 @@ LOOKUP_CHOICES = ("auto", "offline", "online")
 EVERYWHERE = "England and Wales"
 # The first letter of a local authority code in each country.
 COUNTRIES = {"england": "E", "wales": "W"}
+
+# A latitude and a longitude, in degrees.
+Position = tuple[float, float]
 
 SUPPRESS_BELOW = Option(
     name="suppress_below",
@@ -219,29 +223,8 @@ def place_postcodes(
         One area code per row, in row order. None where the row has no
         postcode, or one that is malformed or not found.
     """
-    supplied = len(values)
-    blank = sum(1 for value in values if is_blank(value))
-    tidy = [tidy_postcode(value) for value in values]
+    tidy, blank, malformed = _read_postcode_column(values, trail)
     usable = [postcode for postcode in tidy if postcode is not None]
-    malformed = supplied - blank - len(usable)
-    trail.working.append(
-        Step(
-            title="Read the postcode column",
-            detail=(
-                f"{supplied} rows. {blank} had no postcode and {malformed} "
-                "held something that is not shaped like a UK postcode. "
-                "Those rows were left out and were not sent anywhere."
-            ),
-            rows_in=supplied,
-            rows_out=len(usable),
-        )
-    )
-    if not usable:
-        msg = (
-            "None of the rows holds something shaped like a UK postcode. "
-            "Check that the right column was chosen for 'postcode'."
-        )
-        raise LensInputError(msg)
     distinct = sorted(set(usable))
     lookup = _look_up_on_this_machine if use_table else _look_up_online
     found_for, where = lookup(distinct, trail, level)
@@ -261,6 +244,105 @@ def place_postcodes(
     )
     _warn_left_out(blank, malformed, not_found, use_table, trail)
     return placed
+
+
+def locate_postcodes(values: list[Any], trail: Trail) -> list[Position | None]:
+    """Find where each row's postcode is, with postcodes.io.
+
+    The postcode table on this machine holds no positions, so the postcodes
+    are sent to postcodes.io, and the trail says so.
+
+    Args:
+        values: The postcode column.
+        trail: Where the steps, warnings, sources and choices are recorded.
+
+    Returns:
+        Latitude and longitude per row, in row order. None where the row has
+        no postcode, or one that is malformed or not found.
+    """
+    tidy, blank, malformed = _read_postcode_column(values, trail)
+    usable = [postcode for postcode in tidy if postcode is not None]
+    distinct = sorted(set(usable))
+    frame = nw.from_native(lookup_postcodes(distinct), eager_only=True)
+    found_for = {
+        postcode: None
+        if is_blank(latitude) or is_blank(longitude)
+        else (float(latitude), float(longitude))
+        for postcode, latitude, longitude in zip(
+            distinct,
+            frame["latitude"].to_list(),
+            frame["longitude"].to_list(),
+            strict=True,
+        )
+    }
+    trail.sources.append(replace(POSTCODES_IO, used_for="Finding where each site is."))
+    trail.sent.append(
+        f"{len(distinct)} distinct postcodes were sent to postcodes.io to find "
+        "where they are. No other column left this machine."
+    )
+    trail.choices.append(
+        Choice(
+            id="postcode_lookup",
+            label="How postcodes were placed",
+            value="postcodes.io, an online service",
+            reason=(
+                "The postcode table on this machine holds no positions. To "
+                "send nothing, give a latitude and longitude for each row."
+            ),
+        )
+    )
+    placed = [None if postcode is None else found_for[postcode] for postcode in tidy]
+    found = sum(1 for position in placed if position is not None)
+    not_found = len(usable) - found
+    trail.working.append(
+        Step(
+            title="Found where each postcode is",
+            detail=(
+                f"{len(distinct)} distinct postcodes were looked up with "
+                f"postcodes.io. {not_found} rows had a postcode that was not "
+                "found."
+            ),
+            rows_in=len(usable),
+            rows_out=found,
+        )
+    )
+    _warn_left_out(blank, malformed, not_found, False, trail)
+    return placed
+
+
+def _read_postcode_column(
+    values: list[Any], trail: Trail
+) -> tuple[list[str | None], int, int]:
+    """Tidy the postcode column, and stop when no row can be used.
+
+    Returns:
+        The tidied postcode of each row, or None where it has none or one that
+        is malformed. Then how many rows were blank, and how many malformed.
+    """
+    supplied = len(values)
+    blank = sum(1 for value in values if is_blank(value))
+    tidy = [tidy_postcode(value) for value in values]
+    usable = sum(1 for postcode in tidy if postcode is not None)
+    malformed = supplied - blank - usable
+    trail.working.append(
+        Step(
+            title="Read the postcode column",
+            detail=(
+                f"{supplied} rows. {blank} had no postcode and {malformed} "
+                "held something that is not shaped like a UK postcode. "
+                "Those rows were left out and were not sent anywhere."
+            ),
+            rows_in=supplied,
+            rows_out=usable,
+        )
+    )
+    if not usable:
+        msg = (
+            "None of the rows holds something shaped like a UK postcode. "
+            "Check that the right column was chosen for 'postcode'."
+        )
+        raise LensInputError(msg)
+    return tidy, blank, malformed
 
 
 def _look_up_on_this_machine(

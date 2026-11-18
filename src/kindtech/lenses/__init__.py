@@ -6,7 +6,8 @@ the checks a person should do. Results hold totals only, never rows.
 
     >>> from kindtech.lenses import list_lenses, run_lens
     >>> [lens.id for lens in list_lenses()]
-    ['reach-deprivation', 'need-reach', 'who-we-miss', 'provision-gap']
+    ['reach-deprivation', 'need-reach', 'who-we-miss', 'provision-gap',
+     'access-distance']
     >>> result = run_lens(
     ...     "reach-deprivation",
     ...     clients,
@@ -16,6 +17,7 @@ the checks a person should do. Results hold totals only, never rows.
     41.3
 """
 
+from kindtech.lenses import access_distance as _access_distance
 from kindtech.lenses import need_reach as _need_reach
 from kindtech.lenses import provision_gap as _provision_gap
 from kindtech.lenses import reach_deprivation as _reach_deprivation
@@ -56,6 +58,7 @@ for _lens in (
     _need_reach.LENS,
     _who_we_miss.LENS,
     _provision_gap.LENS,
+    _access_distance.LENS,
 ):
     register_lens(_lens)
 
