@@ -10,6 +10,7 @@ import unittest.mock as mock
 
 import pandas as pd
 import pytest
+import requests
 
 from kindtech.cli import EXIT_INPUT_ERROR, EXIT_OK, main
 
@@ -163,6 +164,35 @@ def test_input_problems_exit_with_status_two(index, counts_file, capsys):
     assert main(args) == EXIT_INPUT_ERROR
     err = capsys.readouterr().err
     assert "The column 'Home' given for 'postcode' is not in the data." in err
+
+
+def test_an_unreachable_source_is_reported_without_its_address(counts_file, capsys):
+    # A real postcode never ends in C, so this one cannot exist.
+    address = "https://api.postcodes.io/postcodes/SE13%207VC?secret=1"
+    error = requests.exceptions.ProxyError(
+        f"HTTPSConnectionPool: Max retries exceeded with url: {address}",
+        request=requests.Request("GET", address).prepare(),
+    )
+    with mock.patch("kindtech.cli.run_lens", side_effect=error):
+        assert main(_run_args(counts_file)) == EXIT_INPUT_ERROR
+    err = capsys.readouterr().err
+    assert err.startswith(
+        "A data source this command needs could not be reached (api.postcodes.io)."
+    )
+    assert "Check the connection and try again." in err
+    for part in ("https", "SE13", "7VC", "secret", "Max retries"):
+        assert part not in err
+
+
+def test_an_unreachable_source_without_an_address_is_still_reported(
+    counts_file, capsys
+):
+    error = requests.ConnectionError("no route to https://example.invalid/?q=1")
+    with mock.patch("kindtech.cli.run_lens", side_effect=error):
+        assert main(_run_args(counts_file)) == EXIT_INPUT_ERROR
+    err = capsys.readouterr().err
+    assert err.startswith("A data source this command needs could not be reached. ")
+    assert "example.invalid" not in err
 
 
 def test_missing_file_is_reported(capsys):
