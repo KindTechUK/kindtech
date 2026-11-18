@@ -2763,14 +2763,44 @@ two shapes of data:
 | Input mode | Columns | What it is |
 | --- | --- | --- |
 | `site_coordinates` | `latitude`, `longitude` | One row per site, in degrees. West is negative |
-| `site_postcodes` | `postcode` | One row per site. The postcodes are sent to postcodes.io to find where they are |
+| `site_postcodes` | `postcode` | One row per site. Placed on your machine when the postcode table and the centres of neighbourhoods are there |
 
-The postcode table on your machine holds no positions, so site postcodes are
-always looked up with postcodes.io, and the result says so. Give a latitude
-and longitude to send nothing. A row whose position is outside the United
-Kingdom is left out and counted; that is also what happens when the two
-columns are swapped. A site in Scotland or Northern Ireland still counts as a
-site.
+A row whose position is outside the United Kingdom is left out and counted;
+that is also what happens when the two columns are swapped. A site in
+Scotland or Northern Ireland still counts as a site.
+
+### Site postcodes that stay on your machine
+
+The [postcode table](postcodes.md#looking-up-postcodes-on-this-machine) holds
+the neighbourhood of each postcode but no position. So the lens places a site
+at the centre of its neighbourhood, from a file of neighbourhood centres kept
+on your machine. In a town that moves a site by a few hundred metres, and in
+the countryside by up to a few kilometres; the result carries a caveat that
+says so. Keep the centres once, when a server is built:
+
+```python
+from kindtech.lenses.access_distance import download_centres
+
+download_centres("neighbourhood")   # about 35,700 centres, about 1 MB
+```
+
+What happens to site postcodes follows `postcode_lookup`:
+
+| `postcode_lookup` | Postcode table installed | No postcode table |
+| --- | --- | --- |
+| `"auto"` (the default) | Placed on your machine. Nothing is sent | Sent to postcodes.io |
+| `"offline"` | Placed on your machine. Nothing is sent | The lens stops |
+| `"online"` | Sent to postcodes.io | Sent to postcodes.io |
+
+With a postcode table installed and no centres kept, the lens stops and names
+the function to run. It never falls back to sending postcodes, and it never
+fetches the centres while a lens runs. A server that sets `"offline"` cannot
+send a postcode. The result says which happened, under `choices` and
+`privacy.sent_to_third_parties`.
+
+The table and the centres cover England and Wales. On your machine, a site
+with a Scottish or Northern Irish postcode is not found and is left out and
+counted; give its latitude and longitude instead.
 
 The lens loads the people in every local authority from [Nomis](ons.md) and
 the centre of every local authority from the ONS Open Geography Portal. For
@@ -2799,6 +2829,13 @@ keep_centres(
     [("E09000023", 51.45, -0.02), ("E09000011", 51.47, 0.05)],
     note="invented for a demonstration.",
 )
+
+# the same for the centres of neighbourhoods, which place site postcodes
+keep_centres(
+    [("E01003189", 51.46, -0.01)],
+    note="invented for a demonstration.",
+    level="neighbourhood",
+)
 ```
 
 | Figure | Meaning |
@@ -2824,6 +2861,7 @@ two layers, `distance` and `need`.
 
 | Option | Default | Meaning |
 | --- | --- | --- |
+| `postcode_lookup` | `"auto"` | How site postcodes are placed. See the table above |
 | `need` | `"residents"` | The people to measure distance for |
 | `catchment` | England and Wales | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"` |
 | `within_km` | `10` | How many kilometres from a site counts as within reach |

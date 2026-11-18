@@ -936,6 +936,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Access and distance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#site-postcodes-that-stay-on-your-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Site postcodes that stay on your machine
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1320,6 +1335,21 @@
       Access and distance
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Access and distance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#site-postcodes-that-stay-on-your-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Site postcodes that stay on your machine
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2255,16 +2285,59 @@ two shapes of data:</p>
 <tr>
 <td><code>site_postcodes</code></td>
 <td><code>postcode</code></td>
-<td>One row per site. The postcodes are sent to postcodes.io to find where they are</td>
+<td>One row per site. Placed on your machine when the postcode table and the centres of neighbourhoods are there</td>
 </tr>
 </tbody>
 </table>
-<p>The postcode table on your machine holds no positions, so site postcodes are
-always looked up with postcodes.io, and the result says so. Give a latitude
-and longitude to send nothing. A row whose position is outside the United
-Kingdom is left out and counted; that is also what happens when the two
-columns are swapped. A site in Scotland or Northern Ireland still counts as a
-site.</p>
+<p>A row whose position is outside the United Kingdom is left out and counted;
+that is also what happens when the two columns are swapped. A site in
+Scotland or Northern Ireland still counts as a site.</p>
+<h3 id="site-postcodes-that-stay-on-your-machine">Site postcodes that stay on your machine</h3>
+<p>The <a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table</a> holds
+the neighbourhood of each postcode but no position. So the lens places a site
+at the centre of its neighbourhood, from a file of neighbourhood centres kept
+on your machine. In a town that moves a site by a few hundred metres, and in
+the countryside by up to a few kilometres; the result carries a caveat that
+says so. Keep the centres once, when a server is built:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span>
+
+<span class="n">download_centres</span><span class="p">(</span><span class="s2">&quot;neighbourhood&quot;</span><span class="p">)</span>   <span class="c1"># about 35,700 centres, about 1 MB</span>
+</code></pre></div>
+<p>What happens to site postcodes follows <code>postcode_lookup</code>:</p>
+<table>
+<thead>
+<tr>
+<th><code>postcode_lookup</code></th>
+<th>Postcode table installed</th>
+<th>No postcode table</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"auto"</code> (the default)</td>
+<td>Placed on your machine. Nothing is sent</td>
+<td>Sent to postcodes.io</td>
+</tr>
+<tr>
+<td><code>"offline"</code></td>
+<td>Placed on your machine. Nothing is sent</td>
+<td>The lens stops</td>
+</tr>
+<tr>
+<td><code>"online"</code></td>
+<td>Sent to postcodes.io</td>
+<td>Sent to postcodes.io</td>
+</tr>
+</tbody>
+</table>
+<p>With a postcode table installed and no centres kept, the lens stops and names
+the function to run. It never falls back to sending postcodes, and it never
+fetches the centres while a lens runs. A server that sets <code>"offline"</code> cannot
+send a postcode. The result says which happened, under <code>choices</code> and
+<code>privacy.sent_to_third_parties</code>.</p>
+<p>The table and the centres cover England and Wales. On your machine, a site
+with a Scottish or Northern Irish postcode is not found and is left out and
+counted; give its latitude and longitude instead.</p>
 <p>The lens loads the people in every local authority from <a href="../ons/">Nomis</a> and
 the centre of every local authority from the ONS Open Geography Portal. For
 each local authority it measures the distance in a straight line from the
@@ -2287,6 +2360,13 @@ machine too, so the lens runs with no request at all:</p>
 <span class="n">keep_centres</span><span class="p">(</span>
     <span class="p">[(</span><span class="s2">&quot;E09000023&quot;</span><span class="p">,</span> <span class="mf">51.45</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;E09000011&quot;</span><span class="p">,</span> <span class="mf">51.47</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)],</span>
     <span class="n">note</span><span class="o">=</span><span class="s2">&quot;invented for a demonstration.&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># the same for the centres of neighbourhoods, which place site postcodes</span>
+<span class="n">keep_centres</span><span class="p">(</span>
+    <span class="p">[(</span><span class="s2">&quot;E01003189&quot;</span><span class="p">,</span> <span class="mf">51.46</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">)],</span>
+    <span class="n">note</span><span class="o">=</span><span class="s2">&quot;invented for a demonstration.&quot;</span><span class="p">,</span>
+    <span class="n">level</span><span class="o">=</span><span class="s2">&quot;neighbourhood&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 <table>
@@ -2365,6 +2445,11 @@ two layers, <code>distance</code> and <code>need</code>.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>postcode_lookup</code></td>
+<td><code>"auto"</code></td>
+<td>How site postcodes are placed. See the table above</td>
+</tr>
 <tr>
 <td><code>need</code></td>
 <td><code>"residents"</code></td>
