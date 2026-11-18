@@ -25,11 +25,13 @@ from kindtech.connector import (  # noqa: E402
 )
 from kindtech.connector.privacy import find_row_values  # noqa: E402
 from kindtech.lenses.need_reach import keep_need_figures  # noqa: E402
+from kindtech.lenses.who_we_miss import keep_residents  # noqa: E402
 
 POSTCODE = fakes.SECRET_POSTCODE
 PERSON = "Zebedee Quillfeather"
 AREA = "E01000001"
 COUNCIL = "Lewisham"
+OWN_LABEL = "Black Caribbean"
 
 # tool name -> cases of (arguments, values that must not come back)
 CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
@@ -101,6 +103,33 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
             },
             [POSTCODE],
         ),
+        (
+            {
+                "lens_id": "who-we-miss",
+                "counts": [{"group": "White", "postcode": POSTCODE}],
+                "options": {"catchment": [COUNCIL]},
+            },
+            [POSTCODE],
+        ),
+        (
+            # A postcode, a name or a charity's own label where a group should be.
+            {
+                "lens_id": "who-we-miss",
+                "counts": [
+                    {"group": "White", "count": 220},
+                    {"group": OWN_LABEL, "count": 40},
+                    {"group": POSTCODE, "count": 12},
+                    {"group": PERSON, "count": 9},
+                ],
+                "options": {"catchment": [COUNCIL]},
+            },
+            [POSTCODE, PERSON, OWN_LABEL],
+        ),
+        (
+            # No catchment, so the lens gives no figures at all.
+            {"lens_id": "who-we-miss", "counts": [{"group": PERSON, "count": 9}]},
+            [PERSON],
+        ),
     ],
 }
 
@@ -109,6 +138,7 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
 def _stand_ins(england: None, monkeypatch: pytest.MonkeyPatch) -> None:
     """Every case runs the real lenses against the small England."""
     keep_need_figures("unemployed", fakes.NEED, "invented for a test.")
+    keep_residents("ethnic_group", fakes.RESIDENTS, "invented for a test.")
     monkeypatch.setattr(
         places, "lookup_postcodes", lambda postcode: fakes.postcode_frame(AREA)
     )
@@ -176,6 +206,19 @@ def test_good_calls_still_answer() -> None:
             },
         )
     )
+    third = json.loads(
+        _call(
+            "run_lens_on_counts",
+            {
+                "lens_id": "who-we-miss",
+                "counts": [
+                    {"group": "White", "count": 220},
+                    {"group": OWN_LABEL, "count": 40},
+                ],
+                "options": {"catchment": [COUNCIL]},
+            },
+        )
+    )
 
     assert place["isError"] is False
     assert place["structuredContent"]["status"] == "found"
@@ -185,6 +228,12 @@ def test_good_calls_still_answer() -> None:
     assert second["structuredContent"]["status"] == "ok"
     # A local authority is a public place, so the second lens may name it.
     assert COUNCIL in json.dumps(second["structuredContent"]["result"]["tables"])
+    assert third["isError"] is False
+    assert third["structuredContent"]["status"] == "ok"
+    # A census group is public, so the third lens names it, and not the label.
+    by_group = json.dumps(third["structuredContent"]["result"]["tables"])
+    assert "Black" in by_group
+    assert OWN_LABEL not in by_group
 
 
 @pytest.mark.usefixtures("postcode_table")

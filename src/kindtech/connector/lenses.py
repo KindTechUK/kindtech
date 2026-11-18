@@ -26,8 +26,8 @@ STEM_LENGTH = 6
 
 HOW_TO_RUN = (
     "Run a lens with run_lens_on_counts, passing rows that are already totals "
-    "for areas (the roles of an input mode marked 'aggregated'). Never pass "
-    "rows about individual people."
+    "for areas or for groups (the roles of an input mode marked 'aggregated'). "
+    "Never pass rows about individual people."
 )
 UNAVAILABLE = (
     "A data source this lens needs could not be reached just now. Try again in "
@@ -102,23 +102,26 @@ def run_lens_on_counts(
     counts: list[dict[str, Any]],
     options: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Run a lens on data that is already totalled by area.
+    """Run a lens on data that is already totalled by area or by group.
 
     Args:
         lens_id: The lens to run, for example ``"reach-deprivation"``.
-        counts: One dict per area, keyed by the role names of an input mode
-            marked ``aggregated``, for example
-            ``{"lsoa_code": "E01003189", "count": 12}``. Rows about individual
-            people are refused.
-        options: Lens options to change; each has a default.
+        counts: One dict per area or group, keyed by the role names of an
+            input mode marked ``aggregated``, for example
+            ``{"lsoa_code": "E01003189", "count": 12}`` or
+            ``{"group": "Black Caribbean", "count": 40}``. Rows about
+            individual people are refused.
+        options: Lens options to change. Most have a default; where a lens
+            needs one, such as the catchment, the answer says so.
 
     Returns:
         ``status`` is ``ok``, ``input_problem`` (``problems`` lists what to
         fix), ``unknown_lens`` or ``unavailable`` (a data source the lens
         needs could not be reached). When ok, ``result`` is the lens result as
         plain JSON types without the rows of detail tables. It never repeats a
-        value that was passed in, except the name or code of a public place in
-        a role the lens marks ``reported``, such as a local authority.
+        value that was passed in, except in a role the lens marks
+        ``reported``: the name or code of a public place, such as a local
+        authority, or one of the group names the role lists.
     """
     try:
         info = engine.describe_lens(lens_id).to_dict()
@@ -177,21 +180,29 @@ def _count_modes(info: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _guarded_values(info: dict[str, Any], counts: list[dict[str, Any]]) -> list[str]:
-    """The text values in the rows that the result must not repeat.
-
-    A role the lens marks ``reported`` names public places, such as local
-    authorities, and the result lists those on purpose. Its values are left
-    out of the check, unless one has the shape of a postcode: a postcode is
-    never the name of such a place, so it is still guarded.
-    """
-    reported = {role["name"] for role in info.get("roles", []) if role.get("reported")}
+    """The text values in the rows that the result must not repeat."""
+    roles = {role["name"]: role for role in info.get("roles", [])}
     return [
         value
         for row in counts
-        for role, value in row.items()
-        if isinstance(value, str)
-        and (role not in reported or looks_like_postcode(value))
+        for name, value in row.items()
+        if isinstance(value, str) and not _may_come_back(roles.get(name, {}), value)
     ]
+
+
+def _may_come_back(role: dict[str, Any], value: str) -> bool:
+    """Whether a result may repeat ``value``, given in a column with this role.
+
+    Only a role the lens marks ``reported`` holds names the result uses too.
+    When the role lists ``reported_values``, such as the census ethnic groups,
+    only those values may come back and a charity's own label is still
+    guarded. When it lists none, such as for local authorities, every value
+    is a public name. A value with the shape of a postcode is never one.
+    """
+    if not role.get("reported") or looks_like_postcode(value):
+        return False
+    listed = {str(item).strip().casefold() for item in role.get("reported_values", ())}
+    return not listed or value.strip().casefold() in listed
 
 
 def _input_problem(problems: list[str]) -> dict[str, Any]:

@@ -30,7 +30,7 @@ sources.
 Rules for using these tools:
 - Totals, never rows. Do not pass rows about individual people (one postcode, \
 name or case per row) to any tool, and do not ask the person to paste them \
-into the chat. Ask for counts that are already totalled by area.
+into the chat. Ask for counts that are already totalled by area or by group.
 - Show the checks and caveats that come back next to the figures. The checks \
 are questions for the person. Do not answer them on the person's behalf.
 - Say where each figure comes from, using the sources in the result.
@@ -154,18 +154,23 @@ def handle_run_lens_on_counts(
     counts: Annotated[
         list[dict[str, Any]],
         Field(
-            description="One object per area, keyed by the role names of an "
-            "input mode marked 'aggregated' in find_lens, for example "
-            "{'lsoa_code': 'E01003189', 'count': 12} or {'local_authority': "
-            "'Lewisham', 'count': 120}. Totals only: never one row per person."
+            description="One object per area or group, keyed by the role names "
+            "of an input mode marked 'aggregated' in find_lens, for example "
+            "{'lsoa_code': 'E01003189', 'count': 12}, {'local_authority': "
+            "'Lewisham', 'count': 120} or {'group': 'Black Caribbean', 'count': "
+            "40}. Totals only: never one row per person."
         ),
     ],
     options: Annotated[
         dict[str, Any] | None,
-        Field(description="Lens options to change. Leave out to use the defaults."),
+        Field(
+            description="Lens options to change, as listed by find_lens. Leave "
+            "out to use the defaults. Where a lens needs one, such as "
+            "'catchment' (the area the charity serves), ask the person for it."
+        ),
     ] = None,
 ) -> dict[str, Any]:
-    """Run a lens on counts that are already totalled by area.
+    """Run a lens on counts that are already totalled by area or by group.
 
     Returns headline figures, summary tables, the working, the choices the
     lens made, checks for the person to confirm, caveats and sources. Small

@@ -79,6 +79,34 @@ NEED = (
 )
 
 
+# Invented residents by ethnic group for real local authority codes: code,
+# name, residents by census group. Each place has 300,000 residents.
+RESIDENTS = (
+    (
+        "E09000023",
+        "Lewisham",
+        {
+            "Asian": 30000,
+            "Black": 75000,
+            "Mixed": 24000,
+            "White": 156000,
+            "Other": 15000,
+        },
+    ),
+    (
+        "E09000011",
+        "Greenwich",
+        {
+            "Asian": 45000,
+            "Black": 60000,
+            "Mixed": 18000,
+            "White": 165000,
+            "Other": 12000,
+        },
+    ),
+)
+
+
 def england_frame() -> pd.DataFrame:
     """A ten-neighbourhood England in the shape ``load_imd`` returns."""
     rows = []
@@ -212,18 +240,49 @@ COUNCILS = {
 }
 
 
+GROUPS = {
+    "id": "reach-by-group",
+    "title": "Reach by group",
+    "question": "Which groups do the people we help belong to?",
+    "summary": "People you supplied by census group.",
+    "version": "0.1",
+    "roles": [
+        {
+            "name": "group",
+            "description": "The group, in the charity's own words",
+            "example": "Black Caribbean",
+            "reported": True,
+            "reported_values": ["Asian", "Black", "Mixed", "White", "Other"],
+        },
+        {"name": "count", "description": "People in the group", "example": 12},
+    ],
+    "input_modes": [
+        {
+            "name": "group_counts",
+            "description": "Already totalled by group",
+            "roles": ["group", "count"],
+            "aggregated": True,
+        }
+    ],
+    "options": [],
+    "coverage": "England",
+}
+
+
 def fake_engine(*, leak: bool = False) -> SimpleNamespace:
     """A stand-in for ``kindtech.lenses``.
 
     Args:
-        leak: When true, results repeat the first row's area in a warning. That
-            breaks the contract unless the area's role is marked ``reported``,
-            so the privacy guard can be tested both ways. The council lens is
-            only offered here, so a search still finds two lenses otherwise.
+        leak: When true, results repeat the first row's area or group in a
+            warning. That breaks the contract unless the role is marked
+            ``reported`` and allows the value, so the privacy guard can be
+            tested both ways. The council and group lenses are only offered
+            here, so a search still finds two lenses otherwise.
     """
     lenses = {REACH["id"]: REACH, VOLUNTEERS["id"]: VOLUNTEERS}
     if leak:
         lenses[COUNCILS["id"]] = COUNCILS
+        lenses[GROUPS["id"]] = GROUPS
 
     def list_lenses() -> list[SimpleNamespace]:
         return [describe_lens(lens_id) for lens_id in lenses]
