@@ -3,6 +3,13 @@
 from __future__ import annotations
 
 DEFAULT_SUPPRESS_BELOW = 5
+# Every lens says this in its privacy notes, so a reader does not take every
+# hidden count for a small one.
+SECOND_COUNT_NOTE = (
+    "A hidden count is not always small. When only one count in a table is "
+    "small, a second is hidden with it, so the first cannot be worked out "
+    "from the total."
+)
 
 
 def is_small(count: int, threshold: int) -> bool:

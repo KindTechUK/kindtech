@@ -244,6 +244,8 @@ def test_result_says_what_it_did_and_can_be_written_as_json(nomis):
     assert [source.id for source in result.sources] == ["nomis-nm_2041_1"]
     assert all(source.licence and source.url for source in result.sources)
     assert result.working[-1].title == "Hid small counts"
+    # A reader must not take every hidden count for a small one.
+    assert any("not always small" in note for note in result.privacy.notes)
     assert result.privacy.row_level_output is False
     assert result.privacy.sent_to_third_parties == ()
     json.dumps(result.to_dict())

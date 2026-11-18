@@ -506,6 +506,8 @@ def test_result_explains_itself(world):
     assert all(source.licence and source.url for source in result.sources)
     assert result.working[0].rows_in == 70
     assert result.working[-1].title == "Hid small counts"
+    # A reader must not take every hidden count for a small one.
+    assert any("not always small" in note for note in result.privacy.notes)
     json.dumps(result.to_dict())
 
 
