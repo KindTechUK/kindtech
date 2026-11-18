@@ -2276,8 +2276,9 @@ for it.
 A count from 1 to 4 that is about a named place or a group is returned as
 `None`, with `suppressed` set to `True`, and so is anything worked out from it.
 When hiding one cell would let it be worked out from a total, a second cell is
-hidden with it. Change the threshold with the `suppress_below` option; it
-cannot go below 3.
+hidden with it. So a hidden count is not always small: do not report a hidden
+cell as "fewer than 5". Every result says this in its privacy notes. Change
+the threshold with the `suppress_below` option; it cannot go below 3.
 
 ## Reach against deprivation
 
@@ -2595,7 +2596,8 @@ A lens is a `LensInfo` and a function that takes a `LensInput` and returns a
 
 1. Totals, never rows. Report problems by how many rows they affect.
 2. Hide small counts and anything that gives them away. Do not publish two
-   breakdowns that can be taken from each other to get a small count.
+   breakdowns that can be taken from each other to get a small count. Say in
+   the privacy notes that a hidden count is not always small.
 3. Give every figure a source.
 4. State every choice and name the option that changes it.
 5. Leave checks for a person to answer.

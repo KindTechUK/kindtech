@@ -1414,8 +1414,9 @@ for it.</p>
 <p>A count from 1 to 4 that is about a named place or a group is returned as
 <code>None</code>, with <code>suppressed</code> set to <code>True</code>, and so is anything worked out from it.
 When hiding one cell would let it be worked out from a total, a second cell is
-hidden with it. Change the threshold with the <code>suppress_below</code> option; it
-cannot go below 3.</p>
+hidden with it. So a hidden count is not always small: do not report a hidden
+cell as "fewer than 5". Every result says this in its privacy notes. Change
+the threshold with the <code>suppress_below</code> option; it cannot go below 3.</p>
 <h2 id="reach-against-deprivation">Reach against deprivation</h2>
 <p><code>reach-deprivation</code> answers: are we reaching people in the most deprived
 neighbourhoods? It covers England, using the English Indices of Deprivation
@@ -1999,7 +2000,8 @@ count can be worked out by taking one from the other.</p>
 <ol>
 <li>Totals, never rows. Report problems by how many rows they affect.</li>
 <li>Hide small counts and anything that gives them away. Do not publish two
-   breakdowns that can be taken from each other to get a small count.</li>
+   breakdowns that can be taken from each other to get a small count. Say in
+   the privacy notes that a hidden count is not always small.</li>
 <li>Give every figure a source.</li>
 <li>State every choice and name the option that changes it.</li>
 <li>Leave checks for a person to answer.</li>
