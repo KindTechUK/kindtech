@@ -124,6 +124,48 @@ class TestRunLensOnCounts:
         }
 
 
+@pytest.mark.usefixtures("lens_engine")
+class TestCountsGivenAsText:
+    """An assistant often sends a count as text, and it is still a count."""
+
+    @pytest.mark.parametrize("count", ["1200", " 1200 ", "1,200"])
+    def test_a_count_given_as_text_is_read_as_a_number(self, count: str) -> None:
+        rows = [{"lsoa_code": "E01000001", "count": count}, COUNTS[1]]
+
+        answer = run_lens_on_counts("reach-deprivation", rows)
+
+        assert answer["status"] == "ok"
+        assert answer["result"]["figures"][0]["value"] == 1230
+
+    @pytest.mark.parametrize("count", ["12oo", "-1200", "0123", "1,2,3", "12.5", ""])
+    def test_other_text_is_left_for_the_lens_to_refuse(self, count: str) -> None:
+        rows = [{"lsoa_code": "E01000001", "count": count}]
+
+        answer = run_lens_on_counts("reach-deprivation", rows)
+
+        assert answer == {
+            "status": "input_problem",
+            "problems": ["Some counts are not whole numbers."],
+        }
+
+    def test_the_rows_passed_in_are_not_changed(self) -> None:
+        rows = [{"lsoa_code": "E01000001", "count": "1200"}]
+
+        run_lens_on_counts("reach-deprivation", rows)
+
+        assert rows == [{"lsoa_code": "E01000001", "count": "1200"}]
+
+
+@pytest.mark.usefixtures("leaky_lens_engine")
+def test_a_number_given_where_a_name_belongs_is_still_guarded() -> None:
+    rows = [{"lsoa_code": "120045", "count": 12}]
+
+    with pytest.raises(PrivacyError) as raised:
+        run_lens_on_counts("reach-deprivation", rows)
+
+    assert "120045" not in str(raised.value)
+
+
 @pytest.mark.usefixtures("leaky_lens_engine")
 def test_result_that_repeats_an_input_value_is_withheld() -> None:
     with pytest.raises(PrivacyError) as raised:
@@ -288,6 +330,17 @@ class TestWithTheSecondLens:
         listed = {row["geography_name"] for row in tables["priority_areas"]["rows"]}
         assert "Lewisham" in listed
         assert tables["by_local_authority"]["rows"] == []
+
+    def test_a_count_given_as_text_gives_the_same_answer(self) -> None:
+        # 9,000 is also Lewisham's need figure, so as text the count used to
+        # be found in the result and the whole answer withheld.
+        as_number = [{"local_authority": "Lewisham", "count": 9000}]
+        as_text = [{"local_authority": "Lewisham", "count": "9000"}]
+
+        answer = run_lens_on_counts("need-reach", as_text)
+
+        assert answer["status"] == "ok"
+        assert answer == run_lens_on_counts("need-reach", as_number)
 
     def test_rows_about_people_are_refused(self) -> None:
         answer = run_lens_on_counts("need-reach", [{"postcode": "ZZ99 9KC"}])

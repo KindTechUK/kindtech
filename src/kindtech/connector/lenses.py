@@ -38,6 +38,10 @@ SHOW_WITH_FIGURES = (
     "person to answer, not for an assistant."
 )
 
+# "1200", "1,200" and "12.5". A leading zero marks a code or a phone number, not
+# an amount, so "0123" is left as text.
+_PLAIN_NUMBER = re.compile(r"^(0|[1-9]\d*|[1-9]\d{0,2}(,\d{3})+)(\.\d+)?$")
+
 _STOP_WORDS = frozenset(
     [
         "a",
@@ -110,7 +114,8 @@ def run_lens_on_counts(
             input mode marked ``aggregated``, for example
             ``{"lsoa_code": "E01003189", "count": 12}`` or
             ``{"group": "Black Caribbean", "count": 40}``. Rows about
-            individual people are refused.
+            individual people are refused. A count given as text, such as
+            ``"1,200"``, is read as a number.
         options: Lens options to change. Most have a default; where a lens
             needs one, such as the catchment, the answer says so.
 
@@ -135,6 +140,7 @@ def run_lens_on_counts(
     problems = _count_problems(info, counts)
     if problems:
         return _input_problem(problems)
+    counts = _with_amounts_as_numbers(info, counts)
     guarded = _guarded_values(info, counts)
     try:
         result = engine.run_lens(lens_id, counts, options=options or {})
@@ -177,6 +183,46 @@ def _count_problems(info: dict[str, Any], counts: object) -> list[str]:
 def _count_modes(info: dict[str, Any]) -> list[dict[str, Any]]:
     """The input modes of a lens that take already-totalled data."""
     return [mode for mode in info.get("input_modes", []) if mode.get("aggregated")]
+
+
+def _with_amounts_as_numbers(
+    info: dict[str, Any], counts: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """The rows, with an amount that was given as text turned into a number.
+
+    An assistant often sends ``"1200"`` for ``1200``. As text it would be
+    guarded like a name, and the result would be withheld for repeating a
+    total, which it does by design. Only a role that holds an amount is
+    changed, and only text that is nothing but a number.
+    """
+    amounts = _amount_roles(info)
+    return [
+        {
+            name: _number(value)
+            if name in amounts and isinstance(value, str)
+            else value
+            for name, value in row.items()
+        }
+        for row in counts
+    ]
+
+
+def _amount_roles(info: dict[str, Any]) -> set[str]:
+    """The roles that hold an amount, such as a count: their example is a number."""
+    return {
+        role["name"]
+        for role in info.get("roles", [])
+        if not isinstance(_number(str(role.get("example", ""))), str)
+    }
+
+
+def _number(text: str) -> int | float | str:
+    """``text`` as a number when it is nothing but one, and unchanged otherwise."""
+    cleaned = text.strip()
+    if not _PLAIN_NUMBER.match(cleaned):
+        return text
+    cleaned = cleaned.replace(",", "")
+    return float(cleaned) if "." in cleaned else int(cleaned)
 
 
 def _guarded_values(info: dict[str, Any], counts: list[dict[str, Any]]) -> list[str]:
