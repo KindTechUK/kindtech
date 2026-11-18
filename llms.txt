@@ -21,6 +21,7 @@
 
 - [Overview](https://kindtechuk.github.io/kindtech/api/index.md)
 - [Command Line](https://kindtechuk.github.io/kindtech/api/cli/index.md)
+- [Connector for chat assistants](https://kindtechuk.github.io/kindtech/api/connector/index.md)
 - [Data Sources](https://kindtechuk.github.io/kindtech/api/data-sources/index.md)
 - [Geographic Data](https://kindtechuk.github.io/kindtech/api/geo/index.md)
 - [Deprivation (IMD)](https://kindtechuk.github.io/kindtech/api/imd/index.md)
