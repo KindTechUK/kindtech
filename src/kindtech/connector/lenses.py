@@ -112,10 +112,11 @@ def run_lens_on_counts(
         lens_id: The lens to run, for example ``"reach-deprivation"``.
         counts: One dict per area or group, keyed by the role names of an
             input mode marked ``aggregated``, for example
-            ``{"lsoa_code": "E01003189", "count": 12}`` or
-            ``{"group": "Black Caribbean", "count": 40}``. Rows about
-            individual people are refused. A count given as text, such as
-            ``"1,200"``, is read as a number.
+            ``{"lsoa_code": "E01003189", "count": 12}``,
+            ``{"group": "Black Caribbean", "count": 40}`` or
+            ``{"local_authority": "Lewisham", "volume": 1200}``. Rows about
+            individual people, or one row per site, are refused. A count
+            given as text, such as ``"1,200"``, is read as a number.
         options: Lens options to change. Most have a default; where a lens
             needs one, such as the catchment, the answer says so.
 
@@ -174,9 +175,9 @@ def _count_problems(info: dict[str, Any], counts: object) -> list[str]:
         return []
     accepted = " or ".join("(" + ", ".join(mode["roles"]) + ")" for mode in modes)
     return [
-        f"Every row must have exactly these keys: {accepted}. Rows about "
-        "individual people, such as one postcode per person, are not accepted "
-        "here."
+        f"Every row must have exactly these keys: {accepted}. Rows that are "
+        "not totals, such as one postcode per person or per site, are not "
+        "accepted here."
     ]
 
 

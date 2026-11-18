@@ -434,12 +434,102 @@ class TestWithTheThirdLens:
         assert "ZZ99" not in reply
 
 
+VOLUMES = [
+    {"local_authority": "Lewisham", "volume": 1200},
+    {"local_authority": "E09000011", "volume": 2.5},
+]
+
+
+class TestWithTheFourthLens:
+    """The connector against the provision gap lens.
+
+    The need figures are invented and kept in the test's data folder, so the
+    lens asks Nomis for nothing.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _need(self) -> None:
+        need_reach.keep_need_figures("residents", fakes.NEED, "invented for a test.")
+
+    def test_is_found_by_its_question(self) -> None:
+        answer = find_lens("where is provision thin against need?")
+
+        assert answer["lenses"][0]["id"] == "provision-gap"
+
+    def test_runs_on_volumes_by_local_authority(self) -> None:
+        answer = run_lens_on_counts("provision-gap", VOLUMES)
+
+        result = answer["result"]
+        figures = {figure["id"]: figure["value"] for figure in result["figures"]}
+        assert answer["status"] == "ok"
+        assert result["input_mode"] == "area_volumes"
+        assert result["privacy"]["sent_to_third_parties"] == []
+        assert figures["volume_supplied"] == 1202.5
+        assert figures["areas_without_provision"] == 6
+
+    def test_lists_the_places_to_look_at_and_leaves_out_the_detail(self) -> None:
+        answer = run_lens_on_counts("provision-gap", VOLUMES)
+
+        tables = {table["id"]: table for table in answer["result"]["tables"]}
+        first = tables["priority_areas"]["rows"][0]
+        assert first["geography_name"] == "Birmingham"
+        assert first["volume"] == 0
+        assert tables["by_local_authority"]["rows"] == []
+
+    @pytest.mark.parametrize("volume", ["1200", "1,200", "1200.0"])
+    def test_a_volume_given_as_text_gives_the_same_answer(self, volume: str) -> None:
+        as_text = [{"local_authority": "Lewisham", "volume": volume}, VOLUMES[1]]
+
+        answer = run_lens_on_counts("provision-gap", as_text)
+
+        assert answer == run_lens_on_counts("provision-gap", VOLUMES)
+
+    def test_a_volume_that_is_not_a_number_is_counted_and_not_repeated(self) -> None:
+        rows = [*VOLUMES, {"local_authority": "Lewisham", "volume": "a lot of hours"}]
+
+        answer = run_lens_on_counts("provision-gap", rows)
+
+        assert answer["status"] == "input_problem"
+        assert answer["problems"][0].startswith("1 rows have a volume")
+        assert "a lot" not in json.dumps(answer)
+
+    @pytest.mark.parametrize(
+        "rows",
+        [
+            [{"postcode": "ZZ99 9KC", "volume": 30}],
+            [{"postcode": "ZZ99 9KC"}],
+        ],
+    )
+    def test_one_row_per_site_is_refused(self, rows: list[dict]) -> None:
+        answer = run_lens_on_counts("provision-gap", rows)
+
+        assert answer["status"] == "input_problem"
+        assert "(local_authority, volume)" in answer["problems"][0]
+        assert "per site" in answer["problems"][0]
+        assert "ZZ99" not in json.dumps(answer)
+
+    def test_a_postcode_given_as_a_place_does_not_come_back(self) -> None:
+        rows = [*VOLUMES, {"local_authority": "ZZ99 9KC", "volume": 7}]
+
+        answer = run_lens_on_counts("provision-gap", rows)
+
+        assert answer["status"] == "ok"
+        assert "ZZ99" not in json.dumps(answer)
+
+    def test_an_option_out_of_range_is_an_input_problem(self) -> None:
+        answer = run_lens_on_counts("provision-gap", VOLUMES, options={"top": 99})
+
+        assert answer["status"] == "input_problem"
+        assert "'top'" in answer["problems"][0]
+
+
 @pytest.mark.parametrize(
     ("module", "lens_id", "counts", "options"),
     [
         # The need figures are fetched in the shared need module.
         (_need, "need-reach", COUNCIL_COUNTS, None),
         (who_we_miss, "who-we-miss", GROUP_COUNTS, CATCHMENT),
+        (_need, "provision-gap", VOLUMES, None),
     ],
 )
 def test_says_when_a_data_source_cannot_be_reached(
