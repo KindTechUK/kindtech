@@ -15,7 +15,7 @@ the answer says which.
 
 import logging
 import re
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from functools import lru_cache
 from typing import Any
 
@@ -23,7 +23,7 @@ import narwhals.stable.v2 as nw
 import requests
 
 from kindtech.connector.privacy import ensure_totals_only, looks_like_postcode
-from kindtech.imd import load_imd
+from kindtech.imd import imd_path, kept_imd_note, load_imd
 from kindtech.lenses.sources import IOD_2025, POSTCODES_IO, ons_postcode_lookup
 from kindtech.postcodes import (
     PostcodeTableError,
@@ -58,6 +58,11 @@ CAVEATS = [
     "Deciles compare neighbourhoods across England only. They cannot be compared "
     "with Wales, Scotland or Northern Ireland.",
 ]
+
+NO_DOMAINS = (
+    "The copy of the deprivation index kept on this machine does not hold the "
+    "types of deprivation, so that table is left out."
+)
 
 _LSOA_CODE = re.compile(r"^E01\d{6}$")
 _AUTHORITY_CODE = re.compile(r"^E0[6-9]\d{6}$")
@@ -105,6 +110,13 @@ def describe_place(place: str) -> dict[str, Any]:
     row_values = [text] if looks_like_postcode(text) else []
     try:
         return ensure_totals_only(_describe(text), row_values)
+    except _IndexCopyError:
+        logger.warning("The kept copy of the deprivation index could not be read.")
+        return _status(
+            "unavailable",
+            "The deprivation figures kept on this server could not be read. This "
+            "is a fault on the server, not in what you asked.",
+        )
     except (requests.RequestException, PostcodeTableError) as error:
         # The error text can hold the address asked for, so only its kind is logged.
         logger.warning("A data source could not be reached: %s", type(error).__name__)
@@ -115,8 +127,12 @@ def describe_place(place: str) -> dict[str, Any]:
 
 
 def clear_cache() -> None:
-    """Forget the downloaded deprivation data, so the next call fetches it."""
-    _neighbourhoods.cache_clear()
+    """Forget the deprivation data held in memory, so the next call loads it."""
+    _index.cache_clear()
+
+
+class _IndexCopyError(RuntimeError):
+    """The copy of the index kept on this machine could not be read."""
 
 
 def _describe(text: str) -> dict[str, Any]:
@@ -220,6 +236,7 @@ def _describe_authority(code: str, matched_from: str) -> dict[str, Any]:
     """Totals for one local authority."""
     rows = [row for row in _neighbourhoods() if row["lad_code"] == code]
     england = _neighbourhoods()
+    domains = [_domain_table(rows)] if _holds_domains(rows) else []
     return {
         "status": "found",
         "place": {
@@ -230,10 +247,10 @@ def _describe_authority(code: str, matched_from: str) -> dict[str, Any]:
             "coverage": COVERAGE,
         },
         "figures": _authority_figures(rows, england),
-        "tables": [_decile_table(rows), _domain_table(rows)],
+        "tables": [_decile_table(rows), *domains],
         "caveats": list(CAVEATS),
-        "warnings": [],
-        "sources": [asdict(IOD_2025)],
+        "warnings": [] if domains else [NO_DOMAINS],
+        "sources": [_index_source()],
         "privacy": _privacy(),
     }
 
@@ -245,6 +262,7 @@ def _describe_neighbourhood(code: str, matched_from: str) -> dict[str, Any]:
     if row is None:
         return _status("not_found", "That neighbourhood code was not found.")
     authority = [r for r in england if r["lad_code"] == row["lad_code"]]
+    domains = [_neighbourhood_domain_table(row)] if _holds_domains([row]) else []
     return {
         "status": "found",
         "place": {
@@ -256,10 +274,10 @@ def _describe_neighbourhood(code: str, matched_from: str) -> dict[str, Any]:
             "coverage": COVERAGE,
         },
         "figures": _neighbourhood_figures(row, authority, len(england)),
-        "tables": [_neighbourhood_domain_table(row)],
+        "tables": domains,
         "caveats": list(CAVEATS),
-        "warnings": [],
-        "sources": [asdict(IOD_2025)],
+        "warnings": [] if domains else [NO_DOMAINS],
+        "sources": [_index_source()],
         "privacy": _privacy(),
     }
 
@@ -440,14 +458,51 @@ def _authority_names() -> dict[str, str]:
     return dict(sorted(names.items(), key=lambda item: item[1]))
 
 
-@lru_cache(maxsize=1)
 def _neighbourhoods() -> list[dict[str, Any]]:
-    """Every neighbourhood in England with its deprivation figures (cached)."""
-    frame = nw.from_native(load_imd(nation="England"), eager_only=True)
-    return [
+    """Every neighbourhood in England with its deprivation figures."""
+    return _index()[0]
+
+
+def _index_source() -> dict[str, Any]:
+    """The source to cite for the index, which says when a kept copy was read."""
+    return dict(_index()[1])
+
+
+@lru_cache(maxsize=1)
+def _index() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Load the index for England once: its rows, and the source to cite.
+
+    A copy kept on this machine is read when there is one (see
+    :func:`kindtech.imd.keep_imd`), and the source then says so.
+    """
+    kept = imd_path() is not None
+    try:
+        loaded = load_imd(nation="England")
+        note = kept_imd_note()
+    except ValueError as error:
+        if not kept:
+            raise
+        raise _IndexCopyError from error
+    frame = nw.from_native(loaded, eager_only=True)
+    rows = [
         {key: _plain(value) for key, value in row.items()}
         for row in frame.select(_COLUMNS).rows(named=True)
     ]
+    source = IOD_2025
+    if note is not None:
+        edition = f"{IOD_2025.edition}. A copy kept on this machine, {note}"
+        source = replace(IOD_2025, edition=edition)
+    return rows, asdict(source)
+
+
+def _holds_domains(rows: list[dict[str, Any]]) -> bool:
+    """Whether ``rows`` hold the types of deprivation. A kept copy may not."""
+    return all(
+        row[f"{domain}_{part}"] is not None
+        for row in rows
+        for domain in DOMAINS
+        for part in ("decile", "rank")
+    )
 
 
 def _plain(value: Any) -> Any:
