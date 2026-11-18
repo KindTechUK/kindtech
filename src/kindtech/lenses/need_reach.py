@@ -78,6 +78,8 @@ NEED_BANDS = (
 NO_REACH = "None, or count hidden"
 REACH_BANDS = (NO_REACH, "Lower reach", "Middle reach", "Higher reach")
 RESERVED_FILTERS = ("geography", "geography_type", "select")
+# The Nomis code for a count, as opposed to a percentage.
+COUNT_MEASURE = 20100
 # Where people go when their local authority is not in the need figures. The
 # next step counts them as left out.
 UNLISTED = "unlisted"
@@ -499,7 +501,14 @@ def _fetch_need(dataset: str, filters: str) -> tuple[tuple[str, str, float], ...
         ValueError: If Nomis has no such table, or it has no count by local
             authority.
     """
-    query: dict[str, Any] = {"time": "latest", **json.loads(filters)}
+    # Nomis gives every measure of a table unless one is named, and some
+    # tables hold a percentage beside each count. The lens adds the rows up,
+    # so it asks for counts alone, unless the filters name another measure.
+    query: dict[str, Any] = {
+        "time": "latest",
+        "measures": COUNT_MEASURE,
+        **json.loads(filters),
+    }
     loaded = load_ons(
         dataset,
         geography_type="LAD",
