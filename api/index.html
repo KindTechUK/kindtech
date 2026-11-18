@@ -746,6 +746,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#lenses-kindtechlenses" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lenses — kindtech.lenses
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -851,6 +860,29 @@
   
   <span class="md-ellipsis">
     Deprivation (IMD)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lenses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Lenses
     
   </span>
   
@@ -1105,6 +1137,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#lenses-kindtechlenses" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lenses — kindtech.lenses
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1139,7 +1180,8 @@
 
 
 <h1 id="api-reference">API Reference</h1>
-<p>KindTech provides four modules for accessing UK public data:</p>
+<p>KindTech provides four modules for accessing UK public data, and lenses that
+put them to work on your own data:</p>
 <h2 id="modules">Modules</h2>
 <h3 id="geographic-data-kindtechgeo"><a href="geo/">Geographic Data</a> — <code>kindtech.geo</code></h3>
 <p>Load UK geographic boundary data from the ONS ArcGIS Geoportal. Returns GeoJSON.</p>
@@ -1172,6 +1214,16 @@ cross-nation comparison. Returns pandas or polars DataFrames.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.imd</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_imd</span>
 
 <span class="n">imd</span> <span class="o">=</span> <span class="n">load_imd</span><span class="p">(</span><span class="n">nation</span><span class="o">=</span><span class="s2">&quot;England&quot;</span><span class="p">)</span>  <span class="c1"># official IoD 2025; join on `geography_code`</span>
+</code></pre></div>
+<h3 id="lenses-kindtechlenses"><a href="lenses/">Lenses</a> — <code>kindtech.lenses</code></h3>
+<p>Ask a question of your own data. A lens joins your table to open data and
+returns figures with their sources, the working, the choices made and the
+checks a person should do. Results hold totals only, never rows.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_lens</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
+    <span class="s2">&quot;reach-deprivation&quot;</span><span class="p">,</span> <span class="n">clients</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">}</span>
+<span class="p">)</span>
 </code></pre></div>
 <h2 id="design-principles">Design principles</h2>
 <ul>

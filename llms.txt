@@ -23,6 +23,7 @@
 - [Data Sources](https://kindtechuk.github.io/kindtech/api/data-sources/index.md)
 - [Geographic Data](https://kindtechuk.github.io/kindtech/api/geo/index.md)
 - [Deprivation (IMD)](https://kindtechuk.github.io/kindtech/api/imd/index.md)
+- [Lenses](https://kindtechuk.github.io/kindtech/api/lenses/index.md)
 - [ONS Data](https://kindtechuk.github.io/kindtech/api/ons/index.md)
 - [Postcodes](https://kindtechuk.github.io/kindtech/api/postcodes/index.md)
 - [Package FAQ](https://kindtechuk.github.io/kindtech/faq/index.md)

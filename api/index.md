@@ -1,6 +1,7 @@
 # API Reference
 
-KindTech provides four modules for accessing UK public data:
+KindTech provides four modules for accessing UK public data, and lenses that
+put them to work on your own data:
 
 ## Modules
 
@@ -50,6 +51,20 @@ cross-nation comparison. Returns pandas or polars DataFrames.
 from kindtech.imd import load_imd
 
 imd = load_imd(nation="England")  # official IoD 2025; join on `geography_code`
+```
+
+### [Lenses](lenses.md) — `kindtech.lenses`
+
+Ask a question of your own data. A lens joins your table to open data and
+returns figures with their sources, the working, the choices made and the
+checks a person should do. Results hold totals only, never rows.
+
+```python
+from kindtech.lenses import run_lens
+
+result = run_lens(
+    "reach-deprivation", clients, columns={"postcode": "Client postcode"}
+)
 ```
 
 ## Design principles
