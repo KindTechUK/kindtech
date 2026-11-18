@@ -105,6 +105,65 @@ outcode_to_geography(["SE13"], geography_type="LSOA")
     or split an outcode's records across its constituent areas weighted by
     population.
 
+## Looking up postcodes on this machine
+
+The functions above send postcodes to postcodes.io. When the postcodes belong
+to the people a charity helps, you may not want them to leave your machine.
+The postcode table lets you look them up locally instead.
+
+The table is one file of a few megabytes that maps every postcode in
+England and Wales to its 2021 LSOA and local authority. It is built from the
+ONS best-fit postcode lookup. Fetch it once:
+
+```bash
+uk-open-data postcodes download
+```
+
+!!! note "Before the first table is published"
+    The first table is published with version 0.2. Until then
+    `postcodes download` has nothing to fetch on its own: build a table from
+    the ONS lookup with `uk-open-data postcodes build`, host it, and pass
+    `--url` and `--sha256`.
+
+or from Python with `download_postcode_table()`. The file is public and the
+same for everyone, so fetching it says nothing about your data, and it is
+checked against a SHA-256 before it is installed. After that, nothing below
+uses the network:
+
+```python
+from kindtech.postcodes import (
+    district_to_local_authorities,
+    postcode_to_lsoa,
+    postcodes_to_lsoa,
+)
+
+postcode_to_lsoa("se13 7vc")                # an LSOA code, or None
+postcodes_to_lsoa(["SE13 7VC", "M1 1VC"])   # one answer per postcode, in order
+district_to_local_authorities("SE13")       # local authority codes, sorted
+```
+
+| Function | What it does |
+| --- | --- |
+| `download_postcode_table()` | Fetches and installs the table. Pass `url=` and `sha256=` to use a copy you host |
+| `postcode_table_path()` | The installed table's path, or `None` |
+| `postcode_table_info()` | Edition, source, coverage, size and the credits to show |
+| `postcode_to_lsoa()`, `postcodes_to_lsoa()` | Postcode to 2021 LSOA code, or `None` when it is not in the table |
+| `district_to_local_authorities()` | The local authorities a postcode district reaches into |
+| `build_postcode_table()` | Builds a table from the ONS lookup file. Used to publish a new edition |
+
+The table lives in `~/.cache/kindtech`, or in the folder named by the
+`KINDTECH_DATA_DIR` environment variable. A server should fetch it when it is
+built, not when a request arrives.
+
+!!! note "Coverage and credits"
+    The table covers England and Wales. Scotland and Northern Ireland are left
+    out: neither has 2021 LSOAs, and Northern Ireland postcodes need a separate
+    licence for commercial use. When you publish something made with the table,
+    show the credits from `postcode_table_info()["attribution"]`: the ONS
+    source line, and the OS and Royal Mail copyright lines.
+
+[Lenses](lenses.md) use the table on their own when one is installed.
+
 ## Design
 
 `kindtech.postcodes` is a thin runtime wrapper — unlike the `geo` and `ons`

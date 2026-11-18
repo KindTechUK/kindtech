@@ -5,6 +5,7 @@ from __future__ import annotations
 from kindtech.imd.api import ENGLAND_IMD_2025_URL
 from kindtech.lenses._model import Source
 from kindtech.postcodes.api import POSTCODES_BASE_URL
+from kindtech.postcodes.offline import SOURCE_NAME, SOURCE_URL
 
 IOD_2025 = Source(
     id="iod-2025",
@@ -25,3 +26,17 @@ POSTCODES_IO = Source(
     edition="Live service on the day of the run",
     used_for="Finding the neighbourhood each postcode is in.",
 )
+
+
+def ons_postcode_lookup(edition: str, attribution: tuple[str, ...]) -> Source:
+    """Describe the ONS postcode lookup behind the table on this machine."""
+    return Source(
+        id="ons-postcode-lookup",
+        name=SOURCE_NAME,
+        publisher="Office for National Statistics",
+        url=SOURCE_URL,
+        licence="Open Government Licence v3.0",
+        edition=edition,
+        used_for="Finding the neighbourhood each postcode is in.",
+        attribution=attribution,
+    )

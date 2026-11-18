@@ -190,7 +190,10 @@ class Check:
 
 @dataclass(frozen=True)
 class Source:
-    """A published source a figure rests on."""
+    """A published source a figure rests on.
+
+    ``attribution`` holds any statements the licence asks users to show.
+    """
 
     id: str
     name: str
@@ -199,6 +202,7 @@ class Source:
     licence: str
     edition: str
     used_for: str
+    attribution: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

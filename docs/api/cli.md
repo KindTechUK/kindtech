@@ -64,6 +64,27 @@ When the file, a column or an option cannot be used, the command prints what is
 wrong and exits with status 2. The message never repeats a value from your
 data, so it is safe to paste into a chat or an issue.
 
+### `postcodes download`
+
+Fetches the postcode table, a few megabytes, so that lenses look postcodes up on
+your machine and send none of them out. Run it once. `--force` fetches it
+again, and `--url` with `--sha256` fetches a copy you host yourself.
+
+```bash
+uk-open-data postcodes download
+```
+
+### `postcodes info`
+
+Shows the installed table's edition, size and the credits to show when you
+publish something made with it.
+
+### `postcodes build SOURCE TABLE --edition EDITION`
+
+Builds a table from the ONS best-fit postcode lookup (`.csv`, or the `.zip` it
+comes in) and prints its SHA-256. This is how a new edition is published; you
+do not need it to use the package.
+
 ## Using it from an assistant
 
 Give an assistant the JSON summary, not your file:

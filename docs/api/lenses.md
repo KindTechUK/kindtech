@@ -112,11 +112,14 @@ It accepts two shapes of data:
 | `postcodes` | `postcode` | One row per person or case, with a home postcode |
 | `neighbourhood_counts` | `lsoa_code`, `count` | Already totalled by 2021 LSOA |
 
-In `postcodes` mode the distinct, well-formed postcodes are sent to
-[postcodes.io](https://postcodes.io/) to find their neighbourhoods. No other
-column leaves your machine, and rows that are blank or not shaped like a
-postcode are never sent. In `neighbourhood_counts` mode nothing leaves your
-machine.
+In `postcodes` mode the lens looks postcodes up in the
+[postcode table on your machine](postcodes.md#looking-up-postcodes-on-this-machine)
+when one is installed, and then no postcode is sent anywhere. Install it once
+with `uk-open-data postcodes download`. Without the table, the distinct,
+well-formed postcodes are sent to [postcodes.io](https://postcodes.io/); no
+other column leaves your machine, and rows that are blank or not shaped like a
+postcode are never sent. The result says which happened, under `choices` and
+`privacy`. In `neighbourhood_counts` mode nothing leaves your machine.
 
 The lens then works out your **catchment**: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
@@ -144,6 +147,7 @@ table, and a warning says how many there are.
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `suppress_below` | `5` | Counts above zero and below this are hidden |
+| `postcode_lookup` | `"auto"` | `"offline"` uses the table on your machine and fails without one, `"online"` uses postcodes.io, `"auto"` uses the table when it is installed |
 | `catchment` | worked out | A local authority name or code, a list of them, or `"England"` |
 | `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out catchment |
 
