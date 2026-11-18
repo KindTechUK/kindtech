@@ -121,6 +121,19 @@ def postcodes_to_lsoa(postcodes: Iterable[str]) -> list[str | None]:
     return [table.lsoa(postcode) for postcode in postcodes]
 
 
+def postcodes_to_local_authority(postcodes: Iterable[str]) -> list[str | None]:
+    """Return the local authority code for each postcode, in the order given.
+
+    A postcode that is not in the table (for example a Scottish postcode) gives
+    None.
+
+    Raises:
+        PostcodeTableError: If no postcode table is installed.
+    """
+    table = _open_table()
+    return [table.local_authority(postcode) for postcode in postcodes]
+
+
 def district_to_local_authorities(district: str) -> list[str]:
     """Return the local authority codes a postcode district reaches into.
 
@@ -186,15 +199,25 @@ class _Table:
                 high = middle
         return low
 
-    def lsoa(self, postcode: str) -> str | None:
-        """Return the LSOA code for a postcode, or None."""
+    def _area(self, postcode: str) -> list[str] | None:
+        """Return the [LSOA code, local authority code] of a postcode, or None."""
         key = _key(postcode)
         if key is None:
             return None
         index = self._first_at_or_after(key)
         if index < self._count and self._key_at(index) == key:
-            return self._area_at(index)[0]
+            return self._area_at(index)
         return None
+
+    def lsoa(self, postcode: str) -> str | None:
+        """Return the LSOA code for a postcode, or None."""
+        area = self._area(postcode)
+        return area[0] if area else None
+
+    def local_authority(self, postcode: str) -> str | None:
+        """Return the local authority code for a postcode, or None."""
+        area = self._area(postcode)
+        return area[1] if area else None
 
     def local_authorities(self, district: str) -> list[str]:
         """Return the local authority codes of every postcode in a district."""

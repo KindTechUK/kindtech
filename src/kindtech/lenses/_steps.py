@@ -8,7 +8,7 @@ them keeps or reports a value from the data.
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 import narwhals as nw
@@ -28,6 +28,7 @@ from kindtech.postcodes import (
     postcode_table_info,
     postcode_table_path,
     postcodes_to_geography,
+    postcodes_to_local_authority,
     postcodes_to_lsoa,
 )
 
@@ -46,7 +47,7 @@ SUPPRESS_BELOW = Option(
 POSTCODE_LOOKUP = Option(
     name="postcode_lookup",
     description=(
-        "How postcodes are placed in neighbourhoods. 'offline' reads a "
+        "How postcodes are placed in areas. 'offline' reads a "
         "table on this machine, so no postcode is sent anywhere. "
         "'online' sends the distinct postcodes to postcodes.io. 'auto' "
         "uses the table when one is installed and postcodes.io "
@@ -54,6 +55,19 @@ POSTCODE_LOOKUP = Option(
     ),
     default="auto",
 )
+
+
+@dataclass(frozen=True)
+class Level:
+    """A size of area that postcodes can be placed in."""
+
+    geography_type: str
+    singular: str
+    plural: str
+
+
+NEIGHBOURHOOD = Level("LSOA", "neighbourhood", "neighbourhoods")
+LOCAL_AUTHORITY = Level("LAD", "local authority", "local authorities")
 
 
 @dataclass
@@ -103,12 +117,22 @@ def use_postcode_table(options: dict[str, Any]) -> bool:
 
 
 def count_by_postcode(
-    values: list[Any], use_table: bool, trail: Trail
+    values: list[Any],
+    use_table: bool,
+    trail: Trail,
+    level: Level = NEIGHBOURHOOD,
 ) -> tuple[Counter[str], int]:
-    """Place each row's postcode in a neighbourhood and count rows per area.
+    """Place each row's postcode in an area and count rows per area.
+
+    Args:
+        values: The postcode column.
+        use_table: Look postcodes up on this machine when True, and with
+            postcodes.io when False.
+        trail: Where the steps, warnings, sources and choices are recorded.
+        level: The size of area to place postcodes in.
 
     Returns:
-        Rows per neighbourhood code, and the number of rows supplied.
+        Rows per area code, and the number of rows supplied.
     """
     supplied = len(values)
     blank = sum(1 for value in values if is_blank(value))
@@ -135,13 +159,13 @@ def count_by_postcode(
         raise LensInputError(msg)
     distinct = sorted(set(usable))
     lookup = _look_up_on_this_machine if use_table else _look_up_online
-    found_for, where = lookup(distinct, trail)
+    found_for, where = lookup(distinct, trail, level)
     codes = (found_for[postcode] for postcode in usable)
     found = [code for code in codes if code is not None]
     not_found = len(usable) - len(found)
     trail.working.append(
         Step(
-            title="Found the neighbourhood for each postcode",
+            title=f"Found the {level.singular} for each postcode",
             detail=(
                 f"{len(distinct)} distinct postcodes were looked up {where}. "
                 f"{not_found} rows had a postcode that was not found."
@@ -155,16 +179,20 @@ def count_by_postcode(
 
 
 def _look_up_on_this_machine(
-    postcodes: list[str], trail: Trail
+    postcodes: list[str], trail: Trail, level: Level
 ) -> tuple[dict[str, str | None], str]:
     """Look postcodes up in the installed table. Nothing is sent anywhere."""
     try:
-        codes = postcodes_to_lsoa(postcodes)
+        if level == LOCAL_AUTHORITY:
+            codes = postcodes_to_local_authority(postcodes)
+        else:
+            codes = postcodes_to_lsoa(postcodes)
         info = postcode_table_info()
     except PostcodeTableError as error:
         raise LensInputError(str(error)) from error
     edition = str(info["edition"])
-    trail.sources.append(ons_postcode_lookup(edition, tuple(info["attribution"])))
+    source = ons_postcode_lookup(edition, tuple(info["attribution"]))
+    trail.sources.append(replace(source, used_for=_used_for(level)))
     trail.choices.append(
         Choice(
             id="postcode_lookup",
@@ -179,15 +207,15 @@ def _look_up_on_this_machine(
 
 
 def _look_up_online(
-    postcodes: list[str], trail: Trail
+    postcodes: list[str], trail: Trail, level: Level
 ) -> tuple[dict[str, str | None], str]:
     """Look postcodes up with postcodes.io, and record that they were sent."""
-    frame = nw.from_native(postcodes_to_geography(postcodes, "LSOA"), eager_only=True)
-    codes = frame["geography_code"].to_list()
-    trail.sources.append(POSTCODES_IO)
+    looked_up = postcodes_to_geography(postcodes, level.geography_type)
+    codes = nw.from_native(looked_up, eager_only=True)["geography_code"].to_list()
+    trail.sources.append(replace(POSTCODES_IO, used_for=_used_for(level)))
     trail.sent.append(
         f"{len(postcodes)} distinct postcodes were sent to postcodes.io to find "
-        "their neighbourhoods. No other column left this machine."
+        f"their {level.plural}. No other column left this machine."
     )
     trail.choices.append(
         Choice(
@@ -206,6 +234,11 @@ def _look_up_online(
         for postcode, code in zip(postcodes, codes, strict=True)
     }
     return found, "with postcodes.io"
+
+
+def _used_for(level: Level) -> str:
+    """Say what a postcode source was used for."""
+    return f"Finding the {level.singular} each postcode is in."
 
 
 def _warn_left_out(

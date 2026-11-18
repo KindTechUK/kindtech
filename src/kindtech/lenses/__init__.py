@@ -6,7 +6,7 @@ the checks a person should do. Results hold totals only, never rows.
 
     >>> from kindtech.lenses import list_lenses, run_lens
     >>> [lens.id for lens in list_lenses()]
-    ['reach-deprivation']
+    ['reach-deprivation', 'need-reach']
     >>> result = run_lens(
     ...     "reach-deprivation",
     ...     clients,
@@ -16,7 +16,8 @@ the checks a person should do. Results hold totals only, never rows.
     41.3
 """
 
-from kindtech.lenses import reach_deprivation as _reach_deprivation  # noqa: F401
+from kindtech.lenses import need_reach as _need_reach
+from kindtech.lenses import reach_deprivation as _reach_deprivation
 from kindtech.lenses._model import (
     Check,
     Choice,
@@ -43,6 +44,10 @@ from kindtech.lenses._registry import (
     run_lens,
 )
 from kindtech.lenses.maps import load_map_boundaries, render_map
+
+# Lenses are listed in this order.
+for _lens in (_reach_deprivation.LENS, _need_reach.LENS):
+    register_lens(_lens)
 
 __all__ = [
     "Check",

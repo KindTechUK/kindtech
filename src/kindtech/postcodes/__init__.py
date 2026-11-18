@@ -22,6 +22,7 @@ from .offline import (
     postcode_table_info,
     postcode_table_path,
     postcode_to_lsoa,
+    postcodes_to_local_authority,
     postcodes_to_lsoa,
 )
 
@@ -38,5 +39,6 @@ __all__ = [
     "postcode_table_path",
     "postcode_to_lsoa",
     "postcodes_to_geography",
+    "postcodes_to_local_authority",
     "postcodes_to_lsoa",
 ]
