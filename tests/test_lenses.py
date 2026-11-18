@@ -241,6 +241,28 @@ def test_list_and_describe_lenses():
     json.dumps(info.to_dict())
 
 
+def test_amount_roles_are_marked_in_every_lens():
+    # A count or a volume is added up, so a lone row's number comes back as
+    # its place's total. Nothing else that is a number may come back.
+    amounts = {
+        lens.id: [role.name for role in lens.roles if role.amount]
+        for lens in list_lenses()
+    }
+    assert amounts == {
+        "reach-deprivation": ["count"],
+        "need-reach": ["count"],
+        "who-we-miss": ["count"],
+        "provision-gap": ["volume"],
+        "access-distance": [],
+    }
+    roles = describe_lens("provision-gap").to_dict()["roles"]
+    assert {role["name"]: role["amount"] for role in roles} == {
+        "postcode": False,
+        "local_authority": False,
+        "volume": True,
+    }
+
+
 def test_unknown_lens_names_the_known_ones():
     with pytest.raises(KeyError, match=LENS_ID):
         describe_lens("no-such-lens")

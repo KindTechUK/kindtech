@@ -54,6 +54,13 @@ class Role:
     leave out only the listed values, compared without case, and check every
     other value in the column. When no values are listed, every value of a
     reported column is a public name, and the caller leaves the column out.
+
+    ``amount`` is True when the column holds a number the lens adds up, such
+    as a count of people or a volume. A total of it appears in the result, so
+    where one row is the only one for its place or group, that row's number
+    comes back as the total. A caller that checks a result for repeated input
+    values should not treat a plain number in an amount column as one. A
+    number in any other column, such as a latitude, never comes back.
     """
 
     name: str
@@ -61,6 +68,7 @@ class Role:
     example: str = ""
     reported: bool = False
     reported_values: tuple[str, ...] = ()
+    amount: bool = False
 
 
 @dataclass(frozen=True)

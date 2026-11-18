@@ -111,6 +111,7 @@ INFO = LensInfo(
                 "sessions, places, boxes or hours. Not a count of people."
             ),
             example="120",
+            amount=True,
         ),
     ),
     input_modes=(

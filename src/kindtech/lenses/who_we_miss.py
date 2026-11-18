@@ -180,6 +180,7 @@ INFO = LensInfo(
             name="count",
             description="How many people are in the group on that row.",
             example="12",
+            amount=True,
         ),
     ),
     input_modes=(
