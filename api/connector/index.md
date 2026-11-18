@@ -103,15 +103,20 @@ changes the lens options.
 | `reach-deprivation` | `{"lsoa_code": "E01003189", "count": 12}` | none |
 | `need-reach` | `{"local_authority": "Lewisham", "count": 120}` | none |
 | `who-we-miss` | `{"group": "Black Caribbean", "count": 40}` | `catchment`, the area the charity serves |
+| `provision-gap` | `{"local_authority": "Lewisham", "volume": 1200}` | none |
+
+A `volume` is what the charity provides in that place, such as sessions, places
+or hours. The provision gap lens hides no small figure, because a volume is
+not a count of people, and its result says so.
 
 The answer holds the lens result without the rows of its detail tables, so an
 assistant is not handed a row per neighbourhood. Rows about individual people,
-such as one postcode per person, are refused.
+such as one postcode per person, are refused, and so is one row per site.
 
-A count given as text that is nothing but a number, such as `"1200"` or
-`"1,200"`, is read as a number, because assistants often send one that way.
-Any other text in a count is left for the lens, which says how many rows to
-correct.
+A count or volume given as text that is nothing but a number, such as
+`"1200"` or `"1,200"`, is read as a number, because assistants often send one
+that way. Any other text there is left for the lens, which says how many rows
+to correct.
 
 ```python
 from kindtech.connector import run_lens_on_counts
@@ -132,11 +137,13 @@ answer["result"]["tables"]    # the places to look at first
 an option the lens needs), `unknown_lens` or `unavailable` (a data source the
 lens needs could not be reached).
 
-When you host the connector, keep the public figures two of the lenses compare
-with on the server when the image is built, so a run does not wait on Nomis:
-`kindtech.lenses.need_reach.download_need_figures` for the need against reach
-lens, and `kindtech.lenses.who_we_miss.download_residents` for the who we are
-missing lens.
+When you host the connector, keep the public figures three of the lenses
+compare with on the server when the image is built, so a run does not wait on
+Nomis: `kindtech.lenses.need_reach.download_need_figures` for the need against
+reach lens, the same function called with `"residents"` for the provision gap
+lens, which sets provision against everyone who lives in a place unless told
+otherwise, and `kindtech.lenses.who_we_miss.download_residents` for the who we
+are missing lens.
 
 ## The privacy rule
 
