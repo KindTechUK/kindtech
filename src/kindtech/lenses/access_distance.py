@@ -645,8 +645,8 @@ def _choices(
             label="Distance that counts as within reach",
             value=f"{within:g} km",
             reason=(
-                f"No distance was given, so {DEFAULT_WITHIN_KM} km is used. Set "
-                "the distance people will travel for what you offer."
+                f"{DEFAULT_WITHIN_KM} km is what the lens uses when no distance "
+                "is set. Set the distance people will travel for what you offer."
                 if within == DEFAULT_WITHIN_KM
                 else "You set the distance."
             ),
