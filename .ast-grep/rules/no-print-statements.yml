@@ -6,6 +6,6 @@ rule:
   pattern: print($$$ARGS)
 files:
   - "src/**/*.py"
-ignoreFiles:
+ignores:
   - "**/_ingestion.py"
   - "**/tests/**"
