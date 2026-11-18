@@ -173,7 +173,12 @@ REACH = {
     "roles": [
         {"name": "postcode", "description": "A postcode", "example": "SE13 7VC"},
         {"name": "lsoa_code", "description": "2021 LSOA", "example": "E01003189"},
-        {"name": "count", "description": "People in the area", "example": 12},
+        {
+            "name": "count",
+            "description": "People in the area",
+            "example": 12,
+            "amount": True,
+        },
     ],
     "input_modes": [
         {
@@ -225,7 +230,12 @@ COUNCILS = {
             "example": "Lewisham",
             "reported": True,
         },
-        {"name": "count", "description": "People in the area", "example": 12},
+        {
+            "name": "count",
+            "description": "People in the area",
+            "example": 12,
+            "amount": True,
+        },
     ],
     "input_modes": [
         {
@@ -254,7 +264,12 @@ GROUPS = {
             "reported": True,
             "reported_values": ["Asian", "Black", "Mixed", "White", "Other"],
         },
-        {"name": "count", "description": "People in the group", "example": 12},
+        {
+            "name": "count",
+            "description": "People in the group",
+            "example": 12,
+            "amount": True,
+        },
     ],
     "input_modes": [
         {

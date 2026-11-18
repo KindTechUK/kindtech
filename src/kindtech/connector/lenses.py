@@ -209,12 +209,8 @@ def _with_amounts_as_numbers(
 
 
 def _amount_roles(info: dict[str, Any]) -> set[str]:
-    """The roles that hold an amount, such as a count: their example is a number."""
-    return {
-        role["name"]
-        for role in info.get("roles", [])
-        if not isinstance(_number(str(role.get("example", ""))), str)
-    }
+    """The roles the lens marks as holding an amount, such as a count."""
+    return {role["name"] for role in info.get("roles", []) if role.get("amount")}
 
 
 def _number(text: str) -> int | float | str:
