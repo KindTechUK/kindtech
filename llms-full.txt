@@ -2241,8 +2241,9 @@ answers, a `summary`, its `roles` (the columns it can use), its `input_modes`
 An option that takes one of a fixed list of values lists them as `choices`,
 each with a `value` and a `label` a person can read, so a page can show a list
 to pick from. `choices` is empty when the option is free, such as a number or
-a place name. For the `need` option of the second lens the choices are the
-built-in needs; a table of your own is still given as a mapping.
+a place name. For the `need` option of the second and fourth lenses the
+choices are the built-in needs; a table of your own is still given as a
+mapping.
 
 A role with `reported` set to `True` holds names the result uses too, such as
 local authorities, so the same names can appear in the result. Values of every
@@ -2633,6 +2634,99 @@ catchment, not place by place.
     residents of every age. With few people, a gap can be chance. Do not
     publish two runs with different catchments side by side, because a small
     count can be worked out by taking one from the other.
+
+## Provision gap
+
+`provision-gap` answers: where is provision thin against need across a region?
+It covers England and Wales, by local authority, and follows the method of the
+[Starlight case study](../case-studies/starlight-children-mapping.md): total
+what is provided in each place, divide by the people it is for, and look at
+the places where need is high and provision is thin.
+
+The lens is about sites and what they provide, not about people. It accepts
+three shapes of data:
+
+| Input mode | Columns | What it is |
+| --- | --- | --- |
+| `sites` | `postcode`, `volume` | One row per site or service, with how much it provides |
+| `area_volumes` | `local_authority`, `volume` | Already totalled by local authority, named or coded |
+| `site_list` | `postcode` | One row per site or service. Each site counts as one |
+
+The volume is a number of zero or more: sessions, places, boxes, hours. A row
+whose volume is not a number stops the run, and the message says how many rows
+to correct. Postcodes are placed as in the first lens: on your machine when
+the postcode table is installed, and with postcodes.io otherwise.
+
+The lens loads a count of people in every local authority from
+[Nomis](ons.md), divides the volume you provide in each one by it, and lists
+the high-need local authorities with the least provision for each 1,000
+people. A local authority is high need when its count is at or above the
+middle value of the area compared.
+
+The `need` option takes the same values as in the second lens, and the same
+kept copies (`keep_need_figures`, `download_need_figures`) are used. The
+default here is `"residents"`, everyone who lives in the place, because
+provision is often for anyone. Choose a narrower need when what you provide is
+for a group Nomis counts.
+
+| Figure | Meaning |
+| --- | --- |
+| `volume_supplied` | Volume in the data you gave |
+| `volume_located` | Volume placed in a local authority in England or Wales |
+| `volume_in_catchment` | Volume in the area compared |
+| `areas_compared` | Local authorities compared |
+| `areas_without_provision` | Local authorities where you provide nothing |
+| `people_in_need` | People in need in the area compared |
+| `volume_per_1000_in_need` | Volume for each 1,000 people in need, across the area |
+| `high_need_areas` | Local authorities with high need |
+| `high_need_areas_without_provision` | High-need local authorities where you provide nothing |
+| `share_of_provision_in_high_need_areas` | Share of your provision that is in high-need local authorities |
+| `share_of_need_in_high_need_areas` | Share of people in need who live there, for comparison |
+
+The charts `need_in_priority_areas` and `provision_in_priority_areas` show
+people in need and volume for each 1,000 in need for the places in
+`priority_areas`. The map has two layers, `need` and `provision`.
+
+| Table | Rows |
+| --- | --- |
+| `priority_areas` | The high-need local authorities with the least provision, lowest first: people in need, volume, volume per 1,000 in need |
+| `by_local_authority` | One per local authority compared, with need and provision in bands. This feeds the map |
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `postcode_lookup` | `"auto"` | As for the first lens |
+| `need` | `"residents"` | The people to set your provision against |
+| `catchment` | England and Wales | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"` |
+| `top` | `10` | How many places to list, from 1 to 50 |
+
+```python
+result = run_lens(
+    "provision-gap",
+    sites,
+    columns={"postcode": "Site postcode", "volume": "Sessions a year"},
+    options={"catchment": "Wales"},
+)
+
+result.table("priority_areas").to_frame()
+```
+
+This lens hides no count, and has no `suppress_below` option. A volume is what
+an organisation provides, not a number of people, so every total is shown,
+however small. Where a local authority holds one site, the volume shown for it
+is that site's. If your numbers are people, such as people seen at each site,
+use the need against reach lens instead, which hides small counts. The result
+still names no site and repeats no postcode.
+
+The case study compares England's Integrated Care Boards and uses hospital
+admissions as the need. This lens compares local authorities and takes the
+need from Nomis. Health boards, and a need column of your own, are not in it
+yet.
+
+!!! note "Before you use the figures"
+    Read `result.checks` and `result.caveats`. Thin provision is not the same
+    as unmet need: another organisation may already provide there. Provision
+    is counted where a site is, and people travel. Need is a count of people,
+    so large local authorities are more likely to be listed.
 
 ## Writing a lens
 

@@ -921,6 +921,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#provision-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      Provision gap
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#writing-a-lens" class="md-nav__link">
     <span class="md-ellipsis">
       Writing a lens
@@ -1288,6 +1297,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#provision-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      Provision gap
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#writing-a-lens" class="md-nav__link">
     <span class="md-ellipsis">
       Writing a lens
@@ -1365,8 +1383,9 @@ answers, a <code>summary</code>, its <code>roles</code> (the columns it can use)
 <p>An option that takes one of a fixed list of values lists them as <code>choices</code>,
 each with a <code>value</code> and a <code>label</code> a person can read, so a page can show a list
 to pick from. <code>choices</code> is empty when the option is free, such as a number or
-a place name. For the <code>need</code> option of the second lens the choices are the
-built-in needs; a table of your own is still given as a mapping.</p>
+a place name. For the <code>need</code> option of the second and fourth lenses the
+choices are the built-in needs; a table of your own is still given as a
+mapping.</p>
 <p>A role with <code>reported</code> set to <code>True</code> holds names the result uses too, such as
 local authorities, so the same names can appear in the result. Values of every
 other role are never repeated.</p>
@@ -2006,6 +2025,186 @@ barrier: groups differ in age and in need, and the census counts
 residents of every age. With few people, a gap can be chance. Do not
 publish two runs with different catchments side by side, because a small
 count can be worked out by taking one from the other.</p>
+</div>
+<h2 id="provision-gap">Provision gap</h2>
+<p><code>provision-gap</code> answers: where is provision thin against need across a region?
+It covers England and Wales, by local authority, and follows the method of the
+<a href="../../case-studies/starlight-children-mapping/">Starlight case study</a>: total
+what is provided in each place, divide by the people it is for, and look at
+the places where need is high and provision is thin.</p>
+<p>The lens is about sites and what they provide, not about people. It accepts
+three shapes of data:</p>
+<table>
+<thead>
+<tr>
+<th>Input mode</th>
+<th>Columns</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sites</code></td>
+<td><code>postcode</code>, <code>volume</code></td>
+<td>One row per site or service, with how much it provides</td>
+</tr>
+<tr>
+<td><code>area_volumes</code></td>
+<td><code>local_authority</code>, <code>volume</code></td>
+<td>Already totalled by local authority, named or coded</td>
+</tr>
+<tr>
+<td><code>site_list</code></td>
+<td><code>postcode</code></td>
+<td>One row per site or service. Each site counts as one</td>
+</tr>
+</tbody>
+</table>
+<p>The volume is a number of zero or more: sessions, places, boxes, hours. A row
+whose volume is not a number stops the run, and the message says how many rows
+to correct. Postcodes are placed as in the first lens: on your machine when
+the postcode table is installed, and with postcodes.io otherwise.</p>
+<p>The lens loads a count of people in every local authority from
+<a href="../ons/">Nomis</a>, divides the volume you provide in each one by it, and lists
+the high-need local authorities with the least provision for each 1,000
+people. A local authority is high need when its count is at or above the
+middle value of the area compared.</p>
+<p>The <code>need</code> option takes the same values as in the second lens, and the same
+kept copies (<code>keep_need_figures</code>, <code>download_need_figures</code>) are used. The
+default here is <code>"residents"</code>, everyone who lives in the place, because
+provision is often for anyone. Choose a narrower need when what you provide is
+for a group Nomis counts.</p>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>volume_supplied</code></td>
+<td>Volume in the data you gave</td>
+</tr>
+<tr>
+<td><code>volume_located</code></td>
+<td>Volume placed in a local authority in England or Wales</td>
+</tr>
+<tr>
+<td><code>volume_in_catchment</code></td>
+<td>Volume in the area compared</td>
+</tr>
+<tr>
+<td><code>areas_compared</code></td>
+<td>Local authorities compared</td>
+</tr>
+<tr>
+<td><code>areas_without_provision</code></td>
+<td>Local authorities where you provide nothing</td>
+</tr>
+<tr>
+<td><code>people_in_need</code></td>
+<td>People in need in the area compared</td>
+</tr>
+<tr>
+<td><code>volume_per_1000_in_need</code></td>
+<td>Volume for each 1,000 people in need, across the area</td>
+</tr>
+<tr>
+<td><code>high_need_areas</code></td>
+<td>Local authorities with high need</td>
+</tr>
+<tr>
+<td><code>high_need_areas_without_provision</code></td>
+<td>High-need local authorities where you provide nothing</td>
+</tr>
+<tr>
+<td><code>share_of_provision_in_high_need_areas</code></td>
+<td>Share of your provision that is in high-need local authorities</td>
+</tr>
+<tr>
+<td><code>share_of_need_in_high_need_areas</code></td>
+<td>Share of people in need who live there, for comparison</td>
+</tr>
+</tbody>
+</table>
+<p>The charts <code>need_in_priority_areas</code> and <code>provision_in_priority_areas</code> show
+people in need and volume for each 1,000 in need for the places in
+<code>priority_areas</code>. The map has two layers, <code>need</code> and <code>provision</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>priority_areas</code></td>
+<td>The high-need local authorities with the least provision, lowest first: people in need, volume, volume per 1,000 in need</td>
+</tr>
+<tr>
+<td><code>by_local_authority</code></td>
+<td>One per local authority compared, with need and provision in bands. This feeds the map</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>postcode_lookup</code></td>
+<td><code>"auto"</code></td>
+<td>As for the first lens</td>
+</tr>
+<tr>
+<td><code>need</code></td>
+<td><code>"residents"</code></td>
+<td>The people to set your provision against</td>
+</tr>
+<tr>
+<td><code>catchment</code></td>
+<td>England and Wales</td>
+<td>A local authority name or code, a list of them, or <code>"England"</code>, <code>"Wales"</code> or <code>"England and Wales"</code></td>
+</tr>
+<tr>
+<td><code>top</code></td>
+<td><code>10</code></td>
+<td>How many places to list, from 1 to 50</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
+    <span class="s2">&quot;provision-gap&quot;</span><span class="p">,</span>
+    <span class="n">sites</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Site postcode&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;Sessions a year&quot;</span><span class="p">},</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;catchment&quot;</span><span class="p">:</span> <span class="s2">&quot;Wales&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;priority_areas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+</code></pre></div>
+<p>This lens hides no count, and has no <code>suppress_below</code> option. A volume is what
+an organisation provides, not a number of people, so every total is shown,
+however small. Where a local authority holds one site, the volume shown for it
+is that site's. If your numbers are people, such as people seen at each site,
+use the need against reach lens instead, which hides small counts. The result
+still names no site and repeats no postcode.</p>
+<p>The case study compares England's Integrated Care Boards and uses hospital
+admissions as the need. This lens compares local authorities and takes the
+need from Nomis. Health boards, and a need column of your own, are not in it
+yet.</p>
+<div class="admonition note">
+<p class="admonition-title">Before you use the figures</p>
+<p>Read <code>result.checks</code> and <code>result.caveats</code>. Thin provision is not the same
+as unmet need: another organisation may already provide there. Provision
+is counted where a site is, and people travel. Need is a count of people,
+so large local authorities are more likely to be listed.</p>
 </div>
 <h2 id="writing-a-lens">Writing a lens</h2>
 <p>A lens is a <code>LensInfo</code> and a function that takes a <code>LensInput</code> and returns a
