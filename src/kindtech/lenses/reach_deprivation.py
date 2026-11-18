@@ -15,7 +15,7 @@ from typing import Any
 import narwhals as nw
 
 import kindtech
-from kindtech.imd import kept_imd_note, load_imd
+from kindtech.imd import imd_path, kept_imd_note, load_imd
 from kindtech.lenses._inputs import is_blank
 from kindtech.lenses._model import (
     Chart,
@@ -280,10 +280,13 @@ def _load_areas(trail: Trail) -> dict[str, _Area]:
     The index is read from a copy kept on this machine when there is one (see
     :func:`kindtech.imd.keep_imd`), and the result then says so.
     """
+    kept = imd_path(2025) is not None
     try:
-        note = kept_imd_note(2025)
         loaded = load_imd(nation=ENGLAND, year=2025)
+        note = kept_imd_note(2025)
     except ValueError as error:
+        if not kept:
+            raise
         msg = (
             "The deprivation index kept on this machine could not be read. "
             "Fetch it again with kindtech.imd.download_imd()."

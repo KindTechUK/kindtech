@@ -539,6 +539,18 @@ def test_an_index_kept_on_this_machine_that_cannot_be_read_is_an_input_error():
         run_lens(LENS_ID, [{"lsoa_code": _area_code(0, 1), "count": 30}])
 
 
+def test_an_error_from_the_download_is_not_blamed_on_a_kept_copy():
+    with (
+        mock.patch(
+            "kindtech.lenses.reach_deprivation.load_imd",
+            side_effect=ValueError("the published file changed"),
+        ),
+        pytest.raises(ValueError, match="the published file changed") as raised,
+    ):
+        run_lens(LENS_ID, [{"lsoa_code": _area_code(0, 1), "count": 30}])
+    assert not isinstance(raised.value, LensInputError)
+
+
 # --- options with a fixed list of values -----------------------------------
 
 
