@@ -8,7 +8,7 @@ the result against the English Indices of Deprivation 2025.
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
@@ -16,7 +16,7 @@ import narwhals as nw
 
 import kindtech
 from kindtech.imd import load_imd
-from kindtech.lenses._inputs import is_blank, tidy_postcode, to_count
+from kindtech.lenses._inputs import is_blank
 from kindtech.lenses._model import (
     Check,
     Choice,
@@ -32,35 +32,34 @@ from kindtech.lenses._model import (
     Option,
     Privacy,
     Role,
-    Source,
     Step,
     Table,
 )
 from kindtech.lenses._privacy import (
-    DEFAULT_SUPPRESS_BELOW,
     band_labels,
     cells_to_hide,
     count_band,
-    is_small,
+    group_hidden,
 )
 from kindtech.lenses._registry import register_lens
-from kindtech.lenses.sources import IOD_2025, POSTCODES_IO, ons_postcode_lookup
-from kindtech.postcodes import (
-    PostcodeTableError,
-    postcode_table_info,
-    postcode_table_path,
-    postcodes_to_geography,
-    postcodes_to_lsoa,
+from kindtech.lenses._steps import (
+    POSTCODE_LOOKUP,
+    SUPPRESS_BELOW,
+    Trail,
+    count_by_neighbourhood,
+    count_by_postcode,
+    percent,
+    read_threshold,
+    use_postcode_table,
 )
+from kindtech.lenses.sources import IOD_2025
 
 LENS_ID = "reach-deprivation"
 LENS_VERSION = "0.1"
-MIN_SUPPRESS_BELOW = 3
 DECILES = tuple(range(1, 11))
 MOST_DEPRIVED = (0, 1)  # positions of deciles 1 and 2
 ELSEWHERE = tuple(range(2, 10))  # positions of deciles 3 to 10
 ENGLAND = "England"
-LOOKUP_CHOICES = ("auto", "offline", "online")
 
 INFO = LensInfo(
     id=LENS_ID,
@@ -107,25 +106,8 @@ INFO = LensInfo(
         ),
     ),
     options=(
-        Option(
-            name="suppress_below",
-            description=(
-                "Counts above zero and below this number are hidden. It cannot "
-                f"be set lower than {MIN_SUPPRESS_BELOW}."
-            ),
-            default=DEFAULT_SUPPRESS_BELOW,
-        ),
-        Option(
-            name="postcode_lookup",
-            description=(
-                "How postcodes are placed in neighbourhoods. 'offline' reads a "
-                "table on this machine, so no postcode is sent anywhere. "
-                "'online' sends the distinct postcodes to postcodes.io. 'auto' "
-                "uses the table when one is installed and postcodes.io "
-                "otherwise."
-            ),
-            default="auto",
-        ),
+        SUPPRESS_BELOW,
+        POSTCODE_LOOKUP,
         Option(
             name="catchment",
             description=(
@@ -169,18 +151,6 @@ class _Area:
     residents: float
 
 
-@dataclass
-class _Trail:
-    """What the run records as it goes."""
-
-    working: list[Step] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
-    sent: list[str] = field(default_factory=list)
-    sources: list[Source] = field(default_factory=list)
-    choices: list[Choice] = field(default_factory=list)
-    hidden: int = 0
-
-
 @dataclass(frozen=True)
 class _Catchment:
     """The area the charity serves, as a set of local authorities."""
@@ -198,17 +168,17 @@ class _Catchment:
 
 def run(lens_input: LensInput) -> LensResult:
     """Run the lens. Use :func:`kindtech.lenses.run_lens` to call it."""
-    threshold = _threshold(lens_input.options)
+    threshold = read_threshold(lens_input.options)
     min_share = _min_share(lens_input.options)
-    trail = _Trail()
+    trail = Trail()
     if lens_input.mode.name == "postcodes":
-        counts, supplied = _counts_from_postcodes(
+        counts, supplied = count_by_postcode(
             lens_input.values["postcode"],
-            _use_table(lens_input.options),
+            use_postcode_table(lens_input.options),
             trail,
         )
     else:
-        counts, supplied = _counts_from_neighbourhoods(
+        counts, supplied = count_by_neighbourhood(
             lens_input.values["lsoa_code"], lens_input.values["count"], trail
         )
     areas = _load_areas()
@@ -272,21 +242,6 @@ def run(lens_input: LensInput) -> LensResult:
 # --- options ---------------------------------------------------------------
 
 
-def _threshold(options: dict[str, Any]) -> int:
-    """Read and check the small-count threshold."""
-    value = options.get("suppress_below")
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise LensInputError("The option 'suppress_below' must be a whole number.")
-    if value < MIN_SUPPRESS_BELOW:
-        msg = (
-            f"The option 'suppress_below' cannot be lower than "
-            f"{MIN_SUPPRESS_BELOW}, so that counts of one or two people are "
-            "always hidden."
-        )
-        raise LensInputError(msg)
-    return value
-
-
 def _min_share(options: dict[str, Any]) -> float:
     """Read and check the share a local authority needs to join the catchment."""
     value = options.get("catchment_min_share")
@@ -299,184 +254,6 @@ def _min_share(options: dict[str, Any]) -> float:
         )
         raise LensInputError(msg)
     return float(value)
-
-
-def _use_table(options: dict[str, Any]) -> bool:
-    """Decide whether postcodes are looked up in the table on this machine."""
-    how = options.get("postcode_lookup")
-    if how not in LOOKUP_CHOICES:
-        msg = (
-            f"The option 'postcode_lookup' must be one of: {', '.join(LOOKUP_CHOICES)}."
-        )
-        raise LensInputError(msg)
-    if how == "auto":
-        return postcode_table_path() is not None
-    return how == "offline"
-
-
-# --- reading the input -----------------------------------------------------
-
-
-def _counts_from_postcodes(
-    values: list[Any], use_table: bool, trail: _Trail
-) -> tuple[Counter[str], int]:
-    """Place each row's postcode in a neighbourhood and count rows per area."""
-    supplied = len(values)
-    blank = sum(1 for value in values if is_blank(value))
-    tidy = [tidy_postcode(value) for value in values]
-    usable = [postcode for postcode in tidy if postcode is not None]
-    malformed = supplied - blank - len(usable)
-    trail.working.append(
-        Step(
-            title="Read the postcode column",
-            detail=(
-                f"{supplied} rows. {blank} had no postcode and {malformed} "
-                "held something that is not shaped like a UK postcode. "
-                "Those rows were left out and were not sent anywhere."
-            ),
-            rows_in=supplied,
-            rows_out=len(usable),
-        )
-    )
-    if not usable:
-        msg = (
-            "None of the rows holds something shaped like a UK postcode. "
-            "Check that the right column was chosen for 'postcode'."
-        )
-        raise LensInputError(msg)
-    distinct = sorted(set(usable))
-    lookup = _look_up_on_this_machine if use_table else _look_up_online
-    found_for, where = lookup(distinct, trail)
-    codes = (found_for[postcode] for postcode in usable)
-    found = [code for code in codes if code is not None]
-    not_found = len(usable) - len(found)
-    trail.working.append(
-        Step(
-            title="Found the neighbourhood for each postcode",
-            detail=(
-                f"{len(distinct)} distinct postcodes were looked up {where}. "
-                f"{not_found} rows had a postcode that was not found."
-            ),
-            rows_in=len(usable),
-            rows_out=len(found),
-        )
-    )
-    _warn_left_out(blank, malformed, not_found, use_table, trail)
-    return Counter(found), supplied
-
-
-def _look_up_on_this_machine(
-    postcodes: list[str], trail: _Trail
-) -> tuple[dict[str, str | None], str]:
-    """Look postcodes up in the installed table. Nothing is sent anywhere."""
-    try:
-        codes = postcodes_to_lsoa(postcodes)
-        info = postcode_table_info()
-    except PostcodeTableError as error:
-        raise LensInputError(str(error)) from error
-    edition = str(info["edition"])
-    trail.sources.append(ons_postcode_lookup(edition, tuple(info["attribution"])))
-    trail.choices.append(
-        Choice(
-            id="postcode_lookup",
-            label="How postcodes were placed",
-            value=f"On this machine, from the ONS postcode lookup ({edition})",
-            reason="A postcode table is installed, so no postcode was sent out.",
-            option="postcode_lookup",
-        )
-    )
-    where = f"on this machine, in the ONS postcode lookup ({edition})"
-    return dict(zip(postcodes, codes, strict=True)), where
-
-
-def _look_up_online(
-    postcodes: list[str], trail: _Trail
-) -> tuple[dict[str, str | None], str]:
-    """Look postcodes up with postcodes.io, and record that they were sent."""
-    frame = nw.from_native(postcodes_to_geography(postcodes, "LSOA"), eager_only=True)
-    codes = frame["geography_code"].to_list()
-    trail.sources.append(POSTCODES_IO)
-    trail.sent.append(
-        f"{len(postcodes)} distinct postcodes were sent to postcodes.io to find "
-        "their neighbourhoods. No other column left this machine."
-    )
-    trail.choices.append(
-        Choice(
-            id="postcode_lookup",
-            label="How postcodes were placed",
-            value="postcodes.io, an online service",
-            reason=(
-                "No postcode table is installed on this machine. Install one "
-                "with `uk-open-data postcodes download` to keep postcodes here."
-            ),
-            option="postcode_lookup",
-        )
-    )
-    found = {
-        postcode: None if is_blank(code) else str(code)
-        for postcode, code in zip(postcodes, codes, strict=True)
-    }
-    return found, "with postcodes.io"
-
-
-def _warn_left_out(
-    blank: int, malformed: int, not_found: int, use_table: bool, trail: _Trail
-) -> None:
-    """Add a warning for each kind of row that could not be used."""
-    if blank:
-        trail.warnings.append(f"{blank} rows had no postcode.")
-    if malformed:
-        trail.warnings.append(
-            f"{malformed} rows held something that is not shaped like a UK postcode."
-        )
-    if not_found and use_table:
-        trail.warnings.append(
-            f"{not_found} rows had a postcode that was not found. It may be "
-            "mistyped, or outside England and Wales."
-        )
-    elif not_found:
-        trail.warnings.append(
-            f"{not_found} rows had a postcode that was not found. It may be "
-            "mistyped or no longer in use."
-        )
-
-
-def _counts_from_neighbourhoods(
-    codes: list[Any], counts: list[Any], trail: _Trail
-) -> tuple[Counter[str], int]:
-    """Total the counts given for each neighbourhood code."""
-    totals: Counter[str] = Counter()
-    blank = 0
-    bad = 0
-    for code, raw in zip(codes, counts, strict=True):
-        count = to_count(raw)
-        if is_blank(code):
-            blank += 1
-        elif count is None:
-            bad += 1
-        else:
-            totals[str(code).strip().upper()] += count
-    if bad:
-        msg = (
-            f"{bad} rows have a count that is not a whole number of zero or "
-            "more. Correct those rows and run the lens again."
-        )
-        raise LensInputError(msg)
-    if blank:
-        trail.warnings.append(f"{blank} rows had no neighbourhood code.")
-    supplied = sum(totals.values())
-    trail.working.append(
-        Step(
-            title="Read the neighbourhood counts",
-            detail=(
-                f"{len(codes)} rows covering {len(totals)} neighbourhoods and "
-                f"{supplied} people. {blank} rows had no code and were left out."
-            ),
-            rows_in=len(codes),
-            rows_out=len(codes) - blank,
-        )
-    )
-    return totals, supplied
 
 
 # --- deprivation -----------------------------------------------------------
@@ -510,7 +287,7 @@ def _load_areas() -> dict[str, _Area]:
 
 
 def _keep_english(
-    counts: Counter[str], areas: dict[str, _Area], threshold: int, trail: _Trail
+    counts: Counter[str], areas: dict[str, _Area], threshold: int, trail: Trail
 ) -> dict[str, int]:
     """Keep the people placed in a neighbourhood the index covers."""
     located = {code: n for code, n in counts.items() if code in areas and n > 0}
@@ -634,7 +411,7 @@ def _keep_catchment(
     areas: dict[str, _Area],
     catchment: _Catchment,
     threshold: int,
-    trail: _Trail,
+    trail: Trail,
 ) -> dict[str, int]:
     """Keep the people who live in the catchment and record the step."""
     inside = {code: n for code, n in located.items() if _inside(areas[code], catchment)}
@@ -688,18 +465,13 @@ def _residents_by_decile(areas: dict[str, _Area], catchment: _Catchment) -> list
 # --- tables ----------------------------------------------------------------
 
 
-def _percent(part: float, whole: float) -> float | None:
-    """Return a percentage to one decimal place, or None when there is no whole."""
-    return round(100 * part / whole, 1) if whole else None
-
-
 def _per_1000(people: int, residents: float) -> float | None:
     """Return people per 1,000 residents, or None when nobody lives there."""
     return round(1000 * people / residents, 2) if residents else None
 
 
 def _decile_table(
-    people: list[int], residents: list[float], hide: list[bool], trail: _Trail
+    people: list[int], residents: list[float], hide: list[bool], trail: Trail
 ) -> Table:
     """People, residents and reach by deprivation decile, in the catchment."""
     total = sum(people)
@@ -708,9 +480,9 @@ def _decile_table(
         {
             "imd_decile": decile,
             "people": None if hidden else n,
-            "share_of_people": None if hidden else _percent(n, total),
+            "share_of_people": None if hidden else percent(n, total),
             "residents": round(lived),
-            "share_of_residents": _percent(lived, all_residents),
+            "share_of_residents": percent(lived, all_residents),
             "people_per_1000": None if hidden else _per_1000(n, lived),
             "suppressed": hidden,
         }
@@ -754,7 +526,7 @@ def _authority_table(
     areas: dict[str, _Area],
     catchment: _Catchment,
     threshold: int,
-    trail: _Trail,
+    trail: Trail,
 ) -> Table:
     """People by local authority, with small authorities grouped together.
 
@@ -787,7 +559,7 @@ def _authority_table(
             "lad_name": lad_names[lad],
             "local_authorities": 1,
             "people": None if hidden else n,
-            "share_of_people": None if hidden else _percent(n, total),
+            "share_of_people": None if hidden else percent(n, total),
             "in_catchment": inside,
             "suppressed": hidden,
         }
@@ -804,7 +576,7 @@ def _authority_table(
                 "lad_name": "Other local authorities",
                 "local_authorities": len(unnamed),
                 "people": sum(unnamed),
-                "share_of_people": _percent(sum(unnamed), total),
+                "share_of_people": percent(sum(unnamed), total),
                 "in_catchment": catchment.whole_country,
                 "suppressed": False,
             }
@@ -896,25 +668,6 @@ def _map_spec(threshold: int) -> MapSpec:
 # --- figures ---------------------------------------------------------------
 
 
-def _group_hidden(
-    counts: list[int], hide: list[bool], positions: tuple[int, ...], threshold: int
-) -> bool:
-    """Decide whether a figure for a group of deciles must be hidden.
-
-    The total is published, so a figure for a group also gives the figure for
-    every decile outside it. Each side is checked: a side gives a cell away
-    when its own count is small, or when exactly one of its cells is hidden in
-    the table.
-    """
-    outside = tuple(i for i in range(len(counts)) if i not in positions)
-    for side in (positions, outside):
-        total = sum(counts[position] for position in side)
-        hidden_cells = sum(hide[position] for position in side)
-        if is_small(total, threshold) or hidden_cells == 1:
-            return True
-    return False
-
-
 def _figures(
     supplied: int,
     located: int,
@@ -961,7 +714,7 @@ def _figures(
             "catchment_share_most_deprived_20",
             "Share of catchment residents who live in the 20% most deprived "
             "neighbourhoods in England",
-            _percent(sum(residents[:2]), sum(residents)),
+            percent(sum(residents[:2]), sum(residents)),
             "percent",
             note="The comparison for the share of your people.",
         ),
@@ -978,7 +731,7 @@ def _share_figure(
     threshold: int,
 ) -> Figure:
     """A share of the people located, hidden when it would give a cell away."""
-    if _group_hidden(people, hide, positions, threshold):
+    if group_hidden(people, hide, positions, threshold):
         return Figure(
             figure_id,
             label,
@@ -988,7 +741,7 @@ def _share_figure(
             suppressed=True,
         )
     part = sum(people[position] for position in positions)
-    return Figure(figure_id, label, _percent(part, sum(people)), "percent")
+    return Figure(figure_id, label, percent(part, sum(people)), "percent")
 
 
 def _reach_figures(
@@ -1008,7 +761,7 @@ def _reach_figures(
             ELSEWHERE,
         ),
     )
-    hidden = _group_hidden(people, hide, MOST_DEPRIVED, threshold)
+    hidden = group_hidden(people, hide, MOST_DEPRIVED, threshold)
     return [
         _reach_figure(figure_id, label, people, residents, positions, hidden)
         for figure_id, label, positions in groups
@@ -1124,7 +877,7 @@ def _checks(mode: str, catchment: _Catchment) -> tuple[Check, ...]:
     )
 
 
-def _privacy(threshold: int, trail: _Trail) -> Privacy:
+def _privacy(threshold: int, trail: Trail) -> Privacy:
     """Summarise how the result protects people."""
     return Privacy(
         suppress_below=threshold,
