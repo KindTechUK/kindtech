@@ -1413,6 +1413,11 @@ ever repeated. If you check a result for values repeated from the input, leave
 out the listed values when there are any, compared without case, and check
 every other value in the column. Leave the whole column out only when the
 role is reported and lists no values.</p>
+<p>A role with <code>amount</code> set to <code>True</code> holds a number the lens adds up: a count of
+people or a volume. A total of it is in the result, so where one row is the
+only one for its place or group, that row's number comes back as the total.
+That is not a repeated value. A number in any other role, such as a latitude,
+never comes back.</p>
 <h3 id="describe_lenslens_id"><code>describe_lens(lens_id)</code></h3>
 <p>Returns the <code>LensInfo</code> for one lens. Raises <code>KeyError</code> for an unknown id.</p>
 <h3 id="run_lenslens_id-data-columnsnone-optionsnone"><code>run_lens(lens_id, data, columns=None, options=None)</code></h3>

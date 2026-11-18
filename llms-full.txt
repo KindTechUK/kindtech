@@ -2268,6 +2268,12 @@ out the listed values when there are any, compared without case, and check
 every other value in the column. Leave the whole column out only when the
 role is reported and lists no values.
 
+A role with `amount` set to `True` holds a number the lens adds up: a count of
+people or a volume. A total of it is in the result, so where one row is the
+only one for its place or group, that row's number comes back as the total.
+That is not a repeated value. A number in any other role, such as a latitude,
+never comes back.
+
 ### `describe_lens(lens_id)`
 
 Returns the `LensInfo` for one lens. Raises `KeyError` for an unknown id.
