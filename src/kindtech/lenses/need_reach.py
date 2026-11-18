@@ -8,10 +8,13 @@ high and the charity reaches few people.
 
 from __future__ import annotations
 
+import json
 from collections import Counter
-from collections.abc import Mapping
-from dataclasses import dataclass
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, replace
 from datetime import date
+from functools import lru_cache
+from pathlib import Path
 from statistics import median
 from typing import Any
 
@@ -50,6 +53,7 @@ from kindtech.lenses._steps import (
 )
 from kindtech.lenses.sources import nomis_table
 from kindtech.ons import load_ons
+from kindtech.postcodes.offline import data_dir
 
 LENS_ID = "need-reach"
 LENS_VERSION = "0.1"
@@ -73,6 +77,8 @@ RESERVED_FILTERS = ("geography", "geography_type", "select")
 # Where people go when their local authority is not in the need figures. The
 # next step counts them as left out.
 UNLISTED = "unlisted"
+NEED_FOLDER = "need"
+NEED_FILE_FORMAT = "kindtech-need-1"
 
 
 @dataclass(frozen=True)
@@ -376,26 +382,103 @@ def _custom_measure(wanted: Mapping[str, Any]) -> _Measure:
 
 
 def _load_need(measure: _Measure, trail: Trail) -> dict[str, _Authority]:
-    """Load people in need by local authority, for England and Wales."""
-    query: dict[str, Any] = {"time": "latest", **measure.filters}
-    try:
-        loaded = load_ons(
-            measure.dataset,
-            geography_type="LAD",
-            select=["geography_code", "geography_name", "obs_value"],
-            **query,
+    """Load people in need by local authority, for England and Wales.
+
+    A copy kept on this machine is used when there is one. Otherwise the
+    figures are fetched from Nomis.
+    """
+    source = nomis_table(measure.dataset, f"People in need: {measure.label}.")
+    kept = _read_kept(measure.id) if measure.id in MEASURES else None
+    if kept is not None:
+        rows, note = kept
+        source = replace(
+            source, edition=f"{source.edition}. A copy kept on this machine, {note}"
         )
-    except ValueError as error:
-        msg = f"The need figures could not be loaded from Nomis. {error}"
+        where = "A copy kept on this machine was used, so nothing was fetched."
+    else:
+        try:
+            filters = json.dumps(measure.filters, sort_keys=True)
+            rows = _fetch_need(measure.dataset, filters)
+        except (TypeError, ValueError) as error:
+            msg = f"The need figures could not be loaded from Nomis. {error}"
+            raise LensInputError(msg) from error
+        where = "Fetched from Nomis."
+    if not rows:
+        msg = (
+            "The need figures list no local authority in England or Wales. "
+            "Check the 'need' option."
+        )
+        raise LensInputError(msg)
+    trail.sources.append(source)
+    trail.working.append(
+        Step(
+            title="Loaded the need figures",
+            detail=(
+                f"{measure.label}: {round(sum(need for _, _, need in rows)):,} "
+                f"people in {len(rows)} local authorities in England and "
+                f"Wales. From {source.name}. {where}"
+            ),
+        )
+    )
+    return {
+        code: _Authority(code=code, name=name, need=need) for code, name, need in rows
+    }
+
+
+def _read_kept(need: str) -> tuple[tuple[tuple[str, str, float], ...], str] | None:
+    """Read the need figures kept on this machine, with the note that goes with them.
+
+    Returns:
+        The figures and a note that says where they came from, or None when no
+        copy is kept.
+    """
+    path = need_figures_path(need)
+    if path is None:
+        return None
+    try:
+        kept = json.loads(path.read_text(encoding="utf-8"))
+        if kept["format"] != NEED_FILE_FORMAT:
+            raise ValueError(kept["format"])
+        rows = tuple(
+            (str(code), str(name), float(people))
+            for code, name, people in kept["figures"]
+        )
+        return rows, str(kept["note"])
+    except (KeyError, TypeError, ValueError) as error:
+        msg = (
+            "The need figures kept on this machine could not be read. Fetch "
+            "them again with kindtech.lenses.need_reach.download_need_figures()."
+        )
         raise LensInputError(msg) from error
+
+
+@lru_cache(maxsize=32)
+def _fetch_need(dataset: str, filters: str) -> tuple[tuple[str, str, float], ...]:
+    """Fetch one need measure from Nomis, once per process.
+
+    Args:
+        dataset: The Nomis dataset id.
+        filters: The category filters, as JSON text so they can be a cache key.
+
+    Returns:
+        Local authority code, name and people in need, for England and Wales.
+
+    Raises:
+        ValueError: If Nomis has no such table, or it has no count by local
+            authority.
+    """
+    query: dict[str, Any] = {"time": "latest", **json.loads(filters)}
+    loaded = load_ons(
+        dataset,
+        geography_type="LAD",
+        select=["geography_code", "geography_name", "obs_value"],
+        **query,
+    )
     frame = nw.from_native(loaded, eager_only=True)
     wanted = ("geography_code", "geography_name", "obs_value")
     if any(name not in frame.columns for name in wanted):
-        msg = (
-            "The need figures from Nomis do not have a count for each local "
-            "authority. Check the 'need' option."
-        )
-        raise LensInputError(msg)
+        msg = "The table has no count for each local authority."
+        raise ValueError(msg)
     totals: dict[str, float] = {}
     names: dict[str, str] = {}
     columns = [frame[name].to_list() for name in wanted]
@@ -405,28 +488,95 @@ def _load_need(measure: _Measure, trail: Trail) -> dict[str, _Authority]:
             continue
         totals[key] = totals.get(key, 0.0) + float(value)
         names[key] = str(name)
-    if not totals:
-        msg = (
-            "The need figures from Nomis list no local authority in England or "
-            "Wales. Check the 'need' option."
-        )
-        raise LensInputError(msg)
-    source = nomis_table(measure.dataset, f"People in need: {measure.label}.")
-    trail.sources.append(source)
-    trail.working.append(
-        Step(
-            title="Loaded the need figures",
-            detail=(
-                f"{measure.label}: {round(sum(totals.values())):,} people in "
-                f"{len(totals)} local authorities in England and Wales. "
-                f"From {source.name}."
-            ),
-        )
-    )
-    return {
-        code: _Authority(code=code, name=names[code], need=need)
-        for code, need in totals.items()
+    return tuple((code, names[code], need) for code, need in totals.items())
+
+
+def need_figures_path(need: str = "unemployed") -> Path | None:
+    """Return where a need's figures are kept on this machine, or None.
+
+    Args:
+        need: One of the needs the lens has built in, such as ``unemployed``.
+    """
+    path = data_dir() / NEED_FOLDER / f"{need}.json"
+    return path if need in MEASURES and path.is_file() else None
+
+
+def keep_need_figures(
+    need: str,
+    figures: Iterable[tuple[str, str, float]],
+    note: str,
+) -> Path:
+    """Keep a need's figures on this machine, so the lens does not fetch them.
+
+    The lens reads the copy instead of asking Nomis, so a server or a
+    demonstration works without the network. The copy lives in the data folder
+    (see :func:`kindtech.postcodes.offline.data_dir`).
+
+    Args:
+        need: One of the needs the lens has built in, such as ``unemployed``.
+        figures: Local authority code, name and people in need, one per local
+            authority.
+        note: Where the figures came from, in a few words. It is shown with
+            the source in every result that uses the copy.
+
+    Returns:
+        The path of the file written.
+
+    Raises:
+        ValueError: If the need is not one the lens has built in.
+    """
+    if need not in MEASURES:
+        msg = f"No need called '{need}'. Known needs: {', '.join(MEASURES)}."
+        raise ValueError(msg)
+    measure = MEASURES[need]
+    kept = {
+        "format": NEED_FILE_FORMAT,
+        "need": need,
+        "label": measure.label,
+        "dataset": measure.dataset,
+        "note": note,
+        "figures": [[code, name, people] for code, name, people in figures],
     }
+    path = data_dir() / NEED_FOLDER / f"{need}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(kept, indent=1) + "\n", encoding="utf-8")
+    return path
+
+
+def download_need_figures(need: str = "unemployed") -> Path:
+    """Fetch a need's figures from Nomis and keep them on this machine.
+
+    Run this once when a server is built, and again when Nomis publishes new
+    figures. Only public figures are fetched.
+
+    Args:
+        need: One of the needs the lens has built in, such as ``unemployed``.
+
+    Returns:
+        The path of the file written.
+
+    Raises:
+        ValueError: If the need is not one the lens has built in, or Nomis
+            does not return a count for each local authority.
+    """
+    if need not in MEASURES:
+        msg = f"No need called '{need}'. Known needs: {', '.join(MEASURES)}."
+        raise ValueError(msg)
+    measure = MEASURES[need]
+    clear_need_cache()
+    rows = _fetch_need(measure.dataset, json.dumps(measure.filters, sort_keys=True))
+    note = f"fetched from Nomis on {date.today().isoformat()}."
+    return keep_need_figures(need, rows, note)
+
+
+def clear_need_cache() -> None:
+    """Forget the need figures fetched earlier in this process.
+
+    Need figures are fetched from Nomis once for each need and then kept in
+    memory, so a server answers later runs without the network. Call this to
+    fetch them again.
+    """
+    _fetch_need.cache_clear()
 
 
 # --- reading the input -----------------------------------------------------
