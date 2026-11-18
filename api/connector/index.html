@@ -1337,8 +1337,9 @@ assistant is not handed a row per neighbourhood. Rows about individual people,
 such as one postcode per person, are refused, and so is one row per site.</p>
 <p>A count or volume given as text that is nothing but a number, such as
 <code>"1200"</code> or <code>"1,200"</code>, is read as a number, because assistants often send one
-that way. Any other text there is left for the lens, which says how many rows
-to correct.</p>
+that way. This applies to the roles a lens marks <code>amount</code> in its description
+and to no other. Any other text there is left for the lens, which says how
+many rows to correct.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_lens_on_counts</span>
 
 <span class="n">answer</span> <span class="o">=</span> <span class="n">run_lens_on_counts</span><span class="p">(</span>
