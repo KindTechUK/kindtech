@@ -235,7 +235,21 @@ def test_built_in_needs_can_be_picked_from_a_list():
             "unemployed_men",
             "Unemployed men aged 16 to 64, not counting full-time students",
         ),
+        ("residents", "Residents of every age"),
     ]
+
+
+def test_need_can_be_everyone_who_lives_there(nomis):
+    result = _run(_counts(Lewisham=60), options={"need": "residents"})
+    dataset, query = nomis.asked[0]
+    assert dataset == "NM_2028_1"
+    assert query["c_sex"] == 0
+    assert query["measures"] == 20100
+    assert result.figure("people_in_need").label.endswith("Residents of every age")
+    assert result.sources[0].id == "nomis-nm_2028_1"
+    assert any("Not all of them need" in caveat for caveat in result.caveats)
+    path = keep_need_figures("residents", INVENTED, "invented.")
+    assert need_figures_path("residents") == path
 
 
 def test_need_can_be_women_only(nomis):
