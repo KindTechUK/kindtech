@@ -18,6 +18,9 @@ from collections.abc import Sequence
 from io import BytesIO
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
+
+import requests
 
 from kindtech._frames import read_spreadsheet_rows
 from kindtech.lenses import (
@@ -60,6 +63,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _fail(str(error.args[0]))
     except FileNotFoundError as error:
         return _fail(f"The file '{error.filename}' was not found.")
+    except requests.RequestException as error:
+        return _fail(_unreachable(error))
     except (OSError, ValueError) as error:
         return _fail(str(error))
     _emit(text, getattr(args, "output", None))
@@ -278,6 +283,23 @@ def _emit(text: str, output: Path | None) -> None:
         return
     output.write_text(text + "\n", encoding="utf-8")
     sys.stdout.write(f"Written to {output}\n")
+
+
+def _unreachable(error: requests.RequestException) -> str:
+    """Say that a data source could not be reached, without its web address.
+
+    The text of the error holds the whole address, which can hold what was
+    asked for, such as a postcode. Only the name of the site is given.
+    """
+    address = getattr(error.request, "url", None)
+    site = urlsplit(address).hostname if address else None
+    where = f" ({site})" if site else ""
+    return (
+        f"A data source this command needs could not be reached{where}. Check "
+        "the connection and try again. A lens can run without the network "
+        "when the public figures it uses are kept on this machine: see the "
+        "page for the lens in the documentation."
+    )
 
 
 def _fail(message: str) -> int:

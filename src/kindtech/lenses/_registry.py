@@ -69,6 +69,9 @@ def run_lens(
         KeyError: If there is no lens with this id.
         LensInputError: If the data, columns or options cannot be used. The
             message is safe to show: it never repeats a value from the data.
+        requests.RequestException: If a public data source the lens needs
+            cannot be reached. Its text holds the web address asked for, so
+            show a message of your own rather than the text.
     """
     lens = _get(lens_id)
     info = lens.info
