@@ -43,17 +43,24 @@ def _plain(value: Any) -> Any:
 class Role:
     """A column a lens can use, named by what it holds.
 
-    ``reported`` is True when the column names public places that the result
-    is about, such as local authorities, so the same names can appear in its
-    figures and tables. A caller that checks a result for values repeated from
-    the input should leave such a column out of the check. It is False for
-    anything about a person, and a lens never repeats those.
+    ``reported`` is True when the column holds names that the result uses too,
+    such as local authorities, so the same names can appear in its figures and
+    tables. It is False for anything about a person, and a lens never repeats
+    those.
+
+    ``reported_values`` narrows that to the exact values the result uses, for
+    a column that also holds a person's own words, such as their ethnic group.
+    A caller that checks a result for values repeated from the input should
+    leave out only the listed values, compared without case, and check every
+    other value in the column. When no values are listed, every value of a
+    reported column is a public name, and the caller leaves the column out.
     """
 
     name: str
     description: str
     example: str = ""
     reported: bool = False
+    reported_values: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
