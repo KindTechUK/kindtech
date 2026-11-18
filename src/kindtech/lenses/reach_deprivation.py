@@ -44,8 +44,14 @@ from kindtech.lenses._privacy import (
     is_small,
 )
 from kindtech.lenses._registry import register_lens
-from kindtech.lenses.sources import IOD_2025, POSTCODES_IO
-from kindtech.postcodes import postcodes_to_geography
+from kindtech.lenses.sources import IOD_2025, POSTCODES_IO, ons_postcode_lookup
+from kindtech.postcodes import (
+    PostcodeTableError,
+    postcode_table_info,
+    postcode_table_path,
+    postcodes_to_geography,
+    postcodes_to_lsoa,
+)
 
 LENS_ID = "reach-deprivation"
 LENS_VERSION = "0.1"
@@ -54,6 +60,7 @@ DECILES = tuple(range(1, 11))
 MOST_DEPRIVED = (0, 1)  # positions of deciles 1 and 2
 ELSEWHERE = tuple(range(2, 10))  # positions of deciles 3 to 10
 ENGLAND = "England"
+LOOKUP_CHOICES = ("auto", "offline", "online")
 
 INFO = LensInfo(
     id=LENS_ID,
@@ -109,6 +116,17 @@ INFO = LensInfo(
             default=DEFAULT_SUPPRESS_BELOW,
         ),
         Option(
+            name="postcode_lookup",
+            description=(
+                "How postcodes are placed in neighbourhoods. 'offline' reads a "
+                "table on this machine, so no postcode is sent anywhere. "
+                "'online' sends the distinct postcodes to postcodes.io. 'auto' "
+                "uses the table when one is installed and postcodes.io "
+                "otherwise."
+            ),
+            default="auto",
+        ),
+        Option(
             name="catchment",
             description=(
                 "The area you serve: a list of local authority names or codes, "
@@ -159,6 +177,7 @@ class _Trail:
     warnings: list[str] = field(default_factory=list)
     sent: list[str] = field(default_factory=list)
     sources: list[Source] = field(default_factory=list)
+    choices: list[Choice] = field(default_factory=list)
     hidden: int = 0
 
 
@@ -183,7 +202,11 @@ def run(lens_input: LensInput) -> LensResult:
     min_share = _min_share(lens_input.options)
     trail = _Trail()
     if lens_input.mode.name == "postcodes":
-        counts, supplied = _counts_from_postcodes(lens_input.values["postcode"], trail)
+        counts, supplied = _counts_from_postcodes(
+            lens_input.values["postcode"],
+            _use_table(lens_input.options),
+            trail,
+        )
     else:
         counts, supplied = _counts_from_neighbourhoods(
             lens_input.values["lsoa_code"], lens_input.values["count"], trail
@@ -237,7 +260,7 @@ def run(lens_input: LensInput) -> LensResult:
         tables=tuple(tables),
         map=map_spec,
         working=tuple(trail.working),
-        choices=_choices(catchment, threshold),
+        choices=(*trail.choices, *_choices(catchment, threshold)),
         checks=_checks(lens_input.mode.name, catchment),
         caveats=CAVEATS,
         warnings=tuple(trail.warnings),
@@ -278,11 +301,24 @@ def _min_share(options: dict[str, Any]) -> float:
     return float(value)
 
 
+def _use_table(options: dict[str, Any]) -> bool:
+    """Decide whether postcodes are looked up in the table on this machine."""
+    how = options.get("postcode_lookup")
+    if how not in LOOKUP_CHOICES:
+        msg = (
+            f"The option 'postcode_lookup' must be one of: {', '.join(LOOKUP_CHOICES)}."
+        )
+        raise LensInputError(msg)
+    if how == "auto":
+        return postcode_table_path() is not None
+    return how == "offline"
+
+
 # --- reading the input -----------------------------------------------------
 
 
 def _counts_from_postcodes(
-    values: list[Any], trail: _Trail
+    values: list[Any], use_table: bool, trail: _Trail
 ) -> tuple[Counter[str], int]:
     """Place each row's postcode in a neighbourhood and count rows per area."""
     supplied = len(values)
@@ -309,41 +345,83 @@ def _counts_from_postcodes(
         )
         raise LensInputError(msg)
     distinct = sorted(set(usable))
-    lookup = _lookup_neighbourhoods(distinct)
-    codes = (lookup[postcode] for postcode in usable)
+    lookup = _look_up_on_this_machine if use_table else _look_up_online
+    found_for, where = lookup(distinct, trail)
+    codes = (found_for[postcode] for postcode in usable)
     found = [code for code in codes if code is not None]
     not_found = len(usable) - len(found)
-    trail.sources.append(POSTCODES_IO)
-    trail.sent.append(
-        f"{len(distinct)} distinct postcodes were sent to postcodes.io to find "
-        "their neighbourhoods. No other column left this machine."
-    )
     trail.working.append(
         Step(
             title="Found the neighbourhood for each postcode",
             detail=(
-                f"{len(distinct)} distinct postcodes were looked up. "
+                f"{len(distinct)} distinct postcodes were looked up {where}. "
                 f"{not_found} rows had a postcode that was not found."
             ),
             rows_in=len(usable),
             rows_out=len(found),
         )
     )
-    _warn_left_out(blank, malformed, not_found, trail)
+    _warn_left_out(blank, malformed, not_found, use_table, trail)
     return Counter(found), supplied
 
 
-def _lookup_neighbourhoods(postcodes: list[str]) -> dict[str, str | None]:
-    """Return the 2021 LSOA code for each postcode, or None if not found."""
+def _look_up_on_this_machine(
+    postcodes: list[str], trail: _Trail
+) -> tuple[dict[str, str | None], str]:
+    """Look postcodes up in the installed table. Nothing is sent anywhere."""
+    try:
+        codes = postcodes_to_lsoa(postcodes)
+        info = postcode_table_info()
+    except PostcodeTableError as error:
+        raise LensInputError(str(error)) from error
+    edition = str(info["edition"])
+    trail.sources.append(ons_postcode_lookup(edition, tuple(info["attribution"])))
+    trail.choices.append(
+        Choice(
+            id="postcode_lookup",
+            label="How postcodes were placed",
+            value=f"On this machine, from the ONS postcode lookup ({edition})",
+            reason="A postcode table is installed, so no postcode was sent out.",
+            option="postcode_lookup",
+        )
+    )
+    where = f"on this machine, in the ONS postcode lookup ({edition})"
+    return dict(zip(postcodes, codes, strict=True)), where
+
+
+def _look_up_online(
+    postcodes: list[str], trail: _Trail
+) -> tuple[dict[str, str | None], str]:
+    """Look postcodes up with postcodes.io, and record that they were sent."""
     frame = nw.from_native(postcodes_to_geography(postcodes, "LSOA"), eager_only=True)
     codes = frame["geography_code"].to_list()
-    return {
+    trail.sources.append(POSTCODES_IO)
+    trail.sent.append(
+        f"{len(postcodes)} distinct postcodes were sent to postcodes.io to find "
+        "their neighbourhoods. No other column left this machine."
+    )
+    trail.choices.append(
+        Choice(
+            id="postcode_lookup",
+            label="How postcodes were placed",
+            value="postcodes.io, an online service",
+            reason=(
+                "No postcode table is installed on this machine. Install one "
+                "with `uk-open-data postcodes download` to keep postcodes here."
+            ),
+            option="postcode_lookup",
+        )
+    )
+    found = {
         postcode: None if is_blank(code) else str(code)
         for postcode, code in zip(postcodes, codes, strict=True)
     }
+    return found, "with postcodes.io"
 
 
-def _warn_left_out(blank: int, malformed: int, not_found: int, trail: _Trail) -> None:
+def _warn_left_out(
+    blank: int, malformed: int, not_found: int, use_table: bool, trail: _Trail
+) -> None:
     """Add a warning for each kind of row that could not be used."""
     if blank:
         trail.warnings.append(f"{blank} rows had no postcode.")
@@ -351,7 +429,12 @@ def _warn_left_out(blank: int, malformed: int, not_found: int, trail: _Trail) ->
         trail.warnings.append(
             f"{malformed} rows held something that is not shaped like a UK postcode."
         )
-    if not_found:
+    if not_found and use_table:
+        trail.warnings.append(
+            f"{not_found} rows had a postcode that was not found. It may be "
+            "mistyped, or outside England and Wales."
+        )
+    elif not_found:
         trail.warnings.append(
             f"{not_found} rows had a postcode that was not found. It may be "
             "mistyped or no longer in use."

@@ -30,6 +30,12 @@ from kindtech.lenses import (
     run_lens,
 )
 from kindtech.lenses.maps import render_map
+from kindtech.postcodes import (
+    PostcodeTableError,
+    build_postcode_table,
+    download_postcode_table,
+    postcode_table_info,
+)
 
 EXIT_OK = 0
 EXIT_INPUT_ERROR = 2
@@ -47,6 +53,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         text = args.handler(args)
     except LensInputError as error:
         return _fail("\n".join(error.problems))
+    except PostcodeTableError as error:
+        return _fail(str(error))
     except KeyError as error:
         return _fail(str(error.args[0]))
     except FileNotFoundError as error:
@@ -113,7 +121,37 @@ def _build_parser() -> argparse.ArgumentParser:
         help="What the map is coloured by. The first layer is used by default.",
     )
     run.set_defaults(handler=_handle_run)
+    _add_postcode_commands(commands)
     return parser
+
+
+def _add_postcode_commands(commands: Any) -> None:
+    """Add the commands that manage the postcode table on this machine."""
+    postcodes = commands.add_parser(
+        "postcodes", help="Manage the postcode table kept on this machine."
+    )
+    postcode_commands = postcodes.add_subparsers(title="postcodes commands")
+
+    download = postcode_commands.add_parser(
+        "download", help="Fetch the postcode table so lookups stay on this machine."
+    )
+    download.add_argument("--url", help="Fetch the table from this https address.")
+    download.add_argument("--sha256", help="The SHA-256 the file must have.")
+    download.add_argument(
+        "--force", action="store_true", help="Fetch again even if one is installed."
+    )
+    download.set_defaults(handler=_handle_postcodes_download)
+
+    info = postcode_commands.add_parser("info", help="Describe the installed table.")
+    info.set_defaults(handler=_handle_postcodes_info)
+
+    build = postcode_commands.add_parser(
+        "build", help="Build a table from the ONS best-fit postcode lookup."
+    )
+    build.add_argument("source", type=Path, help="The ONS lookup, as .csv or .zip.")
+    build.add_argument("table", type=Path, help="Where to write the .gz table.")
+    build.add_argument("--edition", required=True, help="For example 'May 2026'.")
+    build.set_defaults(handler=_handle_postcodes_build)
 
 
 # --- handlers --------------------------------------------------------------
@@ -151,6 +189,38 @@ def _handle_run(args: argparse.Namespace) -> str:
     if args.json:
         return _to_json(result.to_dict(include_detail=not args.summary))
     return _report_text(info, result)
+
+
+def _handle_postcodes_download(args: argparse.Namespace) -> str:
+    """Fetch and install the postcode table."""
+    path = download_postcode_table(url=args.url, sha256=args.sha256, force=args.force)
+    return f"The postcode table is installed at {path}\n{_table_text()}"
+
+
+def _handle_postcodes_info(args: argparse.Namespace) -> str:
+    """Describe the installed postcode table."""
+    return _table_text()
+
+
+def _handle_postcodes_build(args: argparse.Namespace) -> str:
+    """Build a postcode table from the ONS lookup."""
+    summary = build_postcode_table(args.source, args.table, args.edition)
+    return (
+        f"Wrote {args.table}: {summary['records']:,} postcodes in "
+        f"{summary['areas']:,} neighbourhoods, {summary['bytes']:,} bytes.\n"
+        f"sha256: {summary['sha256']}"
+    )
+
+
+def _table_text() -> str:
+    """Describe the installed postcode table in plain text."""
+    info = postcode_table_info()
+    lines = [
+        f"{info['source']}, {info['edition']}",
+        f"{info['records']:,} postcodes, {info['coverage']}",
+        *info["attribution"],
+    ]
+    return "\n".join(lines)
 
 
 # --- input -----------------------------------------------------------------
