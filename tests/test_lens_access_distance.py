@@ -529,6 +529,9 @@ def test_online_sends_postcodes_even_with_a_table(kept, table, neighbourhoods):
         )
     assert sent == [["M1 1VC", "SE13 7VC", "SE13 7VO"]]
     assert "3 distinct postcodes" in result.privacy.sent_to_third_parties[0]
+    reason = result.choices[0].reason
+    assert reason.startswith("You chose the online service.")
+    assert "No postcode table is installed" not in reason
 
 
 def test_site_positions_need_no_table_when_offline(kept):
