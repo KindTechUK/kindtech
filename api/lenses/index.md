@@ -92,6 +92,12 @@ Raises `LensInputError` (a `ValueError`) when the data, the column mapping or
 an option cannot be used. The message is written for a person and
 `error.problems` lists each problem separately.
 
+When a public data source the lens needs cannot be reached, the
+`requests.RequestException` is let out. Its text holds the whole web address
+that was asked for, which can hold a postcode, so show a message of your own
+rather than the text. The command line names the site alone. A lens needs no
+network when the public figures it uses are kept on your machine.
+
 ## Drawing the map
 
 A result describes its map; `render_map` draws it as an SVG picture with a

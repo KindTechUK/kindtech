@@ -1455,6 +1455,11 @@ never comes back.</p>
 <p>Raises <code>LensInputError</code> (a <code>ValueError</code>) when the data, the column mapping or
 an option cannot be used. The message is written for a person and
 <code>error.problems</code> lists each problem separately.</p>
+<p>When a public data source the lens needs cannot be reached, the
+<code>requests.RequestException</code> is let out. Its text holds the whole web address
+that was asked for, which can hold a postcode, so show a message of your own
+rather than the text. The command line names the site alone. A lens needs no
+network when the public figures it uses are kept on your machine.</p>
 <h2 id="drawing-the-map">Drawing the map</h2>
 <p>A result describes its map; <code>render_map</code> draws it as an SVG picture with a
 legend and the credits the data licences ask for.</p>
