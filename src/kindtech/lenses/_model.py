@@ -273,9 +273,14 @@ class Source:
 
 @dataclass(frozen=True)
 class Privacy:
-    """How the result protects the people in the data."""
+    """How the result protects the people in the data.
 
-    suppress_below: int
+    ``suppress_below`` is the threshold the lens used: counts above zero and
+    below it are hidden. It is ``None`` for a lens that hides nothing, because
+    its data is not about people.
+    """
+
+    suppress_below: int | None
     cells_suppressed: int
     row_level_output: bool = False
     sent_to_third_parties: tuple[str, ...] = ()

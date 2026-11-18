@@ -24,6 +24,7 @@ from kindtech.lenses import (
     LensInfo,
     LensInputError,
     LensResult,
+    Privacy,
     Table,
     describe_lens,
     list_lenses,
@@ -346,13 +347,22 @@ def _report_text(info: LensInfo, result: LensResult) -> str:
     lines += _section(
         "Privacy",
         [
-            f"Counts from 1 to {privacy.suppress_below - 1} are hidden. "
-            f"{privacy.cells_suppressed} cells or figures were hidden.",
+            *_hidden_counts(privacy),
             *(privacy.sent_to_third_parties or ("Nothing left this machine.",)),
             *privacy.notes,
         ],
     )
     return "\n".join(lines)
+
+
+def _hidden_counts(privacy: Privacy) -> list[str]:
+    """Say which counts were hidden, or nothing when the lens hides none."""
+    if privacy.suppress_below is None:
+        return []
+    return [
+        f"Counts from 1 to {privacy.suppress_below - 1} are hidden. "
+        f"{privacy.cells_suppressed} cells or figures were hidden."
+    ]
 
 
 def _section(title: str, items: list[str]) -> list[str]:

@@ -551,6 +551,7 @@ def test_result_explains_itself(kept):
         assert choice.option is None or choice.option in option_names
     assert any("straight line" in caveat for caveat in result.caveats)
     assert result.privacy.cells_suppressed == 0
+    assert result.privacy.suppress_below is None
     assert any("hides no count" in note for note in result.privacy.notes)
     assert any("confidential" in note for note in result.privacy.notes)
     summary = result.to_dict(include_detail=False)
