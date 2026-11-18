@@ -930,6 +930,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#access-and-distance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Access and distance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#writing-a-lens" class="md-nav__link">
     <span class="md-ellipsis">
       Writing a lens
@@ -1306,6 +1315,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#access-and-distance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Access and distance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#writing-a-lens" class="md-nav__link">
     <span class="md-ellipsis">
       Writing a lens
@@ -1383,9 +1401,8 @@ answers, a <code>summary</code>, its <code>roles</code> (the columns it can use)
 <p>An option that takes one of a fixed list of values lists them as <code>choices</code>,
 each with a <code>value</code> and a <code>label</code> a person can read, so a page can show a list
 to pick from. <code>choices</code> is empty when the option is free, such as a number or
-a place name. For the <code>need</code> option of the second and fourth lenses the
-choices are the built-in needs; a table of your own is still given as a
-mapping.</p>
+a place name. For the <code>need</code> option the choices are the built-in needs; a table
+of your own is still given as a mapping.</p>
 <p>A role with <code>reported</code> set to <code>True</code> holds names the result uses too, such as
 local authorities, so the same names can appear in the result. Values of every
 other role are never repeated.</p>
@@ -2205,6 +2222,186 @@ yet.</p>
 as unmet need: another organisation may already provide there. Provision
 is counted where a site is, and people travel. Need is a count of people,
 so large local authorities are more likely to be listed.</p>
+</div>
+<h2 id="access-and-distance">Access and distance</h2>
+<p><code>access-distance</code> answers: how far are people from our nearest site, and where
+would a new site help most? It covers England and Wales, by local authority,
+and follows the method of the
+<a href="../../case-studies/material-focus-recycling/">Material Focus case study</a>.</p>
+<p>Like the provision gap lens, it is about sites, not about people. It accepts
+two shapes of data:</p>
+<table>
+<thead>
+<tr>
+<th>Input mode</th>
+<th>Columns</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>site_coordinates</code></td>
+<td><code>latitude</code>, <code>longitude</code></td>
+<td>One row per site, in degrees. West is negative</td>
+</tr>
+<tr>
+<td><code>site_postcodes</code></td>
+<td><code>postcode</code></td>
+<td>One row per site. The postcodes are sent to postcodes.io to find where they are</td>
+</tr>
+</tbody>
+</table>
+<p>The postcode table on your machine holds no positions, so site postcodes are
+always looked up with postcodes.io, and the result says so. Give a latitude
+and longitude to send nothing. A row whose position is outside the United
+Kingdom is left out and counted; that is also what happens when the two
+columns are swapped. A site in Scotland or Northern Ireland still counts as a
+site.</p>
+<p>The lens loads the people in every local authority from <a href="../ons/">Nomis</a> and
+the centre of every local authority from the ONS Open Geography Portal. For
+each local authority it measures the distance in a straight line from the
+centre to your nearest site, to the nearest kilometre. A local authority is
+within reach when that distance is <code>within_km</code> or less. The list shows the
+local authorities beyond reach, with the most people first: the places where
+a new site would bring the most people within reach.</p>
+<p><strong>Distance is not travel time.</strong> The package has no road or public transport
+times, so the lens does not turn kilometres into minutes. And it measures from
+the centre of a local authority, not from where each person lives, which is
+rough for a large rural one.</p>
+<p>The <code>need</code> option takes the same values as in the second lens, and the same
+kept copies. The default is <code>"residents"</code>. The centres can be kept on the
+machine too, so the lens runs with no request at all:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span><span class="p">,</span> <span class="n">keep_centres</span>
+
+<span class="n">download_centres</span><span class="p">()</span>   <span class="c1"># fetch once, when a server is built</span>
+
+<span class="c1"># or keep centres of your own, for a demonstration</span>
+<span class="n">keep_centres</span><span class="p">(</span>
+    <span class="p">[(</span><span class="s2">&quot;E09000023&quot;</span><span class="p">,</span> <span class="mf">51.45</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;E09000011&quot;</span><span class="p">,</span> <span class="mf">51.47</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)],</span>
+    <span class="n">note</span><span class="o">=</span><span class="s2">&quot;invented for a demonstration.&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sites_supplied</code></td>
+<td>Sites in the data you gave</td>
+</tr>
+<tr>
+<td><code>sites_located</code></td>
+<td>Sites placed in the United Kingdom</td>
+</tr>
+<tr>
+<td><code>areas_compared</code></td>
+<td>Local authorities compared</td>
+</tr>
+<tr>
+<td><code>people_in_need</code></td>
+<td>People in the area compared</td>
+</tr>
+<tr>
+<td><code>average_distance_km</code></td>
+<td>Average distance to your nearest site, counting every person at the centre of their local authority</td>
+</tr>
+<tr>
+<td><code>share_of_people_within_reach</code></td>
+<td>Share of people in a local authority within <code>within_km</code> of a site</td>
+</tr>
+<tr>
+<td><code>people_beyond_reach</code></td>
+<td>People in a local authority farther than that</td>
+</tr>
+<tr>
+<td><code>areas_beyond_reach</code></td>
+<td>Local authorities farther than that</td>
+</tr>
+<tr>
+<td><code>farthest_distance_km</code></td>
+<td>Distance from the farthest local authority to a site</td>
+</tr>
+</tbody>
+</table>
+<p>The charts <code>people_in_priority_areas</code> and <code>distance_in_priority_areas</code> show
+the people and the distance for the places in <code>priority_areas</code>. The map has
+two layers, <code>distance</code> and <code>need</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>priority_areas</code></td>
+<td>The local authorities beyond reach, most people first: people, distance in kilometres. Empty when every place is within reach</td>
+</tr>
+<tr>
+<td><code>by_local_authority</code></td>
+<td>One per local authority compared, with people and distance in bands. This feeds the map</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>need</code></td>
+<td><code>"residents"</code></td>
+<td>The people to measure distance for</td>
+</tr>
+<tr>
+<td><code>catchment</code></td>
+<td>England and Wales</td>
+<td>A local authority name or code, a list of them, or <code>"England"</code>, <code>"Wales"</code> or <code>"England and Wales"</code></td>
+</tr>
+<tr>
+<td><code>within_km</code></td>
+<td><code>10</code></td>
+<td>How many kilometres from a site counts as within reach</td>
+</tr>
+<tr>
+<td><code>top</code></td>
+<td><code>10</code></td>
+<td>How many places to list, from 1 to 50</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
+    <span class="s2">&quot;access-distance&quot;</span><span class="p">,</span>
+    <span class="n">sites</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="s2">&quot;Lat&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="s2">&quot;Long&quot;</span><span class="p">},</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;catchment&quot;</span><span class="p">:</span> <span class="s2">&quot;Wales&quot;</span><span class="p">,</span> <span class="s2">&quot;within_km&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;priority_areas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+</code></pre></div>
+<p>This lens hides no count, and has no <code>suppress_below</code> option. The result
+names no site and repeats no postcode or position. Distances are rounded to
+the kilometre, but the distances from several local authorities can still
+show roughly where a site is.</p>
+<div class="admonition warning">
+<p class="admonition-title">Confidential addresses</p>
+<p>Do not share a result if the address of a site is confidential, such as a
+refuge. A check in every result asks this.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Before you use the figures</p>
+<p>Read <code>result.checks</code> and <code>result.caveats</code>. The figures say how far people
+are from a site. They do not say how far the people you see travel, or
+whether anyone far away needs you.</p>
 </div>
 <h2 id="writing-a-lens">Writing a lens</h2>
 <p>A lens is a <code>LensInfo</code> and a function that takes a <code>LensInput</code> and returns a
