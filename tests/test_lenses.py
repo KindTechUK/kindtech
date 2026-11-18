@@ -507,3 +507,47 @@ def test_result_explains_itself(world):
     assert result.working[0].rows_in == 70
     assert result.working[-1].title == "Hid small counts"
     json.dumps(result.to_dict())
+
+
+# --- charts ----------------------------------------------------------------
+
+
+@pytest.mark.parametrize("lens_id", ["reach-deprivation", "need-reach"])
+def test_every_chart_can_be_drawn_from_a_table_in_the_result(world, lens_id):
+    if lens_id == LENS_ID:
+        result = world.run()
+    else:
+        need = pd.DataFrame(
+            {
+                "geography_code": ["E09000023", "E09000011"],
+                "geography_name": ["Lewisham", "Greenwich"],
+                "obs_value": [9000, 8000],
+            }
+        )
+        with mock.patch("kindtech.lenses.need_reach.load_ons", return_value=need):
+            result = run_lens(lens_id, [{"local_authority": "Lewisham", "count": 60}])
+    assert result.charts
+    for chart in result.charts:
+        table = result.table(chart.table)
+        assert table.detail is False
+        assert chart.kind == "bar"
+        assert chart.category_column in table.columns
+        assert len({series.unit for series in chart.series}) == 1
+        for series in chart.series:
+            assert series.column in table.columns
+    payload = result.to_dict()
+    assert [chart["id"] for chart in payload["charts"]] == [
+        chart.id for chart in result.charts
+    ]
+    json.dumps(payload["charts"])
+
+
+def test_decile_chart_sets_people_against_residents(world):
+    chart = world.run().charts[0]
+    assert chart.id == "people_by_decile"
+    assert chart.table == "by_decile"
+    assert chart.category_column == "imd_decile"
+    assert [series.column for series in chart.series] == [
+        "share_of_people",
+        "share_of_residents",
+    ]

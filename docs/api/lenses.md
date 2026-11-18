@@ -9,6 +9,7 @@ Every lens returns the same things:
 - **figures**: the headline numbers
 - **tables**: totals behind the figures
 - **a map description**: which areas to draw and what to colour them by
+- **chart descriptions**: which table and columns to draw as a bar chart
 - **the working**: each step taken, with how many rows went in and came out
 - **choices**: what the lens decided for you, and the option that changes it
 - **checks**: what a person must confirm before using the figures
@@ -95,6 +96,23 @@ Portal. Only the public area codes of the catchment are sent. To draw without
 the network, pass `boundaries=` a GeoJSON FeatureCollection you already have;
 `load_map_boundaries(result)` fetches one you can save and reuse.
 
+## Charts
+
+`result.charts` describes the charts a result is best shown with, so a page
+can draw them without knowing the lens. Each `Chart` names a table of the
+result, the column that names each group of bars (`category_column`) and one
+or more `series`, each a column with a label and a unit. Every series in a
+chart has the same unit, so one axis serves them all.
+
+```python
+chart = result.charts[0]
+frame = result.table(chart.table).to_frame()
+frame.plot.bar(x=chart.category_column, y=[s.column for s in chart.series])
+```
+
+A value hidden to protect a small count is `None` in the table. Draw no bar
+for it.
+
 ## Small counts
 
 A count from 1 to 4 that is about a named place or a group is returned as
@@ -141,6 +159,9 @@ table, and a warning says how many there are.
 | `catchment_share_most_deprived_20` | Share of catchment residents who live in those neighbourhoods, for comparison |
 | `reach_per_1000_most_deprived_20` | People reached per 1,000 residents of those neighbourhoods |
 | `reach_per_1000_elsewhere` | People reached per 1,000 residents in the rest of the catchment |
+
+The chart `people_by_decile` sets the share of your people in each decile
+against the share of catchment residents.
 
 | Table | Rows |
 | --- | --- |
@@ -239,6 +260,9 @@ reach are not listed as gaps.
 | `high_need_areas_without_people` | High-need local authorities where you reached nobody |
 | `share_of_people_in_high_need_areas` | Share of your people who live in high-need local authorities |
 | `share_of_need_in_high_need_areas` | Share of people in need who live there, for comparison |
+
+The charts `need_in_priority_areas` and `reach_in_priority_areas` show people
+in need and people reached per 100 in need for the places in `priority_areas`.
 
 | Table | Rows |
 | --- | --- |

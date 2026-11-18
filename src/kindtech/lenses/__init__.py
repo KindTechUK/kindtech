@@ -19,6 +19,8 @@ the checks a person should do. Results hold totals only, never rows.
 from kindtech.lenses import need_reach as _need_reach
 from kindtech.lenses import reach_deprivation as _reach_deprivation
 from kindtech.lenses._model import (
+    Chart,
+    ChartSeries,
     Check,
     Choice,
     Figure,
@@ -50,6 +52,8 @@ for _lens in (_reach_deprivation.LENS, _need_reach.LENS):
     register_lens(_lens)
 
 __all__ = [
+    "Chart",
+    "ChartSeries",
     "Check",
     "Choice",
     "Figure",
