@@ -3,6 +3,7 @@
 from importlib.resources import files
 
 import kindtech
+from kindtech.cli import main as cli_main
 
 
 def main() -> None:
@@ -19,6 +20,8 @@ def main() -> None:
     assert ons_catalog.read_text(encoding="utf-8").splitlines()[0] == (
         "id,name,sourceName"
     )
+    # The command line and the lens list work with no DataFrame backend.
+    assert cli_main(["lens", "list"]) == 0
 
 
 if __name__ == "__main__":

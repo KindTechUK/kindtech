@@ -89,6 +89,7 @@ nav:
     - Postcodes: api/postcodes.md
     - Deprivation (IMD): api/imd.md
     - Lenses: api/lenses.md
+    - Command Line: api/cli.md
     - Data Sources: api/data-sources.md
     - Package FAQ: faq/README.md
   - Blog:

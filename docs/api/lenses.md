@@ -43,6 +43,9 @@ result.to_dict()                                # everything, as plain JSON type
 `columns` maps each role the lens needs to one of your column names. You can
 leave a role out when your data already has a column with that name.
 
+To run a lens on a file without writing Python, use the
+[command line](cli.md).
+
 ## Functions
 
 ### `list_lenses()`
