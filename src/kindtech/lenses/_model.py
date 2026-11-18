@@ -41,11 +41,19 @@ def _plain(value: Any) -> Any:
 
 @dataclass(frozen=True)
 class Role:
-    """A column a lens can use, named by what it holds."""
+    """A column a lens can use, named by what it holds.
+
+    ``reported`` is True when the column names public places that the result
+    is about, such as local authorities, so the same names can appear in its
+    figures and tables. A caller that checks a result for values repeated from
+    the input should leave such a column out of the check. It is False for
+    anything about a person, and a lens never repeats those.
+    """
 
     name: str
     description: str
     example: str = ""
+    reported: bool = False
 
 
 @dataclass(frozen=True)
