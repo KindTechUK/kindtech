@@ -241,7 +241,7 @@ Choose the need with the `need` option:
 | `"unemployed"` (default) | Unemployed people aged 16 to 64, not counting full-time students, Census 2021 |
 | `"unemployed_women"` | Unemployed women aged 16 to 64, not counting full-time students, Census 2021 |
 | `"unemployed_men"` | Unemployed men aged 16 to 64, not counting full-time students, Census 2021 |
-| `{"dataset": ..., "label": ..., "filters": {...}}` | Any table Nomis publishes by local authority. The filters are the category codes to add up |
+| `{"dataset": ..., "label": ..., "filters": {...}}` | Any table Nomis publishes by local authority. The filters are the category codes to add up. Counts are asked for (`measures` 20100) unless the filters name another measure |
 
 The three built-in needs count the census group "Economically active
 (excluding full-time students): Unemployed", as the case study does. Full-time

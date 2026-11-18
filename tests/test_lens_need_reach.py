@@ -271,10 +271,24 @@ def test_need_can_be_another_nomis_table(nomis):
     assert dataset == "NM_2056_1"
     assert query["c2021_disability_5"] == [1, 2]
     assert query["time"] == 2021
+    assert query["measures"] == 20100
     assert "Disabled people" in result.figure("people_in_need").label
     assert result.sources[0].id == "nomis-nm_2056_1"
     assert not any("21 March 2021" in caveat for caveat in result.caveats)
     assert any("latest that Nomis holds" in caveat for caveat in result.caveats)
+
+
+def test_need_figures_are_asked_for_as_counts_alone(nomis):
+    # Some Nomis tables hold a percentage beside each count. Adding those up
+    # with the counts would make the need too big.
+    _run(_counts(Lewisham=60))
+    assert nomis.asked[0][1]["measures"] == 20100
+
+
+def test_filters_of_a_table_can_name_another_measure(nomis):
+    need = {"dataset": "NM_1_1", "label": "Claimants", "filters": {"measures": 20201}}
+    _run(_counts(Lewisham=60), options={"need": need})
+    assert nomis.asked[0][1]["measures"] == 20201
 
 
 @pytest.mark.parametrize(
