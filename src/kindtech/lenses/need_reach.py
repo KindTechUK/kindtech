@@ -43,7 +43,7 @@ from kindtech.lenses._model import (
     Step,
     Table,
 )
-from kindtech.lenses._privacy import cells_to_hide, group_hidden
+from kindtech.lenses._privacy import SECOND_COUNT_NOTE, cells_to_hide, group_hidden
 from kindtech.lenses._steps import (
     COUNTRIES,
     EVERYWHERE,
@@ -1167,6 +1167,7 @@ def _privacy(threshold: int, trail: Trail) -> Privacy:
         sent_to_third_parties=tuple(trail.sent),
         notes=(
             "A count is hidden when it is small and is about a named local authority.",
+            SECOND_COUNT_NOTE,
             "The map shows reach in bands, and the lowest band holds places "
             "with nobody and places with a hidden count.",
             "The need figures are public counts and are shown in full.",

@@ -681,6 +681,8 @@ def test_result_explains_itself(nomis):
         "Listed the places with high need and low reach",
         "Hid small counts",
     ]
+    # A reader must not take every hidden count for a small one.
+    assert any("not always small" in note for note in result.privacy.notes)
     assert [check.id for check in result.checks] == [
         "counts_are_people",
         "home_location",

@@ -38,6 +38,7 @@ from kindtech.lenses._model import (
     Table,
 )
 from kindtech.lenses._privacy import (
+    SECOND_COUNT_NOTE,
     band_labels,
     cells_to_hide,
     count_band,
@@ -902,6 +903,7 @@ def _privacy(threshold: int, trail: Trail) -> Privacy:
         notes=(
             "A count is hidden when it is small and is about a named place or "
             "a deprivation decile.",
+            SECOND_COUNT_NOTE,
             "The map shows people in bands, and the lowest band includes zero, "
             "so a neighbourhood with a few people looks the same as one with "
             "none.",

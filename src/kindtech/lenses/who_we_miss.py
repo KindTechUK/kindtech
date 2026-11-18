@@ -40,7 +40,7 @@ from kindtech.lenses._model import (
     Step,
     Table,
 )
-from kindtech.lenses._privacy import cells_to_hide
+from kindtech.lenses._privacy import SECOND_COUNT_NOTE, cells_to_hide
 from kindtech.lenses._steps import (
     COUNTRIES,
     EVERYWHERE,
@@ -1111,6 +1111,7 @@ def _privacy(threshold: int, trail: Trail) -> Privacy:
         sent_to_third_parties=tuple(trail.sent),
         notes=(
             "A count is hidden when it is small and is about a group.",
+            SECOND_COUNT_NOTE,
             "The result names census groups, never the labels in your data.",
             "The number of people matched to no group is shown even when it "
             "is small, because it says nothing about which group they are in.",
