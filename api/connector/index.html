@@ -1280,6 +1280,13 @@ district such as <code>SE13</code>, or the postcode of a venue or office.</p>
 <p><code>status</code> is <code>found</code>, <code>choose</code> (several places match, listed in <code>matches</code>),
 <code>not_found</code>, <code>not_covered</code> (outside England) or <code>unavailable</code> (a data source
 could not be reached).</p>
+<p>The deprivation index is read from a copy kept on this machine when there is
+one, and the source in the answer then says so. When you host the connector,
+keep it when the image is built (<code>kindtech.imd.download_imd</code>), so the first
+call does not wait on a download. A copy kept with <code>kindtech.imd.keep_imd</code>
+that leaves out the types of deprivation gives the same answer without that
+table, and says so in <code>warnings</code>. A copy that cannot be read gives the status
+<code>unavailable</code>.</p>
 <p>A postcode or postcode district is looked up in the
 <a href="../postcodes/">postcode table on this machine</a> when one is installed, so it is
 not sent anywhere. Without a table it is sent to postcodes.io. Either way the

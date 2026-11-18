@@ -76,6 +76,14 @@ answer["sources"]           # publisher, edition, licence and link
 `not_found`, `not_covered` (outside England) or `unavailable` (a data source
 could not be reached).
 
+The deprivation index is read from a copy kept on this machine when there is
+one, and the source in the answer then says so. When you host the connector,
+keep it when the image is built (`kindtech.imd.download_imd`), so the first
+call does not wait on a download. A copy kept with `kindtech.imd.keep_imd`
+that leaves out the types of deprivation gives the same answer without that
+table, and says so in `warnings`. A copy that cannot be read gives the status
+`unavailable`.
+
 A postcode or postcode district is looked up in the
 [postcode table on this machine](postcodes.md) when one is installed, so it is
 not sent anywhere. Without a table it is sent to postcodes.io. Either way the
