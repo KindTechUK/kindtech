@@ -2355,10 +2355,29 @@ Choose the need with the `need` option:
 
 | `need` | People counted |
 | --- | --- |
-| `"unemployed"` (default) | Unemployed people aged 16 to 64, Census 2021 |
-| `"unemployed_women"` | Unemployed women aged 16 to 64, Census 2021 |
-| `"unemployed_men"` | Unemployed men aged 16 to 64, Census 2021 |
+| `"unemployed"` (default) | Unemployed people aged 16 to 64, not counting full-time students, Census 2021 |
+| `"unemployed_women"` | Unemployed women aged 16 to 64, not counting full-time students, Census 2021 |
+| `"unemployed_men"` | Unemployed men aged 16 to 64, not counting full-time students, Census 2021 |
 | `{"dataset": ..., "label": ..., "filters": {...}}` | Any table Nomis publishes by local authority. The filters are the category codes to add up |
+
+The three built-in needs count the census group "Economically active
+(excluding full-time students): Unemployed", as the case study does. Full-time
+students who were looking for work are a separate census group and are not
+counted. To count them too, give the table form with both groups:
+
+```python
+options = {
+    "need": {
+        "dataset": "NM_2124_1",
+        "label": "Unemployed people aged 16 to 64, with full-time students",
+        "filters": {
+            "c2021_eastat_7": [2, 4],
+            "c_sex": 0,
+            "c2021_age_7": [2, 3, 4, 5],
+        },
+    }
+}
+```
 
 The need figures are public. They are fetched from Nomis once for each need
 and then kept in memory for as long as the program runs;

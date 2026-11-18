@@ -1584,15 +1584,15 @@ value of the area compared.</p>
 <tbody>
 <tr>
 <td><code>"unemployed"</code> (default)</td>
-<td>Unemployed people aged 16 to 64, Census 2021</td>
+<td>Unemployed people aged 16 to 64, not counting full-time students, Census 2021</td>
 </tr>
 <tr>
 <td><code>"unemployed_women"</code></td>
-<td>Unemployed women aged 16 to 64, Census 2021</td>
+<td>Unemployed women aged 16 to 64, not counting full-time students, Census 2021</td>
 </tr>
 <tr>
 <td><code>"unemployed_men"</code></td>
-<td>Unemployed men aged 16 to 64, Census 2021</td>
+<td>Unemployed men aged 16 to 64, not counting full-time students, Census 2021</td>
 </tr>
 <tr>
 <td><code>{"dataset": ..., "label": ..., "filters": {...}}</code></td>
@@ -1600,6 +1600,22 @@ value of the area compared.</p>
 </tr>
 </tbody>
 </table>
+<p>The three built-in needs count the census group "Economically active
+(excluding full-time students): Unemployed", as the case study does. Full-time
+students who were looking for work are a separate census group and are not
+counted. To count them too, give the table form with both groups:</p>
+<div class="highlight"><pre><span></span><code><span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;need&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;NM_2124_1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Unemployed people aged 16 to 64, with full-time students&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;filters&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;c2021_eastat_7&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+            <span class="s2">&quot;c_sex&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;c2021_age_7&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>The need figures are public. They are fetched from Nomis once for each need
 and then kept in memory for as long as the program runs;
 <code>clear_need_cache()</code> forgets them. To run with no request to Nomis at all,
