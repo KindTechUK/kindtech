@@ -38,6 +38,7 @@ from kindtech.lenses._model import (
     MapLayer,
     MapSpec,
     Option,
+    OptionChoice,
     Privacy,
     Role,
     Step,
@@ -190,6 +191,10 @@ INFO = LensInfo(
                 "it counts, 'filters': the categories to add up}."
             ),
             default="unemployed",
+            # The built-in needs. A table of your own is given as a mapping.
+            choices=tuple(
+                OptionChoice(measure.id, measure.label) for measure in MEASURES.values()
+            ),
         ),
         Option(
             name="catchment",

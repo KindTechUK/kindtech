@@ -78,12 +78,26 @@ class InputMode:
 
 
 @dataclass(frozen=True)
+class OptionChoice:
+    """One of the values an option takes, with a name a person can read."""
+
+    value: Any
+    label: str
+
+
+@dataclass(frozen=True)
 class Option:
-    """A setting a person may change, with the value used when they do not."""
+    """A setting a person may change, with the value used when they do not.
+
+    ``choices`` lists the values to pick from when the option takes one of a
+    fixed list, so a page can show them as a list and not a text box. It is
+    empty when the option is free, such as a number or a place name.
+    """
 
     name: str
     description: str
     default: Any = None
+    choices: tuple[OptionChoice, ...] = ()
 
 
 @dataclass(frozen=True)

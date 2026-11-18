@@ -35,6 +35,7 @@ from kindtech.lenses._model import (
     LensInputError,
     LensResult,
     Option,
+    OptionChoice,
     Privacy,
     Role,
     Step,
@@ -208,6 +209,9 @@ INFO = LensInfo(
                 f"What the group column holds. One of: {', '.join(CHARACTERISTICS)}."
             ),
             default=ETHNIC_GROUP.id,
+            choices=tuple(
+                OptionChoice(item.id, item.label) for item in CHARACTERISTICS.values()
+            ),
         ),
         Option(
             name="groups",

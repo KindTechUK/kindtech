@@ -511,6 +511,34 @@ def test_result_explains_itself(world):
     json.dumps(result.to_dict())
 
 
+# --- options with a fixed list of values -----------------------------------
+
+
+def test_options_with_a_fixed_list_say_what_can_be_picked():
+    for lens in list_lenses():
+        for option in lens.options:
+            values = [choice.value for choice in option.choices]
+            assert len(set(values)) == len(values)
+            assert all(choice.label for choice in option.choices)
+            # The value used when nothing is picked is one that can be picked.
+            assert not values or option.default in values
+    lookup = {o.name: o for o in describe_lens(LENS_ID).options}["postcode_lookup"]
+    assert [choice.value for choice in lookup.choices] == ["auto", "offline", "online"]
+    assert {o.name: o for o in describe_lens(LENS_ID).options}[
+        "catchment"
+    ].choices == ()
+
+
+def test_choices_are_in_the_description_as_plain_json_types():
+    options = {o["name"]: o for o in describe_lens(LENS_ID).to_dict()["options"]}
+    assert options["postcode_lookup"]["choices"][1] == {
+        "value": "offline",
+        "label": "On this machine only",
+    }
+    assert options["suppress_below"]["choices"] == []
+    json.dumps(options)
+
+
 # --- charts ----------------------------------------------------------------
 
 
