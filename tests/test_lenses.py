@@ -11,6 +11,7 @@ import unittest.mock as mock
 import pandas as pd
 import pytest
 
+from kindtech.imd import keep_imd
 from kindtech.lenses import (
     LensInputError,
     describe_lens,
@@ -509,6 +510,33 @@ def test_result_explains_itself(world):
     # A reader must not take every hidden count for a small one.
     assert any("not always small" in note for note in result.privacy.notes)
     json.dumps(result.to_dict())
+
+
+# --- the index kept on this machine ----------------------------------------
+
+
+def test_lens_runs_on_an_index_kept_on_this_machine():
+    keep_imd(_index(), note="invented for a test.")
+    rows = [
+        {"lsoa_code": _area_code(0, 1), "count": 30},
+        {"lsoa_code": _area_code(0, 4), "count": 14},
+    ]
+    with mock.patch("kindtech.imd.api.requests.get") as get:
+        result = run_lens(LENS_ID, rows)
+    get.assert_not_called()
+    assert result.figure("people_located").value == 44
+    source = next(s for s in result.sources if s.id == "iod-2025")
+    assert source.edition.endswith("A copy kept on this machine, invented for a test.")
+    step = result.working[1]
+    assert step.title == "Read the deprivation index kept on this machine"
+    assert step.detail.endswith("The copy was invented for a test.")
+
+
+def test_an_index_kept_on_this_machine_that_cannot_be_read_is_an_input_error():
+    path = keep_imd(_index(), note="invented for a test.")
+    path.write_text("not json", encoding="utf-8")
+    with pytest.raises(LensInputError, match="download_imd"):
+        run_lens(LENS_ID, [{"lsoa_code": _area_code(0, 1), "count": 30}])
 
 
 # --- options with a fixed list of values -----------------------------------

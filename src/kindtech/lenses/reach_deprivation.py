@@ -8,14 +8,14 @@ the result against the English Indices of Deprivation 2025.
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from typing import Any
 
 import narwhals as nw
 
 import kindtech
-from kindtech.imd import load_imd
+from kindtech.imd import kept_imd_note, load_imd
 from kindtech.lenses._inputs import is_blank
 from kindtech.lenses._model import (
     Chart,
@@ -196,8 +196,7 @@ def run(lens_input: LensInput) -> LensResult:
         counts, supplied = count_by_neighbourhood(
             lens_input.values["lsoa_code"], lens_input.values["count"], trail
         )
-    areas = _load_areas()
-    trail.sources.append(IOD_2025)
+    areas = _load_areas(trail)
     located = _keep_english(counts, areas, threshold, trail)
     catchment = _choose_catchment(
         located, areas, lens_input.options.get("catchment"), min_share
@@ -275,9 +274,36 @@ def _min_share(options: dict[str, Any]) -> float:
 # --- deprivation -----------------------------------------------------------
 
 
-def _load_areas() -> dict[str, _Area]:
-    """Load the deprivation index as one record per neighbourhood."""
-    frame = nw.from_native(load_imd(nation=ENGLAND, year=2025), eager_only=True)
+def _load_areas(trail: Trail) -> dict[str, _Area]:
+    """Load the deprivation index as one record per neighbourhood.
+
+    The index is read from a copy kept on this machine when there is one (see
+    :func:`kindtech.imd.keep_imd`), and the result then says so.
+    """
+    try:
+        note = kept_imd_note(2025)
+        loaded = load_imd(nation=ENGLAND, year=2025)
+    except ValueError as error:
+        msg = (
+            "The deprivation index kept on this machine could not be read. "
+            "Fetch it again with kindtech.imd.download_imd()."
+        )
+        raise LensInputError(msg) from error
+    if note is None:
+        trail.sources.append(IOD_2025)
+    else:
+        edition = f"{IOD_2025.edition}. A copy kept on this machine, {note}"
+        trail.sources.append(replace(IOD_2025, edition=edition))
+        trail.working.append(
+            Step(
+                title="Read the deprivation index kept on this machine",
+                detail=(
+                    "A copy of the index kept on this machine was used, so "
+                    f"nothing was downloaded. The copy was {note}"
+                ),
+            )
+        )
+    frame = nw.from_native(loaded, eager_only=True)
     names = (
         "geography_code",
         "geography_name",

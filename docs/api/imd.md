@@ -95,6 +95,31 @@ Use this only when comparing areas in different nations; its `imd_rank` /
 `imd_decile` are the UK re-ranking, not a nation's official figures (those are
 in `nation_decile`, or use the single-nation calls above).
 
+## Keeping the English index on this machine
+
+`load_imd(nation="England")` downloads the published file from gov.uk the
+first time a program asks for it. To run with no download, keep a copy in the
+data folder, the same one that holds the
+[postcode table](postcodes.md#looking-up-postcodes-on-this-machine):
+
+```python
+from kindtech.imd import download_imd, imd_path, keep_imd, load_imd
+
+download_imd()            # fetch the 2025 index once, when a server is built
+imd_path()                # where the copy is, or None
+
+load_imd(nation="England")   # reads the copy; nothing is downloaded
+```
+
+`keep_imd(table, note)` keeps a table of your own in its place, for a
+demonstration or a test. Give a DataFrame or a list of row dictionaries with
+at least `geography_code`, `geography_name`, `lad_code`, `lad_name`,
+`imd_decile` and `population`. Columns you leave out come back empty. The
+`note` says where the figures came from, and `kept_imd_note()` reads it back.
+
+Pass `year=2019` to any of these for the 2019 index. Only the English index
+can be kept. A `url` given to `load_imd` is always downloaded.
+
 ## Joining to boundaries and statistics
 
 `geography_code` matches the rest of KindTech, so deprivation overlays onto a map

@@ -1,4 +1,4 @@
-"""Public figures kept on this machine, so a lens does not have to fetch them.
+"""Public figures kept on this machine, so they do not have to be fetched.
 
 A kept file is JSON with a ``format`` that names what it holds and a ``note``
 that says where the figures came from. Files live in the data folder, beside
@@ -20,13 +20,24 @@ def kept_file(folder: str, name: str) -> Path:
 
 
 def write_kept(
-    folder: str, name: str, file_format: str, note: str, content: dict[str, Any]
+    folder: str,
+    name: str,
+    file_format: str,
+    note: str,
+    content: dict[str, Any],
+    *,
+    compact: bool = False,
 ) -> Path:
-    """Write a kept file and return its path."""
+    """Write a kept file and return its path.
+
+    A small file is laid out for a person to read. Pass ``compact`` for a
+    large table, which is written on one line to keep the file small.
+    """
     path = kept_file(folder, name)
     path.parent.mkdir(parents=True, exist_ok=True)
     kept = {"format": file_format, "note": note, **content}
-    path.write_text(json.dumps(kept, indent=1) + "\n", encoding="utf-8")
+    text = json.dumps(kept, indent=None if compact else 1)
+    path.write_text(text + "\n", encoding="utf-8")
     return path
 
 
