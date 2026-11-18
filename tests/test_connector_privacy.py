@@ -130,6 +130,37 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
             {"lens_id": "who-we-miss", "counts": [{"group": PERSON, "count": 9}]},
             [PERSON],
         ),
+        (
+            # One row per site, which is not a total.
+            {
+                "lens_id": "provision-gap",
+                "counts": [{"postcode": POSTCODE, "volume": 30}],
+            },
+            [POSTCODE],
+        ),
+        (
+            # A postcode or a name where a local authority should be.
+            {
+                "lens_id": "provision-gap",
+                "counts": [
+                    {"local_authority": COUNCIL, "volume": 1200},
+                    {"local_authority": POSTCODE, "volume": 12},
+                    {"local_authority": PERSON, "volume": 9},
+                ],
+            },
+            [POSTCODE, PERSON],
+        ),
+        (
+            # A name or a postcode where a volume should be.
+            {
+                "lens_id": "provision-gap",
+                "counts": [
+                    {"local_authority": COUNCIL, "volume": PERSON},
+                    {"local_authority": COUNCIL, "volume": POSTCODE},
+                ],
+            },
+            [POSTCODE, PERSON],
+        ),
     ],
 }
 
@@ -138,6 +169,7 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
 def _stand_ins(england: None, monkeypatch: pytest.MonkeyPatch) -> None:
     """Every case runs the real lenses against the small England."""
     keep_need_figures("unemployed", fakes.NEED, "invented for a test.")
+    keep_need_figures("residents", fakes.NEED, "invented for a test.")
     keep_residents("ethnic_group", fakes.RESIDENTS, "invented for a test.")
     monkeypatch.setattr(
         places, "lookup_postcodes", lambda postcode: fakes.postcode_frame(AREA)
@@ -219,6 +251,18 @@ def test_good_calls_still_answer() -> None:
             },
         )
     )
+    fourth = json.loads(
+        _call(
+            "run_lens_on_counts",
+            {
+                "lens_id": "provision-gap",
+                "counts": [
+                    {"local_authority": COUNCIL, "volume": "1,200"},
+                    {"local_authority": POSTCODE, "volume": 12},
+                ],
+            },
+        )
+    )
 
     assert place["isError"] is False
     assert place["structuredContent"]["status"] == "found"
@@ -234,6 +278,10 @@ def test_good_calls_still_answer() -> None:
     by_group = json.dumps(third["structuredContent"]["result"]["tables"])
     assert "Black" in by_group
     assert OWN_LABEL not in by_group
+    assert fourth["isError"] is False
+    assert fourth["structuredContent"]["status"] == "ok"
+    # A volume sent as text is read as a number, and the place may be named.
+    assert COUNCIL in json.dumps(fourth["structuredContent"]["result"]["tables"])
 
 
 @pytest.mark.usefixtures("postcode_table")

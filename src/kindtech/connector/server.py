@@ -157,8 +157,9 @@ def handle_run_lens_on_counts(
             description="One object per area or group, keyed by the role names "
             "of an input mode marked 'aggregated' in find_lens, for example "
             "{'lsoa_code': 'E01003189', 'count': 12}, {'local_authority': "
-            "'Lewisham', 'count': 120} or {'group': 'Black Caribbean', 'count': "
-            "40}. Totals only: never one row per person."
+            "'Lewisham', 'count': 120}, {'group': 'Black Caribbean', 'count': "
+            "40} or {'local_authority': 'Lewisham', 'volume': 1200}. Totals "
+            "only: never one row per person or per site."
         ),
     ],
     options: Annotated[
