@@ -22,6 +22,7 @@ import narwhals as nw
 
 import kindtech
 from kindtech.lenses._inputs import is_blank, to_count
+from kindtech.lenses._kept import kept_file, read_kept, write_kept
 from kindtech.lenses._model import (
     Chart,
     ChartSeries,
@@ -44,23 +45,23 @@ from kindtech.lenses._model import (
 )
 from kindtech.lenses._privacy import cells_to_hide, group_hidden
 from kindtech.lenses._steps import (
+    COUNTRIES,
+    EVERYWHERE,
     LOCAL_AUTHORITY,
     POSTCODE_LOOKUP,
     SUPPRESS_BELOW,
     Trail,
     count_by_postcode,
+    named_areas,
     percent,
     read_threshold,
     use_postcode_table,
 )
 from kindtech.lenses.sources import nomis_table
 from kindtech.ons import load_ons
-from kindtech.postcodes.offline import data_dir
 
 LENS_ID = "need-reach"
 LENS_VERSION = "0.1"
-EVERYWHERE = "England and Wales"
-COUNTRIES = {"england": "E", "wales": "W"}
 DEFAULT_TOP = 10
 MAX_TOP = 50
 # When people live in fewer than one in this many of the areas compared, the
@@ -461,18 +462,15 @@ def _read_kept(need: str) -> tuple[tuple[tuple[str, str, float], ...], str] | No
         The figures and a note that says where they came from, or None when no
         copy is kept.
     """
-    path = need_figures_path(need)
-    if path is None:
-        return None
     try:
-        kept = json.loads(path.read_text(encoding="utf-8"))
-        if kept["format"] != NEED_FILE_FORMAT:
-            raise ValueError(kept["format"])
+        kept = read_kept(NEED_FOLDER, need, NEED_FILE_FORMAT)
+        if kept is None:
+            return None
         rows = tuple(
             (str(code), str(name), float(people))
             for code, name, people in kept["figures"]
         )
-        return rows, str(kept["note"])
+        return rows, kept["note"]
     except (KeyError, TypeError, ValueError) as error:
         msg = (
             "The need figures kept on this machine could not be read. Fetch "
@@ -526,7 +524,7 @@ def need_figures_path(need: str = "unemployed") -> Path | None:
     Args:
         need: One of the needs the lens has built in, such as ``unemployed``.
     """
-    path = data_dir() / NEED_FOLDER / f"{need}.json"
+    path = kept_file(NEED_FOLDER, need)
     return path if need in MEASURES and path.is_file() else None
 
 
@@ -558,18 +556,13 @@ def keep_need_figures(
         msg = f"No need called '{need}'. Known needs: {', '.join(MEASURES)}."
         raise ValueError(msg)
     measure = MEASURES[need]
-    kept = {
-        "format": NEED_FILE_FORMAT,
+    content = {
         "need": need,
         "label": measure.label,
         "dataset": measure.dataset,
-        "note": note,
         "figures": [[code, name, people] for code, name, people in figures],
     }
-    path = data_dir() / NEED_FOLDER / f"{need}.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(kept, indent=1) + "\n", encoding="utf-8")
-    return path
+    return write_kept(NEED_FOLDER, need, NEED_FILE_FORMAT, note, content)
 
 
 def download_need_figures(need: str = "unemployed") -> Path:
@@ -715,49 +708,10 @@ def _choose_compared(wanted: Any, authorities: dict[str, _Authority]) -> _Compar
             ),
             named=False,
         )
-    items = [wanted] if isinstance(wanted, str) else wanted
-    if not isinstance(items, list | tuple) or not all(
-        isinstance(item, str) and item.strip() for item in items
-    ):
-        msg = (
-            "The option 'catchment' must be a local authority name or code, a "
-            "list of them, or 'England', 'Wales' or 'England and Wales'."
-        )
-        raise LensInputError(msg)
-    cleaned = [item.strip() for item in items]
-    whole = cleaned[0].casefold() if len(cleaned) == 1 else ""
-    if whole == EVERYWHERE.casefold():
-        return _Compared(
-            codes=tuple(sorted(authorities)),
-            label=EVERYWHERE,
-            reason="You set the catchment.",
-            named=True,
-        )
-    if whole in COUNTRIES:
-        return _Compared(
-            codes=tuple(
-                sorted(code for code in authorities if code[0] == COUNTRIES[whole])
-            ),
-            label=whole.capitalize(),
-            reason="You set the catchment.",
-            named=True,
-        )
-    by_key = {code.casefold(): code for code in authorities}
-    by_key.update({area.name.casefold(): code for code, area in authorities.items()})
-    unknown = [item for item in cleaned if item.casefold() not in by_key]
-    if unknown:
-        msg = (
-            "These catchment entries are not local authorities in the need "
-            f"figures: {', '.join(unknown)}. Use the names or codes that "
-            "Nomis uses."
-        )
-        raise LensInputError(msg)
-    chosen = sorted({by_key[item.casefold()] for item in cleaned})
+    names = {code: area.name for code, area in authorities.items()}
+    codes, label = named_areas(wanted, names, "need figures")
     return _Compared(
-        codes=tuple(chosen),
-        label=", ".join(authorities[code].name for code in chosen),
-        reason="You set the catchment.",
-        named=True,
+        codes=codes, label=label, reason="You set the catchment.", named=True
     )
 
 

@@ -8,6 +8,7 @@ them keeps or reports a value from the data.
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -34,6 +35,9 @@ from kindtech.postcodes import (
 
 MIN_SUPPRESS_BELOW = 3
 LOOKUP_CHOICES = ("auto", "offline", "online")
+EVERYWHERE = "England and Wales"
+# The first letter of a local authority code in each country.
+COUNTRIES = {"england": "E", "wales": "W"}
 
 SUPPRESS_BELOW = Option(
     name="suppress_below",
@@ -113,6 +117,58 @@ def use_postcode_table(options: dict[str, Any]) -> bool:
     return how == "offline"
 
 
+def named_areas(
+    wanted: Any, names: Mapping[str, str], listed_in: str
+) -> tuple[tuple[str, ...], str]:
+    """Turn the area a person named into local authority codes.
+
+    Args:
+        wanted: The 'catchment' option: a local authority name or code, a list
+            of them, or 'England', 'Wales' or 'England and Wales'.
+        names: Code to name, for every local authority the lens has figures
+            for.
+        listed_in: What those figures are, for the message when a name is not
+            among them, such as "need figures".
+
+    Returns:
+        The codes, sorted, and a label for the area.
+
+    Raises:
+        LensInputError: If the option has the wrong shape, or names a place
+            the figures do not list.
+    """
+    items = [wanted] if isinstance(wanted, str) else wanted
+    if (
+        not isinstance(items, list | tuple)
+        or not items
+        or not all(isinstance(item, str) and item.strip() for item in items)
+    ):
+        msg = (
+            "The option 'catchment' must be a local authority name or code, a "
+            "list of them, or 'England', 'Wales' or 'England and Wales'."
+        )
+        raise LensInputError(msg)
+    cleaned = [item.strip() for item in items]
+    whole = cleaned[0].casefold() if len(cleaned) == 1 else ""
+    if whole == EVERYWHERE.casefold():
+        return tuple(sorted(names)), EVERYWHERE
+    if whole in COUNTRIES:
+        codes = sorted(code for code in names if code[0] == COUNTRIES[whole])
+        return tuple(codes), whole.capitalize()
+    by_key = {code.casefold(): code for code in names}
+    by_key.update({name.casefold(): code for code, name in names.items()})
+    unknown = [item for item in cleaned if item.casefold() not in by_key]
+    if unknown:
+        msg = (
+            "These catchment entries are not local authorities in the "
+            f"{listed_in}: {', '.join(unknown)}. Use the names or codes that "
+            "Nomis uses."
+        )
+        raise LensInputError(msg)
+    chosen = sorted({by_key[item.casefold()] for item in cleaned})
+    return tuple(chosen), ", ".join(names[code] for code in chosen)
+
+
 # --- reading the input -----------------------------------------------------
 
 
@@ -133,6 +189,29 @@ def count_by_postcode(
 
     Returns:
         Rows per area code, and the number of rows supplied.
+    """
+    placed = place_postcodes(values, use_table, trail, level)
+    return Counter(code for code in placed if code is not None), len(values)
+
+
+def place_postcodes(
+    values: list[Any],
+    use_table: bool,
+    trail: Trail,
+    level: Level = NEIGHBOURHOOD,
+) -> list[str | None]:
+    """Place each row's postcode in an area.
+
+    Args:
+        values: The postcode column.
+        use_table: Look postcodes up on this machine when True, and with
+            postcodes.io when False.
+        trail: Where the steps, warnings, sources and choices are recorded.
+        level: The size of area to place postcodes in.
+
+    Returns:
+        One area code per row, in row order. None where the row has no
+        postcode, or one that is malformed or not found.
     """
     supplied = len(values)
     blank = sum(1 for value in values if is_blank(value))
@@ -160,9 +239,9 @@ def count_by_postcode(
     distinct = sorted(set(usable))
     lookup = _look_up_on_this_machine if use_table else _look_up_online
     found_for, where = lookup(distinct, trail, level)
-    codes = (found_for[postcode] for postcode in usable)
-    found = [code for code in codes if code is not None]
-    not_found = len(usable) - len(found)
+    placed = [None if postcode is None else found_for[postcode] for postcode in tidy]
+    found = sum(1 for code in placed if code is not None)
+    not_found = len(usable) - found
     trail.working.append(
         Step(
             title=f"Found the {level.singular} for each postcode",
@@ -171,11 +250,11 @@ def count_by_postcode(
                 f"{not_found} rows had a postcode that was not found."
             ),
             rows_in=len(usable),
-            rows_out=len(found),
+            rows_out=found,
         )
     )
     _warn_left_out(blank, malformed, not_found, use_table, trail)
-    return Counter(found), supplied
+    return placed
 
 
 def _look_up_on_this_machine(
