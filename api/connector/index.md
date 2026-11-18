@@ -94,6 +94,30 @@ The answer holds the lens result without the rows of its detail tables, so an
 assistant is not handed a row per neighbourhood. Rows about individual people,
 such as one postcode per person, are refused.
 
+```python
+from kindtech.connector import run_lens_on_counts
+
+answer = run_lens_on_counts(
+    "need-reach",
+    [
+        {"local_authority": "Lewisham", "count": 120},
+        {"local_authority": "Greenwich", "count": 40},
+    ],
+)
+answer["status"]              # "ok"
+answer["result"]["figures"]   # headline figures, small counts hidden
+answer["result"]["tables"]    # the places to look at first
+```
+
+`status` is `ok`, `input_problem` (`problems` lists what to fix),
+`unknown_lens` or `unavailable` (a data source the lens needs could not be
+reached).
+
+When you host the connector, keep the need figures for the need against reach
+lens on the server when the image is built
+(`kindtech.lenses.need_reach.download_need_figures`), so a run does not wait
+on Nomis.
+
 ## The privacy rule
 
 - No tool accepts rows about people. `run_lens_on_counts` takes only input
@@ -101,6 +125,10 @@ such as one postcode per person, are refused.
 - Every result passes through `ensure_totals_only` before it is returned. If a
   value from the input, such as a postcode or an area code sent with a count,
   appears anywhere in a result, the result is withheld.
+- The one exception is a role a lens marks as `reported`: a column that names
+  public places, such as local authorities, which the result lists on
+  purpose. Counts for those places are still hidden when they are small, and
+  a value in that column with the shape of a postcode is still withheld.
 - Error messages name the argument that was wrong and never quote its value.
 - `tests/test_connector_privacy.py` calls every tool the way an assistant does
   and fails if a row-level value reaches a result. A new tool must add a case
