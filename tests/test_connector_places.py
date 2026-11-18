@@ -11,6 +11,7 @@ import pytest
 import requests
 
 from kindtech.connector import describe_place, places
+from kindtech.postcodes import offline
 
 pytestmark = pytest.mark.usefixtures("england")
 
@@ -235,3 +236,73 @@ def test_answers_do_not_share_state() -> None:
 
     assert second["caveats"]
     assert second["sources"][0]["name"].startswith("English Indices of Deprivation")
+
+
+def _no_network(*args: object, **kwargs: object) -> object:
+    """Stand in for postcodes.io and fail if it is asked anything."""
+    raise AssertionError("postcodes.io was asked while a table is installed")
+
+
+@pytest.fixture
+def table_only(postcode_table: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A postcode table is installed and postcodes.io must not be asked."""
+    monkeypatch.setattr(places, "lookup_postcodes", _no_network)
+    monkeypatch.setattr(places, "lookup_outcodes", _no_network)
+
+
+@pytest.mark.usefixtures("table_only")
+class TestWithAPostcodeTable:
+    """With a table on this machine, no postcode is sent anywhere."""
+
+    def test_postcode_is_placed_on_this_machine(self) -> None:
+        answer = describe_place("zz99 9zz")
+
+        assert answer["status"] == "found"
+        assert answer["place"]["code"] == "E01000001"
+        assert answer["place"]["matched_from"] == "postcode"
+        assert answer["privacy"]["sent_to_third_parties"] == []
+        assert "on this machine" in answer["privacy"]["notes"][-1]
+        assert [source["id"] for source in answer["sources"]] == [
+            "iod-2025",
+            "ons-postcode-lookup",
+        ]
+        assert answer["sources"][1]["edition"] == "May 2026"
+        assert "ZZ99" not in json.dumps(answer).upper()
+
+    def test_unknown_postcode(self) -> None:
+        answer = describe_place("ZZ99 7VC")
+
+        assert answer["status"] == "not_found"
+        assert "ZZ99" not in json.dumps(answer).upper()
+
+    def test_welsh_postcode_is_not_covered(self) -> None:
+        assert describe_place("CF10 1VC")["status"] == "not_covered"
+
+    def test_postcode_district_across_authorities(self) -> None:
+        answer = describe_place("ZZ99")
+
+        assert answer["status"] == "choose"
+        assert [match["code"] for match in answer["matches"]] == [
+            "E08000021",
+            "E09000023",
+        ]
+        assert answer["privacy"]["sent_to_third_parties"] == []
+
+    def test_welsh_postcode_district_is_not_covered(self) -> None:
+        assert describe_place("CF10")["status"] == "not_covered"
+
+    def test_unknown_postcode_district(self) -> None:
+        assert describe_place("AB1")["status"] == "not_found"
+
+
+def test_damaged_postcode_table_is_reported_plainly(
+    empty_data_dir, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    empty_data_dir.mkdir(parents=True)
+    (empty_data_dir / offline.TABLE_FILE_NAME).write_bytes(b"not a table")
+    monkeypatch.setattr(places, "lookup_postcodes", _no_network)
+
+    answer = describe_place(fakes.SECRET_POSTCODE)
+
+    assert answer["status"] == "unavailable"
+    assert "ZZ99" not in json.dumps(answer).upper()
