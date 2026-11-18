@@ -11,7 +11,7 @@ import pytest
 import requests
 
 from kindtech.connector import PrivacyError, find_lens, run_lens_on_counts
-from kindtech.lenses import need_reach, who_we_miss
+from kindtech.lenses import _need, need_reach, who_we_miss
 
 COUNTS = [
     {"lsoa_code": "E01000001", "count": 12},
@@ -384,7 +384,8 @@ class TestWithTheThirdLens:
 @pytest.mark.parametrize(
     ("module", "lens_id", "counts", "options"),
     [
-        (need_reach, "need-reach", COUNCIL_COUNTS, None),
+        # The need figures are fetched in the shared need module.
+        (_need, "need-reach", COUNCIL_COUNTS, None),
         (who_we_miss, "who-we-miss", GROUP_COUNTS, CATCHMENT),
     ],
 )
