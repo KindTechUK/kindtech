@@ -128,12 +128,26 @@ def _unemployed(measure_id: str, label: str, sexes: tuple[int, ...]) -> _Measure
     )
 
 
+# Census 2021 table TS008, sex. Sex 0 is everyone.
+RESIDENTS = _Measure(
+    id="residents",
+    label="Residents of every age",
+    dataset="NM_2028_1",
+    filters={"c_sex": 0},
+    reason="The census counts every local authority, with nothing hidden.",
+    caveat=(
+        "The residents are everyone counted on census day, 21 March 2021, of "
+        "every age. Not all of them need what you offer."
+    ),
+)
+
 MEASURES = {
     measure.id: measure
     for measure in (
         _unemployed("unemployed", "Unemployed people aged 16 to 64", (1, 2)),
         _unemployed("unemployed_women", "Unemployed women aged 16 to 64", (1,)),
         _unemployed("unemployed_men", "Unemployed men aged 16 to 64", (2,)),
+        RESIDENTS,
     )
 }
 
