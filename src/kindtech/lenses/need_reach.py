@@ -23,6 +23,8 @@ import narwhals as nw
 import kindtech
 from kindtech.lenses._inputs import is_blank, to_count
 from kindtech.lenses._model import (
+    Chart,
+    ChartSeries,
     Check,
     Choice,
     Figure,
@@ -215,6 +217,29 @@ CAVEATS = (
 )
 
 
+CHARTS = (
+    Chart(
+        id="need_in_priority_areas",
+        title="People in need, in the places to look at first",
+        table="priority_areas",
+        category_column="geography_name",
+        series=(ChartSeries("people_in_need", "People in need", "people"),),
+    ),
+    Chart(
+        id="reach_in_priority_areas",
+        title="People you reached per 100 in need, in the same places",
+        table="priority_areas",
+        category_column="geography_name",
+        series=(
+            ChartSeries(
+                "people_per_100_in_need", "People reached per 100 in need", "per_100"
+            ),
+        ),
+        note="No bar is drawn where a count is hidden.",
+    ),
+)
+
+
 @dataclass(frozen=True)
 class _Authority:
     """One local authority and the people in need there."""
@@ -308,6 +333,7 @@ def run(lens_input: LensInput) -> LensResult:
         warnings=tuple(trail.warnings),
         sources=tuple(trail.sources),
         privacy=_privacy(threshold, trail),
+        charts=CHARTS,
     )
 
 

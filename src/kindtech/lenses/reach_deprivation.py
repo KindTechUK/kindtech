@@ -18,6 +18,8 @@ import kindtech
 from kindtech.imd import load_imd
 from kindtech.lenses._inputs import is_blank
 from kindtech.lenses._model import (
+    Chart,
+    ChartSeries,
     Check,
     Choice,
     Figure,
@@ -138,6 +140,19 @@ CAVEATS = (
 )
 
 
+DECILE_CHART = Chart(
+    id="people_by_decile",
+    title="Your people and catchment residents, by deprivation decile",
+    table="by_decile",
+    category_column="imd_decile",
+    series=(
+        ChartSeries("share_of_people", "Your people", "percent"),
+        ChartSeries("share_of_residents", "Catchment residents", "percent"),
+    ),
+    note="Decile 1 is the most deprived tenth of neighbourhoods in England.",
+)
+
+
 @dataclass(frozen=True)
 class _Area:
     """One neighbourhood from the deprivation index."""
@@ -235,6 +250,7 @@ def run(lens_input: LensInput) -> LensResult:
         warnings=tuple(trail.warnings),
         sources=tuple(trail.sources),
         privacy=_privacy(threshold, trail),
+        charts=(DECILE_CHART,),
     )
 
 

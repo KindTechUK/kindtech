@@ -167,6 +167,35 @@ class MapSpec:
 
 
 @dataclass(frozen=True)
+class ChartSeries:
+    """One set of bars in a chart: a column of a table, with its label and unit."""
+
+    column: str
+    label: str
+    unit: str
+
+
+@dataclass(frozen=True)
+class Chart:
+    """A chart that can be drawn from one of the result's tables.
+
+    There is one group of bars for each row of the table, named by
+    ``category_column``, and one bar in the group for each entry of ``series``.
+    Every series in a chart has the same unit, so one axis serves them all. A
+    value hidden to protect a small count is ``None`` in the table, and no bar
+    is drawn for it.
+    """
+
+    id: str
+    title: str
+    table: str
+    category_column: str
+    series: tuple[ChartSeries, ...]
+    kind: str = "bar"
+    note: str = ""
+
+
+@dataclass(frozen=True)
 class Step:
     """One step of the working, in the order it happened."""
 
@@ -243,6 +272,7 @@ class LensResult:
     warnings: tuple[str, ...]
     sources: tuple[Source, ...]
     privacy: Privacy
+    charts: tuple[Chart, ...] = ()
 
     def figure(self, figure_id: str) -> Figure:
         """Return the figure with this id.
