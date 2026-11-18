@@ -295,10 +295,15 @@ def _describe_text(info: LensInfo) -> str:
     lines += ["", "Columns:"]
     lines += [f"  {role.name}: {role.description}" for role in info.roles]
     lines += ["", "Options:"]
-    lines += [
-        f"  {option.name} (default {json.dumps(option.default)}): {option.description}"
-        for option in info.options
-    ]
+    for option in info.options:
+        lines.append(
+            f"  {option.name} (default {json.dumps(option.default)}): "
+            f"{option.description}"
+        )
+        lines += [
+            f"    {json.dumps(choice.value)}: {choice.label}"
+            for choice in option.choices
+        ]
     return "\n".join(lines)
 
 

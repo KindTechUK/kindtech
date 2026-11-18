@@ -19,6 +19,7 @@ from kindtech.lenses._model import (
     Choice,
     LensInputError,
     Option,
+    OptionChoice,
     Source,
     Step,
 )
@@ -58,6 +59,11 @@ POSTCODE_LOOKUP = Option(
         "otherwise."
     ),
     default="auto",
+    choices=(
+        OptionChoice("auto", "On this machine when a postcode table is installed"),
+        OptionChoice("offline", "On this machine only"),
+        OptionChoice("online", "With postcodes.io, an online service"),
+    ),
 )
 
 

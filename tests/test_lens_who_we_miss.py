@@ -156,6 +156,16 @@ def test_lens_is_described():
     assert reported == {"group": True, "postcode": False, "count": False}
 
 
+def test_characteristics_can_be_picked_from_a_list(capsys):
+    option = {o.name: o for o in describe_lens(LENS_ID).options}["characteristic"]
+    assert [(choice.value, choice.label) for choice in option.choices] == [
+        ("ethnic_group", "Ethnic group"),
+        ("sex", "Sex"),
+    ]
+    assert main(["lens", "describe", LENS_ID]) == EXIT_OK
+    assert '    "sex": Sex' in capsys.readouterr().out
+
+
 def test_only_the_census_group_names_are_public_in_the_group_column():
     info = describe_lens(LENS_ID)
     group = info.roles[0]

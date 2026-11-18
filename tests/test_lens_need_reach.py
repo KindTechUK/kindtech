@@ -220,6 +220,24 @@ def test_a_kept_file_that_cannot_be_read_is_an_input_error(nomis):
     assert nomis.asked == []
 
 
+def test_built_in_needs_can_be_picked_from_a_list():
+    need = {o.name: o for o in describe_lens(LENS_ID).options}["need"]
+    assert [(choice.value, choice.label) for choice in need.choices] == [
+        (
+            "unemployed",
+            "Unemployed people aged 16 to 64, not counting full-time students",
+        ),
+        (
+            "unemployed_women",
+            "Unemployed women aged 16 to 64, not counting full-time students",
+        ),
+        (
+            "unemployed_men",
+            "Unemployed men aged 16 to 64, not counting full-time students",
+        ),
+    ]
+
+
 def test_need_can_be_women_only(nomis):
     result = _run(_counts(Lewisham=60), options={"need": "unemployed_women"})
     assert nomis.asked[0][1]["c_sex"] == [1]
