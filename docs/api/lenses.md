@@ -201,6 +201,28 @@ Choose the need with the `need` option:
 | `"unemployed_men"` | Unemployed men aged 16 to 64, Census 2021 |
 | `{"dataset": ..., "label": ..., "filters": {...}}` | Any table Nomis publishes by local authority. The filters are the category codes to add up |
 
+The need figures are public. They are fetched from Nomis once for each need
+and then kept in memory for as long as the program runs;
+`clear_need_cache()` forgets them. To run with no request to Nomis at all,
+keep a copy on the machine, in the same data folder as the
+[postcode table](postcodes.md#looking-up-postcodes-on-this-machine):
+
+```python
+from kindtech.lenses.need_reach import download_need_figures, keep_need_figures
+
+download_need_figures("unemployed")   # fetch once, when a server is built
+
+# or keep figures of your own under a built-in need, for a demonstration
+keep_need_figures(
+    "unemployed",
+    [("E09000023", "Lewisham", 9000), ("E09000011", "Greenwich", 8000)],
+    note="invented for a demonstration.",
+)
+```
+
+A result that used a kept copy says so in its `sources` and its `working`,
+with the note the copy was kept with.
+
 By default every local authority in England and Wales is compared. If you
 serve a smaller area, name it with `catchment`, so that places you could not
 reach are not listed as gaps.

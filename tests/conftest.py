@@ -5,6 +5,7 @@ import pytest
 
 from kindtech.connector import lenses, places
 from kindtech.lenses import reach_deprivation
+from kindtech.lenses.need_reach import clear_need_cache
 from kindtech.postcodes import build_postcode_table, install_postcode_table, offline
 
 
@@ -48,3 +49,11 @@ def postcode_table(tmp_path, empty_data_dir) -> None:
     packed = tmp_path / "postcodes.ktpc.gz"
     build_postcode_table(source, packed, "May 2026")
     install_postcode_table(packed)
+
+
+@pytest.fixture(autouse=True)
+def fresh_need_figures():
+    """Start and end every test with no need figures kept from another test."""
+    clear_need_cache()
+    yield
+    clear_need_cache()

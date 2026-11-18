@@ -14,7 +14,15 @@ import pytest
 
 from kindtech.cli import EXIT_OK, main
 from kindtech.lenses import LensInputError, describe_lens, render_map, run_lens
-from kindtech.lenses.need_reach import NEED_BANDS, NO_REACH, REACH_BANDS
+from kindtech.lenses.need_reach import (
+    NEED_BANDS,
+    NO_REACH,
+    REACH_BANDS,
+    clear_need_cache,
+    download_need_figures,
+    keep_need_figures,
+    need_figures_path,
+)
 from kindtech.postcodes import build_postcode_table, install_postcode_table
 
 LENS_ID = "need-reach"
@@ -145,6 +153,73 @@ def test_the_default_need_is_unemployment_from_the_census(nomis):
     assert any("21 March 2021" in caveat for caveat in result.caveats)
 
 
+def test_need_figures_are_fetched_once_and_kept(nomis):
+    _run(_counts(Lewisham=60))
+    _run(_counts(Greenwich=30), options={"catchment": "England"})
+    assert len(nomis.asked) == 1
+    _run(_counts(Lewisham=60), options={"need": "unemployed_women"})
+    assert len(nomis.asked) == 2
+    clear_need_cache()
+    _run(_counts(Lewisham=60))
+    assert len(nomis.asked) == 3
+
+
+# --- need figures kept on this machine -------------------------------------
+
+INVENTED = [(code, name, need * 2) for code, name, need in NEED]
+
+
+def test_kept_need_figures_are_used_and_nothing_is_fetched(nomis):
+    assert need_figures_path() is None
+    path = keep_need_figures("unemployed", INVENTED, "invented for a demonstration.")
+    assert need_figures_path() == path
+    result = _run(_counts(Lewisham=60))
+    assert nomis.asked == []
+    assert result.figure("people_in_need").value == 182040
+    source = result.sources[0]
+    assert source.id == "nomis-nm_2124_1"
+    assert source.edition.endswith(
+        "A copy kept on this machine, invented for a demonstration."
+    )
+    assert "nothing was fetched" in result.working[0].detail
+
+
+def test_each_need_keeps_its_own_figures(nomis):
+    keep_need_figures("unemployed_women", INVENTED, "invented.")
+    assert need_figures_path("unemployed_women") is not None
+    assert need_figures_path("unemployed") is None
+    _run(_counts(Lewisham=60))
+    assert len(nomis.asked) == 1
+    _run(_counts(Lewisham=60), options={"need": "unemployed_women"})
+    assert len(nomis.asked) == 1
+
+
+def test_download_fetches_and_keeps_the_figures(nomis):
+    path = download_need_figures("unemployed_men")
+    assert path == need_figures_path("unemployed_men")
+    assert nomis.asked[0][1]["c_sex"] == [2]
+    result = _run(_counts(Lewisham=60), options={"need": "unemployed_men"})
+    assert len(nomis.asked) == 1
+    assert result.figure("people_in_need").value == 91020
+    assert "fetched from Nomis on" in result.sources[0].edition
+
+
+def test_only_built_in_needs_can_be_kept():
+    with pytest.raises(ValueError, match="No need called 'poverty'"):
+        keep_need_figures("poverty", INVENTED, "invented.")
+    with pytest.raises(ValueError, match="No need called 'poverty'"):
+        download_need_figures("poverty")
+    assert need_figures_path("poverty") is None
+
+
+def test_a_kept_file_that_cannot_be_read_is_an_input_error(nomis):
+    path = keep_need_figures("unemployed", INVENTED, "invented.")
+    path.write_text('{"format": "something else"}', encoding="utf-8")
+    with pytest.raises(LensInputError, match="kept on this machine could not be read"):
+        _run(_counts(Lewisham=60))
+    assert nomis.asked == []
+
+
 def test_need_can_be_women_only(nomis):
     result = _run(_counts(Lewisham=60), options={"need": "unemployed_women"})
     assert nomis.asked[0][1]["c_sex"] == [1]
@@ -199,6 +274,12 @@ def test_a_table_nomis_does_not_have_is_an_input_error():
             _counts(Lewisham=60),
             options={"need": {"dataset": "NM_0_0", "label": "Nothing"}},
         )
+
+
+def test_filters_that_are_not_plain_values_are_an_input_error(nomis):
+    need = {"dataset": "NM_2056_1", "label": "x", "filters": {"c_sex": {1, 2}}}
+    with pytest.raises(LensInputError, match="could not be loaded"):
+        _run(_counts(Lewisham=60), options={"need": need})
 
 
 def test_need_without_local_authorities_is_an_input_error():
