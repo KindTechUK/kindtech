@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 
 from kindtech.imd import api as imd_api
-from kindtech.imd import load_imd
+from kindtech.imd import download_imd, imd_path, keep_imd, kept_imd_note, load_imd
 
 # Minimal composite CSV: the real columns, two rows per nation.
 _CSV = (
@@ -381,3 +381,120 @@ def test_england_2019_official_on_2011_lsoas(mock_get):
     assert df.loc[0, "imd_decile"] == 8
     assert df.loc[0, "income_rank"] == 9001  # domains + ranks present
     assert df.loc[0, "population"] == 1500  # mid-2015 denominator
+
+
+# --- a copy of the English index kept on this machine ----------------------
+
+# Two invented neighbourhoods with only the columns a kept copy must have.
+_KEPT_ROWS = [
+    {
+        "geography_code": "E01000001",
+        "geography_name": "Lewisham 001A",
+        "lad_code": "E09000023",
+        "lad_name": "Lewisham",
+        "imd_decile": 2,
+        "population": 1500,
+    },
+    {
+        "geography_code": "E01000002",
+        "geography_name": "Lewisham 001B",
+        "lad_code": "E09000023",
+        "lad_name": "Lewisham",
+        "imd_decile": 7,
+        "population": 1700,
+    },
+]
+
+
+@mock.patch("kindtech.imd.api.requests.get")
+def test_kept_index_is_read_in_place_of_the_download(mock_get):
+    assert imd_path() is None
+    assert kept_imd_note() is None
+    path = keep_imd(_KEPT_ROWS, note="invented for a test.")
+    assert imd_path() == path
+    assert kept_imd_note() == "invented for a test."
+
+    df = load_imd(nation="England")
+
+    mock_get.assert_not_called()
+    assert df["geography_code"].tolist() == ["E01000001", "E01000002"]
+    assert df["imd_decile"].tolist() == [2, 7]
+    assert df["nation"].tolist() == ["E", "E"]
+    # Every column the download gives is there, empty where the copy has none.
+    assert "income_decile" in df.columns
+    assert df["income_decile"].isna().all()
+
+
+def test_a_frame_can_be_kept_and_a_missing_number_stays_missing():
+    frame = pd.DataFrame(_KEPT_ROWS).assign(imd_rank=[10.0, float("nan")])
+    keep_imd(frame, note="invented for a test.")
+    df = load_imd(nation="England", year=2025)
+    assert df["imd_rank"].tolist()[0] == 10
+    assert df["imd_rank"].isna().tolist() == [False, True]
+
+
+def test_changing_a_loaded_table_does_not_change_the_next_one():
+    keep_imd(_KEPT_ROWS, note="invented for a test.")
+    first = load_imd(nation="England")
+    first.loc[0, "imd_decile"] = 10
+    assert load_imd(nation="England")["imd_decile"].tolist() == [2, 7]
+
+
+@mock.patch("kindtech.imd.api.requests.get")
+def test_kept_index_is_for_one_year_and_a_url_goes_round_it(mock_get):
+    resp = mock.MagicMock()
+    resp.raise_for_status = mock.MagicMock()
+    resp.text = _ENGLAND_2025_CSV
+    mock_get.return_value = resp
+    keep_imd(_KEPT_ROWS, note="invented for a test.", year=2019)
+    assert imd_path(2019) is not None
+    assert imd_path(2025) is None
+
+    # 2025 has no copy, so it is downloaded.
+    assert "E01000001" in load_imd(nation="England")["geography_code"].tolist()
+    assert mock_get.call_count == 1
+    # 2019 has a copy. Giving a url asks for the download all the same.
+    assert len(load_imd(nation="England", year=2019)) == 2
+    assert mock_get.call_count == 1
+
+
+@mock.patch("kindtech.imd.api.requests.get")
+def test_index_can_be_downloaded_and_kept(mock_get):
+    resp = mock.MagicMock()
+    resp.raise_for_status = mock.MagicMock()
+    resp.text = _ENGLAND_2025_CSV
+    mock_get.return_value = resp
+
+    path = download_imd()
+
+    assert path == imd_path(2025)
+    assert kept_imd_note().startswith("fetched from gov.uk on ")
+    imd_api._CACHE.clear()
+    df = load_imd(nation="England")
+    assert mock_get.call_count == 1
+    assert df.loc[0, "geography_code"] == "E01000001"
+    assert "income_decile" in df.columns
+
+
+def test_keeping_needs_the_main_columns_and_a_real_release():
+    short = [{"geography_code": "E01000001", "imd_decile": 2}]
+    with pytest.raises(ValueError, match="needs these columns too: geography_name"):
+        keep_imd(short, note="invented for a test.")
+    with pytest.raises(ValueError, match="needs these columns too"):
+        keep_imd([], note="invented for a test.")
+    with pytest.raises(ValueError, match="list of row dictionaries"):
+        keep_imd([_KEPT_ROWS[0], "not a row"], note="invented for a test.")
+    with pytest.raises(ValueError, match="year=2019 or year=2025"):
+        keep_imd(_KEPT_ROWS, note="invented for a test.", year=2015)
+    with pytest.raises(ValueError, match="year=2019 or year=2025"):
+        download_imd(2015)
+
+
+def test_a_kept_file_that_holds_something_else_is_an_error():
+    path = keep_imd(_KEPT_ROWS, note="invented for a test.")
+    path.write_text('{"format": "kindtech-imd-1", "note": "x"}', encoding="utf-8")
+    with pytest.raises(ValueError, match="does not hold the English index"):
+        load_imd(nation="England")
+    path.write_text("not json", encoding="utf-8")
+    with pytest.raises(ValueError):
+        kept_imd_note()

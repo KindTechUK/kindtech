@@ -28,13 +28,22 @@ for cross-nation comparison:
 
 import csv
 import logging
+from collections.abc import Mapping
+from datetime import date
 from io import StringIO
+from pathlib import Path
 from typing import Any
 
 import narwhals.stable.v2 as nw
 import requests
 
-from kindtech._frames import csv_to_frame, dicts_to_frame, read_spreadsheet_rows
+from kindtech._frames import (
+    csv_to_frame,
+    dicts_to_frame,
+    get_native_namespace,
+    read_spreadsheet_rows,
+)
+from kindtech._kept import kept_file, read_kept, write_kept
 
 # England-anchored composite (all four nations on one UK scale), 2017-2020.
 COMPOSITE_IMD_URL = (
@@ -224,6 +233,19 @@ _NATION_CODES = {
 }
 _NATION_NAMES = {"E": "England", "W": "Wales", "S": "Scotland", "N": "Northern Ireland"}
 
+# A copy of the English index kept on this machine (see keep_imd).
+IMD_FOLDER = "imd"
+IMD_FILE_FORMAT = "kindtech-imd-1"
+# What a kept copy must hold. Other columns are empty when it leaves them out.
+KEPT_IMD_REQUIRED = (
+    "geography_code",
+    "geography_name",
+    "lad_code",
+    "lad_name",
+    "imd_decile",
+    "population",
+)
+
 logger = logging.getLogger(__name__)
 
 # In-process caches keyed by URL — these are static releases, so one fetch per
@@ -365,6 +387,10 @@ def load_imd(
             2025 release.
         url: Override the source URL (mainly for testing).
 
+    A copy of the English index kept on this machine with :func:`keep_imd` or
+    :func:`download_imd` is read in place of the download, unless ``url`` is
+    given.
+
     Returns:
         DataFrame (pandas or polars), one row per area, keyed on
         ``geography_code``.
@@ -406,6 +432,9 @@ def load_imd(
     # England: official IoD, 2019 (2011 LSOAs) or 2025 (2021 LSOAs).
     if nation_code == "E":
         year = 2025 if year is None else year
+        kept = _read_kept_england(year) if url is None else None
+        if kept is not None:
+            return kept
         if year == 2025:
             return _load_england(ENGLAND_IMD_2025_URL, _ENGLAND_2025_COLUMNS, url)
         if year == 2019:
@@ -422,3 +451,154 @@ def load_imd(
         msg = f"{name}'s official index is only available for year=2019."
         raise ValueError(msg)
     return _load_national(nation_code)
+
+
+# --- a copy of the English index kept on this machine ----------------------
+
+
+def imd_path(year: int = 2025) -> Path | None:
+    """Return where the English index is kept on this machine, or None.
+
+    Args:
+        year: ``2025`` or ``2019``.
+    """
+    path = kept_file(IMD_FOLDER, f"england-{year}")
+    return path if path.is_file() else None
+
+
+def kept_imd_note(year: int = 2025) -> str | None:
+    """Return the note a kept copy of the English index was kept with, or None.
+
+    Raises:
+        ValueError: If the kept file cannot be read.
+    """
+    kept = read_kept(IMD_FOLDER, f"england-{year}", IMD_FILE_FORMAT)
+    return None if kept is None else kept["note"]
+
+
+def keep_imd(table: Any, note: str, year: int = 2025) -> Path:
+    """Keep the English index on this machine, so it is not downloaded.
+
+    :func:`load_imd` then reads the copy for ``nation="England"`` and that
+    year, so a server or a demonstration works without the network. The copy
+    lives in the data folder (see
+    :func:`kindtech.postcodes.offline.data_dir`).
+
+    Args:
+        table: A pandas or polars DataFrame, or a list of row dictionaries,
+            with one row per neighbourhood and the columns :func:`load_imd`
+            returns for England. It must have ``geography_code``,
+            ``geography_name``, ``lad_code``, ``lad_name``, ``imd_decile`` and
+            ``population``. Any other column it leaves out is kept as empty.
+        note: Where the figures came from, in a few words. A lens shows it
+            with the source in every result that uses the copy.
+        year: The release the table stands for, ``2025`` or ``2019``.
+
+    Returns:
+        The path of the file written.
+
+    Raises:
+        ValueError: If the year is not a release, or a needed column is
+            missing.
+    """
+    columns = _england_columns_for(year)
+    held = _as_columns(table)
+    missing = [name for name in KEPT_IMD_REQUIRED if name not in held]
+    if missing:
+        msg = f"The table to keep needs these columns too: {', '.join(missing)}."
+        raise ValueError(msg)
+    size = len(held["geography_code"])
+    content = {
+        "nation": "England",
+        "year": year,
+        "columns": {
+            name: held[name] if name in held else [None] * size for name in columns
+        },
+    }
+    return write_kept(
+        IMD_FOLDER, f"england-{year}", IMD_FILE_FORMAT, note, content, compact=True
+    )
+
+
+def download_imd(year: int = 2025) -> Path:
+    """Fetch the English index from gov.uk and keep it on this machine.
+
+    Run this once when a server is built. Only the published file is fetched.
+
+    Args:
+        year: ``2025`` or ``2019``.
+
+    Returns:
+        The path of the file written.
+
+    Raises:
+        ValueError: If the year is not a release.
+    """
+    _england_columns_for(year)
+    url = ENGLAND_IMD_2025_URL if year == 2025 else ENGLAND_IMD_2019_URL
+    source = _ENGLAND_2025_COLUMNS if year == 2025 else _ENGLAND_2019_COLUMNS
+    fetched = _load_england(url, source, None)
+    note = f"fetched from gov.uk on {date.today().isoformat()}."
+    return keep_imd(fetched, note, year)
+
+
+def _england_columns_for(year: int) -> list[str]:
+    """Return the columns load_imd gives for England in a year."""
+    if year == 2025:
+        return [*_ENGLAND_2025_COLUMNS.values(), "nation"]
+    if year == 2019:
+        return [*_ENGLAND_2019_COLUMNS.values(), "nation"]
+    msg = "England IoD is available for year=2019 or year=2025."
+    raise ValueError(msg)
+
+
+def _as_columns(table: Any) -> dict[str, list[Any]]:
+    """Turn a DataFrame or a list of rows into plain lists, one per column."""
+    if isinstance(table, list):
+        names = list(table[0]) if table else []
+        if not all(isinstance(row, Mapping) for row in table):
+            msg = "A table given as a list must be a list of row dictionaries."
+            raise ValueError(msg)
+        held = {name: [row.get(name) for row in table] for name in names}
+    else:
+        frame = nw.from_native(table, eager_only=True)
+        held = {name: frame[name].to_list() for name in frame.columns}
+    return {
+        name: [_json_value(value) for value in values] for name, values in held.items()
+    }
+
+
+def _json_value(value: Any) -> Any:
+    """Return a cell as a value JSON can hold, with None for a missing number."""
+    if value is None or isinstance(value, str | bool | int):
+        return value
+    if value != value:  # NaN
+        return None
+    return float(value)
+
+
+def _read_kept_england(year: int) -> Any:
+    """Read the kept copy of the English index as a DataFrame, or None.
+
+    Raises:
+        ValueError: If the kept file cannot be read.
+    """
+    path = imd_path(year)
+    if path is None:
+        return None
+    key = f"kept:{path}:{path.stat().st_mtime_ns}"
+    if key not in _CACHE:
+        kept = read_kept(IMD_FOLDER, f"england-{year}", IMD_FILE_FORMAT)
+        columns = None if kept is None else kept.get("columns")
+        wanted = _england_columns_for(year)
+        if not isinstance(columns, dict) or any(name not in columns for name in wanted):
+            msg = (
+                f"{path.name} does not hold the English index. Fetch it again "
+                "with kindtech.imd.download_imd()."
+            )
+            raise ValueError(msg)
+        columns["nation"] = ["E"] * len(columns["geography_code"])
+        native = get_native_namespace().DataFrame({n: columns[n] for n in wanted})
+        _CACHE[key] = nw.from_native(native, eager_only=True)
+    # A copy, so a caller that changes its table does not change the next one.
+    return _CACHE[key].clone().to_native()

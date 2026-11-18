@@ -159,6 +159,11 @@ other column leaves your machine, and rows that are blank or not shaped like a
 postcode are never sent. The result says which happened, under `choices` and
 `privacy`. In `neighbourhood_counts` mode nothing leaves your machine.
 
+The deprivation index is downloaded from gov.uk, or read from a copy
+[kept on your machine](imd.md#keeping-the-english-index-on-this-machine) when
+there is one. A result that used a copy says so in its `sources` and its
+`working`, with the note the copy was kept with.
+
 The lens then works out your **catchment**: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
 are about the people who live there, so they can be set against everyone who
