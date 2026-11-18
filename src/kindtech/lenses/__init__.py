@@ -42,6 +42,7 @@ from kindtech.lenses._registry import (
     register_lens,
     run_lens,
 )
+from kindtech.lenses.maps import load_map_boundaries, render_map
 
 __all__ = [
     "Check",
@@ -63,6 +64,8 @@ __all__ = [
     "Table",
     "describe_lens",
     "list_lenses",
+    "load_map_boundaries",
     "register_lens",
+    "render_map",
     "run_lens",
 ]

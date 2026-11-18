@@ -66,6 +66,31 @@ Raises `LensInputError` (a `ValueError`) when the data, the column mapping or
 an option cannot be used. The message is written for a person and
 `error.problems` lists each problem separately.
 
+## Drawing the map
+
+A result describes its map; `render_map` draws it as an SVG picture with a
+legend and the credits the data licences ask for.
+
+```python
+from kindtech.lenses import render_map
+
+svg = render_map(result)                  # the first layer: deprivation decile
+svg = render_map(result, layer="people")  # people reached, in bands
+
+with open("map.svg", "w", encoding="utf-8") as handle:
+    handle.write(svg)
+```
+
+The picture is drawn from the result's own table of totals, so it shows
+nothing the result does not already hold. People are shown in bands, and the
+lowest band includes zero. Hover over an area in a browser to see its name and
+value. The colours adapt to a dark page.
+
+`render_map` fetches the outline of each area from the ONS Open Geography
+Portal. Only the public area codes of the catchment are sent. To draw without
+the network, pass `boundaries=` a GeoJSON FeatureCollection you already have;
+`load_map_boundaries(result)` fetches one you can save and reuse.
+
 ## Small counts
 
 A count from 1 to 4 that is about a named place or a group is returned as

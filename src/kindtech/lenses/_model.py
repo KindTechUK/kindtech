@@ -130,13 +130,20 @@ class Table:
 
 @dataclass(frozen=True)
 class MapLayer:
-    """One thing a map can colour areas by."""
+    """One thing a map can colour areas by.
+
+    ``categories`` lists every value the column can hold, lowest first, so a
+    map can give each a colour and a legend entry. ``emphasis`` says which end
+    of that list gets the strongest colour: ``"high"`` or ``"low"``.
+    """
 
     id: str
     label: str
     value_column: str
     kind: str
     note: str = ""
+    categories: tuple[Any, ...] = ()
+    emphasis: str = "high"
 
 
 @dataclass(frozen=True)

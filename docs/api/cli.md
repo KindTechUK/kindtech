@@ -48,6 +48,8 @@ uk-open-data lens run reach-deprivation clients.csv \
 | `--json` | Print the whole result as JSON instead of a report |
 | `--summary` | With `--json`, leave out the rows of long tables such as map data |
 | `--output PATH` | Write to a file instead of the screen |
+| `--map PATH` | Also draw the map and save it as an `.svg` file |
+| `--map-layer LAYER` | What the map is coloured by, for example `people`. The first layer is used by default |
 
 An option value is read as JSON when it is JSON, and as text otherwise:
 
