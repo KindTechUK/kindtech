@@ -11,7 +11,7 @@ import pytest
 import requests
 
 from kindtech.connector import PrivacyError, find_lens, run_lens_on_counts
-from kindtech.lenses import need_reach
+from kindtech.lenses import need_reach, who_we_miss
 
 COUNTS = [
     {"lsoa_code": "E01000001", "count": 12},
@@ -156,6 +156,25 @@ class TestReportedRoles:
 
         assert "ZZ99" not in str(raised.value).upper()
 
+    @pytest.mark.parametrize("group", ["White", " white ", "OTHER"])
+    def test_a_value_the_role_lists_may_come_back(self, group: str) -> None:
+        answer = run_lens_on_counts("reach-by-group", [{"group": group, "count": 12}])
+
+        assert answer["status"] == "ok"
+        assert answer["result"]["warnings"] == [f"{group} looks unusual"]
+
+    @pytest.mark.parametrize(
+        "label",
+        ["Black Caribbean", "White British", "Zebedee Quillfeather", "ZZ99 9KC"],
+    )
+    def test_a_value_the_role_does_not_list_is_withheld(self, label: str) -> None:
+        rows = [{"group": label, "count": 12}]
+
+        with pytest.raises(PrivacyError) as raised:
+            run_lens_on_counts("reach-by-group", rows)
+
+        assert label not in str(raised.value)
+
 
 def test_a_problem_that_repeats_an_input_value_is_withheld(
     lens_engine: None, monkeypatch: pytest.MonkeyPatch
@@ -286,15 +305,103 @@ class TestWithTheSecondLens:
         assert "ZZ99" not in json.dumps(answer)
 
 
+GROUP_COUNTS = [
+    {"group": "White British", "count": 220},
+    {"group": "Black Caribbean", "count": 40},
+    {"group": "Asian", "count": 30},
+]
+CATCHMENT = {"catchment": ["Lewisham"]}
+
+
+class TestWithTheThirdLens:
+    """The connector against the who we are missing lens.
+
+    The census figures are invented and kept in the test's data folder, so the
+    lens asks Nomis for nothing.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _residents(self) -> None:
+        who_we_miss.keep_residents(
+            "ethnic_group", fakes.RESIDENTS, "invented for a test."
+        )
+
+    def test_is_found_by_its_question(self) -> None:
+        answer = find_lens("which ethnic groups are we missing?")
+
+        assert answer["lenses"][0]["id"] == "who-we-miss"
+
+    def test_runs_on_group_counts(self) -> None:
+        answer = run_lens_on_counts("who-we-miss", GROUP_COUNTS, options=CATCHMENT)
+
+        result = answer["result"]
+        rows = {row["group"]: row for row in result["tables"][0]["rows"]}
+        assert answer["status"] == "ok"
+        assert result["input_mode"] == "group_counts"
+        assert result["privacy"]["sent_to_third_parties"] == []
+        # 40 of 290 people against a quarter of residents.
+        assert rows["Black"]["people"] == 40
+        assert rows["Black"]["under_represented"] is True
+
+    def test_names_census_groups_and_not_the_labels_passed_in(self) -> None:
+        answer = run_lens_on_counts("who-we-miss", GROUP_COUNTS, options=CATCHMENT)
+
+        reply = json.dumps(answer)
+        assert "White" in reply
+        assert "White British" not in reply
+        assert "Black Caribbean" not in reply
+
+    def test_says_when_the_catchment_is_missing(self) -> None:
+        answer = run_lens_on_counts("who-we-miss", GROUP_COUNTS)
+
+        assert answer["status"] == "input_problem"
+        assert "'catchment'" in answer["problems"][0]
+
+    def test_rows_about_people_are_refused(self) -> None:
+        rows = [{"group": "White", "postcode": "ZZ99 9KC"}]
+
+        answer = run_lens_on_counts("who-we-miss", rows, options=CATCHMENT)
+
+        assert answer["status"] == "input_problem"
+        assert "(group, count)" in answer["problems"][0]
+        assert "ZZ99" not in json.dumps(answer)
+
+    def test_a_label_that_is_not_a_group_does_not_come_back(self) -> None:
+        rows = [
+            *GROUP_COUNTS,
+            {"group": "Zebedee Quillfeather", "count": 6},
+            {"group": "ZZ99 9KC", "count": 9},
+        ]
+
+        answer = run_lens_on_counts("who-we-miss", rows, options=CATCHMENT)
+
+        reply = json.dumps(answer)
+        assert answer["status"] == "ok"
+        assert "Quillfeather" not in reply
+        assert "ZZ99" not in reply
+
+
+@pytest.mark.parametrize(
+    ("module", "lens_id", "counts", "options"),
+    [
+        (need_reach, "need-reach", COUNCIL_COUNTS, None),
+        (who_we_miss, "who-we-miss", GROUP_COUNTS, CATCHMENT),
+    ],
+)
 def test_says_when_a_data_source_cannot_be_reached(
-    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    module: object,
+    lens_id: str,
+    counts: list[dict],
+    options: dict | None,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     def no_network(*args: object, **kwargs: object) -> None:
         raise requests.ConnectionError("https://example.invalid/?geography=secret")
 
-    monkeypatch.setattr(need_reach, "load_ons", no_network)
+    monkeypatch.setattr(module, "load_ons", no_network)
 
-    answer = run_lens_on_counts("need-reach", COUNCIL_COUNTS)
+    answer = run_lens_on_counts(lens_id, counts, options=options)
 
     assert answer["status"] == "unavailable"
     assert "could not be reached" in answer["message"]
