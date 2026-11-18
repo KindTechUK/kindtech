@@ -253,6 +253,9 @@ logger = logging.getLogger(__name__)
 # holds raw spreadsheet (XLSX/ODS) bytes.
 _CACHE: dict[str, nw.DataFrame] = {}
 _BYTES: dict[str, bytes] = {}
+# The note of each kept copy that has been read, under the same key as its
+# frame in ``_CACHE``, so the note does not cost a second read of the file.
+_NOTES: dict[str, str] = {}
 
 
 def _resolve_nation(nation: str | None) -> str | None:
@@ -472,8 +475,16 @@ def kept_imd_note(year: int = 2025) -> str | None:
     Raises:
         ValueError: If the kept file cannot be read.
     """
-    kept = read_kept(IMD_FOLDER, f"england-{year}", IMD_FILE_FORMAT)
-    return None if kept is None else kept["note"]
+    path = imd_path(year)
+    if path is None:
+        return None
+    key = _kept_key(path)
+    if key not in _NOTES:
+        kept = read_kept(IMD_FOLDER, f"england-{year}", IMD_FILE_FORMAT)
+        if kept is None:
+            return None
+        _NOTES[key] = kept["note"]
+    return _NOTES[key]
 
 
 def keep_imd(table: Any, note: str, year: int = 2025) -> Path:
@@ -577,6 +588,11 @@ def _json_value(value: Any) -> Any:
     return float(value)
 
 
+def _kept_key(path: Path) -> str:
+    """Name a kept file as it is now, so a changed file is read again."""
+    return f"kept:{path}:{path.stat().st_mtime_ns}"
+
+
 def _read_kept_england(year: int) -> Any:
     """Read the kept copy of the English index as a DataFrame, or None.
 
@@ -586,10 +602,10 @@ def _read_kept_england(year: int) -> Any:
     path = imd_path(year)
     if path is None:
         return None
-    key = f"kept:{path}:{path.stat().st_mtime_ns}"
+    key = _kept_key(path)
     if key not in _CACHE:
-        kept = read_kept(IMD_FOLDER, f"england-{year}", IMD_FILE_FORMAT)
-        columns = None if kept is None else kept.get("columns")
+        kept = read_kept(IMD_FOLDER, f"england-{year}", IMD_FILE_FORMAT) or {}
+        columns = kept.get("columns")
         wanted = _england_columns_for(year)
         if not isinstance(columns, dict) or any(name not in columns for name in wanted):
             msg = (
@@ -597,6 +613,7 @@ def _read_kept_england(year: int) -> Any:
                 "with kindtech.imd.download_imd()."
             )
             raise ValueError(msg)
+        _NOTES[key] = kept["note"]
         columns["nation"] = ["E"] * len(columns["geography_code"])
         native = get_native_namespace().DataFrame({n: columns[n] for n in wanted})
         _CACHE[key] = nw.from_native(native, eager_only=True)

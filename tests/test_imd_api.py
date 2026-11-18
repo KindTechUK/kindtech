@@ -476,6 +476,17 @@ def test_index_can_be_downloaded_and_kept(mock_get):
     assert "income_decile" in df.columns
 
 
+def test_the_note_of_a_copy_that_was_loaded_does_not_read_the_file_again():
+    keep_imd(_KEPT_ROWS, note="invented for a test.")
+    load_imd(nation="England")
+    with mock.patch("kindtech.imd.api.read_kept") as read:
+        assert kept_imd_note() == "invented for a test."
+    read.assert_not_called()
+    # A copy kept again is read again.
+    keep_imd(_KEPT_ROWS, note="invented again.")
+    assert kept_imd_note() == "invented again."
+
+
 def test_keeping_needs_the_main_columns_and_a_real_release():
     short = [{"geography_code": "E01000001", "imd_decile": 2}]
     with pytest.raises(ValueError, match="needs these columns too: geography_name"):
