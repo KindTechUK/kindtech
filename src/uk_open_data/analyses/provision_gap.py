@@ -20,6 +20,7 @@ import uk_open_data
 from uk_open_data.analyses._answers import (
     high_need_places,
     look_first,
+    need_words,
     number,
     values,
 )
@@ -287,7 +288,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
             ),
         ),
         charts=CHARTS,
-        answer=_answer(figures, tables[0]),
+        answer=_answer(figures, tables[0], measure),
         key_figures=KEY_FIGURES,
     )
 
@@ -718,15 +719,23 @@ def _figures(
 # --- what the person needs to know -----------------------------------------
 
 
-def _answer(figures: list[Figure], priority: Table) -> str:
+def _answer(figures: list[Figure], priority: Table, measure: Measure) -> str:
     """Say where need is high and how much of the provision is there."""
     shown = values(figures)
-    places = high_need_places(shown["high_need_areas"])
+    words = need_words(measure.id == RESIDENTS.id)
+    places = high_need_places(shown["high_need_areas"], words.high)
+    first = look_first(
+        priority,
+        LOWEST,
+        "volume_per_1000_in_need",
+        shown["volume_per_1000_in_need"],
+        words.high,
+    )
     return (
-        f"{number(shown['share_of_need_in_high_need_areas'])}% of the people in "
-        f"need live in {places}, and "
+        f"{number(shown['share_of_need_in_high_need_areas'])}% of {words.people} "
+        f"live in {places}, and "
         f"{number(shown['share_of_provision_in_high_need_areas'])}% of your "
-        f"provision is there.{look_first(priority, LOWEST)}"
+        f"provision is there.{first}"
     )
 
 

@@ -21,7 +21,7 @@ import narwhals as nw
 
 import uk_open_data
 from uk_open_data._kept import kept_file, read_kept, write_kept
-from uk_open_data.analyses._answers import AREA, names
+from uk_open_data.analyses._answers import AREA, names, number
 from uk_open_data.analyses._inputs import is_blank, to_count
 from uk_open_data.analyses._model import (
     Analysis,
@@ -991,9 +991,11 @@ def _figures(
 def _answer(rows: list[dict[str, Any]]) -> str:
     """Name the groups reached less than their share of residents."""
     judged = [row for row in rows if row["under_represented"] is not None]
+    # A group with nobody may be one the charity does not record, so the
+    # groups it does reach come first.
     under = sorted(
         (row for row in judged if row["under_represented"]),
-        key=lambda row: row["representation"],
+        key=lambda row: (row["people"] == 0, row["representation"]),
     )
     against = f"Set against the people who live in {AREA}, you reach"
     hidden = sum(1 for row in rows if row["suppressed"])
@@ -1011,11 +1013,34 @@ def _answer(rows: list[dict[str, Any]]) -> str:
             f"{against} {len(under)} of the {len(judged)} groups less than their "
             f"share: {names([row['group'] for row in under])}."
         )
+    answer += _shares_of_the_first(under) + _groups_with_nobody(under)
     if hidden == 1:
         answer += " One more group has a hidden count and is not judged."
     elif hidden:
         answer += f" {hidden} more groups have a hidden count and are not judged."
     return answer
+
+
+def _shares_of_the_first(under: list[dict[str, Any]]) -> str:
+    """Give the two shares of the first group named, when it has any people."""
+    if not under or under[0]["people"] == 0:
+        return ""
+    first = under[0]
+    subject = "It" if len(under) == 1 else f"The first, {first['group']},"
+    return (
+        f" {subject} is {number(first['share_of_people'])}% of your people and "
+        f"{number(first['share_of_residents'])}% of the people who live there."
+    )
+
+
+def _groups_with_nobody(under: list[dict[str, Any]]) -> str:
+    """Say which of the groups named have nobody in the data."""
+    nobody = [row["group"] for row in under if row["people"] == 0]
+    if not nobody:
+        return ""
+    if len(under) == 1:
+        return " Nobody in your data is recorded in that group."
+    return f" Nobody in your data is recorded as {names(nobody, last='or')}."
 
 
 def _choices(

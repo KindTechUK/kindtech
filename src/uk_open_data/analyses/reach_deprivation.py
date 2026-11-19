@@ -15,7 +15,7 @@ from typing import Any
 import narwhals as nw
 
 import uk_open_data
-from uk_open_data.analyses._answers import AREA, HIDDEN, number, values
+from uk_open_data.analyses._answers import AREA, HIDDEN, number, shown_first, values
 from uk_open_data.analyses._inputs import is_blank
 from uk_open_data.analyses._model import (
     Analysis,
@@ -64,7 +64,12 @@ KEY_FIGURES = (
     "share_most_deprived_20",
     "catchment_share_most_deprived_20",
     "reach_per_1000_most_deprived_20",
+    # These two stand in when a figure above is hidden.
+    "people_in_catchment",
+    "people_located",
 )
+# When this share of the people located live outside the area, the answer says so.
+LARGE_SHARE_OUTSIDE = 0.2
 DECILES = tuple(range(1, 11))
 MOST_DEPRIVED = (0, 1)  # positions of deciles 1 and 2
 ELSEWHERE = tuple(range(2, 10))  # positions of deciles 3 to 10
@@ -259,8 +264,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         sources=tuple(trail.sources),
         privacy=_privacy(threshold, trail),
         charts=(DECILE_CHART,),
-        answer=_answer(figures),
-        key_figures=KEY_FIGURES,
+        answer=_answer(figures, catchment.whole_country),
+        key_figures=shown_first(figures, KEY_FIGURES),
     )
 
 
@@ -843,30 +848,43 @@ def _reach_figure(
 # --- what the person needs to know -----------------------------------------
 
 
-def _answer(figures: list[Figure]) -> str:
+def _answer(figures: list[Figure], whole_country: bool) -> str:
     """Say whether the charity reaches the most deprived neighbourhoods."""
     shown = values(figures)
     ours = shown["share_most_deprived_20"]
     theirs = shown["catchment_share_most_deprived_20"]
+    area = ENGLAND if whole_country else AREA
     if not theirs:
         return (
-            f"No neighbourhood in {AREA} is among the 20% most deprived in "
+            f"No neighbourhood in {area} is among the 20% most deprived in "
             "England, so none of your people there live in one."
         )
     if ours is None:
         return (
-            f"Of everyone who lives in {AREA}, {number(theirs)}% live in the 20% "
+            f"Of everyone who lives in {area}, {number(theirs)}% live in the 20% "
             "most deprived neighbourhoods in England. The share of your people "
             f"who do is {HIDDEN}."
-        )
+        ) + _left_out(shown)
     verdict = "in line with"
     if ours != theirs:
         verdict = "more than" if ours > theirs else "less than"
+    again = ENGLAND if whole_country else "that area"
     return (
-        f"Of your people in {AREA}, {number(ours)}% live in the 20% most "
-        "deprived neighbourhoods in England. Of everyone who lives in that "
-        f"area, {number(theirs)}% do, so you reach those neighbourhoods "
-        f"{verdict} their share."
+        f"Of your people in {area}, {number(ours)}% live in the 20% most "
+        f"deprived neighbourhoods in England. Of everyone who lives in {again}, "
+        f"{number(theirs)}% do, so you reach those neighbourhoods {verdict} "
+        "their share."
+    ) + _left_out(shown)
+
+
+def _left_out(shown: dict[str, Any]) -> str:
+    """Say how many people the answer leaves out, when it is a large share."""
+    outside = shown["people_located"] - shown["people_in_catchment"]
+    if outside < LARGE_SHARE_OUTSIDE * shown["people_located"]:
+        return ""
+    return (
+        f" {number(outside)} of your people live outside that area and are not "
+        "counted in these shares."
     )
 
 

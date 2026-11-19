@@ -216,10 +216,44 @@ def test_answer_does_not_give_away_a_hidden_share(nomis):
     # Birmingham is the only high-need place with people, so the share of
     # people in high-need places would be its count.
     result = _run_wide(_counts(Birmingham=3, Greenwich=30, Adur=20))
+    # The rate across the area is not hidden, so it carries the answer.
     assert result.answer.startswith(
         "83.5% of the people in need live in the 4 local authorities with high "
         "need, and the share of your people who do is hidden to protect a small "
-        "count."
+        "count. Across the area you reached 0.06 people per 100 in need."
+    )
+    # A hidden figure gives way to one that can be shown.
+    assert result.key_figures == (
+        "share_of_need_in_high_need_areas",
+        "high_need_areas_without_people",
+        "reach_per_100_in_need",
+    )
+
+
+def test_answer_does_not_name_a_place_with_a_hidden_count(nomis):
+    result = _run_wide(_counts(Birmingham=3, Greenwich=30, Adur=20))
+    assert "Birmingham" in _names(result.table("priority_areas"))
+    assert "Birmingham" not in result.answer
+
+
+def test_answer_does_not_name_a_place_reached_more_than_the_area(nomis):
+    # Lewisham is the one high-need place of the three, and it is reached
+    # more than the area as a whole, so it is no place to look at first.
+    result = _run(_counts(Lewisham=240, Greenwich=80, Adur=5))
+    assert _names(result.table("priority_areas")) == ["Lewisham"]
+    assert "look at first" not in result.answer
+    assert result.answer.endswith("of your people do.")
+
+
+def test_answer_does_not_call_every_resident_a_need(nomis):
+    result = _run_wide(
+        _counts(Lewisham=60, Greenwich=30, Adur=10), options={"need": "residents"}
+    )
+    assert result.answer == (
+        "83.5% of residents live in the 4 local authorities with the most "
+        "residents, and 60.0% of your people do. The places to look at first, "
+        "with the most residents and your lowest reach, are Birmingham, "
+        "Manchester and Cardiff."
     )
 
 
