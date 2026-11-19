@@ -2,7 +2,7 @@
 
 The deprivation rows are invented and tiny, but have the columns
 ``load_imd(nation="England")`` returns. The fake engine stands in for
-``uk_open_data.lenses`` where a test needs a lens the real engine does not have: one
+``uk_open_data.analyses`` where a test needs a lens the real engine does not have: one
 with no counts mode, or one that breaks the contract.
 """
 
@@ -156,7 +156,7 @@ def outcode_frame(admin_districts: str | None) -> pd.DataFrame:
     )
 
 
-class LensInputError(ValueError):
+class AnalysisInputError(ValueError):
     """The fake engine's input error, with ``problems`` like the real one."""
 
     def __init__(self, problems: list[str]) -> None:
@@ -285,7 +285,7 @@ GROUPS = {
 
 
 def fake_engine(*, leak: bool = False) -> SimpleNamespace:
-    """A stand-in for ``uk_open_data.lenses``.
+    """A stand-in for ``uk_open_data.analyses``.
 
     Args:
         leak: When true, results repeat the first row's area or group in a
@@ -299,26 +299,26 @@ def fake_engine(*, leak: bool = False) -> SimpleNamespace:
         lenses[COUNCILS["id"]] = COUNCILS
         lenses[GROUPS["id"]] = GROUPS
 
-    def list_lenses() -> list[SimpleNamespace]:
-        return [describe_lens(lens_id) for lens_id in lenses]
+    def list_analyses() -> list[SimpleNamespace]:
+        return [describe_analysis(lens_id) for lens_id in lenses]
 
-    def describe_lens(lens_id: str) -> SimpleNamespace:
+    def describe_analysis(lens_id: str) -> SimpleNamespace:
         info = lenses[lens_id]
         return SimpleNamespace(id=info["id"], to_dict=lambda: info)
 
-    def run_lens(
+    def run_analysis(
         lens_id: str,
         data: list[dict[str, Any]],
         columns: dict[str, str] | None = None,
         options: dict[str, Any] | None = None,
     ) -> SimpleNamespace:
         if any(not isinstance(row["count"], int) for row in data):
-            raise LensInputError(["Some counts are not whole numbers."])
+            raise AnalysisInputError(["Some counts are not whole numbers."])
         total = sum(row["count"] for row in data)
         area = next(value for value in data[0].values() if isinstance(value, str))
         warnings = [f"{area} looks unusual"] if leak else []
         payload = {
-            "lens_id": lens_id,
+            "analysis_id": lens_id,
             "input_mode": "neighbourhood_counts",
             "figures": [
                 {
@@ -362,8 +362,8 @@ def fake_engine(*, leak: bool = False) -> SimpleNamespace:
         return SimpleNamespace(to_dict=to_dict)
 
     return SimpleNamespace(
-        list_lenses=list_lenses,
-        describe_lens=describe_lens,
-        run_lens=run_lens,
-        LensInputError=LensInputError,
+        list_analyses=list_analyses,
+        describe_analysis=describe_analysis,
+        run_analysis=run_analysis,
+        AnalysisInputError=AnalysisInputError,
     )

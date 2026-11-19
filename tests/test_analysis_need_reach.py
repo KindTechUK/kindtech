@@ -1,5 +1,5 @@
 """
-Unit tests for the need against reach lens.
+Unit tests for the need against reach analysis.
 
 The need figures and the postcode lookup are replaced with small invented
 tables, so the tests are isolated and repeatable.
@@ -12,9 +12,13 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import pytest
 
-from uk_open_data.cli import EXIT_OK, main
-from uk_open_data.lenses import LensInputError, describe_lens, render_map, run_lens
-from uk_open_data.lenses.need_reach import (
+from uk_open_data.analyses import (
+    AnalysisInputError,
+    describe_analysis,
+    render_map,
+    run_analysis,
+)
+from uk_open_data.analyses.need_reach import (
     NEED_BANDS,
     NO_REACH,
     REACH_BANDS,
@@ -23,9 +27,10 @@ from uk_open_data.lenses.need_reach import (
     keep_need_figures,
     need_figures_path,
 )
+from uk_open_data.cli import EXIT_OK, main
 from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 
-LENS_ID = "need-reach"
+ANALYSIS_ID = "need-reach"
 COLUMNS = {"local_authority": "Area", "count": "Clients"}
 
 # Invented need figures for real local authority codes. The middle value is
@@ -67,7 +72,7 @@ class _Nomis:
 def nomis():
     """Replace the need figures with the invented ones."""
     fake = _Nomis()
-    with mock.patch("uk_open_data.lenses._need.load_ons", side_effect=fake.load):
+    with mock.patch("uk_open_data.analyses._need.load_ons", side_effect=fake.load):
         yield fake
 
 
@@ -79,18 +84,18 @@ def _counts(**people: int) -> list[dict]:
 
 
 def _run(rows, options=None, columns=COLUMNS):
-    return run_lens(LENS_ID, rows, columns=columns, options=options)
+    return run_analysis(ANALYSIS_ID, rows, columns=columns, options=options)
 
 
 def _names(table) -> list[str]:
     return [row["geography_name"] for row in table.rows]
 
 
-# --- the lens is listed ----------------------------------------------------
+# --- the analysis is listed ----------------------------------------------------
 
 
-def test_lens_is_described():
-    info = describe_lens(LENS_ID)
+def test_analysis_is_described():
+    info = describe_analysis(ANALYSIS_ID)
     assert info.question == "Where is need high and our presence low?"
     assert [mode.name for mode in info.input_modes] == ["postcodes", "area_counts"]
     assert info.input_modes[1].aggregated
@@ -215,13 +220,15 @@ def test_only_built_in_needs_can_be_kept():
 def test_a_kept_file_that_cannot_be_read_is_an_input_error(nomis):
     path = keep_need_figures("unemployed", INVENTED, "invented.")
     path.write_text('{"format": "something else"}', encoding="utf-8")
-    with pytest.raises(LensInputError, match="kept on this machine could not be read"):
+    with pytest.raises(
+        AnalysisInputError, match="kept on this machine could not be read"
+    ):
         _run(_counts(Lewisham=60))
     assert nomis.asked == []
 
 
 def test_built_in_needs_can_be_picked_from_a_list():
-    need = {o.name: o for o in describe_lens(LENS_ID).options}["need"]
+    need = {o.name: o for o in describe_analysis(ANALYSIS_ID).options}["need"]
     assert [(choice.value, choice.label) for choice in need.choices] == [
         (
             "unemployed",
@@ -317,7 +324,7 @@ def test_filters_of_a_table_can_name_another_measure(nomis):
     ],
 )
 def test_bad_need_is_rejected(nomis, need):
-    with pytest.raises(LensInputError, match="need"):
+    with pytest.raises(AnalysisInputError, match="need"):
         _run(_counts(Lewisham=60), options={"need": need})
     assert nomis.asked == []
 
@@ -325,10 +332,10 @@ def test_bad_need_is_rejected(nomis, need):
 def test_a_table_nomis_does_not_have_is_an_input_error():
     with (
         mock.patch(
-            "uk_open_data.lenses._need.load_ons",
+            "uk_open_data.analyses._need.load_ons",
             side_effect=ValueError("NOMIS dataset 'NM_0_0' does not exist."),
         ),
-        pytest.raises(LensInputError, match="could not be loaded"),
+        pytest.raises(AnalysisInputError, match="could not be loaded"),
     ):
         _run(
             _counts(Lewisham=60),
@@ -338,7 +345,7 @@ def test_a_table_nomis_does_not_have_is_an_input_error():
 
 def test_filters_that_are_not_plain_values_are_an_input_error(nomis):
     need = {"dataset": "NM_2056_1", "label": "x", "filters": {"c_sex": {1, 2}}}
-    with pytest.raises(LensInputError, match="could not be loaded"):
+    with pytest.raises(AnalysisInputError, match="could not be loaded"):
         _run(_counts(Lewisham=60), options={"need": need})
 
 
@@ -347,8 +354,8 @@ def test_need_without_local_authorities_is_an_input_error():
         {"geography_code": ["S12000036"], "geography_name": ["x"], "obs_value": [5]}
     )
     with (
-        mock.patch("uk_open_data.lenses._need.load_ons", return_value=empty),
-        pytest.raises(LensInputError, match="no local authority"),
+        mock.patch("uk_open_data.analyses._need.load_ons", return_value=empty),
+        pytest.raises(AnalysisInputError, match="no local authority"),
     ):
         _run(_counts(Lewisham=60))
 
@@ -384,12 +391,12 @@ def test_rows_that_cannot_be_placed_are_counted_not_named(nomis):
 
 def test_bad_counts_are_an_input_error(nomis):
     rows = [*_counts(Lewisham=60), {"Area": "Adur", "Clients": "a few"}]
-    with pytest.raises(LensInputError, match="1 rows have a count"):
+    with pytest.raises(AnalysisInputError, match="1 rows have a count"):
         _run(rows)
 
 
 def test_too_few_people_is_an_input_error(nomis):
-    with pytest.raises(LensInputError, match="Fewer than 5 people"):
+    with pytest.raises(AnalysisInputError, match="Fewer than 5 people"):
         _run(_counts(Lewisham=4))
 
 
@@ -424,7 +431,7 @@ def test_top_sets_the_length_of_the_list(nomis):
 
 @pytest.mark.parametrize("top", [0, 51, 2.5, "ten", True])
 def test_bad_top_is_rejected(nomis, top):
-    with pytest.raises(LensInputError, match="top"):
+    with pytest.raises(AnalysisInputError, match="top"):
         _run(_counts(Greenwich=50), options={"top": top})
 
 
@@ -499,7 +506,7 @@ def test_suppress_below_can_be_raised_but_not_dropped(nomis):
     rows = {r["geography_name"]: r for r in result.table("by_local_authority").rows}
     assert rows["Cardiff"]["people"] is None
     assert rows["Manchester"]["people"] is None
-    with pytest.raises(LensInputError, match="suppress_below"):
+    with pytest.raises(AnalysisInputError, match="suppress_below"):
         _run(_counts(Lewisham=60), options={"suppress_below": 2})
 
 
@@ -535,12 +542,12 @@ def test_catchment_can_be_a_country(nomis):
 
 @pytest.mark.parametrize("catchment", [["Lewisham", "Narnia"], 7, [], [""]])
 def test_bad_catchment_is_rejected(nomis, catchment):
-    with pytest.raises(LensInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="catchment"):
         _run(_counts(Lewisham=60), options={"catchment": catchment})
 
 
 def test_catchment_with_too_few_people_is_an_input_error(nomis):
-    with pytest.raises(LensInputError, match="live in the catchment"):
+    with pytest.raises(AnalysisInputError, match="live in the catchment"):
         _run(_counts(Lewisham=60, Adur=2), options={"catchment": "Adur"})
 
 
@@ -553,7 +560,7 @@ def test_a_wide_comparison_is_flagged_when_people_are_in_few_places():
         }
     )
     rows = [{"Area": "Place 1", "Clients": 40}, {"Area": "Place 2", "Clients": 20}]
-    with mock.patch("uk_open_data.lenses._need.load_ons", return_value=many):
+    with mock.patch("uk_open_data.analyses._need.load_ons", return_value=many):
         wide = _run(rows)
         named = _run(rows, options={"catchment": "England"})
     flag = "Your people live in 2 of the 30 local authorities compared."
@@ -600,7 +607,7 @@ def _fake_lookup(sent: list):
 def test_postcodes_are_placed_in_local_authorities_online(nomis):
     sent: list = []
     with mock.patch(
-        "uk_open_data.lenses._steps.postcodes_to_geography",
+        "uk_open_data.analyses._steps.postcodes_to_geography",
         side_effect=_fake_lookup(sent),
     ):
         result = _run(POSTCODE_ROWS, columns=POSTCODE_COLUMN)
@@ -634,7 +641,7 @@ def test_postcodes_stay_on_this_machine_when_a_table_is_installed(nomis, tmp_pat
     packed = tmp_path / "postcodes.ktpc.gz"
     build_postcode_table(source, packed, "May 2026")
     install_postcode_table(packed)
-    with mock.patch("uk_open_data.lenses._steps.postcodes_to_geography") as online:
+    with mock.patch("uk_open_data.analyses._steps.postcodes_to_geography") as online:
         result = _run(POSTCODE_ROWS, columns=POSTCODE_COLUMN)
     online.assert_not_called()
     assert result.privacy.sent_to_third_parties == ()
@@ -645,7 +652,7 @@ def test_postcodes_stay_on_this_machine_when_a_table_is_installed(nomis, tmp_pat
 
 def test_no_postcode_reaches_the_result(nomis):
     with mock.patch(
-        "uk_open_data.lenses._steps.postcodes_to_geography",
+        "uk_open_data.analyses._steps.postcodes_to_geography",
         side_effect=_fake_lookup([]),
     ):
         result = _run(POSTCODE_ROWS, columns=POSTCODE_COLUMN)
@@ -719,7 +726,7 @@ def test_map_can_be_drawn(nomis):
 
 def test_result_explains_itself(nomis):
     result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
-    assert result.lens_id == LENS_ID
+    assert result.analysis_id == ANALYSIS_ID
     assert [step.title for step in result.working] == [
         "Loaded the need figures",
         "Read the local authority counts",
@@ -738,7 +745,7 @@ def test_result_explains_itself(nomis):
         "need_fits",
         "catchment",
     ]
-    option_names = {option.name for option in describe_lens(LENS_ID).options}
+    option_names = {option.name for option in describe_analysis(ANALYSIS_ID).options}
     for choice in result.choices:
         assert choice.option is None or choice.option in option_names
     summary = result.to_dict(include_detail=False)
@@ -747,14 +754,14 @@ def test_result_explains_itself(nomis):
     assert detail["rows"] == []
 
 
-def test_command_line_runs_the_lens(nomis, tmp_path, capsys):
+def test_command_line_runs_the_analysis(nomis, tmp_path, capsys):
     path = tmp_path / "counts.csv"
     path.write_text("Area,Clients\nLewisham,60\nGreenwich,30\n", encoding="utf-8")
     code = main(
         [
-            "lens",
+            "analysis",
             "run",
-            LENS_ID,
+            ANALYSIS_ID,
             str(path),
             "--column",
             "local_authority=Area",
@@ -769,5 +776,5 @@ def test_command_line_runs_the_lens(nomis, tmp_path, capsys):
     )
     assert code == EXIT_OK
     payload = json.loads(capsys.readouterr().out)
-    assert payload["lens_id"] == LENS_ID
+    assert payload["analysis_id"] == ANALYSIS_ID
     assert nomis.asked[0][1]["c_sex"] == [1]

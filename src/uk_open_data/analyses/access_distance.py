@@ -5,7 +5,7 @@ distance from the centre of each local authority of England and Wales to the
 nearest one, and lists the places where the most people are far from a site.
 It follows the method of the Material Focus case study.
 
-The lens is about sites, not about people, so it hides no count. Distance is
+The analysis is about sites, not about people, so it hides no count. Distance is
 in a straight line: the package has no road or public transport times.
 
 Site postcodes can be placed without leaving this machine. With a postcode
@@ -20,28 +20,28 @@ from datetime import date
 from typing import Any
 
 import uk_open_data
-from uk_open_data.lenses._centres import centres_path as centres_path
-from uk_open_data.lenses._centres import clear_centres_cache as clear_centres_cache
-from uk_open_data.lenses._centres import (
+from uk_open_data.analyses._centres import centres_path as centres_path
+from uk_open_data.analyses._centres import clear_centres_cache as clear_centres_cache
+from uk_open_data.analyses._centres import (
     distance_km,
     load_centres,
     locate_in_neighbourhoods,
 )
-from uk_open_data.lenses._centres import download_centres as download_centres
-from uk_open_data.lenses._centres import keep_centres as keep_centres
-from uk_open_data.lenses._inputs import is_blank
-from uk_open_data.lenses._model import (
+from uk_open_data.analyses._centres import download_centres as download_centres
+from uk_open_data.analyses._centres import keep_centres as keep_centres
+from uk_open_data.analyses._inputs import is_blank
+from uk_open_data.analyses._model import (
+    Analysis,
+    AnalysisInfo,
+    AnalysisInput,
+    AnalysisInputError,
+    AnalysisResult,
     Chart,
     ChartSeries,
     Check,
     Choice,
     Figure,
     InputMode,
-    Lens,
-    LensInfo,
-    LensInput,
-    LensInputError,
-    LensResult,
     MapLayer,
     MapSpec,
     Option,
@@ -51,7 +51,7 @@ from uk_open_data.lenses._model import (
     Step,
     Table,
 )
-from uk_open_data.lenses._need import (
+from uk_open_data.analyses._need import (
     DEFAULT_TOP,
     MAX_TOP,
     MEASURES,
@@ -66,7 +66,7 @@ from uk_open_data.lenses._need import (
     read_measure,
     read_top,
 )
-from uk_open_data.lenses._steps import (
+from uk_open_data.analyses._steps import (
     EVERYWHERE,
     POSTCODE_LOOKUP,
     Position,
@@ -76,8 +76,8 @@ from uk_open_data.lenses._steps import (
     use_postcode_table,
 )
 
-LENS_ID = "access-distance"
-LENS_VERSION = "0.1"
+ANALYSIS_ID = "access-distance"
+ANALYSIS_VERSION = "0.1"
 DEFAULT_WITHIN_KM = 10
 MAX_WITHIN_KM = 500
 # A position outside this box is not in the United Kingdom. A latitude and a
@@ -94,8 +94,8 @@ DISTANCE_BANDS = (
     "40 km or more",
 )
 
-INFO = LensInfo(
-    id=LENS_ID,
+INFO = AnalysisInfo(
+    id=ANALYSIS_ID,
     title="Access and distance",
     question="How far are people from our nearest site, and where would a new "
     "site help most?",
@@ -105,7 +105,7 @@ INFO = LensInfo(
         "within reach. It lists the local authorities where the most people "
         "are far from a site."
     ),
-    version=LENS_VERSION,
+    version=ANALYSIS_VERSION,
     roles=(
         Role(
             name="latitude",
@@ -233,32 +233,32 @@ class _Row:
         return DISTANCE_BANDS[sum(1 for start in BAND_STARTS if self.distance >= start)]
 
 
-def run(lens_input: LensInput) -> LensResult:
-    """Run the lens. Use :func:`uk_open_data.lenses.run_lens` to call it."""
-    options = lens_input.options
+def run(analysis_input: AnalysisInput) -> AnalysisResult:
+    """Run the analysis. Use :func:`uk_open_data.analyses.run_analysis` to call it."""
+    options = analysis_input.options
     top = read_top(options)
     within = _within_km(options)
     measure = read_measure(options.get("need"))
     use_table = use_postcode_table(options)
-    mode = lens_input.mode.name
+    mode = analysis_input.mode.name
     trail = Trail()
     authorities = load_need(measure, trail)
     centres = load_centres(trail)
     if mode == "site_coordinates":
         sites, supplied = _read_positions(
-            lens_input.values["latitude"], lens_input.values["longitude"], trail
+            analysis_input.values["latitude"], analysis_input.values["longitude"], trail
         )
     else:
-        postcodes = lens_input.values["postcode"]
+        postcodes = analysis_input.values["postcode"]
         locate = locate_in_neighbourhoods if use_table else locate_postcodes
         placed = locate(postcodes, trail)
         sites = _in_the_uk([p for p in placed if p is not None], trail)
         supplied = len(postcodes)
     compared = choose_compared(options.get("catchment"), authorities)
     rows = _rows(sites, authorities, centres, compared, within, trail)
-    return LensResult(
-        lens_id=LENS_ID,
-        lens_version=LENS_VERSION,
+    return AnalysisResult(
+        analysis_id=ANALYSIS_ID,
+        analysis_version=ANALYSIS_VERSION,
         package_version=uk_open_data.__version__,
         run_on=date.today().isoformat(),
         input_mode=mode,
@@ -277,7 +277,7 @@ def run(lens_input: LensInput) -> LensResult:
             row_level_output=False,
             sent_to_third_parties=tuple(trail.sent),
             notes=(
-                "This lens is about sites, not about people, so it hides no count.",
+                "This analysis is about sites, not about people, so it hides no count.",
                 "The result holds distances and public counts for local "
                 "authorities. It names no site and repeats no postcode or "
                 "position.",
@@ -299,10 +299,10 @@ def _within_km(options: dict[str, Any]) -> float:
     """Read and check the distance that counts as within reach."""
     value = options.get("within_km")
     if isinstance(value, bool) or not isinstance(value, int | float):
-        raise LensInputError("The option 'within_km' must be a number.")
+        raise AnalysisInputError("The option 'within_km' must be a number.")
     if not 0 < value <= MAX_WITHIN_KM:
         msg = f"The option 'within_km' must be above 0 and up to {MAX_WITHIN_KM}."
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return value
 
 
@@ -385,7 +385,7 @@ def _in_the_uk(positions: list[Position], trail: Trail) -> list[Position]:
             "the columns chosen, and that latitude and longitude are not "
             "swapped."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return inside
 
 
@@ -413,7 +413,7 @@ def _rows(
             f"No local authority in {compared.label} has both need figures "
             "and a centre. Check the 'catchment' option."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     need_bands = band_by_need([authorities[code].need for code in codes])
     distances = [
         round(min(distance_km(centres[code], site) for site in sites)) for code in codes
@@ -622,7 +622,7 @@ def _figures(
 def _choices(
     measure: Measure, compared: Compared, within: float, top: int
 ) -> tuple[Choice, ...]:
-    """List the choices the lens made."""
+    """List the choices the analysis made."""
     return (
         Choice(
             id="need",
@@ -645,7 +645,7 @@ def _choices(
             label="Distance that counts as within reach",
             value=f"{within:g} km",
             reason=(
-                f"{DEFAULT_WITHIN_KM} km is what the lens uses when no distance "
+                f"{DEFAULT_WITHIN_KM} km is what the analysis uses when no distance "
                 "is set. Set the distance people will travel for what you offer."
                 if within == DEFAULT_WITHIN_KM
                 else "You set the distance."
@@ -694,7 +694,7 @@ def _checks(measure: Measure, compared: Compared) -> tuple[Check, ...]:
             question="Is straight-line distance a fair guide where you work?",
             why=(
                 "A river, a hill or a poor bus service can make a near site "
-                "hard to reach. The lens cannot see them."
+                "hard to reach. The analysis cannot see them."
             ),
         ),
         Check(
@@ -716,4 +716,4 @@ def _checks(measure: Measure, compared: Compared) -> tuple[Check, ...]:
     )
 
 
-LENS = Lens(info=INFO, run=run)
+ANALYSIS = Analysis(info=INFO, run=run)

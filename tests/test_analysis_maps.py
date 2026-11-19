@@ -1,5 +1,5 @@
 """
-Unit tests for drawing a lens map.
+Unit tests for drawing an analysis map.
 
 Boundaries are invented squares and the deprivation index is an invented table,
 so the tests are isolated and repeatable.
@@ -12,11 +12,11 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import pytest
 
+from uk_open_data.analyses import load_map_boundaries, render_map, run_analysis
 from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
-from uk_open_data.lenses import load_map_boundaries, render_map, run_lens
 
 SVG = "{http://www.w3.org/2000/svg}"
-LENS_ID = "reach-deprivation"
+ANALYSIS_ID = "reach-deprivation"
 AREAS = 20
 
 
@@ -80,11 +80,11 @@ COUNTS = [
 
 @pytest.fixture
 def result():
-    """A lens result on invented counts."""
+    """An analysis result on invented counts."""
     with mock.patch(
-        "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
+        "uk_open_data.analyses.reach_deprivation.load_imd", return_value=_index()
     ):
-        return run_lens(LENS_ID, COUNTS)
+        return run_analysis(ANALYSIS_ID, COUNTS)
 
 
 def _paths(svg: str) -> list[ET.Element]:
@@ -157,7 +157,7 @@ def test_multipolygons_are_drawn_as_one_area(result):
 
 
 def test_areas_without_a_boundary_are_left_out_with_a_warning(result, caplog):
-    with caplog.at_level(logging.WARNING, logger="uk_open_data.lenses.maps"):
+    with caplog.at_level(logging.WARNING, logger="uk_open_data.analyses.maps"):
         svg = render_map(result, boundaries=_boundaries(range(15)))
     assert len(_paths(svg)) == 15
     assert "5 of 20 areas have no boundary" in caplog.text
@@ -176,9 +176,9 @@ def test_unknown_layer_names_the_known_ones(result):
 
 def test_result_without_a_map_is_an_error():
     with mock.patch(
-        "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
+        "uk_open_data.analyses.reach_deprivation.load_imd", return_value=_index()
     ):
-        result = run_lens(LENS_ID, COUNTS, options={"catchment": "England"})
+        result = run_analysis(ANALYSIS_ID, COUNTS, options={"catchment": "England"})
     with pytest.raises(ValueError, match="no map"):
         render_map(result, boundaries=_boundaries())
 
@@ -189,9 +189,9 @@ def test_boundaries_are_fetched_in_batches_of_area_codes(result):
         return _boundaries(numbers)
 
     with (
-        mock.patch("uk_open_data.lenses.maps.BOUNDARY_BATCH_SIZE", 8),
+        mock.patch("uk_open_data.analyses.maps.BOUNDARY_BATCH_SIZE", 8),
         mock.patch(
-            "uk_open_data.lenses.maps.load_geodata", side_effect=fake_load
+            "uk_open_data.analyses.maps.load_geodata", side_effect=fake_load
         ) as load,
     ):
         boundaries = load_map_boundaries(result)
@@ -213,11 +213,13 @@ def test_command_line_saves_the_map(tmp_path, capsys):
     picture = tmp_path / "map.svg"
     with (
         mock.patch(
-            "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
+            "uk_open_data.analyses.reach_deprivation.load_imd", return_value=_index()
         ),
-        mock.patch("uk_open_data.lenses.maps.load_geodata", return_value=_boundaries()),
+        mock.patch(
+            "uk_open_data.analyses.maps.load_geodata", return_value=_boundaries()
+        ),
     ):
-        args = ["lens", "run", LENS_ID, str(counts), "--map", str(picture)]
+        args = ["analysis", "run", ANALYSIS_ID, str(counts), "--map", str(picture)]
         assert main([*args, "--map-layer", "people"]) == EXIT_OK
         assert "kindtech-map-people" in picture.read_text(encoding="utf-8")
         assert main([*args, "--map-layer", "income"]) == EXIT_INPUT_ERROR

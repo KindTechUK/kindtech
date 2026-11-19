@@ -1,5 +1,5 @@
 """
-Unit tests for the provision gap lens.
+Unit tests for the provision gap analysis.
 
 The need figures and the postcode lookup are replaced with small invented
 tables, so the tests are isolated and repeatable.
@@ -12,14 +12,19 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import pytest
 
+from uk_open_data.analyses import (
+    AnalysisInputError,
+    describe_analysis,
+    render_map,
+    run_analysis,
+)
+from uk_open_data.analyses.need_reach import NEED_BANDS, keep_need_figures
+from uk_open_data.analyses.provision_gap import NO_PROVISION, PROVISION_BANDS
 from uk_open_data.cli import EXIT_OK, main
 from uk_open_data.connector.privacy import find_row_values
-from uk_open_data.lenses import LensInputError, describe_lens, render_map, run_lens
-from uk_open_data.lenses.need_reach import NEED_BANDS, keep_need_figures
-from uk_open_data.lenses.provision_gap import NO_PROVISION, PROVISION_BANDS
 from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 
-LENS_ID = "provision-gap"
+ANALYSIS_ID = "provision-gap"
 COLUMNS = {"local_authority": "Area", "volume": "Sessions"}
 
 # Invented need figures for real local authority codes. The middle value is
@@ -57,7 +62,7 @@ class _Nomis:
 def nomis():
     """Replace the need figures with the invented ones."""
     fake = _Nomis()
-    with mock.patch("uk_open_data.lenses._need.load_ons", side_effect=fake.load):
+    with mock.patch("uk_open_data.analyses._need.load_ons", side_effect=fake.load):
         yield fake
 
 
@@ -74,7 +79,7 @@ SPREAD = _volumes(Lewisham=90, Greenwich=40, Adur=10, Manchester=20)
 
 
 def _run(rows, options=None, columns=COLUMNS):
-    return run_lens(LENS_ID, rows, columns=columns, options=options)
+    return run_analysis(ANALYSIS_ID, rows, columns=columns, options=options)
 
 
 def _names(table) -> list[str]:
@@ -85,11 +90,11 @@ def _by_name(table) -> dict[str, dict]:
     return {row["geography_name"]: row for row in table.rows}
 
 
-# --- the lens is listed ----------------------------------------------------
+# --- the analysis is listed ----------------------------------------------------
 
 
-def test_lens_is_described():
-    info = describe_lens(LENS_ID)
+def test_analysis_is_described():
+    info = describe_analysis(ANALYSIS_ID)
     assert info.question == "Where is provision thin against need across a region?"
     modes = {mode.name: mode for mode in info.input_modes}
     assert list(modes) == ["sites", "area_volumes", "site_list"]
@@ -97,7 +102,7 @@ def test_lens_is_described():
     assert modes["area_volumes"].aggregated
     assert not modes["sites"].aggregated
     assert not modes["site_list"].aggregated
-    # The lens hides nothing, so it has no threshold to set.
+    # The analysis hides nothing, so it has no threshold to set.
     assert [option.name for option in info.options] == [
         "postcode_lookup",
         "need",
@@ -112,7 +117,7 @@ def test_lens_is_described():
 
 
 def test_needs_can_be_picked_from_a_list():
-    need = next(o for o in describe_lens(LENS_ID).options if o.name == "need")
+    need = next(o for o in describe_analysis(ANALYSIS_ID).options if o.name == "need")
     assert need.default == "residents"
     assert [choice.value for choice in need.choices] == [
         "unemployed",
@@ -173,7 +178,7 @@ def test_kept_need_figures_are_used_and_nothing_is_fetched(nomis):
 
 @pytest.mark.parametrize("need", ["everyone", 7, None, {"dataset": "NM_1_1"}])
 def test_bad_need_is_rejected(nomis, need):
-    with pytest.raises(LensInputError, match="need"):
+    with pytest.raises(AnalysisInputError, match="need"):
         _run(SPREAD, options={"need": need})
 
 
@@ -209,19 +214,19 @@ def test_rows_that_cannot_be_placed_are_counted_not_named(nomis):
 @pytest.mark.parametrize("volume", ["lots", "", None, -3, "nan", "inf", True])
 def test_a_volume_that_is_not_a_number_is_an_input_error(nomis, volume):
     rows = [*SPREAD, {"Area": "Cardiff", "Sessions": volume}]
-    with pytest.raises(LensInputError, match="1 rows have a volume"):
+    with pytest.raises(AnalysisInputError, match="1 rows have a volume"):
         _run(rows)
 
 
 def test_a_bad_volume_is_not_repeated_in_the_error(nomis):
     rows = [*SPREAD, {"Area": "Cardiff", "Sessions": "about forty"}]
-    with pytest.raises(LensInputError) as raised:
+    with pytest.raises(AnalysisInputError) as raised:
         _run(rows)
     assert "forty" not in str(raised.value)
 
 
 def test_no_provision_anywhere_is_an_input_error(nomis):
-    with pytest.raises(LensInputError, match="None of the provision"):
+    with pytest.raises(AnalysisInputError, match="None of the provision"):
         _run(_volumes(Lewisham=0, Narnia=4))
 
 
@@ -245,7 +250,7 @@ def test_top_sets_the_length_of_the_list(nomis):
 
 @pytest.mark.parametrize("top", [0, 51, 2.5, "ten", True])
 def test_bad_top_is_rejected(nomis, top):
-    with pytest.raises(LensInputError, match="top"):
+    with pytest.raises(AnalysisInputError, match="top"):
         _run(SPREAD, options={"top": top})
 
 
@@ -285,13 +290,13 @@ def test_catchment_can_be_a_country(nomis):
 
 
 def test_a_catchment_with_no_provision_is_an_input_error(nomis):
-    with pytest.raises(LensInputError, match="None of the provision is in"):
+    with pytest.raises(AnalysisInputError, match="None of the provision is in"):
         _run(SPREAD, options={"catchment": "Wales"})
 
 
 @pytest.mark.parametrize("catchment", [["Lewisham", "Narnia"], 7, [], [""]])
 def test_bad_catchment_is_rejected(nomis, catchment):
-    with pytest.raises(LensInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="catchment"):
         _run(SPREAD, options={"catchment": catchment})
 
 
@@ -347,7 +352,7 @@ def _fake_lookup(sent: list):
 
 def _run_sites(rows=SITES, columns=SITE_COLUMNS, options=None, sent=None):
     with mock.patch(
-        "uk_open_data.lenses._steps.postcodes_to_geography",
+        "uk_open_data.analyses._steps.postcodes_to_geography",
         side_effect=_fake_lookup([] if sent is None else sent),
     ):
         return _run(rows, options=options, columns=columns)
@@ -388,7 +393,7 @@ def test_sites_stay_on_this_machine_when_a_table_is_installed(nomis, tmp_path):
     packed = tmp_path / "postcodes.ktpc.gz"
     build_postcode_table(source, packed, "May 2026")
     install_postcode_table(packed)
-    with mock.patch("uk_open_data.lenses._steps.postcodes_to_geography") as online:
+    with mock.patch("uk_open_data.analyses._steps.postcodes_to_geography") as online:
         result = _run(SITES, columns=SITE_COLUMNS)
     online.assert_not_called()
     assert result.privacy.sent_to_third_parties == ()
@@ -495,7 +500,7 @@ def test_charts_use_columns_of_the_list(nomis):
 
 def test_result_explains_itself(nomis):
     result = _run(SPREAD)
-    assert result.lens_id == LENS_ID
+    assert result.analysis_id == ANALYSIS_ID
     assert [step.title for step in result.working] == [
         "Loaded the need figures",
         "Read the local authority volumes",
@@ -517,7 +522,7 @@ def test_result_explains_itself(nomis):
         "catchment",
         "top",
     ]
-    option_names = {option.name for option in describe_lens(LENS_ID).options}
+    option_names = {option.name for option in describe_analysis(ANALYSIS_ID).options}
     for choice in result.choices:
         assert choice.option is None or choice.option in option_names
     assert any("not the same as unmet need" in caveat for caveat in result.caveats)
@@ -527,14 +532,14 @@ def test_result_explains_itself(nomis):
     assert detail["rows"] == []
 
 
-def test_command_line_runs_the_lens(nomis, tmp_path, capsys):
+def test_command_line_runs_the_analysis(nomis, tmp_path, capsys):
     path = tmp_path / "volumes.csv"
     path.write_text("Area,Sessions\nLewisham,90\nGreenwich,40\n", encoding="utf-8")
     code = main(
         [
-            "lens",
+            "analysis",
             "run",
-            LENS_ID,
+            ANALYSIS_ID,
             str(path),
             "--column",
             "local_authority=Area",
@@ -547,7 +552,7 @@ def test_command_line_runs_the_lens(nomis, tmp_path, capsys):
     )
     assert code == EXIT_OK
     payload = json.loads(capsys.readouterr().out)
-    assert payload["lens_id"] == LENS_ID
+    assert payload["analysis_id"] == ANALYSIS_ID
     assert nomis.asked[0][0] == "NM_2028_1"
 
 
@@ -555,7 +560,7 @@ def test_command_line_report_does_not_say_counts_are_hidden(nomis, tmp_path, cap
     path = tmp_path / "volumes.csv"
     path.write_text("Area,Sessions\nLewisham,90\nGreenwich,40\n", encoding="utf-8")
     columns = ["--column", "local_authority=Area", "--column", "volume=Sessions"]
-    assert main(["lens", "run", LENS_ID, str(path), *columns]) == EXIT_OK
+    assert main(["analysis", "run", ANALYSIS_ID, str(path), *columns]) == EXIT_OK
     report = capsys.readouterr().out
     assert "are hidden" not in report
     assert "hides no count" in report

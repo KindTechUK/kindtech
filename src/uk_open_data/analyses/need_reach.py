@@ -15,19 +15,19 @@ from statistics import median
 from typing import Any
 
 import uk_open_data
-from uk_open_data.lenses._inputs import is_blank, to_count
-from uk_open_data.lenses._model import (
+from uk_open_data.analyses._inputs import is_blank, to_count
+from uk_open_data.analyses._model import (
+    Analysis,
+    AnalysisInfo,
+    AnalysisInput,
+    AnalysisInputError,
+    AnalysisResult,
     Chart,
     ChartSeries,
     Check,
     Choice,
     Figure,
     InputMode,
-    Lens,
-    LensInfo,
-    LensInput,
-    LensInputError,
-    LensResult,
     MapLayer,
     MapSpec,
     Option,
@@ -37,7 +37,7 @@ from uk_open_data.lenses._model import (
     Step,
     Table,
 )
-from uk_open_data.lenses._need import (
+from uk_open_data.analyses._need import (
     DEFAULT_TOP,
     FEW_AREAS,
     MAX_TOP,
@@ -53,12 +53,16 @@ from uk_open_data.lenses._need import (
     read_measure,
     read_top,
 )
-from uk_open_data.lenses._need import clear_need_cache as clear_need_cache
-from uk_open_data.lenses._need import download_need_figures as download_need_figures
-from uk_open_data.lenses._need import keep_need_figures as keep_need_figures
-from uk_open_data.lenses._need import need_figures_path as need_figures_path
-from uk_open_data.lenses._privacy import SECOND_COUNT_NOTE, cells_to_hide, group_hidden
-from uk_open_data.lenses._steps import (
+from uk_open_data.analyses._need import clear_need_cache as clear_need_cache
+from uk_open_data.analyses._need import download_need_figures as download_need_figures
+from uk_open_data.analyses._need import keep_need_figures as keep_need_figures
+from uk_open_data.analyses._need import need_figures_path as need_figures_path
+from uk_open_data.analyses._privacy import (
+    SECOND_COUNT_NOTE,
+    cells_to_hide,
+    group_hidden,
+)
+from uk_open_data.analyses._steps import (
     EVERYWHERE,
     LOCAL_AUTHORITY,
     POSTCODE_LOOKUP,
@@ -70,8 +74,8 @@ from uk_open_data.lenses._steps import (
     use_postcode_table,
 )
 
-LENS_ID = "need-reach"
-LENS_VERSION = "0.1"
+ANALYSIS_ID = "need-reach"
+ANALYSIS_VERSION = "0.1"
 NO_REACH = "None, or count hidden"
 REACH_BANDS = (NO_REACH, "Lower reach", "Middle reach", "Higher reach")
 # Where people go when their local authority is not in the need figures. The
@@ -79,8 +83,8 @@ REACH_BANDS = (NO_REACH, "Lower reach", "Middle reach", "Higher reach")
 UNLISTED = "unlisted"
 
 
-INFO = LensInfo(
-    id=LENS_ID,
+INFO = AnalysisInfo(
+    id=ANALYSIS_ID,
     title="Need against reach",
     question="Where is need high and our presence low?",
     summary=(
@@ -88,7 +92,7 @@ INFO = LensInfo(
         "against the number of people in need there. It lists the places "
         "where need is high and you reach few people."
     ),
-    version=LENS_VERSION,
+    version=ANALYSIS_VERSION,
     roles=(
         Role(
             name="postcode",
@@ -213,25 +217,25 @@ class _Row:
         return _per_100(self.people, self.authority.need)
 
 
-def run(lens_input: LensInput) -> LensResult:
-    """Run the lens. Use :func:`uk_open_data.lenses.run_lens` to call it."""
-    options = lens_input.options
+def run(analysis_input: AnalysisInput) -> AnalysisResult:
+    """Run the analysis. Use :func:`uk_open_data.analyses.run_analysis` to call it."""
+    options = analysis_input.options
     threshold = read_threshold(options)
     top = read_top(options)
     measure = read_measure(options.get("need"))
     trail = Trail()
     authorities = load_need(measure, trail)
-    if lens_input.mode.name == "postcodes":
+    if analysis_input.mode.name == "postcodes":
         counts, supplied = count_by_postcode(
-            lens_input.values["postcode"],
+            analysis_input.values["postcode"],
             use_postcode_table(options),
             trail,
             LOCAL_AUTHORITY,
         )
     else:
         counts, supplied = _count_by_authority(
-            lens_input.values["local_authority"],
-            lens_input.values["count"],
+            analysis_input.values["local_authority"],
+            analysis_input.values["count"],
             authorities,
             trail,
         )
@@ -252,18 +256,18 @@ def run(lens_input: LensInput) -> LensResult:
             ),
         )
     )
-    return LensResult(
-        lens_id=LENS_ID,
-        lens_version=LENS_VERSION,
+    return AnalysisResult(
+        analysis_id=ANALYSIS_ID,
+        analysis_version=ANALYSIS_VERSION,
         package_version=uk_open_data.__version__,
         run_on=date.today().isoformat(),
-        input_mode=lens_input.mode.name,
+        input_mode=analysis_input.mode.name,
         figures=tuple(figures),
         tables=tables,
         map=_map_spec(),
         working=tuple(trail.working),
         choices=(*trail.choices, *_choices(measure, compared, top, threshold)),
-        checks=_checks(lens_input.mode.name, measure, compared),
+        checks=_checks(analysis_input.mode.name, measure, compared),
         caveats=(*CAVEATS, measure.caveat),
         warnings=tuple(trail.warnings),
         sources=tuple(trail.sources),
@@ -300,9 +304,9 @@ def _count_by_authority(
     if bad:
         msg = (
             f"{bad} rows have a count that is not a whole number of zero or "
-            "more. Correct those rows and run the lens again."
+            "more. Correct those rows and run the analysis again."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     if blank:
         trail.warnings.append(f"{blank} rows had no local authority.")
     if unknown:
@@ -360,7 +364,7 @@ def _keep_listed(
             "authority in England or Wales, which is too few to give figures "
             "that do not point at individuals."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return located
 
 
@@ -380,7 +384,7 @@ def _rows(
             f"The need figures list no local authority in {compared.label}. "
             "Check the 'catchment' option."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     people = [located.get(code, 0) for code in compared.codes]
     need = [authorities[code].need for code in compared.codes]
     n_located = sum(located.values())
@@ -404,7 +408,7 @@ def _rows(
             f"catchment ({compared.label}), which is too few to give figures "
             "that do not point at individuals. Check the 'catchment' option."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     _warn_about_area(n_located - n_inside, with_people, compared, trail)
     cut = median(need)
     high = [amount >= cut and amount > 0 for amount in need]
@@ -703,7 +707,7 @@ def _share_in_high_need(
 def _choices(
     measure: Measure, compared: Compared, top: int, threshold: int
 ) -> tuple[Choice, ...]:
-    """List the choices the lens made."""
+    """List the choices the analysis made."""
     return (
         Choice(
             id="need",
@@ -772,7 +776,7 @@ def _checks(mode: str, measure: Measure, compared: Compared) -> tuple[Check, ...
         Check(
             id="period",
             question="Does the data cover the period you are reporting on?",
-            why="The lens cannot tell which dates the rows are from.",
+            why="The analysis cannot tell which dates the rows are from.",
         ),
         Check(
             id="need_fits",
@@ -811,4 +815,4 @@ def _privacy(threshold: int, trail: Trail) -> Privacy:
     )
 
 
-LENS = Lens(info=INFO, run=run)
+ANALYSIS = Analysis(info=INFO, run=run)

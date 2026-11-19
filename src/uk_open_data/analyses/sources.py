@@ -1,9 +1,9 @@
-"""Published sources that lenses rest on, described once so they can be reused."""
+"""Published sources that analyses rest on, described once so they can be reused."""
 
 from __future__ import annotations
 
+from uk_open_data.analyses._model import Source
 from uk_open_data.imd.api import ENGLAND_IMD_2025_URL
-from uk_open_data.lenses._model import Source
 from uk_open_data.ons._catalog import find_tables
 from uk_open_data.ons.api import NOMIS_BASE_URL
 from uk_open_data.postcodes.api import POSTCODES_BASE_URL

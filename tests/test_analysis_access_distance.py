@@ -1,5 +1,5 @@
 """
-Unit tests for the access and distance lens.
+Unit tests for the access and distance analysis.
 
 The need figures, the centres of local authorities and neighbourhoods and the
 postcode lookup are replaced with small invented tables, so the tests are
@@ -14,20 +14,25 @@ import pandas as pd
 import pytest
 import requests
 
-from uk_open_data.cli import EXIT_OK, main
-from uk_open_data.connector.privacy import find_row_values
-from uk_open_data.lenses import LensInputError, describe_lens, render_map, run_lens
-from uk_open_data.lenses._centres import distance_km
-from uk_open_data.lenses.access_distance import (
+from uk_open_data.analyses import (
+    AnalysisInputError,
+    describe_analysis,
+    render_map,
+    run_analysis,
+)
+from uk_open_data.analyses._centres import distance_km
+from uk_open_data.analyses.access_distance import (
     DISTANCE_BANDS,
     centres_path,
     download_centres,
     keep_centres,
 )
-from uk_open_data.lenses.need_reach import NEED_BANDS, keep_need_figures
+from uk_open_data.analyses.need_reach import NEED_BANDS, keep_need_figures
+from uk_open_data.cli import EXIT_OK, main
+from uk_open_data.connector.privacy import find_row_values
 from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 
-LENS_ID = "access-distance"
+ANALYSIS_ID = "access-distance"
 COLUMNS = {"latitude": "Lat", "longitude": "Lon"}
 
 # Invented people for real local authority codes.
@@ -64,7 +69,7 @@ def kept():
 
 
 def _run(rows=SITES, options=None, columns=COLUMNS):
-    return run_lens(LENS_ID, rows, columns=columns, options=options)
+    return run_analysis(ANALYSIS_ID, rows, columns=columns, options=options)
 
 
 def _names(table) -> list[str]:
@@ -75,11 +80,11 @@ def _by_name(table) -> dict[str, dict]:
     return {row["geography_name"]: row for row in table.rows}
 
 
-# --- the lens is listed ----------------------------------------------------
+# --- the analysis is listed ----------------------------------------------------
 
 
-def test_lens_is_described():
-    info = describe_lens(LENS_ID)
+def test_analysis_is_described():
+    info = describe_analysis(ANALYSIS_ID)
     assert info.question.startswith("How far are people from our nearest site")
     modes = {mode.name: mode for mode in info.input_modes}
     assert list(modes) == ["site_coordinates", "site_postcodes"]
@@ -87,7 +92,7 @@ def test_lens_is_described():
     assert modes["site_postcodes"].roles == ("postcode",)
     # A list of sites is not a table of totals.
     assert not any(mode.aggregated for mode in info.input_modes)
-    # The lens hides nothing, so it has no threshold to set.
+    # The analysis hides nothing, so it has no threshold to set.
     assert [option.name for option in info.options] == [
         "postcode_lookup",
         "need",
@@ -162,7 +167,7 @@ def test_top_sets_the_length_of_the_list(kept):
 
 @pytest.mark.parametrize("top", [0, 51, 2.5, "ten", True])
 def test_bad_top_is_rejected(kept, top):
-    with pytest.raises(LensInputError, match="top"):
+    with pytest.raises(AnalysisInputError, match="top"):
         _run(options={"top": top})
 
 
@@ -184,14 +189,14 @@ def test_within_km_moves_the_line(kept):
 def test_the_reason_for_the_distance_fits_the_distance_used(kept):
     choice = next(c for c in _run().choices if c.id == "within_km")
     assert choice.value == "10 km"
-    assert choice.reason.startswith("10 km is what the lens uses when no distance")
+    assert choice.reason.startswith("10 km is what the analysis uses when no distance")
     # The reason is true for a person who set 10 themselves.
     asked = next(
         c for c in _run(options={"within_km": 10}).choices if c.id == "within_km"
     )
     assert asked.reason == choice.reason
     assert "No distance was given" not in asked.reason
-    # The lens measures no time, so no choice may speak of one.
+    # The analysis measures no time, so no choice may speak of one.
     for result in (_run(), _run(options={"within_km": 3})):
         text = " ".join(f"{c.value} {c.reason}" for c in result.choices)
         assert "hour" not in text
@@ -207,7 +212,7 @@ def test_a_distance_on_the_line_is_within_reach(kept):
 
 @pytest.mark.parametrize("within", [0, -1, 501, "near", True, None])
 def test_bad_within_km_is_rejected(kept, within):
-    with pytest.raises(LensInputError, match="within_km"):
+    with pytest.raises(AnalysisInputError, match="within_km"):
         _run(options={"within_km": within})
 
 
@@ -231,7 +236,7 @@ def test_need_can_be_another_built_in_measure(kept):
 
 @pytest.mark.parametrize("need", ["everyone", 7, None, {"dataset": "NM_1_1"}])
 def test_bad_need_is_rejected(kept, need):
-    with pytest.raises(LensInputError, match="need"):
+    with pytest.raises(AnalysisInputError, match="need"):
         _run(options={"need": need})
 
 
@@ -253,7 +258,7 @@ def test_a_site_outside_the_catchment_still_counts_as_the_nearest(kept):
 
 @pytest.mark.parametrize("catchment", [["Lewisham", "Narnia"], 7, [], [""]])
 def test_bad_catchment_is_rejected(kept, catchment):
-    with pytest.raises(LensInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="catchment"):
         _run(options={"catchment": catchment})
 
 
@@ -267,7 +272,7 @@ def test_a_place_without_a_centre_is_left_out_and_counted(kept):
 
 def test_a_catchment_without_any_centre_is_an_input_error(kept):
     keep_centres(CENTRES[:5], "invented for a test.")
-    with pytest.raises(LensInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="catchment"):
         _run(options={"catchment": "Wales"})
 
 
@@ -295,7 +300,7 @@ def test_rows_that_cannot_be_placed_are_counted_not_repeated(kept):
 
 
 def test_swapped_columns_are_an_input_error_that_says_so(kept):
-    with pytest.raises(LensInputError, match="swapped"):
+    with pytest.raises(AnalysisInputError, match="swapped"):
         _run(columns={"latitude": "Lon", "longitude": "Lat"})
 
 
@@ -340,7 +345,7 @@ def _fake_lookup(sent: list):
 
 def _run_postcodes(rows=POSTCODE_ROWS, sent=None):
     with mock.patch(
-        "uk_open_data.lenses._steps.lookup_postcodes",
+        "uk_open_data.analyses._steps.lookup_postcodes",
         side_effect=_fake_lookup([] if sent is None else sent),
     ):
         return _run(rows, columns=POSTCODE_COLUMN)
@@ -380,7 +385,7 @@ def test_a_site_in_scotland_counts_as_a_site(kept):
 
 
 def test_postcodes_that_are_not_found_are_an_input_error(kept):
-    with pytest.raises(LensInputError, match="None of the rows holds a position"):
+    with pytest.raises(AnalysisInputError, match="None of the rows holds a position"):
         _run_postcodes([{"Site postcode": "SE13 7VO"}])
 
 
@@ -391,7 +396,7 @@ def test_no_postcode_reaches_the_result(kept):
 
 
 def test_positions_given_directly_send_nothing(kept):
-    with mock.patch("uk_open_data.lenses._steps.lookup_postcodes") as online:
+    with mock.patch("uk_open_data.analyses._steps.lookup_postcodes") as online:
         result = _run()
     online.assert_not_called()
     assert result.privacy.sent_to_third_parties == ()
@@ -399,7 +404,7 @@ def test_positions_given_directly_send_nothing(kept):
 
 @pytest.mark.parametrize("how", ["sometimes", None, 1])
 def test_bad_postcode_lookup_is_rejected_in_either_mode(kept, how):
-    with pytest.raises(LensInputError, match="postcode_lookup"):
+    with pytest.raises(AnalysisInputError, match="postcode_lookup"):
         _run(options={"postcode_lookup": how})
 
 
@@ -444,9 +449,9 @@ def _run_here(rows=POSTCODE_ROWS, how=None):
     """Run with site postcodes, and fail the test if any is sent out."""
     options = None if how is None else {"postcode_lookup": how}
     with (
-        mock.patch("uk_open_data.lenses._steps.lookup_postcodes") as online,
-        mock.patch("uk_open_data.lenses._centres.requests.get") as fetch,
-        mock.patch("uk_open_data.lenses._centres.load_geodata") as boundaries,
+        mock.patch("uk_open_data.analyses._steps.lookup_postcodes") as online,
+        mock.patch("uk_open_data.analyses._centres.requests.get") as fetch,
+        mock.patch("uk_open_data.analyses._centres.load_geodata") as boundaries,
     ):
         try:
             return _run(rows, options=options, columns=POSTCODE_COLUMN)
@@ -509,8 +514,8 @@ def test_a_neighbourhood_without_a_centre_is_counted_as_not_found(
 
 
 @pytest.mark.parametrize("how", ["auto", "offline"])
-def test_without_kept_centres_the_lens_stops_and_sends_nothing(kept, table, how):
-    with pytest.raises(LensInputError) as raised:
+def test_without_kept_centres_the_analysis_stops_and_sends_nothing(kept, table, how):
+    with pytest.raises(AnalysisInputError) as raised:
         _run_here(how=how)
     message = str(raised.value)
     assert "download_centres('neighbourhood')" in message
@@ -519,14 +524,14 @@ def test_without_kept_centres_the_lens_stops_and_sends_nothing(kept, table, how)
 
 
 def test_offline_without_a_table_stops_and_sends_nothing(kept, neighbourhoods):
-    with pytest.raises(LensInputError, match="postcode table"):
+    with pytest.raises(AnalysisInputError, match="postcode table"):
         _run_here(how="offline")
 
 
 def test_online_sends_postcodes_even_with_a_table(kept, table, neighbourhoods):
     sent: list = []
     with mock.patch(
-        "uk_open_data.lenses._steps.lookup_postcodes", side_effect=_fake_lookup(sent)
+        "uk_open_data.analyses._steps.lookup_postcodes", side_effect=_fake_lookup(sent)
     ):
         result = _run(
             POSTCODE_ROWS,
@@ -551,7 +556,9 @@ def test_a_kept_neighbourhood_file_that_cannot_be_read_is_an_input_error(
 ):
     path = centres_path("neighbourhood")
     path.write_text('{"format": "kindtech-centres-1"}', encoding="utf-8")
-    with pytest.raises(LensInputError, match=r"download_centres\('neighbourhood'\)"):
+    with pytest.raises(
+        AnalysisInputError, match=r"download_centres\('neighbourhood'\)"
+    ):
         _run_here()
 
 
@@ -571,7 +578,7 @@ def _boundaries(*args, **kwargs) -> dict:
 
 def test_centres_are_fetched_once_for_england_and_wales():
     keep_need_figures("residents", NEED, "invented for a test.")
-    target = "uk_open_data.lenses._centres.load_geodata"
+    target = "uk_open_data.analyses._centres.load_geodata"
     with mock.patch(target, side_effect=_boundaries) as fetch:
         first = _run()
         second = _run()
@@ -586,7 +593,7 @@ def test_centres_are_fetched_once_for_england_and_wales():
 
 
 def test_kept_centres_are_used_and_nothing_is_fetched(kept):
-    with mock.patch("uk_open_data.lenses._centres.load_geodata") as fetch:
+    with mock.patch("uk_open_data.analyses._centres.load_geodata") as fetch:
         result = _run()
     fetch.assert_not_called()
     source = next(s for s in result.sources if s.id.startswith("ons-local-authority"))
@@ -597,7 +604,7 @@ def test_kept_centres_are_used_and_nothing_is_fetched(kept):
 def test_download_fetches_and_keeps_the_centres():
     assert centres_path() is None
     with mock.patch(
-        "uk_open_data.lenses._centres.load_geodata", side_effect=_boundaries
+        "uk_open_data.analyses._centres.load_geodata", side_effect=_boundaries
     ):
         path = download_centres()
     assert centres_path() == path
@@ -633,7 +640,7 @@ def test_download_fetches_neighbourhood_centres_page_by_page():
     ]
     asked: list = []
     assert centres_path("neighbourhood") is None
-    with mock.patch("uk_open_data.lenses._centres.requests.get", _pages(asked, rows)):
+    with mock.patch("uk_open_data.analyses._centres.requests.get", _pages(asked, rows)):
         path = download_centres("neighbourhood")
     assert centres_path("neighbourhood") == path
     assert path.name == "neighbourhoods-2021.json"
@@ -663,7 +670,7 @@ def test_download_fetches_neighbourhood_centres_page_by_page():
 )
 def test_neighbourhood_centres_that_cannot_be_fetched_keep_nothing(response):
     with (
-        mock.patch("uk_open_data.lenses._centres.requests.get", response),
+        mock.patch("uk_open_data.analyses._centres.requests.get", response),
         pytest.raises(ValueError, match="boundary service"),
     ):
         download_centres("neighbourhood")
@@ -674,7 +681,7 @@ def test_a_service_that_does_not_page_stops_the_fetch():
     same = {"features": [{"attributes": {"LSOA21CD": "E01000001"}}] * 2000}
     response = mock.Mock(return_value=mock.Mock(json=lambda: same))
     with (
-        mock.patch("uk_open_data.lenses._centres.requests.get", response),
+        mock.patch("uk_open_data.analyses._centres.requests.get", response),
         pytest.raises(ValueError, match="kept returning"),
     ):
         download_centres("neighbourhood")
@@ -696,15 +703,15 @@ def test_centres_that_cannot_be_fetched_are_an_input_error():
     keep_need_figures("residents", NEED, "invented for a test.")
     empty = {"type": "FeatureCollection", "features": []}
     with (
-        mock.patch("uk_open_data.lenses._centres.load_geodata", return_value=empty),
-        pytest.raises(LensInputError, match="download_centres"),
+        mock.patch("uk_open_data.analyses._centres.load_geodata", return_value=empty),
+        pytest.raises(AnalysisInputError, match="download_centres"),
     ):
         _run()
 
 
 def test_a_kept_file_that_cannot_be_read_is_an_input_error(kept):
     centres_path().write_text('{"format": "kindtech-centres-1"}', encoding="utf-8")
-    with pytest.raises(LensInputError, match="could not be read"):
+    with pytest.raises(AnalysisInputError, match="could not be read"):
         _run()
 
 
@@ -794,7 +801,7 @@ def test_charts_use_columns_of_the_list(kept):
 
 def test_result_explains_itself(kept):
     result = _run()
-    assert result.lens_id == LENS_ID
+    assert result.analysis_id == ANALYSIS_ID
     assert [step.title for step in result.working] == [
         "Loaded the need figures",
         "Loaded the centre of each local authority",
@@ -816,7 +823,7 @@ def test_result_explains_itself(kept):
         "catchment",
         "top",
     ]
-    option_names = {option.name for option in describe_lens(LENS_ID).options}
+    option_names = {option.name for option in describe_analysis(ANALYSIS_ID).options}
     for choice in result.choices:
         assert choice.option is None or choice.option in option_names
     assert any("straight line" in caveat for caveat in result.caveats)
@@ -830,14 +837,14 @@ def test_result_explains_itself(kept):
     assert detail["rows"] == []
 
 
-def test_command_line_runs_the_lens(kept, tmp_path, capsys):
+def test_command_line_runs_the_analysis(kept, tmp_path, capsys):
     path = tmp_path / "sites.csv"
     path.write_text("Lat,Lon\n51.4613,-0.0117\n53.48,-2.24\n", encoding="utf-8")
     code = main(
         [
-            "lens",
+            "analysis",
             "run",
-            LENS_ID,
+            ANALYSIS_ID,
             str(path),
             "--column",
             "latitude=Lat",
@@ -850,6 +857,6 @@ def test_command_line_runs_the_lens(kept, tmp_path, capsys):
     )
     assert code == EXIT_OK
     payload = json.loads(capsys.readouterr().out)
-    assert payload["lens_id"] == LENS_ID
+    assert payload["analysis_id"] == ANALYSIS_ID
     figures = {figure["id"]: figure["value"] for figure in payload["figures"]}
     assert figures["areas_beyond_reach"] == 3

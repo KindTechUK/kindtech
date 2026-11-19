@@ -166,7 +166,7 @@ built, not when a request arrives.
     show the credits from `postcode_table_info()["attribution"]`: the ONS
     source line, and the OS and Royal Mail copyright lines.
 
-[Lenses](lenses.md) use the table on their own when one is installed.
+[Analyses](analyses.md) use the table on their own when one is installed.
 
 ## Design
 

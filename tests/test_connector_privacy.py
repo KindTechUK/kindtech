@@ -17,6 +17,8 @@ pytest.importorskip("mcp")
 
 from mcp import Client  # noqa: E402
 
+from uk_open_data.analyses.need_reach import keep_need_figures  # noqa: E402
+from uk_open_data.analyses.who_we_miss import keep_residents  # noqa: E402
 from uk_open_data.connector import (  # noqa: E402
     PrivacyError,
     build_server,
@@ -24,8 +26,6 @@ from uk_open_data.connector import (  # noqa: E402
     places,
 )
 from uk_open_data.connector.privacy import find_row_values  # noqa: E402
-from uk_open_data.lenses.need_reach import keep_need_figures  # noqa: E402
-from uk_open_data.lenses.who_we_miss import keep_residents  # noqa: E402
 
 POSTCODE = fakes.SECRET_POSTCODE
 PERSON = "Zebedee Quillfeather"

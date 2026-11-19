@@ -1,6 +1,6 @@
-"""Drawing the map a lens describes, as a still picture.
+"""Drawing the map an analysis describes, as a still picture.
 
-A :class:`~uk_open_data.lenses.LensResult` carries a description of a map: which
+An :class:`~uk_open_data.analyses.AnalysisResult` carries a description of a map: which
 areas, and what to colour them by. :func:`render_map` turns that into an SVG
 picture with a legend, using boundaries from the ONS Open Geography Portal.
 
@@ -17,8 +17,8 @@ from html import escape
 from typing import Any
 
 from uk_open_data._mapping import geo_code_field
+from uk_open_data.analyses._model import AnalysisResult, MapLayer, MapSpec
 from uk_open_data.geo import load_geodata
-from uk_open_data.lenses._model import LensResult, MapLayer, MapSpec
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ _FOOTER_LINE = 15
 _FONT = "system-ui, -apple-system, 'Segoe UI', sans-serif"
 
 
-def load_map_boundaries(result: LensResult) -> dict[str, Any]:
+def load_map_boundaries(result: AnalysisResult) -> dict[str, Any]:
     """Fetch the boundaries of every area on a result's map.
 
     Only area codes are sent to the boundary service. They are public codes for
@@ -67,7 +67,7 @@ def load_map_boundaries(result: LensResult) -> dict[str, Any]:
     live.
 
     Args:
-        result: A lens result that has a map.
+        result: An analysis result that has a map.
 
     Returns:
         A GeoJSON FeatureCollection.
@@ -94,7 +94,7 @@ def load_map_boundaries(result: LensResult) -> dict[str, Any]:
 
 
 def render_map(
-    result: LensResult,
+    result: AnalysisResult,
     layer: str | None = None,
     boundaries: dict[str, Any] | None = None,
     width: int = 720,
@@ -102,7 +102,7 @@ def render_map(
     """Draw one layer of a result's map as an SVG picture.
 
     Args:
-        result: A lens result that has a map.
+        result: An analysis result that has a map.
         layer: The id of the layer to colour areas by. The first layer is used
             when this is left out.
         boundaries: A GeoJSON FeatureCollection of the areas. Left out, the
@@ -159,7 +159,7 @@ def render_map(
 # --- reading the description and the boundaries ----------------------------
 
 
-def _map_of(result: LensResult) -> MapSpec:
+def _map_of(result: AnalysisResult) -> MapSpec:
     """Return the result's map description, or say there is none."""
     if result.map is None:
         msg = "This result has no map."
@@ -359,7 +359,7 @@ def _legend(layer: MapLayer, top: int, width: int) -> str:
     return "".join(parts)
 
 
-def _footer_lines(result: LensResult) -> list[str]:
+def _footer_lines(result: AnalysisResult) -> list[str]:
     """List the credits printed under the map."""
     names = "; ".join(f"{source.name}, {source.publisher}" for source in result.sources)
     return [f"Data: {names}.", BOUNDARY_CREDIT]

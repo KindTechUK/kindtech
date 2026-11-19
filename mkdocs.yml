@@ -88,7 +88,7 @@ nav:
     - ONS Data: api/ons.md
     - Postcodes: api/postcodes.md
     - Deprivation (IMD): api/imd.md
-    - Lenses: api/lenses.md
+    - Analyses: api/analyses.md
     - Command Line: api/cli.md
     - Connector for chat assistants: api/connector.md
     - Data Sources: api/data-sources.md

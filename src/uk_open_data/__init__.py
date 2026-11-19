@@ -1,4 +1,4 @@
-"""UK open data for charities: boundaries, statistics, postcodes and lenses."""
+"""UK open data for charities: boundaries, statistics, postcodes and analyses."""
 
 from importlib.metadata import PackageNotFoundError, version
 

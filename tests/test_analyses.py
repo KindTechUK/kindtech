@@ -1,5 +1,5 @@
 """
-Unit tests for the lens interface and the first lens.
+Unit tests for the analysis interface and the first analysis.
 
 The deprivation index and the postcode lookup are replaced with small invented
 tables, so the tests are isolated and repeatable.
@@ -11,24 +11,24 @@ import unittest.mock as mock
 import pandas as pd
 import pytest
 
-from uk_open_data.imd import keep_imd
-from uk_open_data.lenses import (
-    LensInputError,
-    describe_lens,
-    list_lenses,
-    register_lens,
-    run_lens,
+from uk_open_data.analyses import (
+    AnalysisInputError,
+    describe_analysis,
+    list_analyses,
+    register_analysis,
+    run_analysis,
 )
-from uk_open_data.lenses._inputs import (
+from uk_open_data.analyses._inputs import (
     TabularData,
     resolve_columns,
     tidy_postcode,
     to_count,
 )
-from uk_open_data.lenses._privacy import band_labels, cells_to_hide, count_band
-from uk_open_data.lenses.reach_deprivation import LENS
+from uk_open_data.analyses._privacy import band_labels, cells_to_hide, count_band
+from uk_open_data.analyses.reach_deprivation import ANALYSIS
+from uk_open_data.imd import keep_imd
 
-LENS_ID = "reach-deprivation"
+ANALYSIS_ID = "reach-deprivation"
 POSTCODE_COLUMN = {"postcode": "Client postcode"}
 AUTHORITIES = (
     ("E09000023", "Lewisham"),
@@ -97,18 +97,19 @@ class _World:
         )
 
     def run(self, rows=None, columns=POSTCODE_COLUMN, options=None):
-        """Run the lens against the invented index and lookup."""
+        """Run the analysis against the invented index and lookup."""
         with (
             mock.patch(
-                "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
+                "uk_open_data.analyses.reach_deprivation.load_imd",
+                return_value=_index(),
             ),
             mock.patch(
-                "uk_open_data.lenses._steps.postcodes_to_geography",
+                "uk_open_data.analyses._steps.postcodes_to_geography",
                 side_effect=self.fake_lookup,
             ),
         ):
-            return run_lens(
-                LENS_ID,
+            return run_analysis(
+                ANALYSIS_ID,
                 self.rows if rows is None else rows,
                 columns=columns,
                 options=options,
@@ -208,7 +209,7 @@ def test_tabular_data_reads_rows_and_frames_alike():
 
 
 def test_tabular_data_rejects_other_types():
-    with pytest.raises(LensInputError, match="DataFrame"):
+    with pytest.raises(AnalysisInputError, match="DataFrame"):
         TabularData("clients.csv")
 
 
@@ -222,7 +223,7 @@ def test_resolve_columns_uses_mapping_then_role_names():
 
 
 def test_resolve_columns_reports_unknown_roles_and_columns():
-    with pytest.raises(LensInputError) as raised:
+    with pytest.raises(AnalysisInputError) as raised:
         resolve_columns(["a"], ["postcode"], {"postcode": "b", "age": "a"})
     assert len(raised.value.problems) == 2
 
@@ -230,9 +231,9 @@ def test_resolve_columns_reports_unknown_roles_and_columns():
 # --- the interface ---------------------------------------------------------
 
 
-def test_list_and_describe_lenses():
-    assert LENS_ID in [lens.id for lens in list_lenses()]
-    info = describe_lens(LENS_ID)
+def test_list_and_describe_analyses():
+    assert ANALYSIS_ID in [analysis.id for analysis in list_analyses()]
+    info = describe_analysis(ANALYSIS_ID)
     assert [mode.name for mode in info.input_modes] == [
         "postcodes",
         "neighbourhood_counts",
@@ -241,12 +242,12 @@ def test_list_and_describe_lenses():
     json.dumps(info.to_dict())
 
 
-def test_amount_roles_are_marked_in_every_lens():
+def test_amount_roles_are_marked_in_every_analysis():
     # A count or a volume is added up, so a lone row's number comes back as
     # its place's total. Nothing else that is a number may come back.
     amounts = {
-        lens.id: [role.name for role in lens.roles if role.amount]
-        for lens in list_lenses()
+        analysis.id: [role.name for role in analysis.roles if role.amount]
+        for analysis in list_analyses()
     }
     assert amounts == {
         "reach-deprivation": ["count"],
@@ -255,7 +256,7 @@ def test_amount_roles_are_marked_in_every_lens():
         "provision-gap": ["volume"],
         "access-distance": [],
     }
-    roles = describe_lens("provision-gap").to_dict()["roles"]
+    roles = describe_analysis("provision-gap").to_dict()["roles"]
     assert {role["name"]: role["amount"] for role in roles} == {
         "postcode": False,
         "local_authority": False,
@@ -263,27 +264,29 @@ def test_amount_roles_are_marked_in_every_lens():
     }
 
 
-def test_unknown_lens_names_the_known_ones():
-    with pytest.raises(KeyError, match=LENS_ID):
-        describe_lens("no-such-lens")
+def test_unknown_analysis_names_the_known_ones():
+    with pytest.raises(KeyError, match=ANALYSIS_ID):
+        describe_analysis("no-such-analysis")
 
 
-def test_registering_the_same_lens_twice_fails():
+def test_registering_the_same_analysis_twice_fails():
     with pytest.raises(ValueError, match="already registered"):
-        register_lens(LENS)
+        register_analysis(ANALYSIS)
 
 
 def test_unknown_option_is_rejected(world):
-    with pytest.raises(LensInputError, match="no option called colour"):
+    with pytest.raises(AnalysisInputError, match="no option called colour"):
         world.run(options={"colour": "red"})
 
 
 def test_missing_columns_say_what_is_needed(world):
-    with pytest.raises(LensInputError, match="'postcode' or 'lsoa_code' and 'count'"):
+    with pytest.raises(
+        AnalysisInputError, match="'postcode' or 'lsoa_code' and 'count'"
+    ):
         world.run(rows=[{"Name": "x"}], columns={})
 
 
-# --- the first lens --------------------------------------------------------
+# --- the first analysis --------------------------------------------------------
 
 
 def test_figures_from_postcodes(world):
@@ -422,7 +425,7 @@ def test_bad_counts_are_reported_without_their_values(world):
         {"lsoa_code": _area_code(0, 1), "count": "lots"},
         {"lsoa_code": _area_code(0, 2), "count": -3},
     ]
-    with pytest.raises(LensInputError) as raised:
+    with pytest.raises(AnalysisInputError) as raised:
         world.run(rows=rows, columns={})
     assert "2 rows" in str(raised.value)
     assert "lots" not in str(raised.value)
@@ -439,7 +442,7 @@ def test_named_catchment_by_name_or_code(world):
 
 
 def test_unknown_catchment_is_rejected(world):
-    with pytest.raises(LensInputError, match="Narnia"):
+    with pytest.raises(AnalysisInputError, match="Narnia"):
         world.run(options={"catchment": ["Lewisham", "Narnia"]})
 
 
@@ -484,18 +487,18 @@ def test_table_to_frame(world):
 def test_too_few_people_is_an_error():
     world = _World()
     world.add(0, 1, 4)
-    with pytest.raises(LensInputError, match="Fewer than 5 people"):
+    with pytest.raises(AnalysisInputError, match="Fewer than 5 people"):
         world.run()
 
 
 def test_too_few_people_in_a_named_catchment_is_an_error(world):
     world.add(2, 1, 3)
-    with pytest.raises(LensInputError, match="Hartlepool"):
+    with pytest.raises(AnalysisInputError, match="Hartlepool"):
         world.run(options={"catchment": "Hartlepool"})
 
 
 def test_no_postcodes_at_all_points_at_the_column(world):
-    with pytest.raises(LensInputError, match="right column"):
+    with pytest.raises(AnalysisInputError, match="right column"):
         world.run(rows=[{"Client postcode": "Anna"}, {"Client postcode": "Ben"}])
 
 
@@ -511,7 +514,7 @@ def test_no_postcodes_at_all_points_at_the_column(world):
     ],
 )
 def test_bad_options_are_rejected(world, options):
-    with pytest.raises(LensInputError):
+    with pytest.raises(AnalysisInputError):
         world.run(options=options)
 
 
@@ -537,14 +540,14 @@ def test_result_explains_itself(world):
 # --- the index kept on this machine ----------------------------------------
 
 
-def test_lens_runs_on_an_index_kept_on_this_machine():
+def test_analysis_runs_on_an_index_kept_on_this_machine():
     keep_imd(_index(), note="invented for a test.")
     rows = [
         {"lsoa_code": _area_code(0, 1), "count": 30},
         {"lsoa_code": _area_code(0, 4), "count": 14},
     ]
     with mock.patch("uk_open_data.imd.api.requests.get") as get:
-        result = run_lens(LENS_ID, rows)
+        result = run_analysis(ANALYSIS_ID, rows)
     get.assert_not_called()
     assert result.figure("people_located").value == 44
     source = next(s for s in result.sources if s.id == "iod-2025")
@@ -557,42 +560,46 @@ def test_lens_runs_on_an_index_kept_on_this_machine():
 def test_an_index_kept_on_this_machine_that_cannot_be_read_is_an_input_error():
     path = keep_imd(_index(), note="invented for a test.")
     path.write_text("not json", encoding="utf-8")
-    with pytest.raises(LensInputError, match="download_imd"):
-        run_lens(LENS_ID, [{"lsoa_code": _area_code(0, 1), "count": 30}])
+    with pytest.raises(AnalysisInputError, match="download_imd"):
+        run_analysis(ANALYSIS_ID, [{"lsoa_code": _area_code(0, 1), "count": 30}])
 
 
 def test_an_error_from_the_download_is_not_blamed_on_a_kept_copy():
     with (
         mock.patch(
-            "uk_open_data.lenses.reach_deprivation.load_imd",
+            "uk_open_data.analyses.reach_deprivation.load_imd",
             side_effect=ValueError("the published file changed"),
         ),
         pytest.raises(ValueError, match="the published file changed") as raised,
     ):
-        run_lens(LENS_ID, [{"lsoa_code": _area_code(0, 1), "count": 30}])
-    assert not isinstance(raised.value, LensInputError)
+        run_analysis(ANALYSIS_ID, [{"lsoa_code": _area_code(0, 1), "count": 30}])
+    assert not isinstance(raised.value, AnalysisInputError)
 
 
 # --- options with a fixed list of values -----------------------------------
 
 
 def test_options_with_a_fixed_list_say_what_can_be_picked():
-    for lens in list_lenses():
-        for option in lens.options:
+    for analysis in list_analyses():
+        for option in analysis.options:
             values = [choice.value for choice in option.choices]
             assert len(set(values)) == len(values)
             assert all(choice.label for choice in option.choices)
             # The value used when nothing is picked is one that can be picked.
             assert not values or option.default in values
-    lookup = {o.name: o for o in describe_lens(LENS_ID).options}["postcode_lookup"]
+    lookup = {o.name: o for o in describe_analysis(ANALYSIS_ID).options}[
+        "postcode_lookup"
+    ]
     assert [choice.value for choice in lookup.choices] == ["auto", "offline", "online"]
-    assert {o.name: o for o in describe_lens(LENS_ID).options}[
+    assert {o.name: o for o in describe_analysis(ANALYSIS_ID).options}[
         "catchment"
     ].choices == ()
 
 
 def test_choices_are_in_the_description_as_plain_json_types():
-    options = {o["name"]: o for o in describe_lens(LENS_ID).to_dict()["options"]}
+    options = {
+        o["name"]: o for o in describe_analysis(ANALYSIS_ID).to_dict()["options"]
+    }
     assert options["postcode_lookup"]["choices"][1] == {
         "value": "offline",
         "label": "On this machine only",
@@ -604,9 +611,9 @@ def test_choices_are_in_the_description_as_plain_json_types():
 # --- charts ----------------------------------------------------------------
 
 
-@pytest.mark.parametrize("lens_id", ["reach-deprivation", "need-reach"])
-def test_every_chart_can_be_drawn_from_a_table_in_the_result(world, lens_id):
-    if lens_id == LENS_ID:
+@pytest.mark.parametrize("analysis_id", ["reach-deprivation", "need-reach"])
+def test_every_chart_can_be_drawn_from_a_table_in_the_result(world, analysis_id):
+    if analysis_id == ANALYSIS_ID:
         result = world.run()
     else:
         need = pd.DataFrame(
@@ -616,8 +623,10 @@ def test_every_chart_can_be_drawn_from_a_table_in_the_result(world, lens_id):
                 "obs_value": [9000, 8000],
             }
         )
-        with mock.patch("uk_open_data.lenses._need.load_ons", return_value=need):
-            result = run_lens(lens_id, [{"local_authority": "Lewisham", "count": 60}])
+        with mock.patch("uk_open_data.analyses._need.load_ons", return_value=need):
+            result = run_analysis(
+                analysis_id, [{"local_authority": "Lewisham", "count": 60}]
+            )
     assert result.charts
     for chart in result.charts:
         table = result.table(chart.table)

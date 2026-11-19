@@ -1,5 +1,5 @@
 """
-Unit tests for the who we are missing lens.
+Unit tests for the who we are missing analysis.
 
 The census figures and the postcode lookup are replaced with small invented
 tables, so the tests are isolated and repeatable.
@@ -11,18 +11,23 @@ import unittest.mock as mock
 import pandas as pd
 import pytest
 
-from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
-from uk_open_data.connector.privacy import find_row_values
-from uk_open_data.lenses import LensInputError, describe_lens, render_map, run_lens
-from uk_open_data.lenses.who_we_miss import (
+from uk_open_data.analyses import (
+    AnalysisInputError,
+    describe_analysis,
+    render_map,
+    run_analysis,
+)
+from uk_open_data.analyses.who_we_miss import (
     clear_residents_cache,
     download_residents,
     keep_residents,
     residents_path,
 )
+from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
+from uk_open_data.connector.privacy import find_row_values
 from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 
-LENS_ID = "who-we-miss"
+ANALYSIS_ID = "who-we-miss"
 COLUMNS = {"group": "Ethnicity", "count": "Clients"}
 GROUPS = ("Asian", "Black", "Mixed", "White", "Other")
 
@@ -96,7 +101,9 @@ class _Nomis:
 def nomis():
     """Replace the census figures with the invented ones."""
     fake = _Nomis()
-    with mock.patch("uk_open_data.lenses.who_we_miss.load_ons", side_effect=fake.load):
+    with mock.patch(
+        "uk_open_data.analyses.who_we_miss.load_ons", side_effect=fake.load
+    ):
         yield fake
 
 
@@ -110,7 +117,7 @@ def _counts(**people: int) -> list[dict]:
 
 def _run(rows, options=None, columns=COLUMNS):
     options = {"catchment": "Lewisham"} if options is None else options
-    return run_lens(LENS_ID, rows, columns=columns, options=options)
+    return run_analysis(ANALYSIS_ID, rows, columns=columns, options=options)
 
 
 def _rows(result) -> dict[str, dict]:
@@ -128,11 +135,11 @@ CLIENTS = _counts(
 )
 
 
-# --- the lens is listed ----------------------------------------------------
+# --- the analysis is listed ----------------------------------------------------
 
 
-def test_lens_is_described():
-    info = describe_lens(LENS_ID)
+def test_analysis_is_described():
+    info = describe_analysis(ANALYSIS_ID)
     assert info.question == (
         "Who do we reach less than their share of the people who live here?"
     )
@@ -157,17 +164,19 @@ def test_lens_is_described():
 
 
 def test_characteristics_can_be_picked_from_a_list(capsys):
-    option = {o.name: o for o in describe_lens(LENS_ID).options}["characteristic"]
+    option = {o.name: o for o in describe_analysis(ANALYSIS_ID).options}[
+        "characteristic"
+    ]
     assert [(choice.value, choice.label) for choice in option.choices] == [
         ("ethnic_group", "Ethnic group"),
         ("sex", "Sex"),
     ]
-    assert main(["lens", "describe", LENS_ID]) == EXIT_OK
+    assert main(["analysis", "describe", ANALYSIS_ID]) == EXIT_OK
     assert '    "sex": Sex' in capsys.readouterr().out
 
 
 def test_only_the_census_group_names_are_public_in_the_group_column():
-    info = describe_lens(LENS_ID)
+    info = describe_analysis(ANALYSIS_ID)
     group = info.roles[0]
     # A label can be the same as one of these, and the result names them.
     # Every other label is a person's own words and must never come back.
@@ -321,21 +330,21 @@ def test_parts_are_added_up_when_nomis_has_no_row_for_the_group(nomis):
 
 def test_a_table_without_every_group_is_an_input_error(nomis):
     nomis.leave_out = "Other ethnic group"
-    with pytest.raises(LensInputError, match="does not name every group"):
+    with pytest.raises(AnalysisInputError, match="does not name every group"):
         _run(CLIENTS)
 
 
 def test_a_table_without_counts_is_an_input_error():
     empty = pd.DataFrame({"geography_code": ["E09000023"]})
     with (
-        mock.patch("uk_open_data.lenses.who_we_miss.load_ons", return_value=empty),
-        pytest.raises(LensInputError, match="could not be loaded"),
+        mock.patch("uk_open_data.analyses.who_we_miss.load_ons", return_value=empty),
+        pytest.raises(AnalysisInputError, match="could not be loaded"),
     ):
         _run(CLIENTS)
 
 
 def test_scotland_is_not_in_the_census_figures(nomis):
-    with pytest.raises(LensInputError, match="City of Edinburgh"):
+    with pytest.raises(AnalysisInputError, match="City of Edinburgh"):
         _run(CLIENTS, options={"catchment": "City of Edinburgh"})
 
 
@@ -422,7 +431,7 @@ def test_groups_option_wins_over_the_wording(nomis):
     "groups", [["Indian"], "Indian", {"Indian": 3}, {"Indian": "South Asian"}]
 )
 def test_bad_groups_option_is_rejected_without_repeating_a_label(nomis, groups):
-    with pytest.raises(LensInputError, match="'groups'") as raised:
+    with pytest.raises(AnalysisInputError, match="'groups'") as raised:
         _run(CLIENTS, options={"catchment": "Lewisham", "groups": groups})
     assert "Indian" not in str(raised.value)
     assert "South Asian" not in str(raised.value)
@@ -511,7 +520,8 @@ def test_a_check_for_repeated_labels_finds_none(nomis, characteristic, labels):
     # What the connector does: leave out the values the role lists as public,
     # and look for every other label anywhere in the result.
     public = {
-        value.casefold() for value in describe_lens(LENS_ID).roles[0].reported_values
+        value.casefold()
+        for value in describe_analysis(ANALYSIS_ID).roles[0].reported_values
     }
     guarded = [label for label in labels if label.casefold() not in public]
     assert len(guarded) == len(labels) - (5 if characteristic == "ethnic_group" else 2)
@@ -552,7 +562,7 @@ def test_a_label_that_names_both_sexes_is_not_matched(nomis):
 
 @pytest.mark.parametrize("characteristic", ["age", "", None, 3])
 def test_unknown_characteristic_is_rejected(nomis, characteristic):
-    with pytest.raises(LensInputError, match="'characteristic'"):
+    with pytest.raises(AnalysisInputError, match="'characteristic'"):
         _run(
             CLIENTS, options={"catchment": "Lewisham", "characteristic": characteristic}
         )
@@ -614,7 +624,7 @@ def test_both_sexes_are_hidden_when_one_count_is_small(nomis):
 
 
 def test_too_few_people_is_an_input_error(nomis):
-    with pytest.raises(LensInputError, match="Fewer than 5 people"):
+    with pytest.raises(AnalysisInputError, match="Fewer than 5 people"):
         _run(_counts(White_British=4, Not_stated=30))
 
 
@@ -631,7 +641,7 @@ def test_few_people_brings_a_warning_about_chance(nomis):
 
 @pytest.mark.parametrize("value", [0, 1.5, -1, "0.8", True, None])
 def test_bad_line_for_under_represented_is_rejected(nomis, value):
-    with pytest.raises(LensInputError, match="'under_represented_below'"):
+    with pytest.raises(AnalysisInputError, match="'under_represented_below'"):
         _run(
             CLIENTS, options={"catchment": "Lewisham", "under_represented_below": value}
         )
@@ -639,14 +649,14 @@ def test_bad_line_for_under_represented_is_rejected(nomis, value):
 
 @pytest.mark.parametrize("value", [0, 2, "a twentieth", False])
 def test_bad_catchment_share_is_rejected(nomis, value):
-    with pytest.raises(LensInputError, match="'catchment_min_share'"):
+    with pytest.raises(AnalysisInputError, match="'catchment_min_share'"):
         _run(CLIENTS, options={"catchment": "Lewisham", "catchment_min_share": value})
 
 
 @pytest.mark.parametrize("count", [-1, 2.5, "lots", None])
 def test_bad_counts_are_rejected(nomis, count):
     rows = [*CLIENTS, {"Ethnicity": "Arab", "Clients": count}]
-    with pytest.raises(LensInputError, match="1 rows have a count"):
+    with pytest.raises(AnalysisInputError, match="1 rows have a count"):
         _run(rows)
 
 
@@ -654,7 +664,7 @@ def test_bad_counts_are_rejected(nomis, count):
 
 
 def test_catchment_must_be_given_without_postcodes(nomis):
-    with pytest.raises(LensInputError, match="'catchment' option"):
+    with pytest.raises(AnalysisInputError, match="'catchment' option"):
         _run(CLIENTS, options={})
 
 
@@ -679,7 +689,7 @@ def test_catchment_can_be_a_country(nomis):
 
 @pytest.mark.parametrize("catchment", [["Lewisham", "Narnia"], 7, [], [""]])
 def test_bad_catchment_is_rejected(nomis, catchment):
-    with pytest.raises(LensInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="catchment"):
         _run(CLIENTS, options={"catchment": catchment})
 
 
@@ -692,8 +702,8 @@ def test_rows_of_people_are_counted_one_each(nomis):
         + [{"Ethnic group": "Black African"}] * 30
         + [{"Ethnic group": "Bangladeshi"}] * 50
     )
-    result = run_lens(
-        LENS_ID,
+    result = run_analysis(
+        ANALYSIS_ID,
         people,
         columns={"group": "Ethnic group"},
         options={"catchment": "Lewisham"},
@@ -746,10 +756,12 @@ def _fake_lookup(sent: list):
 
 def _run_people(options=None, sent=None):
     with mock.patch(
-        "uk_open_data.lenses._steps.postcodes_to_geography",
+        "uk_open_data.analyses._steps.postcodes_to_geography",
         side_effect=_fake_lookup([] if sent is None else sent),
     ):
-        return run_lens(LENS_ID, PERSON_ROWS, columns=PERSON_COLUMNS, options=options)
+        return run_analysis(
+            ANALYSIS_ID, PERSON_ROWS, columns=PERSON_COLUMNS, options=options
+        )
 
 
 def test_catchment_is_worked_out_from_where_people_live(nomis):
@@ -812,8 +824,8 @@ def test_postcodes_stay_on_this_machine_when_a_table_is_installed(nomis, tmp_pat
     packed = tmp_path / "postcodes.ktpc.gz"
     build_postcode_table(source, packed, "May 2026")
     install_postcode_table(packed)
-    with mock.patch("uk_open_data.lenses._steps.postcodes_to_geography") as online:
-        result = run_lens(LENS_ID, PERSON_ROWS, columns=PERSON_COLUMNS)
+    with mock.patch("uk_open_data.analyses._steps.postcodes_to_geography") as online:
+        result = run_analysis(ANALYSIS_ID, PERSON_ROWS, columns=PERSON_COLUMNS)
     online.assert_not_called()
     assert result.privacy.sent_to_third_parties == ()
     assert result.figure("people_in_catchment").value == 196
@@ -867,7 +879,7 @@ def test_census_figures_can_be_downloaded_and_kept(nomis):
 def test_kept_figures_that_cannot_be_read_are_an_input_error(nomis):
     path = keep_residents("ethnic_group", KEPT, note="invented for a test.")
     path.write_text('{"format": "something else"}', encoding="utf-8")
-    with pytest.raises(LensInputError, match="download_residents"):
+    with pytest.raises(AnalysisInputError, match="download_residents"):
         _run(CLIENTS)
 
 
@@ -876,7 +888,7 @@ def test_kept_figures_for_other_groups_are_not_read_as_these(nomis):
     kept = json.loads(path.read_text(encoding="utf-8"))
     kept["groups"] = list(reversed(kept["groups"]))
     path.write_text(json.dumps(kept), encoding="utf-8")
-    with pytest.raises(LensInputError, match="download_residents"):
+    with pytest.raises(AnalysisInputError, match="download_residents"):
         _run(CLIENTS)
 
 
@@ -893,7 +905,7 @@ def test_keeping_figures_needs_a_known_characteristic_and_every_group():
 # --- the command line ------------------------------------------------------
 
 
-def test_command_line_runs_the_lens(nomis, tmp_path, capsys):
+def test_command_line_runs_the_analysis(nomis, tmp_path, capsys):
     path = tmp_path / "counts.csv"
     path.write_text(
         "Ethnicity,Clients\nWhite British,120\nBlack African,30\nCode 7,50\n",
@@ -901,9 +913,9 @@ def test_command_line_runs_the_lens(nomis, tmp_path, capsys):
     )
     code = main(
         [
-            "lens",
+            "analysis",
             "run",
-            LENS_ID,
+            ANALYSIS_ID,
             str(path),
             "--column",
             "group=Ethnicity",
@@ -926,9 +938,9 @@ def test_command_line_says_when_there_is_no_map(nomis, tmp_path, capsys):
     path.write_text("group,count\nWhite British,120\nIndian,30\n", encoding="utf-8")
     code = main(
         [
-            "lens",
+            "analysis",
             "run",
-            LENS_ID,
+            ANALYSIS_ID,
             str(path),
             "--option",
             "catchment=Lewisham",
