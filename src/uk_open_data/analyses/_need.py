@@ -8,7 +8,7 @@ authorities an analysis compares and put them in bands by need.
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import date
 from functools import lru_cache
@@ -19,7 +19,7 @@ import narwhals as nw
 
 from uk_open_data._kept import kept_file, read_kept, write_kept
 from uk_open_data.analyses._inputs import is_blank
-from uk_open_data.analyses._model import AnalysisInputError, Step
+from uk_open_data.analyses._model import AnalysisInputError, Source, Step
 from uk_open_data.analyses._steps import COUNTRIES, EVERYWHERE, Trail, named_areas
 from uk_open_data.analyses.sources import nomis_table
 from uk_open_data.ons import load_ons
@@ -43,6 +43,8 @@ RESERVED_FILTERS = ("geography", "geography_type", "select")
 COUNT_MEASURE = 20100
 NEED_FOLDER = "need"
 NEED_FILE_FORMAT = "kindtech-need-1"
+# Figures by local authority: code, name and a count of people.
+_Rows = tuple[tuple[str, str, float], ...]
 
 
 @dataclass(frozen=True)
@@ -209,20 +211,7 @@ def load_need(measure: Measure, trail: Trail) -> dict[str, Authority]:
     """
     source = nomis_table(measure.dataset, f"People in need: {measure.label}.")
     kept = _read_kept(measure.id) if measure.id in MEASURES else None
-    if kept is not None:
-        rows, note = kept
-        source = replace(
-            source, edition=f"{source.edition}. A copy kept on this machine, {note}"
-        )
-        where = "A copy kept on this machine was used, so nothing was fetched."
-    else:
-        try:
-            filters = json.dumps(measure.filters, sort_keys=True)
-            rows = _fetch_need(measure.dataset, filters)
-        except (TypeError, ValueError) as error:
-            msg = f"The need figures could not be loaded from Nomis. {error}"
-            raise AnalysisInputError(msg) from error
-        where = "Fetched from Nomis."
+    rows, source, where = _kept_or_fetched(measure, source, kept)
     if not rows:
         msg = (
             "The need figures list no local authority in England or Wales. "
@@ -245,7 +234,79 @@ def load_need(measure: Measure, trail: Trail) -> dict[str, Authority]:
     }
 
 
-def _read_kept(need: str) -> tuple[tuple[tuple[str, str, float], ...], str] | None:
+def load_residents(trail: Trail, fetch: bool) -> dict[str, float] | None:
+    """Load residents by local authority, to turn a count of need into a rate.
+
+    A copy kept on this machine is used when there is one. Otherwise the
+    residents are fetched from Nomis when ``fetch`` is true. When it is not,
+    None is returned, so a run that was kept off the network stays off it.
+
+    Returns:
+        Residents by local authority code, or None when there are none to use.
+    """
+    kept = _read_kept(RESIDENTS.id)
+    if kept is None and not fetch:
+        return None
+    source = nomis_table(RESIDENTS.dataset, "Residents, to set people in need against.")
+    rows, source, where = _kept_or_fetched(RESIDENTS, source, kept)
+    trail.sources.append(source)
+    trail.working.append(
+        Step(
+            title="Loaded the residents",
+            detail=(
+                f"{round(sum(people for _, _, people in rows)):,} residents in "
+                f"{len(rows)} local authorities, to turn people in need into a "
+                f"rate for the map. From {source.name}. {where}"
+            ),
+        )
+    )
+    return {code: people for code, _, people in rows}
+
+
+def _kept_or_fetched(
+    measure: Measure, source: Source, kept: tuple[_Rows, str] | None
+) -> tuple[_Rows, Source, str]:
+    """Take the figures from a kept copy, or fetch them from Nomis.
+
+    Returns:
+        The figures, the source as it should be cited, and a sentence that
+        says where the figures came from.
+    """
+    if kept is not None:
+        rows, note = kept
+        cited = replace(
+            source, edition=f"{source.edition}. A copy kept on this machine, {note}"
+        )
+        return (
+            rows,
+            cited,
+            "A copy kept on this machine was used, so nothing was fetched.",
+        )
+    try:
+        rows = _fetch_need(measure.dataset, json.dumps(measure.filters, sort_keys=True))
+    except (TypeError, ValueError) as error:
+        msg = f"The need figures could not be loaded from Nomis. {error}"
+        raise AnalysisInputError(msg) from error
+    return rows, source, "Fetched from Nomis."
+
+
+def need_per_1000(
+    codes: Sequence[str],
+    authorities: dict[str, Authority],
+    residents: dict[str, float] | None,
+) -> list[float] | None:
+    """People in need for each 1,000 residents, in the order of ``codes``.
+
+    Returns:
+        None when residents are not known for every place, so a map is never
+        shaded by a mix of rates and counts.
+    """
+    if residents is None or any(not residents.get(code) for code in codes):
+        return None
+    return [round(1000 * authorities[code].need / residents[code], 1) for code in codes]
+
+
+def _read_kept(need: str) -> tuple[_Rows, str] | None:
     """Read the need figures kept on this machine, with the note that goes with them.
 
     Returns:

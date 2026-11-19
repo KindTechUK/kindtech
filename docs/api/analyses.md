@@ -373,6 +373,7 @@ keep a copy on the machine, in the same data folder as the
 from uk_open_data.analyses.need_reach import download_need_figures, keep_need_figures
 
 download_need_figures("unemployed")   # fetch once, when a server is built
+download_need_figures("residents")    # so the map can shade need by its rate
 
 # or keep figures of your own under a built-in need, for a demonstration
 keep_need_figures(
@@ -414,7 +415,20 @@ in need and people reached per 100 in need for the places in `priority_areas`.
 | Table | Rows |
 | --- | --- |
 | `priority_areas` | The high-need local authorities with the lowest reach, lowest first: people in need, people, people per 100 in need |
-| `by_local_authority` | One per local authority compared, with need and reach in bands. This feeds the map |
+| `by_local_authority` | One per local authority compared, with need and reach in bands, and people in need for each 1,000 residents. This feeds the map |
+
+The map shades need by its rate, people in need for each 1,000 residents, in
+five equal groups. A count would make the largest places darkest whatever
+their need. The list of places to look at first still goes by the count, as
+the case study does. The residents are the census count of everyone who lives
+in each local authority, loaded beside the need figures.
+
+The map falls back to the count in two cases, and the result says which way
+it went in its choices (`map_need`) and in the note of the map's `need` layer.
+One is when the need is every resident, so there is no rate to work out. The
+other is when the need figures came from a copy kept on the machine and no
+copy of the residents is kept beside it: the analysis does not fetch them, so
+that a run kept off the network stays off it.
 
 | Option | Default | Meaning |
 | --- | --- | --- |

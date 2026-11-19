@@ -61,6 +61,8 @@ from uk_open_data.analyses._need import (
     guess_compared,
     high_need_cut,
     load_need,
+    load_residents,
+    need_per_1000,
     read_measure,
     read_top,
 )
@@ -97,6 +99,17 @@ KEY_FIGURES = (
     "people_in_catchment",
 )
 LOWEST = "your lowest reach"
+# The label and the note of the map's need layer, for each way of shading it.
+NEED_BY_RATE = (
+    "People in need for each 1,000 residents",
+    "Local authorities in five equal groups by people in need for each 1,000 "
+    "residents, so a large place is not darker for its size alone.",
+)
+NEED_BY_COUNT = (
+    "People in need",
+    "Local authorities in five equal groups by people in need. A large place "
+    "is likely to be darker than a small one with the same rate.",
+)
 NO_REACH = "None, or count hidden"
 REACH_BANDS = (NO_REACH, "Lower reach", "Middle reach", "Higher reach")
 # Where people go when their local authority is not in the need figures. The
@@ -236,6 +249,8 @@ class _Row:
     people: int
     high_need: bool
     hidden: bool
+    # People in need for each 1,000 residents, or None when residents are not known.
+    need_rate: float | None
     need_band: str
     reach_band: str
 
@@ -256,6 +271,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
     measure = read_measure(options.get("need"))
     trail = Trail()
     authorities = load_need(measure, trail)
+    residents = _residents(measure, trail)
     if analysis_input.mode.name == "postcodes":
         counts, supplied = count_by_postcode(
             analysis_input.values["postcode"],
@@ -272,7 +288,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         )
     located = _keep_listed(counts, authorities, threshold, trail)
     compared = _choose_area(options.get("catchment"), located, authorities, min_share)
-    rows = _rows(located, authorities, compared, threshold, trail)
+    rows = _rows(located, authorities, compared, residents, threshold, trail)
+    by_rate = rows[0].need_rate is not None
     figures = _figures(supplied, sum(located.values()), rows, measure, threshold)
     tables = (_priority_table(rows, top, threshold, trail), _authority_table(rows))
     trail.hidden += sum(row.hidden for row in rows)
@@ -295,9 +312,12 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         input_mode=analysis_input.mode.name,
         figures=tuple(figures),
         tables=tables,
-        map=_map_spec(),
+        map=_map_spec(by_rate),
         working=tuple(trail.working),
-        choices=(*trail.choices, *_choices(measure, compared, top, threshold)),
+        choices=(
+            *trail.choices,
+            *_choices(measure, compared, top, threshold, by_rate),
+        ),
         checks=_checks(analysis_input.mode.name, measure, compared),
         caveats=(*CAVEATS, measure.caveat),
         warnings=tuple(trail.warnings),
@@ -307,6 +327,18 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         answer=_answer(figures, tables[0], measure),
         key_figures=shown_first(figures, KEY_FIGURES),
     )
+
+
+def _residents(measure: Measure, trail: Trail) -> dict[str, float] | None:
+    """Load residents to shade the map by a rate, when that can be done.
+
+    When the need is every resident there is no rate to work out. When the
+    need figures came from a copy kept on this machine, residents are taken
+    from a kept copy too and never fetched, so the run stays off the network.
+    """
+    if measure.id == RESIDENTS.id:
+        return None
+    return load_residents(trail, fetch=need_figures_path(measure.id) is None)
 
 
 # --- reading the input -----------------------------------------------------
@@ -420,6 +452,7 @@ def _rows(
     located: dict[str, int],
     authorities: dict[str, Authority],
     compared: Compared,
+    residents: dict[str, float] | None,
     threshold: int,
     trail: Trail,
 ) -> list[_Row]:
@@ -461,7 +494,10 @@ def _rows(
     # is taken, wherever it is. The table of places matters more here than the
     # share in high-need places, which is hidden when it would give one away.
     hide = cells_to_hide(people, threshold)
-    need_bands = band_by_need(need)
+    # The map shades need by a rate where it can, so that a large place is
+    # not darker for its size alone.
+    rates = need_per_1000(compared.codes, authorities, residents)
+    need_bands = band_by_need(need if rates is None else rates)
     reach_bands = _reach_bands(people, need, hide)
     trail.working.append(
         Step(
@@ -482,6 +518,7 @@ def _rows(
             people=people[i],
             high_need=high[i],
             hidden=hide[i],
+            need_rate=None if rates is None else rates[i],
             need_band=need_bands[i],
             reach_band=reach_bands[i],
         )
@@ -617,6 +654,7 @@ def _authority_table(rows: list[_Row]) -> Table:
             "geography_code",
             "geography_name",
             "people_in_need",
+            "people_in_need_per_1000_residents",
             "need_band",
             "high_need",
             "people",
@@ -627,6 +665,7 @@ def _authority_table(rows: list[_Row]) -> Table:
         rows=[
             {
                 **_table_row(row),
+                "people_in_need_per_1000_residents": row.need_rate,
                 "need_band": row.need_band,
                 "high_need": row.high_need,
                 "reach_band": row.reach_band,
@@ -637,8 +676,15 @@ def _authority_table(rows: list[_Row]) -> Table:
     )
 
 
-def _map_spec() -> MapSpec:
-    """Describe the map of need and reach."""
+def _map_spec(by_rate: bool) -> MapSpec:
+    """Describe the map of need and reach.
+
+    Need is shaded by people in need for each 1,000 residents when
+    ``by_rate`` is true, and by the count of people in need when it is not.
+    """
+    need_label, need_note = NEED_BY_COUNT
+    if by_rate:
+        need_label, need_note = NEED_BY_RATE
     return MapSpec(
         title="Need and reach, by local authority",
         geography_type="LAD",
@@ -648,10 +694,10 @@ def _map_spec() -> MapSpec:
         layers=(
             MapLayer(
                 id="need",
-                label="People in need",
+                label=need_label,
                 value_column="need_band",
                 kind="ordinal",
-                note="Local authorities in five equal groups by people in need.",
+                note=need_note,
                 categories=NEED_BANDS,
             ),
             MapLayer(
@@ -797,9 +843,29 @@ def _answer_for_one_place(reach: float | None, per: str) -> str:
 
 
 def _choices(
-    measure: Measure, compared: Compared, top: int, threshold: int
+    measure: Measure, compared: Compared, top: int, threshold: int, by_rate: bool
 ) -> tuple[Choice, ...]:
     """List the choices the analysis made."""
+    shading = Choice(
+        id="map_need",
+        label="How the map shades need",
+        value=NEED_BY_COUNT[0],
+        reason=(
+            "There are no residents to set the count against: the need is "
+            "every resident, or no copy of the residents is kept on this "
+            "machine beside the need figures."
+        ),
+    )
+    if by_rate:
+        shading = Choice(
+            id="map_need",
+            label="How the map shades need",
+            value=NEED_BY_RATE[0],
+            reason=(
+                "A count would make the largest places darkest whatever their "
+                "need. The list of places still goes by the count."
+            ),
+        )
     return (
         Choice(
             id="need",
@@ -838,6 +904,7 @@ def _choices(
             reason="Smaller counts could point at individuals, so they are hidden.",
             option="suppress_below",
         ),
+        shading,
     )
 
 
