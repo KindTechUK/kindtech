@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 from typing import Any
 
 import pytest
@@ -10,7 +11,13 @@ pytest.importorskip("mcp")
 
 from mcp import Client  # noqa: E402
 
-from uk_open_data.connector import PrivacyError, build_server, command  # noqa: E402
+from uk_open_data.analyses import _registry  # noqa: E402
+from uk_open_data.connector import (  # noqa: E402
+    PrivacyError,
+    analyses,
+    build_server,
+    command,
+)
 
 TOOLS = {"find_analysis", "describe_place", "run_analysis_on_counts"}
 
@@ -211,6 +218,139 @@ def test_the_guards_own_message_is_kept_in_the_log(
 
     assert reply["content"][0]["text"] == "Error executing tool run_analysis_on_counts"
     assert "stopped with PrivacyError: A value from the input rows" in caplog.text
+
+
+REACH_COUNTS = [
+    {"lsoa_code": "E01000001", "count": 12},
+    {"lsoa_code": "E01000002", "count": 30},
+]
+SMALL_REACH_COUNTS = [
+    {"lsoa_code": "E01000001", "count": 3},
+    {"lsoa_code": "E01000002", "count": 30},
+    {"lsoa_code": "E01000003", "count": 40},
+]
+
+
+def _runs_counted(caplog: pytest.LogCaptureFixture) -> list[str]:
+    """The lines written to the logger a host counts answers from."""
+    return [
+        record.getMessage()
+        for record in caplog.records
+        if record.name == command.RUNS_LOGGER
+    ]
+
+
+@pytest.mark.usefixtures("england")
+class TestAnswersGivenAreCounted:
+    """One line for each answer that reaches the person, and for nothing else."""
+
+    def test_an_answer_is_counted_once_with_no_word_from_the_rows(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        caplog.set_level("INFO")
+
+        reply = _call(
+            "run_analysis_on_counts",
+            {"analysis_id": "reach-deprivation", "counts": REACH_COUNTS},
+        )
+
+        assert reply["structuredContent"]["status"] == "ok"
+        assert _runs_counted(caplog) == [
+            "run analysis=reach-deprivation mode=neighbourhood_counts door=chat"
+        ]
+
+    def test_an_answer_held_back_is_not_counted_until_it_is_given(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        caplog.set_level("INFO")
+        arguments = {"analysis_id": "reach-deprivation", "counts": SMALL_REACH_COUNTS}
+
+        held_back = _call("run_analysis_on_counts", arguments)
+
+        assert held_back["structuredContent"]["status"] == "would_hide_counts"
+        assert _runs_counted(caplog) == []
+
+        _call("run_analysis_on_counts", {**arguments, "hidden_counts": "accept"})
+
+        assert len(_runs_counted(caplog)) == 1
+
+    def test_a_refused_run_is_not_counted(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        caplog.set_level("INFO")
+
+        reply = _call(
+            "run_analysis_on_counts",
+            {"analysis_id": "reach-deprivation", "counts": [{"postcode": "ZZ99 9KC"}]},
+        )
+
+        assert reply["structuredContent"]["status"] == "input_problem"
+        assert _runs_counted(caplog) == []
+
+    def test_an_answer_still_goes_out_when_it_cannot_be_counted(
+        self, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        def refuse(*args: object) -> None:
+            raise ValueError("This analysis has no input mode of that name.")
+
+        monkeypatch.setattr("uk_open_data.analyses.record_run", refuse)
+
+        reply = _call(
+            "run_analysis_on_counts",
+            {"analysis_id": "reach-deprivation", "counts": REACH_COUNTS},
+        )
+
+        assert reply["isError"] is False
+        assert reply["structuredContent"]["status"] == "ok"
+        assert "could not be counted" in caplog.text
+
+
+@pytest.mark.usefixtures("leaky_analysis_engine")
+def test_an_answer_the_guard_withholds_is_not_counted() -> None:
+    reply = _call(
+        "run_analysis_on_counts",
+        {"analysis_id": "reach-deprivation", "counts": REACH_COUNTS},
+    )
+
+    assert reply["isError"] is True
+    assert analyses.engine.runs == []
+
+
+@pytest.mark.usefixtures("analysis_engine")
+def test_the_count_takes_its_words_from_the_result() -> None:
+    _call(
+        "run_analysis_on_counts",
+        {"analysis_id": "reach-deprivation", "counts": REACH_COUNTS},
+    )
+
+    assert analyses.engine.runs == [
+        ("reach-deprivation", "neighbourhood_counts", "chat")
+    ]
+
+
+def test_the_command_counts_from_the_engines_logger() -> None:
+    assert command.RUNS_LOGGER == _registry.RUNS_LOGGER
+    assert "chat" in _registry.DOORS
+
+
+def test_the_command_keeps_the_count_whatever_the_log_level(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Server:
+        def run(self, *args: Any, **kwargs: Any) -> None:
+            return None
+
+    monkeypatch.setattr("uk_open_data.connector.build_server", Server)
+    runs = logging.getLogger(command.RUNS_LOGGER)
+    before = runs.level
+    runs.setLevel(logging.WARNING)
+
+    command.main(["--log-level", "ERROR"])
+
+    try:
+        assert runs.isEnabledFor(logging.INFO)
+    finally:
+        runs.setLevel(before)
 
 
 def test_command_defaults_to_stdio(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -20,7 +20,11 @@ from mcp.types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import Field, ValidationError
 
 import uk_open_data
-from uk_open_data.connector.analyses import find_analysis, run_and_keep_result
+from uk_open_data.connector.analyses import (
+    find_analysis,
+    record_chat_run,
+    run_and_keep_result,
+)
 from uk_open_data.connector.maps import (
     MAP_META_KEY,
     MAP_VIEW,
@@ -267,7 +271,10 @@ def run_analysis_handler(
             picture, note = picture_for(result, guarded, map_boundaries)
             if note:
                 answer["map"] = {"drawn": picture is not None, "note": note}
-        return _tool_result(answer, {MAP_META_KEY: picture} if picture else None)
+        reply = _tool_result(answer, {MAP_META_KEY: picture} if picture else None)
+        if result is not None:
+            record_chat_run(result)
+        return reply
 
     return handle_run_analysis_on_counts
 

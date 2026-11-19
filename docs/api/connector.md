@@ -270,6 +270,15 @@ are missing analysis.
   assistant is told only that the tool failed, and the log says which tool
   stopped, with what kind of error and where in the code, and leaves out the
   error's own text, which can quote a value from the rows.
+- An answer given through `run_analysis_on_counts` is counted with one line on
+  the `uk_open_data.runs` logger, written by
+  [`record_run`](analyses.md#record_runanalysis_id-input_mode-door):
+  `run analysis=need-reach mode=area_counts door=chat`. It holds the analysis,
+  the input mode and the word "chat", each from a fixed list, and nothing from
+  the rows or the options. A run that was held back, refused or withheld is not
+  counted. Nothing is sent anywhere: on your own machine the line goes to
+  stderr with the rest of the log, at any `--log-level`, and a host counts the
+  lines in the logs it keeps.
 - `tests/test_connector_privacy.py` calls every tool the way an assistant does
   and fails if a row-level value reaches a result. A new tool must add a case
   there.
