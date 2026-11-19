@@ -13,6 +13,8 @@ agreed. -->
 
 Every analysis returns the same things:
 
+- **an answer**: one or two sentences that answer the question, and the
+  three figures to show first
 - **figures**: the headline numbers
 - **tables**: totals behind the figures
 - **a map description**: which areas to draw and what to colour them by, when
@@ -42,6 +44,7 @@ result = run_analysis(
     columns={"postcode": "Client postcode"},
 )
 
+result.answer                                   # the question, answered in a sentence
 result.figure("share_most_deprived_20").value   # 41.3 (per cent)
 result.table("by_decile").to_frame()            # pandas or polars DataFrame
 [check.question for check in result.checks]     # what to confirm first
@@ -130,6 +133,31 @@ value. The colours adapt to a dark page.
 Portal. Only the public area codes of the catchment are sent. To draw without
 the network, pass `boundaries=` a GeoJSON FeatureCollection you already have;
 `load_map_boundaries(result)` fetches one you can save and reuse.
+
+## The answer
+
+`result.answer` is one or two sentences that answer the question the analysis
+asks, for example:
+
+> Of your people in the area you serve, 49.0% live in the 20% most deprived
+> neighbourhoods in England. Of everyone who lives in that area, 20.0% do, so
+> you reach those neighbourhoods more than their share.
+
+Open with it wherever you show a result, so a report, a page and a chat
+assistant all say the same thing. It is built from the figures and tables of
+the result, after small counts are hidden, so it says nothing the result does
+not already show. When the figure it rests on is hidden, it says so instead of
+giving a number. The places and groups it names are the public names in the
+result's tables, never text from your data.
+
+`result.key_figures` holds the ids of up to three figures to show first, in
+order. Each is a figure of the result:
+
+```python
+for figure_id in result.key_figures:
+    figure = result.figure(figure_id)
+    print(figure.label, figure.value, figure.unit)
+```
 
 ## Charts
 
@@ -725,3 +753,5 @@ analysis keeps:
 4. State every choice and name the option that changes it.
 5. Leave checks for a person to answer.
 6. List anything sent off the machine in `privacy.sent_to_third_parties`.
+7. Answer the question in `answer`, from figures the result shows and nothing
+   else, and name the figures to show first in `key_figures`.

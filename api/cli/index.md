@@ -32,8 +32,9 @@ uk-open-data analysis describe reach-deprivation
 ### `analysis run ANALYSIS_ID FILE`
 
 Runs an analysis on a `.csv`, `.xlsx` or `.ods` file and prints a plain-text report:
-the figures, the tables, the checks to make before using them, what the figures
-cannot say, the choices made, the working, the sources and a privacy summary.
+a sentence or two that answer the question, then the figures, the tables, the
+checks to make before using them, what the figures cannot say, the choices
+made, the working, the sources and a privacy summary.
 
 ```bash
 uk-open-data analysis run reach-deprivation clients.csv \

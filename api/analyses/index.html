@@ -876,6 +876,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#the-answer" class="md-nav__link">
+    <span class="md-ellipsis">
+      The answer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#charts" class="md-nav__link">
     <span class="md-ellipsis">
       Charts
@@ -1276,6 +1285,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#the-answer" class="md-nav__link">
+    <span class="md-ellipsis">
+      The answer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#charts" class="md-nav__link">
     <span class="md-ellipsis">
       Charts
@@ -1393,6 +1411,8 @@ agreed. -->
 
 <p>Every analysis returns the same things:</p>
 <ul>
+<li><strong>an answer</strong>: one or two sentences that answer the question, and the
+  three figures to show first</li>
 <li><strong>figures</strong>: the headline numbers</li>
 <li><strong>tables</strong>: totals behind the figures</li>
 <li><strong>a map description</strong>: which areas to draw and what to colour them by, when
@@ -1419,6 +1439,7 @@ from your data is repeated back, not even in a warning or an error message.</p>
     <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">},</span>
 <span class="p">)</span>
 
+<span class="n">result</span><span class="o">.</span><span class="n">answer</span>                                   <span class="c1"># the question, answered in a sentence</span>
 <span class="n">result</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;share_most_deprived_20&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>   <span class="c1"># 41.3 (per cent)</span>
 <span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;by_decile&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>            <span class="c1"># pandas or polars DataFrame</span>
 <span class="p">[</span><span class="n">check</span><span class="o">.</span><span class="n">question</span> <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">checks</span><span class="p">]</span>     <span class="c1"># what to confirm first</span>
@@ -1486,6 +1507,26 @@ value. The colours adapt to a dark page.</p>
 Portal. Only the public area codes of the catchment are sent. To draw without
 the network, pass <code>boundaries=</code> a GeoJSON FeatureCollection you already have;
 <code>load_map_boundaries(result)</code> fetches one you can save and reuse.</p>
+<h2 id="the-answer">The answer</h2>
+<p><code>result.answer</code> is one or two sentences that answer the question the analysis
+asks, for example:</p>
+<blockquote>
+<p>Of your people in the area you serve, 49.0% live in the 20% most deprived
+neighbourhoods in England. Of everyone who lives in that area, 20.0% do, so
+you reach those neighbourhoods more than their share.</p>
+</blockquote>
+<p>Open with it wherever you show a result, so a report, a page and a chat
+assistant all say the same thing. It is built from the figures and tables of
+the result, after small counts are hidden, so it says nothing the result does
+not already show. When the figure it rests on is hidden, it says so instead of
+giving a number. The places and groups it names are the public names in the
+result's tables, never text from your data.</p>
+<p><code>result.key_figures</code> holds the ids of up to three figures to show first, in
+order. Each is a figure of the result:</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">figure_id</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">key_figures</span><span class="p">:</span>
+    <span class="n">figure</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figure_id</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">figure</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">figure</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">figure</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="charts">Charts</h2>
 <p><code>result.charts</code> describes the charts a result is best shown with, so a page
 can draw them without knowing the analysis. Each <code>Chart</code> names a table of the
@@ -2521,6 +2562,8 @@ analysis keeps:</p>
 <li>State every choice and name the option that changes it.</li>
 <li>Leave checks for a person to answer.</li>
 <li>List anything sent off the machine in <code>privacy.sent_to_third_parties</code>.</li>
+<li>Answer the question in <code>answer</code>, from figures the result shows and nothing
+   else, and name the figures to show first in <code>key_figures</code>.</li>
 </ol>
         <div id="llms-copy-button" style="position: fixed; z-index: 1100; top: 80px; right: 20px;">
             <button onclick="copyMarkdownToClipboard()" style="cursor: pointer; background: #007acc; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Copy Markdown</button>
