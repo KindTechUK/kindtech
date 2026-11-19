@@ -37,6 +37,10 @@ logger = logging.getLogger(__name__)
 MAX_PAGES = 500
 FLAG = "exceededTransferLimit"
 
+# One degree of latitude, near enough for telling a service how much detail
+# to leave out of an outline.
+METRES_PER_DEGREE = 111_320
+
 
 def _resolve_service(
     geography_type: str | GeographyType,
@@ -104,6 +108,7 @@ def load_geodata(
     month: str | Month | None = None,
     coverage: str | CoverageArea | None = None,
     boundary_type: str | BoundaryType | None = "BGC",
+    simplify_m: float | None = None,
     **filters,
 ) -> dict[str, Any]:
     """
@@ -115,6 +120,11 @@ def load_geodata(
         month: Month of the data (e.g., "JAN", or Month.JAN)
         coverage: Coverage area (e.g., "UK", or CoverageArea.UK)
         boundary_type: Boundary type (e.g., "BGC", or BoundaryType.BGC)
+        simplify_m: Ask the service to simplify each outline, leaving out
+            detail finer than about this many metres. Use it with a
+            full-resolution layer ("BFE" or "BFC") when no generalised one is
+            published, for example ``simplify_m=20`` for neighbourhoods.
+            Left out, outlines come as the layer holds them.
         **filters: Field filters (e.g., LAD21NM="Manchester")
 
     Returns:
@@ -122,7 +132,13 @@ def load_geodata(
         page by page, so every feature is there. The collection is empty,
         and an error is logged, when no service matches or a request fails:
         it is never a part of the layer.
+
+    Raises:
+        ValueError: If ``simplify_m`` is not above zero.
     """
+    if simplify_m is not None and simplify_m <= 0:
+        raise ValueError("simplify_m must be a number of metres above zero.")
+
     service = _resolve_service(
         geography_type,
         year,
@@ -142,7 +158,7 @@ def load_geodata(
             service["year"],
         )
 
-    return _query_arcgis_service(service["url"], filters or None)
+    return _query_arcgis_service(service["url"], filters or None, simplify_m)
 
 
 def geodata_to_properties(
@@ -261,6 +277,7 @@ def get_available_coverage_areas() -> list[dict[str, str]]:
 def _query_arcgis_service(
     service_url: str,
     filters: dict[str, Any] | None = None,
+    simplify_m: float | None = None,
 ) -> dict[str, Any]:
     """
     Query an ArcGIS Feature Server service and return GeoJSON results.
@@ -268,6 +285,7 @@ def _query_arcgis_service(
     Args:
         service_url: URL of the ArcGIS Feature Server service.
         filters: Optional field filters to apply.
+        simplify_m: Detail to leave out of each outline, in metres.
 
     Returns:
         GeoJSON FeatureCollection as a dictionary. A layer larger than the
@@ -277,12 +295,15 @@ def _query_arcgis_service(
     """
     layer_url = f"{service_url}/0"
 
-    params = {
+    params: dict[str, Any] = {
         "f": "geojson",
         "outFields": "*",
         "where": "1=1",
         "outSR": 4326,
     }
+    if simplify_m is not None:
+        # The service takes this in the units of the answer, which are degrees.
+        params["maxAllowableOffset"] = round(simplify_m / METRES_PER_DEGREE, 7)
 
     if filters:
         where_clauses = []

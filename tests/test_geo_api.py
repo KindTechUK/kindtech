@@ -247,6 +247,40 @@ def test_load_geodata_with_year_and_month_fallback(mock_get):
 
 
 @mock.patch("kindtech.geo.api.requests.get")
+def test_load_geodata_asks_for_simplified_outlines(mock_get):
+    """``simplify_m`` reaches the service in degrees, the units of the answer."""
+    mock_response = mock.MagicMock()
+    mock_response.json.return_value = GEOJSON_RESPONSE
+    mock_get.return_value = mock_response
+
+    load_geodata(geography_type="LAD", boundary_type="BFE", simplify_m=20)
+
+    call_params = mock_get.call_args[1]["params"]
+    assert call_params["maxAllowableOffset"] == pytest.approx(0.00018, abs=0.00001)
+    assert call_params["outSR"] == 4326
+
+
+@mock.patch("kindtech.geo.api.requests.get")
+def test_load_geodata_leaves_outlines_alone_by_default(mock_get):
+    mock_response = mock.MagicMock()
+    mock_response.json.return_value = GEOJSON_RESPONSE
+    mock_get.return_value = mock_response
+
+    load_geodata(geography_type="LAD")
+
+    assert "maxAllowableOffset" not in mock_get.call_args[1]["params"]
+
+
+@pytest.mark.parametrize("metres", [0, -5])
+@mock.patch("kindtech.geo.api.requests.get")
+def test_load_geodata_refuses_a_simplify_distance_not_above_zero(mock_get, metres):
+    with pytest.raises(ValueError, match="simplify_m"):
+        load_geodata(geography_type="LAD", simplify_m=metres)
+
+    mock_get.assert_not_called()
+
+
+@mock.patch("kindtech.geo.api.requests.get")
 def test_load_geodata_with_numeric_filter(mock_get):
     """Test filter clause with numeric value."""
     mock_response = mock.MagicMock()
