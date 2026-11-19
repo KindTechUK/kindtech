@@ -58,11 +58,11 @@ Citizens Advice Lewisham (CAL) needed to identify 'vulnerability hotspots' - are
 ### Reproduction
 
 A runnable, end-to-end reproduction lives in
-[`examples/cal_vulnerable_client.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py)
+[`examples/cal_vulnerable_client.py`](https://github.com/KindTechUK/uk-open-data/blob/main/examples/cal_vulnerable_client.py)
 (a [marimo](https://marimo.io/) notebook). It chains three KindTech connectors,
 all joining on the 2021 LSOA `geography_code`:
 
-[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py)
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/cal_vulnerable_client.py)
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with `uv run marimo edit examples/cal_vulnerable_client.py`.
 

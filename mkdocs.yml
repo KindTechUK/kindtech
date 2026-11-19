@@ -1,9 +1,9 @@
 site_name: KindTech
-site_url: https://kindtechuk.github.io/kindtech/
+site_url: https://kindtechuk.github.io/uk-open-data/
 
 # Repository information
-repo_name: KindTechUK/kindtech
-repo_url: https://github.com/KindTechUK/kindtech
+repo_name: KindTechUK/uk-open-data
+repo_url: https://github.com/KindTechUK/uk-open-data
 
 theme:
   name: material

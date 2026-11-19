@@ -14,7 +14,7 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
     Browse and load datasets straight from the NOMIS API.
 
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/ons_statistics.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/ons_statistics.py)
 
 -   __Geographic boundaries__
 
@@ -22,7 +22,7 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
     Explore LAD, LSOA and other UK boundary data interactively.
 
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_boundaries.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/geo_boundaries.py)
 
 -   __Boundaries + statistics__
 
@@ -30,13 +30,13 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
     Join geographic shapes with ONS data and map the result.
 
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_plus_ons.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/geo_plus_ons.py)
 
 </div>
 
 ## Install
 
-Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
+Install [uk-open-data from PyPI](https://pypi.org/project/uk-open-data/):
 
 ```bash
 uv add uk-open-data
