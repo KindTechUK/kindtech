@@ -318,6 +318,8 @@ def fake_engine(*, leak: bool = False) -> SimpleNamespace:
             ``reported`` and allows the value, so the privacy guard can be
             tested both ways. The council and group analyses are only offered
             here, so a search still finds two analyses otherwise.
+
+    ``runs`` on the stand-in lists each answer counted through ``record_run``.
     """
     analyses = {REACH["id"]: REACH, VOLUNTEERS["id"]: VOLUNTEERS}
     if leak:
@@ -384,11 +386,23 @@ def fake_engine(*, leak: bool = False) -> SimpleNamespace:
                 return {**payload, "tables": [detailed]}
             return payload
 
-        return SimpleNamespace(to_dict=to_dict, map=None)
+        return SimpleNamespace(
+            to_dict=to_dict,
+            map=None,
+            analysis_id=analysis_id,
+            input_mode=payload["input_mode"],
+        )
+
+    runs: list[tuple[str, str, str]] = []
+
+    def record_run(analysis_id: str, input_mode: str, door: str) -> None:
+        runs.append((analysis_id, input_mode, door))
 
     return SimpleNamespace(
         list_analyses=list_analyses,
         describe_analysis=describe_analysis,
         run_analysis=run_analysis,
+        record_run=record_run,
+        runs=runs,
         AnalysisInputError=AnalysisInputError,
     )

@@ -5,6 +5,8 @@ import logging
 import sys
 from collections.abc import Sequence
 
+# The engine's logger for answers given, which a host counts from its own logs.
+RUNS_LOGGER = "uk_open_data.runs"
 STDIO = "stdio"
 STREAMABLE_HTTP = "streamable-http"
 
@@ -18,6 +20,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     args = _parser().parse_args(argv)
     # stdout carries the protocol over stdio, so logs must go to stderr.
     logging.basicConfig(level=args.log_level, stream=sys.stderr)
+    # One line for each answer given, whatever the level chosen for the rest.
+    logging.getLogger(RUNS_LOGGER).setLevel(logging.INFO)
     from uk_open_data.connector import build_server
 
     server = build_server()

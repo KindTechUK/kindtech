@@ -69,6 +69,8 @@ RUN_AS_IT_IS = (
     "Run as it is. Call again with the same rows and hidden_counts set to "
     "'accept'. The answer comes back with those counts hidden."
 )
+# The door a run is counted under, one of the engine's fixed list.
+CHAT = "chat"
 OPEN_WITH_ANSWER = (
     "Open your reply with the sentence in result.answer, in its exact words. "
     "It is the analysis's own answer to the question, and the Kindtech "
@@ -247,6 +249,22 @@ def run_and_keep_result(
     if left_out:
         answer["rows_left_out"] = left_out
     return answer, result, guarded
+
+
+def record_chat_run(result: engine.AnalysisResult) -> None:
+    """Count one answer given in a chat, by its analysis and input mode only.
+
+    Call it once for an answer that has passed the privacy guard and is about
+    to go to the person. A run that was held back, refused or withheld is not
+    an answer and is not counted. The record is one line on the
+    ``uk_open_data.runs`` logger, written by the engine, and nothing is sent
+    anywhere.
+    """
+    try:
+        engine.record_run(result.analysis_id, result.input_mode, CHAT)
+    except (KeyError, ValueError):
+        # Counting must never cost the person their answer.
+        logger.warning("An answer given in a chat could not be counted.")
 
 
 def _hidden_in_answer(payload: dict[str, Any]) -> int:
