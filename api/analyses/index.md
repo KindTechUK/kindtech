@@ -177,8 +177,17 @@ not already show. When the figure it rests on is hidden, it says so instead of
 giving a number. The places and groups it names are the public names in the
 result's tables, never text from your data.
 
+The sentence is careful about what it calls a gap. A place is named as one to
+look at first only when it falls below the rate for the whole area, so a list
+of one or two places does not present the place you reach most as a gap, and a
+place whose count is hidden is not named. A count of every resident is called
+"residents", not "people in need". A group with nobody in your data is named
+last, with a line saying so, because it may be a group you do not record.
+
 `result.key_figures` holds the ids of up to three figures to show first, in
-order. Each is a figure of the result:
+order. Each is a figure of the result, and none is hidden: when a figure that
+would be shown first is hidden to protect a small count, the next one takes
+its place.
 
 ```python
 for figure_id in result.key_figures:
