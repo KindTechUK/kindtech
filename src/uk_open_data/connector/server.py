@@ -142,9 +142,8 @@ def handle_describe_place(
         str,
         Field(
             description="A local authority name ('Lewisham') or code "
-            "('E09000023'), a 2021 LSOA code ('E01003189'), a postcode district "
-            "('SE13'), or the postcode of a venue or office. Never the postcode "
-            "of a client or other individual."
+            "('E09000023'), a 2021 LSOA code ('E01003189') or a postcode "
+            "district ('SE13'). Never a full postcode: give its first half."
         ),
     ],
 ) -> dict[str, Any]:
@@ -154,9 +153,10 @@ def handle_describe_place(
     Deprivation 2025), resident numbers and which types of deprivation stand
     out, with sources and caveats. Use it for context about where a charity
     works. It covers England only and returns totals about areas, never
-    anything about a person. A postcode passed in is not repeated in the
-    answer. If several places match, the answer lists them so the person can
-    choose.
+    anything about a person. A full postcode is not accepted, a venue's
+    included, because nothing tells it from a person's home: pass the first
+    half, such as 'SE13', or the place name. If several places match, the
+    answer lists them so the person can choose.
     """
     return describe_place(place)
 

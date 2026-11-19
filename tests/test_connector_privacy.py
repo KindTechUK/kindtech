@@ -23,7 +23,6 @@ from uk_open_data.connector import (  # noqa: E402
     PrivacyError,
     build_server,
     ensure_totals_only,
-    places,
 )
 from uk_open_data.connector.privacy import find_row_values  # noqa: E402
 
@@ -166,14 +165,11 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
 
 
 @pytest.fixture(autouse=True)
-def _stand_ins(england: None, monkeypatch: pytest.MonkeyPatch) -> None:
+def _stand_ins(england: None) -> None:
     """Every case runs the real lenses against the small England."""
     keep_need_figures("unemployed", fakes.NEED, "invented for a test.")
     keep_need_figures("residents", fakes.NEED, "invented for a test.")
     keep_residents("ethnic_group", fakes.RESIDENTS, "invented for a test.")
-    monkeypatch.setattr(
-        places, "lookup_postcodes", lambda postcode: fakes.postcode_frame(AREA)
-    )
 
 
 def _call(tool: str, arguments: dict[str, Any]) -> str:
@@ -215,7 +211,8 @@ def test_no_row_value_reaches_a_tool_result(
 
 def test_good_calls_still_answer() -> None:
     """Guard against the test above passing because every call failed."""
-    place = json.loads(_call("describe_place", {"place": POSTCODE}))
+    place = json.loads(_call("describe_place", {"place": COUNCIL}))
+    refused = json.loads(_call("describe_place", {"place": POSTCODE}))
     run = json.loads(
         _call(
             "run_lens_on_counts",
@@ -266,6 +263,9 @@ def test_good_calls_still_answer() -> None:
 
     assert place["isError"] is False
     assert place["structuredContent"]["status"] == "found"
+    # A full postcode is turned away with a plain answer, not an error.
+    assert refused["isError"] is False
+    assert refused["structuredContent"]["status"] == "not_accepted"
     assert run["isError"] is False
     assert run["structuredContent"]["status"] == "ok"
     assert second["isError"] is False

@@ -1,11 +1,12 @@
 """Describe a place in England from open data, as totals only.
 
 A place is a local authority (by name or code), a neighbourhood (a 2021 LSOA
-code), a postcode district such as ``SE13``, or the postcode of a venue or
-office. The answer comes from the English Indices of Deprivation 2025 and never
-repeats a postcode that was passed in. A postcode is looked up in the postcode
-table on this machine when one is installed, and through postcodes.io when not;
-the answer says which.
+code) or a postcode district such as ``SE13``. A full postcode is not accepted,
+because nothing tells a venue's postcode from a person's home; it is not looked
+up and the answer asks for the district or the place name. The answer comes
+from the English Indices of Deprivation 2025. A postcode district is looked up
+in the postcode table on this machine when one is installed, and through
+postcodes.io when not; the answer says which.
 
     >>> from uk_open_data.connector import describe_place
     >>> answer = describe_place("Lewisham")
@@ -29,10 +30,8 @@ from uk_open_data.postcodes import (
     PostcodeTableError,
     district_to_local_authorities,
     lookup_outcodes,
-    lookup_postcodes,
     postcode_table_info,
     postcode_table_path,
-    postcode_to_lsoa,
 )
 
 logger = logging.getLogger(__name__)
@@ -90,6 +89,12 @@ IN_WALES = (
     "the deprivation index it reads is England's. The lenses that cover England "
     "and Wales still work for it."
 )
+FULL_POSTCODE = (
+    "A full postcode is not accepted here, because this tool cannot tell a "
+    "venue's postcode from a person's home. It was not looked up or sent "
+    "anywhere. Give the first half of the postcode, such as SE13, or the name "
+    "of the council area."
+)
 
 NO_DOMAINS = (
     "The copy of the deprivation index kept on this machine does not hold the "
@@ -123,25 +128,27 @@ def describe_place(place: str) -> dict[str, Any]:
 
     Args:
         place: A local authority name (``"Lewisham"``) or code
-            (``"E09000023"``), a 2021 LSOA code (``"E01003189"``), a postcode
-            district (``"SE13"``), or the postcode of a venue or office. Do not
-            pass the postcode of a client or any other individual.
+            (``"E09000023"``), a 2021 LSOA code (``"E01003189"``) or a
+            postcode district (``"SE13"``). Not a full postcode.
 
     Returns:
         A dict of plain JSON types. ``status`` is one of ``found``, ``choose``
         (several places match; ``matches`` lists them), ``not_found``,
-        ``not_covered`` (outside England) or ``unavailable`` (a data source
-        could not be reached). When found it carries ``place``, ``figures``,
-        ``tables``, ``caveats``, ``warnings``, ``sources`` and ``privacy``, in
-        the same shapes a lens result uses. A postcode passed in is never
-        repeated in the answer.
+        ``not_covered`` (outside England), ``not_accepted`` (a full postcode,
+        which is never looked up or repeated) or ``unavailable`` (a data
+        source could not be reached). When found it carries ``place``,
+        ``figures``, ``tables``, ``caveats``, ``warnings``, ``sources`` and
+        ``privacy``, in the same shapes a lens result uses.
     """
     text = " ".join(str(place).split()).upper()
     if not text:
-        return _status("not_found", "Give a place name, a postcode or an area code.")
-    row_values = [text] if looks_like_postcode(text) else []
+        return _status(
+            "not_found", "Give a place name, a postcode district or an area code."
+        )
+    if looks_like_postcode(text):
+        return _status("not_accepted", FULL_POSTCODE)
     try:
-        return ensure_totals_only(_describe(text), row_values)
+        return ensure_totals_only(_describe(text))
     except _IndexCopyError:
         logger.warning("The kept copy of the deprivation index could not be read.")
         return _status(
@@ -175,25 +182,12 @@ def _describe(text: str) -> dict[str, Any]:
         return _describe_neighbourhood(text, matched_from="neighbourhood_code")
     if _AUTHORITY_CODE.match(text):
         return _describe_authorities(_by_authority_code(text), "local_authority_code")
-    if looks_like_postcode(text):
-        return _describe_postcode(text)
     if _OUTCODE.match(text):
         return _describe_outcode(text)
     codes = _by_authority_name(text)
     if not codes and _names_welsh_authority(text):
         return _not_covered(in_wales=True)
     return _describe_authorities(codes, "name")
-
-
-def _describe_postcode(postcode: str) -> dict[str, Any]:
-    """Describe the neighbourhood a full postcode sits in, without repeating it."""
-    code = _lsoa_for_postcode(postcode)
-    if not code:
-        return _status("not_found", "That postcode was not found in England.")
-    if not code.startswith("E"):
-        return _not_covered(in_wales=code.startswith("W"))
-    answer = _describe_neighbourhood(code, matched_from="postcode")
-    return _record_lookup(answer, "One postcode")
 
 
 def _describe_outcode(outcode: str) -> dict[str, Any]:
@@ -211,15 +205,6 @@ def _describe_outcode(outcode: str) -> dict[str, Any]:
         "whole local authority it falls in."
     )
     return _record_lookup(answer, "One postcode district")
-
-
-def _lsoa_for_postcode(postcode: str) -> str | None:
-    """The neighbourhood code for a postcode, from this machine when it can be."""
-    if postcode_table_path() is not None:
-        return postcode_to_lsoa(postcode)
-    found = nw.from_native(lookup_postcodes(postcode), eager_only=True).rows(named=True)
-    code = found[0]["lsoa_code"] if found and found[0]["valid"] else None
-    return str(code) if code else None
 
 
 def _authorities_for_outcode(outcode: str) -> list[str]:
