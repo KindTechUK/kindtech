@@ -32,7 +32,7 @@ from uk_open_data.analyses._inputs import (
     tidy_postcode,
     to_count,
 )
-from uk_open_data.analyses._labels import LABELS
+from uk_open_data.analyses._labels import HEADINGS, LABELS
 from uk_open_data.analyses._privacy import band_labels, cells_to_hide, count_band
 from uk_open_data.analyses._steps import plural, where_rows
 from uk_open_data.analyses.reach_deprivation import ANALYSIS
@@ -978,3 +978,12 @@ def test_a_bad_count_says_which_row_without_repeating_it(world):
     )
     assert "forty" not in str(raised.value)
     assert raised.value.role == "count"
+
+
+def test_headings_for_grouped_columns_use_a_plain_word():
+    # "Band" is a word of ours. A column that holds "Highest fifth" or "Lower
+    # reach" is headed with what was grouped.
+    grouped = {column: text for column, text in HEADINGS.items() if "_band" in column}
+    assert grouped
+    assert all(text.endswith(", grouped") for text in grouped.values())
+    assert not [text for text in HEADINGS.values() if "band" in text.lower()]
