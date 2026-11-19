@@ -6,6 +6,7 @@ so the tests are isolated and repeatable.
 """
 
 import logging
+import re
 import threading
 import unittest.mock as mock
 import xml.etree.ElementTree as ET
@@ -646,6 +647,39 @@ def test_an_empty_answer_for_every_authority_is_not_kept(result):
 def test_credit_carries_the_year_of_the_outlines(result):
     words = " ".join(_texts(render_map(result, boundaries=_boundaries()), "ink2"))
     assert words.endswith("Crown copyright and database right 2021.")
+
+
+def test_a_place_around_is_cut_to_the_frame(result):
+    # A neighbour can be many times the size of the frame. Its fine outline
+    # would fill the picture's file with points nobody sees.
+    boundaries = _boundaries()
+    far = [[-0.2 + 0.001 * step, 51.2] for step in range(800)]
+    huge = _place("E09000011", "Greenwich", 0.0, 51.39, 0.07)
+    huge["geometry"]["coordinates"] = [[[0.0, 51.39], *far, [0.6, 51.9], [0.0, 51.39]]]
+    boundaries["surroundings"] = [
+        huge,
+        _place("E09000030", "Tower Hamlets", -0.04, 51.44, 0.02),
+    ]
+    svg = render_map(result, boundaries=boundaries)
+    big, small = _paths(svg, "land")
+    numbers = [float(n) for n in re.findall(r"-?\d+\.\d", big.get("d"))]
+    # Every point is in the frame or just outside it, and few are left.
+    assert min(numbers) >= 0 and max(numbers) <= 720
+    assert len(numbers) < 40
+    # A place inside the frame keeps its whole outline: a square.
+    assert small.get("d").count("L") == 4
+
+
+def test_cutting_a_ring_keeps_one_closed_shape():
+    square = [(0.0, 0.0), (10.0, 0.0), (10.0, 10.0), (0.0, 10.0), (0.0, 0.0)]
+    # Inside the box: unchanged.
+    assert maps._cut(square, (-1, -1, 11, 11)) == square
+    # Half in: the cut runs along the side of the box.
+    half = maps._cut(square, (5, -1, 11, 11))
+    assert half[0] == half[-1]
+    assert {x for x, _ in half} == {5.0, 10.0}
+    # Outside: nothing is left.
+    assert maps._cut(square, (20, 20, 30, 30)) == []
 
 
 def test_points_closer_than_a_dot_are_left_out():
