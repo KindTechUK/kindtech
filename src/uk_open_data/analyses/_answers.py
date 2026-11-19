@@ -35,6 +35,8 @@ class NeedWords:
     counted: str = "People in need"
     # What a title sets beside reach or provision: "Need and reach".
     topic: str = "need"
+    # What the working says of a place in the top quarter.
+    rule: str = "is high need"
 
     def headings(self) -> dict[str, str]:
         """Headings for the columns about need, in the words that fit."""
@@ -59,6 +61,7 @@ ALL_RESIDENTS = NeedWords(
     places="the local authorities with the most residents",
     counted="People",
     topic="residents",
+    rule="is among those with the most residents",
 )
 
 
@@ -134,18 +137,26 @@ def look_first(
     )
 
 
-def not_counted(supplied: int, counted: int) -> str:
+def not_counted(supplied: int, located: int, counted: int) -> str:
     """Say how many people an answer leaves out, when it is a large share.
 
-    The sentence starts with a space so it can follow another.
+    People who could not be placed at all are a mistake in the data to put
+    right. People who live outside the area are not. So when there are both,
+    the sentence says how many of each. It starts with a space so it can
+    follow another.
     """
     left_out = supplied - counted
     if left_out < LARGE_SHARE_LEFT_OUT * supplied:
         return ""
-    return (
-        f" {number(left_out)} of the {number(supplied)} people in your data "
-        f"could not be placed in {AREA} and are not counted."
-    )
+    unplaced, outside = supplied - located, located - counted
+    opening = f" {number(left_out)} of the {number(supplied)} people in your data"
+    if unplaced and outside:
+        return (
+            f"{opening} are not counted: {number(unplaced)} could not be "
+            f"placed in a local authority, and {number(outside)} live outside "
+            f"{AREA}."
+        )
+    return f"{opening} could not be placed in {AREA} and are not counted."
 
 
 def number(value: float) -> str:

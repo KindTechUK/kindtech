@@ -28,6 +28,7 @@ from uk_open_data.analyses import (
     AnalysisInfo,
     AnalysisInputError,
     AnalysisResult,
+    Figure,
     Privacy,
     Table,
     describe_analysis,
@@ -452,7 +453,7 @@ def _report_text(info: AnalysisInfo, result: AnalysisResult) -> str:
     """Lay out a result as a plain-text report."""
     lines = [info.title, info.question, "", result.answer, "", "Figures"]
     lines += [
-        f"  {figure.label}: {_figure_value(figure.value, figure.unit, figure.note)}"
+        f"  {figure.label}: {_figure_value(figure.value, _unit(figure), figure.note)}"
         for figure in result.figures
     ]
     for table in result.tables:
@@ -511,6 +512,15 @@ def _section(title: str, items: list[str]) -> list[str]:
     if not items:
         return []
     return ["", title, *(f"  - {item}" for item in items)]
+
+
+def _unit(figure: Figure) -> str:
+    """The unit to write after a figure, or none when its label says it.
+
+    "Provision for each 1,000 residents: 0.11" needs no "per 1,000" after it.
+    """
+    said_in_label = figure.unit == "per_1000" and "1,000" in figure.label
+    return "" if said_in_label else figure.unit
 
 
 def _figure_value(value: Any, unit: str, note: str) -> str:

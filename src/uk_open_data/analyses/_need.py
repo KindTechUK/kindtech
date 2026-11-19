@@ -19,7 +19,7 @@ import narwhals as nw
 
 from uk_open_data._kept import kept_file, read_kept, write_kept
 from uk_open_data.analyses._inputs import is_blank
-from uk_open_data.analyses._labels import said
+from uk_open_data.analyses._labels import LABELS, said
 from uk_open_data.analyses._model import AnalysisInputError, Source, Step
 from uk_open_data.analyses._steps import (
     COUNTRIES,
@@ -229,7 +229,7 @@ def load_need(measure: Measure, trail: Trail) -> dict[str, Authority]:
     A copy kept on this machine is used when there is one. Otherwise the
     figures are fetched from Nomis.
     """
-    source = nomis_table(measure.dataset, f"People in need: {measure.label}.")
+    source = nomis_table(measure.dataset, f"{LABELS['need']}: {measure.label}.")
     kept = _read_kept(measure.id) if measure.id in MEASURES else None
     rows, source, where = _kept_or_fetched(measure, source, kept)
     if not rows:

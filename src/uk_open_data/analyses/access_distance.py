@@ -20,7 +20,13 @@ from datetime import date
 from typing import Any
 
 import uk_open_data
-from uk_open_data.analyses._answers import AREA, column, number, values
+from uk_open_data.analyses._answers import (
+    AREA,
+    column,
+    need_words,
+    number,
+    values,
+)
 from uk_open_data.analyses._centres import centres_path as centres_path
 from uk_open_data.analyses._centres import clear_centres_cache as clear_centres_cache
 from uk_open_data.analyses._centres import (
@@ -269,7 +275,11 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
     compared = choose_compared(options.get("catchment"), authorities)
     rows = _rows(sites, authorities, centres, compared, within, trail)
     figures = _figures(supplied, len(sites), rows, measure, within)
-    tables = (_priority_table(rows, top, within, trail), _authority_table(rows))
+    headings = need_words(measure.id == RESIDENTS.id).headings()
+    tables = (
+        _priority_table(rows, top, within, headings, trail),
+        _authority_table(rows, headings),
+    )
     return AnalysisResult(
         analysis_id=ANALYSIS_ID,
         analysis_version=ANALYSIS_VERSION,
@@ -473,7 +483,13 @@ def _table_row(row: _Row) -> dict[str, Any]:
     }
 
 
-def _priority_table(rows: list[_Row], top: int, within: float, trail: Trail) -> Table:
+def _priority_table(
+    rows: list[_Row],
+    top: int,
+    within: float,
+    headings: dict[str, str],
+    trail: Trail,
+) -> Table:
     """The local authorities beyond reach, with the most people first."""
     beyond = [row for row in rows if not row.within_reach]
     ranked = sorted(
@@ -507,10 +523,11 @@ def _priority_table(rows: list[_Row], top: int, within: float, trail: Trail) -> 
             "distance_km",
         ),
         rows=[{"rank": rank, **_table_row(row)} for rank, row in enumerate(ranked, 1)],
+        headings=headings,
     )
 
 
-def _authority_table(rows: list[_Row]) -> Table:
+def _authority_table(rows: list[_Row], headings: dict[str, str]) -> Table:
     """Every local authority compared, for the map and for a closer look."""
     return Table(
         id="by_local_authority",
@@ -537,6 +554,7 @@ def _authority_table(rows: list[_Row]) -> Table:
             for row in rows
         ],
         detail=True,
+        headings=headings,
     )
 
 
@@ -600,7 +618,7 @@ def _figures(
         ),
         Figure(
             "people_in_need",
-            f"People in the area you serve: {measure.label}",
+            f"People in the area you serve ({measure.label})",
             round(people),
             "people",
         ),
@@ -684,7 +702,7 @@ def _choices(
     return (
         Choice(
             id="need",
-            label="People distance is measured for",
+            label=LABELS["need"],
             value=measure.label,
             reason=measure.reason,
             option="need",

@@ -297,15 +297,28 @@ def test_registering_the_same_analysis_twice_fails():
 
 
 def test_unknown_option_is_rejected(world):
-    with pytest.raises(AnalysisInputError, match="no option called colour"):
+    with pytest.raises(AnalysisInputError, match="no option called colour") as caught:
         world.run(options={"colour": "red"})
+    # Each option is listed by the name that is typed and the name a page shows.
+    assert "suppress_below ('Smallest count shown')" in str(caught.value)
+    assert "catchment ('Area you serve')" in str(caught.value)
 
 
 def test_missing_columns_say_what_is_needed(world):
     with pytest.raises(
         AnalysisInputError, match="'postcode' or 'lsoa_code' and 'count'"
-    ):
+    ) as caught:
         world.run(rows=[{"Name": "x"}], columns={})
+    # The error points at the first column still to be named.
+    assert caught.value.role == "postcode"
+
+
+def test_missing_columns_point_at_the_one_still_to_name(world):
+    # One column of the second way of giving data is named, so the error
+    # points at the other column of that way, not at the first way's.
+    with pytest.raises(AnalysisInputError, match="could not find") as caught:
+        world.run(rows=[{"Place": "x", "People": 3}], columns={"lsoa_code": "Place"})
+    assert caught.value.role == "count"
 
 
 # --- the first analysis --------------------------------------------------------

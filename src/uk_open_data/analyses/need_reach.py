@@ -108,6 +108,13 @@ KEY_FIGURES = (
     "reach_per_100_in_need",
     "people_in_catchment",
 )
+# With one place compared every share is 100%, so the rate and the counts
+# behind it are shown instead.
+KEY_FIGURES_FOR_ONE_PLACE = (
+    "reach_per_100_in_need",
+    "people_in_catchment",
+    "people_in_need",
+)
 LOWEST = "your lowest reach"
 # The label and the note of the map's need layer when it is shaded by rate.
 NEED_BY_RATE = (
@@ -311,9 +318,9 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         )
     located = _keep_listed(counts, authorities, threshold, trail)
     compared = _choose_area(options.get("catchment"), located, authorities, min_share)
-    rows = _rows(located, authorities, compared, residents, threshold, trail)
-    by_rate = rows[0].need_rate is not None
     words = need_words(measure.id == RESIDENTS.id)
+    rows = _rows(located, authorities, compared, residents, threshold, words, trail)
+    by_rate = rows[0].need_rate is not None
     figures = _figures(supplied, sum(located.values()), rows, words, measure, threshold)
     tables = (
         _priority_table(rows, top, threshold, words, trail),
@@ -352,7 +359,9 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         privacy=_privacy(threshold, trail),
         charts=_charts(words),
         answer=_answer(figures, tables[0], words, compared.guessed),
-        key_figures=shown_first(figures, KEY_FIGURES),
+        key_figures=shown_first(
+            figures, KEY_FIGURES_FOR_ONE_PLACE if len(rows) == 1 else KEY_FIGURES
+        ),
     )
 
 
@@ -488,6 +497,7 @@ def _rows(
     compared: Compared,
     residents: dict[str, float] | None,
     threshold: int,
+    words: NeedWords,
     trail: Trail,
 ) -> list[_Row]:
     """Build one row per local authority compared, with small counts marked."""
@@ -535,12 +545,13 @@ def _rows(
     reach_bands = _reach_bands(people, need, hide)
     trail.working.append(
         Step(
-            title="Set reach against need",
+            title=f"Set reach against {words.topic}",
             detail=(
                 "For each local authority, the people you helped were divided "
-                "by the people in need and multiplied by 100. A local "
-                "authority is high need when its count of people in need is "
-                f"in the top quarter of the area (at or above {round(cut):,})."
+                f"by the number of {words.noun} and multiplied by 100. A "
+                f"local authority {words.rule} when its count of "
+                f"{words.noun} is in the top quarter of the area (at or "
+                f"above {round(cut):,})."
             ),
             rows_in=n_inside,
             rows_out=n_inside,
@@ -654,11 +665,11 @@ def _priority_table(
     )[:top]
     trail.working.append(
         Step(
-            title="Listed the places with high need and low reach",
+            title=f"Listed the places with {words.high} and low reach",
             detail=(
-                f"The {len(high)} high-need local authorities were put in "
-                "order of reach, lowest first, and then by need, highest "
-                f"first. The first {len(ranked)} are listed. A hidden count "
+                f"The {len(high)} places with {words.high} were put in "
+                f"order of reach, lowest first, and then by {words.topic}, "
+                f"highest first. The first {len(ranked)} are listed. A hidden count "
                 f"is ranked as {threshold - 1} people, the most a hidden small "
                 "count can be."
             ),
@@ -812,7 +823,7 @@ def _figures(
         ),
         Figure(
             "people_in_need",
-            f"{words.counted} in the area you serve: {measure.label}",
+            f"{words.counted} in the area you serve ({measure.label})",
             round(sum(need)),
             "people",
         ),
@@ -880,7 +891,9 @@ def _answer(
     """
     shown = values(figures)
     overall = shown["reach_per_100_in_need"]
-    left_out = not_counted(shown["people_supplied"], shown["people_in_catchment"])
+    left_out = not_counted(
+        shown["people_supplied"], shown["people_located"], shown["people_in_catchment"]
+    )
     if shown["areas_compared"] == 1:
         return _answer_for_one_place(overall, words.per) + left_out
     places = high_need_places(shown["high_need_areas"], words.high)
@@ -947,7 +960,7 @@ def _choices(
     return (
         Choice(
             id="need",
-            label="Measure of need",
+            label=LABELS["need"],
             value=measure.label,
             reason=measure.reason,
             option="need",
@@ -1020,11 +1033,7 @@ def _checks(mode: str, measure: Measure, compared: Compared) -> tuple[Check, ...
         ),
         Check(
             id="need_fits",
-            question=(
-                f"Are these the people you work for: {measure.label}?"
-                if measure.id == RESIDENTS.id
-                else f"Is this the need you work on: {measure.label}?"
-            ),
+            question=f"Are these the people you are trying to reach: {measure.label}?",
             why=(
                 "Reach is only meaningful against the people you are trying "
                 f"to help. Change {said('need')} if another measure fits "

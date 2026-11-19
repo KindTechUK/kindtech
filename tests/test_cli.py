@@ -149,6 +149,17 @@ def test_report_tables_have_plain_headings_and_units(index, counts_file, capsys)
     assert all(line == line.rstrip() for line in lines)
 
 
+def test_a_figure_does_not_say_its_unit_twice(index, counts_file, capsys):
+    # "People reached per 1,000 residents ...: 30.0", not "30.0 per 1,000".
+    assert main(_run_args(counts_file)) == EXIT_OK
+    lines = capsys.readouterr().out.splitlines()
+    rates = [line for line in lines if line.startswith("  People reached per 1,000")]
+    assert rates
+    assert not [line for line in rates if line.endswith("per 1,000")]
+    # A figure whose label does not say its unit still has it.
+    assert any(line.endswith("%") for line in lines)
+
+
 def test_the_report_opens_with_the_answer(index, counts_file, capsys):
     assert main(_run_args(counts_file)) == EXIT_OK
     lines = capsys.readouterr().out.splitlines()

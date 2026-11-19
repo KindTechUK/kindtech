@@ -250,6 +250,17 @@ def test_answer_says_how_many_people_are_not_counted_when_they_are_many(nomis):
     assert "are not counted" not in few.answer
 
 
+def test_answer_tells_a_mistyped_place_from_one_outside_the_area(nomis):
+    # A mistyped place is the person's to put right. People who live outside
+    # the area are not a mistake. The sentence says how many of each.
+    rows = _counts(Lewisham=240, Grenwich=70, Adur=12)
+    result = _run(rows, options={"catchment": ["Lewisham"]})
+    assert result.answer.endswith(
+        " 82 of the 322 people in your data are not counted: 70 could not be "
+        "placed in a local authority, and 12 live outside the area you serve."
+    )
+
+
 def test_the_list_says_what_it_is_in_order_of_and_no_more(nomis):
     # A place on a short list can have more reach than the area, so the
     # title does not call the list "the places to look at first".
@@ -265,7 +276,7 @@ def test_labels_do_not_call_every_resident_a_need(nomis):
     )
     labels = {figure.id: figure.label for figure in result.figures}
     assert labels["people_in_need"] == (
-        "People in the area you serve: Residents of every age"
+        "People in the area you serve (Residents of every age)"
     )
     assert labels["high_need_areas"] == "Local authorities with the most residents"
     assert labels["share_of_need_in_high_need_areas"] == (
@@ -460,7 +471,7 @@ def test_need_can_be_everyone_who_lives_there(nomis):
     assert dataset == "NM_2028_1"
     assert query["c_sex"] == 0
     assert query["measures"] == 20100
-    assert result.figure("people_in_need").label.endswith("Residents of every age")
+    assert result.figure("people_in_need").label.endswith("(Residents of every age)")
     assert result.sources[0].id == "nomis-nm_2028_1"
     assert any("Not all of them need" in caveat for caveat in result.caveats)
     path = keep_need_figures("residents", INVENTED, "invented.")
@@ -532,7 +543,9 @@ def test_filters_of_a_table_can_name_another_measure(nomis):
     ],
 )
 def test_bad_need_is_rejected(nomis, need):
-    with pytest.raises(AnalysisInputError, match="Who counts as in need") as caught:
+    with pytest.raises(
+        AnalysisInputError, match="People you are trying to reach"
+    ) as caught:
         _run(_counts(Lewisham=60), options={"need": need})
     assert caught.value.option == "need"
     assert nomis.asked == []
@@ -859,6 +872,12 @@ def test_one_place_alone_is_not_called_a_gap(nomis):
     assert any(
         w.startswith("Only one local authority is compared") for w in result.warnings
     )
+    # With one place every share is 100%, so the rate and counts come first.
+    assert result.key_figures == (
+        "reach_per_100_in_need",
+        "people_in_catchment",
+        "people_in_need",
+    )
 
 
 def test_a_named_area_is_not_called_worked_out(nomis):
@@ -1072,7 +1091,29 @@ def test_map_shades_need_by_count_when_the_need_is_every_resident(nomis):
     ]
     assert not any("high need" in caveat for caveat in result.caveats)
     check = next(c for c in result.checks if c.id == "need_fits")
-    assert check.question.startswith("Are these the people you work for: ")
+    assert check.question == (
+        "Are these the people you are trying to reach: Residents of every age?"
+    )
+    assert "Change 'People you are trying to reach'" in check.why
+    # The working and the source do not call every resident a need either.
+    titles = [step.title for step in result.working]
+    assert "Set reach against residents" in titles
+    assert "Listed the places with the most residents and low reach" in titles
+    said = [step.detail for step in result.working]
+    said += [source.used_for for source in result.sources]
+    assert not [text for text in said if "in need" in text or "high need" in text]
+    assert result.sources[0].used_for == (
+        "People you are trying to reach: Residents of every age."
+    )
+
+
+def test_the_setting_for_need_has_one_name(nomis):
+    # A message says "Change 'People you are trying to reach'", so the list
+    # of choices under it uses the same name.
+    result = _run_wide(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    option = {o.name: o for o in describe_analysis(ANALYSIS_ID).options}["need"]
+    choice = next(c for c in result.choices if c.id == "need")
+    assert choice.label == option.label == "People you are trying to reach"
 
 
 def test_kept_need_figures_keep_the_map_off_the_network_too(nomis):
