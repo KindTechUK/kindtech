@@ -42,6 +42,12 @@ def _options_in(result: AnalysisResult) -> dict[str, Any]:
     # Each column the run used is there to fill in, and no name is written.
     assert given["columns"] == dict.fromkeys(mode.roles, "")
     assert set(given["options"]) <= {option.name for option in info.options}
+    # Running it gives the answer and every figure, not one sentence.
+    assert result.code.splitlines()[-3:] == [
+        "print(result.answer)",
+        "for figure in result.figures:",
+        "    print(figure.label, figure.value)",
+    ]
     return given["options"]
 
 
