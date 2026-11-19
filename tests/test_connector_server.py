@@ -67,6 +67,32 @@ def test_every_argument_is_described() -> None:
             assert schema.get("description"), f"{name}.{argument}"
 
 
+def test_the_run_tool_asks_before_hiding_counts_unless_told_to_accept() -> None:
+    hidden_counts = _tools()["run_lens_on_counts"]["inputSchema"]["properties"][
+        "hidden_counts"
+    ]
+
+    assert hidden_counts["enum"] == ["ask", "accept"]
+    assert hidden_counts["default"] == "ask"
+
+
+@pytest.mark.usefixtures("england")
+def test_a_run_that_would_hide_counts_is_held_back_through_the_server() -> None:
+    counts = [
+        {"lsoa_code": "E01000001", "count": 3},
+        {"lsoa_code": "E01000002", "count": 30},
+    ]
+    arguments = {"lens_id": "reach-deprivation", "counts": counts}
+
+    asked = _call("run_lens_on_counts", arguments)
+    accepted = _call("run_lens_on_counts", {**arguments, "hidden_counts": "accept"})
+
+    assert asked["isError"] is False
+    assert asked["structuredContent"]["status"] == "would_hide_counts"
+    assert "result" not in asked["structuredContent"]
+    assert accepted["structuredContent"]["status"] == "ok"
+
+
 @pytest.mark.usefixtures("england")
 def test_describe_place_through_the_server() -> None:
     reply = _call("describe_place", {"place": "Lewisham"})

@@ -62,6 +62,17 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
             [AREA],
         ),
         (
+            # A result that would hide counts is held back with a plain answer.
+            {
+                "lens_id": "reach-deprivation",
+                "counts": [
+                    {"lsoa_code": AREA, "count": 3},
+                    {"lsoa_code": "E01000002", "count": 30},
+                ],
+            },
+            [AREA, "E01000002"],
+        ),
+        (
             {"lens_id": "reach-deprivation", "counts": [{"postcode": POSTCODE}]},
             [POSTCODE],
         ),

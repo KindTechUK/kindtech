@@ -330,6 +330,74 @@ class TestWithTheRealLens:
         assert "reach-deprivation" in answer["known_lenses"]
 
 
+# Three people in one neighbourhood: the lens hides that count and one more.
+SMALL_COUNTS = [
+    {"lsoa_code": "E01000001", "count": 3},
+    {"lsoa_code": "E01000002", "count": 30},
+    {"lsoa_code": "E01000003", "count": 40},
+]
+
+
+@pytest.mark.usefixtures("england")
+class TestCountsThatWouldBeHidden:
+    """The connector says so before it shows a result that hides counts."""
+
+    def test_the_answer_is_held_back_and_says_what_would_be_hidden(self) -> None:
+        answer = run_lens_on_counts("reach-deprivation", SMALL_COUNTS)
+
+        assert set(answer) == {"status", "message", "would_hide", "choices"}
+        assert answer["status"] == "would_hide_counts"
+        # One headline share and two rows of the table by decile.
+        assert answer["would_hide"] == {"figures_and_rows": 3, "counts_below": 5}
+        assert "from 1 to 4" in answer["message"]
+        assert "hides a second" in answer["message"]
+
+    def test_the_person_is_offered_both_ways_on(self) -> None:
+        combine, run = run_lens_on_counts("reach-deprivation", SMALL_COUNTS)["choices"]
+
+        assert "under 5" in combine
+        assert "neighbouring area" in combine
+        assert "hidden_counts set to 'accept'" in run
+
+    def test_it_repeats_nothing_from_the_rows(self) -> None:
+        answer = json.dumps(run_lens_on_counts("reach-deprivation", SMALL_COUNTS))
+
+        for row in SMALL_COUNTS:
+            assert row["lsoa_code"] not in answer
+        assert "73" not in answer
+
+    def test_accepting_returns_the_result_with_those_counts_hidden(self) -> None:
+        answer = run_lens_on_counts(
+            "reach-deprivation", SMALL_COUNTS, hidden_counts="accept"
+        )
+
+        figures = answer["result"]["figures"]
+        assert answer["status"] == "ok"
+        assert [f["id"] for f in figures if f["suppressed"]] == [
+            "share_most_deprived_10"
+        ]
+
+    def test_combining_the_small_count_leaves_nothing_to_ask_about(self) -> None:
+        combined = [
+            {"lsoa_code": "E01000002", "count": 33},
+            {"lsoa_code": "E01000003", "count": 40},
+        ]
+
+        answer = run_lens_on_counts("reach-deprivation", combined)
+
+        assert answer["status"] == "ok"
+        assert not any(f["suppressed"] for f in answer["result"]["figures"])
+
+    def test_a_lens_that_hides_nothing_never_asks(self) -> None:
+        need_reach.keep_need_figures("residents", fakes.NEED, "invented for a test.")
+
+        answer = run_lens_on_counts(
+            "provision-gap", [{"local_authority": "Lewisham", "volume": 2}]
+        )
+
+        assert answer["status"] == "ok"
+
+
 COUNCIL_COUNTS = [
     {"local_authority": "Lewisham", "count": 120},
     {"local_authority": "E09000011", "count": 40},

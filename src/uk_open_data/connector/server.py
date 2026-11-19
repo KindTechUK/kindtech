@@ -9,7 +9,7 @@ tool is read-only and returns totals, never rows.
 
 import logging
 import traceback
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError, UnexpectedToolError
@@ -39,8 +39,11 @@ into the chat. Ask for counts that are already totalled by area or by group.
 - Show the checks and caveats that come back next to the figures. The checks \
 are questions for the person. Do not answer them on the person's behalf.
 - Say where each figure comes from, using the sources in the result.
-- A suppressed figure is hidden because it is a small count. Do not try to \
+- A suppressed figure is hidden to protect a small count. Do not try to \
 work it out from other figures.
+- When a run would hide counts, the tool says so before it shows anything. \
+Pass that on and let the person choose: combine the small counts, or run \
+with them hidden.
 """
 
 READ_ONLY_LOCAL = ToolAnnotations(
@@ -186,19 +189,30 @@ def handle_run_lens_on_counts(
             "'catchment' (the area the charity serves), ask the person for it."
         ),
     ] = None,
+    hidden_counts: Annotated[
+        Literal["ask", "accept"],
+        Field(
+            description="Leave out on the first call. If the answer would hide "
+            "counts, the status is 'would_hide_counts' and nothing is shown: "
+            "tell the person, and pass 'accept' only after they have chosen "
+            "to run with those counts hidden."
+        ),
+    ] = "ask",
 ) -> dict[str, Any]:
     """Run a lens on counts that are already totalled by area or by group.
 
     Returns headline figures, summary tables, the working, the choices the
-    lens made, checks for the person to confirm, caveats and sources. Small
-    counts are hidden. Show the checks and caveats with the figures and do not
-    answer the checks for the person. Rows about individuals are refused. A
-    table named under 'rows_left_out' is not empty: its rows are for a map or
-    a download and are left out of the answer. If
-    the status is 'unavailable', a data source could not be reached: say so
-    and try again later.
+    lens made, checks for the person to confirm, caveats and sources. Show the
+    checks and caveats with the figures and do not answer the checks for the
+    person. Rows about individuals are refused. Small counts are hidden, and
+    a second count with them. If the status is 'would_hide_counts', nothing
+    has been shown: tell the person what would be hidden and offer the
+    choices in the answer before calling again. A table named under
+    'rows_left_out' is not empty: its rows are for a map or a download and
+    are left out of the answer. If the status is 'unavailable', a data source
+    could not be reached: say so and try again later.
     """
-    return run_lens_on_counts(lens_id, counts, options)
+    return run_lens_on_counts(lens_id, counts, options, hidden_counts)
 
 
 def _log_crash(tool: str, cause: BaseException | None) -> None:
