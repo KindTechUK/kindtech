@@ -7,6 +7,8 @@ tool is read-only and returns totals, never rows.
     >>> build_server().run()  # stdio
 """
 
+import logging
+import traceback
 from typing import Annotated, Any
 
 from mcp.server.mcpserver import MCPServer
@@ -17,6 +19,9 @@ from pydantic import Field, ValidationError
 import kindtech
 from kindtech.connector.lenses import find_lens, run_lens_on_counts
 from kindtech.connector.places import describe_place
+from kindtech.connector.privacy import PrivacyError
+
+logger = logging.getLogger(__name__)
 
 SERVER_NAME = "kindtech"
 SERVER_TITLE = "Kindtech open data for charities"
@@ -53,11 +58,16 @@ READ_ONLY_OPEN_DATA = ToolAnnotations(
 
 
 class TotalsOnlyServer(MCPServer):
-    """An ``MCPServer`` whose argument errors never repeat the arguments.
+    """An ``MCPServer`` whose errors and log never repeat the arguments.
 
     The stock error for arguments that do not fit a tool's schema quotes the
     rejected values. Those values may be rows about people, so here the error
     names the argument and what was wrong with it, and nothing else.
+
+    When a tool crashes, the stock server writes the error's own text to the
+    log. That text can quote a value from the rows or a web address, so here
+    the log says which tool stopped, with what kind of error and where, and
+    leaves the text out.
     """
 
     async def call_tool(
@@ -66,12 +76,16 @@ class TotalsOnlyServer(MCPServer):
         """Call a tool, rewording any argument error to leave the values out."""
         try:
             return await super().call_tool(name, arguments, context)
-        except UnexpectedToolError:
-            raise
+        except UnexpectedToolError as error:
+            _log_crash(name, error.__cause__)
+            failed = str(error)
         except ToolError as error:
             if isinstance(error.__cause__, ValidationError):
                 raise ToolError(_argument_problems(name, error.__cause__)) from None
             raise
+        # Raised outside the handler above, so the new error has no link at all
+        # to the crash, and nothing that logs it can reach the crash's text.
+        raise UnexpectedToolError(failed)
 
 
 def build_server() -> MCPServer:
@@ -181,6 +195,19 @@ def handle_run_lens_on_counts(
     and try again later.
     """
     return run_lens_on_counts(lens_id, counts, options)
+
+
+def _log_crash(tool: str, cause: BaseException | None) -> None:
+    """Log which tool crashed, the kind of error and where, never its text.
+
+    The privacy guard's own message is written to be safe to show, so it is
+    kept: it says where in a result a value was found and not what it was.
+    """
+    said = f": {cause}" if isinstance(cause, PrivacyError) else ""
+    where = "".join(traceback.format_tb(cause.__traceback__)) if cause else ""
+    logger.error(
+        "Tool %s stopped with %s%s\n%s", tool, type(cause).__name__, said, where
+    )
 
 
 def _argument_problems(tool: str, error: ValidationError) -> str:

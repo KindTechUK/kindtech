@@ -10,7 +10,7 @@ pytest.importorskip("mcp")
 
 from mcp import Client  # noqa: E402
 
-from kindtech.connector import build_server, command  # noqa: E402
+from kindtech.connector import PrivacyError, build_server, command  # noqa: E402
 
 TOOLS = {"find_lens", "describe_place", "run_lens_on_counts"}
 
@@ -97,6 +97,84 @@ def test_missing_argument_is_named() -> None:
     assert reply["content"][0]["text"] == (
         "The arguments for run_lens_on_counts did not fit: lens_id: missing."
     )
+
+
+# An error text of the kind a lens or a download can raise: it quotes a web
+# address and a value from the rows.
+CRASH_TEXT = "could not read https://example.invalid/?geography=ZZ999KC for 'Zebedee'"
+
+
+@pytest.mark.parametrize(
+    ("tool", "arguments", "target"),
+    [
+        (
+            "run_lens_on_counts",
+            {"lens_id": "reach-deprivation", "counts": [{"lsoa_code": "E01000001"}]},
+            "kindtech.connector.server.run_lens_on_counts",
+        ),
+        (
+            "describe_place",
+            {"place": "Lewisham"},
+            "kindtech.connector.server.describe_place",
+        ),
+    ],
+)
+def test_a_crash_keeps_its_text_from_the_assistant_and_the_log(
+    tool: str,
+    arguments: dict[str, Any],
+    target: str,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    def crash(*args: object, **kwargs: object) -> None:
+        raise RuntimeError(CRASH_TEXT)
+
+    monkeypatch.setattr(target, crash)
+    caplog.set_level("DEBUG")
+
+    reply = _call(tool, arguments)
+
+    assert reply["isError"] is True
+    assert reply["content"][0]["text"] == f"Error executing tool {tool}"
+    seen = json.dumps(reply) + caplog.text
+    assert "ZZ999KC" not in seen
+    assert "Zebedee" not in seen
+    # The log still says which tool stopped, with what, and where.
+    assert f"Tool {tool} stopped with RuntimeError" in caplog.text
+    assert "in crash" in caplog.text
+
+
+def test_a_crash_is_not_linked_to_the_error_that_is_logged(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A log formatter that follows an error's links must not reach the crash."""
+
+    def crash(*args: object, **kwargs: object) -> None:
+        raise RuntimeError(CRASH_TEXT)
+
+    monkeypatch.setattr("kindtech.connector.server.describe_place", crash)
+
+    _call("describe_place", {"place": "Lewisham"})
+
+    logged = [record.exc_info[1] for record in caplog.records if record.exc_info]
+    assert logged
+    for error in logged:
+        assert error.__cause__ is None
+        assert error.__context__ is None
+
+
+def test_the_guards_own_message_is_kept_in_the_log(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    def withheld(*args: object, **kwargs: object) -> None:
+        raise PrivacyError("A value from the input rows appeared at: warnings[0].")
+
+    monkeypatch.setattr("kindtech.connector.server.run_lens_on_counts", withheld)
+
+    reply = _call("run_lens_on_counts", {"lens_id": "x", "counts": [{"a": 1}]})
+
+    assert reply["content"][0]["text"] == "Error executing tool run_lens_on_counts"
+    assert "stopped with PrivacyError: A value from the input rows" in caplog.text
 
 
 def test_command_defaults_to_stdio(monkeypatch: pytest.MonkeyPatch) -> None:
