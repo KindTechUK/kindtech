@@ -2,7 +2,7 @@
 
 import sys
 
-from kindtech.ons import list_tables
+from uk_open_data.ons import list_tables
 
 
 def main() -> None:

@@ -2,7 +2,7 @@
 
 The deprivation rows are invented and tiny, but have the columns
 ``load_imd(nation="England")`` returns. The fake engine stands in for
-``kindtech.lenses`` where a test needs a lens the real engine does not have: one
+``uk_open_data.lenses`` where a test needs a lens the real engine does not have: one
 with no counts mode, or one that breaks the contract.
 """
 
@@ -11,7 +11,7 @@ from typing import Any
 
 import pandas as pd
 
-from kindtech.connector.places import DOMAINS
+from uk_open_data.connector.places import DOMAINS
 
 # (LSOA code, LSOA name, LAD code, LAD name, rank, decile, residents)
 _AREAS = [
@@ -285,7 +285,7 @@ GROUPS = {
 
 
 def fake_engine(*, leak: bool = False) -> SimpleNamespace:
-    """A stand-in for ``kindtech.lenses``.
+    """A stand-in for ``uk_open_data.lenses``.
 
     Args:
         leak: When true, results repeat the first row's area or group in a

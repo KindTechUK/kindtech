@@ -1,7 +1,7 @@
 """Tests for the connector's "find a lens" and "run a lens on counts".
 
 A fake lens engine that follows the lens contract stands in for
-``kindtech.lenses``, and then the real lenses run on small invented figures.
+``uk_open_data.lenses``, and then the real lenses run on small invented figures.
 """
 
 import json
@@ -11,8 +11,8 @@ import connector_fakes as fakes
 import pytest
 import requests
 
-from kindtech.connector import PrivacyError, find_lens, run_lens_on_counts
-from kindtech.lenses import _need, need_reach, who_we_miss
+from uk_open_data.connector import PrivacyError, find_lens, run_lens_on_counts
+from uk_open_data.lenses import _need, need_reach, who_we_miss
 
 COUNTS = [
     {"lsoa_code": "E01000001", "count": 12},
@@ -171,7 +171,8 @@ class TestCountsGivenAsText:
             id="reach-deprivation", to_dict=lambda: {**fakes.REACH, "roles": roles}
         )
         monkeypatch.setattr(
-            "kindtech.connector.lenses.engine.describe_lens", lambda lens_id: unmarked
+            "uk_open_data.connector.lenses.engine.describe_lens",
+            lambda lens_id: unmarked,
         )
         rows = [{"lsoa_code": "E01000001", "count": "1200"}]
 
@@ -258,7 +259,7 @@ def test_a_problem_that_repeats_an_input_value_is_withheld(
     def run_lens(lens_id: str, data: list[dict], **_: object) -> None:
         raise fakes.LensInputError([f"{data[0]['lsoa_code']} is not a known area."])
 
-    monkeypatch.setattr("kindtech.connector.lenses.engine.run_lens", run_lens)
+    monkeypatch.setattr("uk_open_data.connector.lenses.engine.run_lens", run_lens)
 
     with pytest.raises(PrivacyError) as raised:
         run_lens_on_counts("reach-deprivation", COUNTS)
@@ -268,7 +269,7 @@ def test_a_problem_that_repeats_an_input_value_is_withheld(
 
 @pytest.mark.usefixtures("england")
 class TestWithTheRealLens:
-    """The connector against ``kindtech.lenses`` and its first lens."""
+    """The connector against ``uk_open_data.lenses`` and its first lens."""
 
     def test_finds_the_first_lens(self) -> None:
         answer = find_lens("are we reaching deprived neighbourhoods")

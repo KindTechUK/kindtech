@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "marimo",
-#     "kindtech",
+#     "uk-open-data",
 #     "pandas>=2.0.0",
 #     "numpy>=1.24.0",
 #     "altair",
@@ -28,7 +28,7 @@ def _(mo):
     # Material Focus: Travel Time to the Nearest Recycling Point
 
     A reproduction of the [Material Focus case
-    study](../docs/case-studies/material-focus-recycling.md) using **kindtech**.
+    study](../docs/case-studies/material-focus-recycling.md) using **uk-open-data**.
 
     Material Focus wanted to show **how far people have to travel to recycle
     small electricals** across England, and whether **proximity to a collection
@@ -37,8 +37,8 @@ def _(mo):
 
     This notebook combines:
 
-    - **LAD boundaries with centroids** from the ONS Geoportal (`kindtech.geo`)
-    - **LAD population** (`kindtech.ons`, mid-year estimates) — so the headline
+    - **LAD boundaries with centroids** from the ONS Geoportal (`uk_open_data.geo`)
+    - **LAD population** (`uk_open_data.ons`, mid-year estimates) — so the headline
       is *people-weighted*, not area-weighted
     - **Synthetic recycling-point locations** — the real collection-point list
       isn't public, so we scatter points where people live (supermarket
@@ -59,7 +59,7 @@ def _():
     import numpy as np
     import pandas as pd
 
-    from kindtech import geodata_to_properties, load_geodata, load_ons
+    from uk_open_data import geodata_to_properties, load_geodata, load_ons
 
     return alt, geodata_to_properties, load_geodata, load_ons, np, pd
 

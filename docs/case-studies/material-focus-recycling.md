@@ -70,7 +70,7 @@ map from two KindTech connectors, joining on `geography_code`:
 data), or locally with `uv run marimo edit examples/material_focus_recycling.py`.
 
 ```python
-from kindtech import load_geodata, geodata_to_properties, load_ons
+from uk_open_data import load_geodata, geodata_to_properties, load_ons
 import pandas as pd
 
 # LAD boundaries carry LAT/LONG centroids
@@ -94,7 +94,7 @@ one.
     statistic well, but it is not a true drive-time. A faithful road travel-time
     map needs a **routing engine** (e.g. [OSRM](https://project-osrm.org/) or
     [OpenRouteService](https://openrouteservice.org/)); KindTech does not wrap
-    one yet. If more case studies need real travel time, a small `kindtech`
+    one yet. If more case studies need real travel time, a small `uk_open_data`
     routing connector would be worth adding.
 
 **Travel-time map** — minutes to the nearest recycling point per LAD:

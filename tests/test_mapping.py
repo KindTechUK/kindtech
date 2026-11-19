@@ -6,7 +6,7 @@ import unittest.mock as mock
 
 import pytest
 
-from kindtech._mapping import (
+from uk_open_data._mapping import (
     geo_code_field,
     geo_name_field,
     list_dataset_aliases,
@@ -153,7 +153,7 @@ class TestListDatasetAliases:
 class TestLoadOnsGeographyType:
     """Tests for load_ons() with geography_type parameter."""
 
-    @mock.patch("kindtech.ons.api.requests.get")
+    @mock.patch("uk_open_data.ons.api.requests.get")
     def test_geography_type_resolves(self, mock_get):
         """geography_type='LAD' should resolve to TYPE424."""
         mock_response = mock.MagicMock()
@@ -161,14 +161,14 @@ class TestLoadOnsGeographyType:
         mock_response.raise_for_status = mock.MagicMock()
         mock_get.return_value = mock_response
 
-        from kindtech.ons import load_ons
+        from uk_open_data.ons import load_ons
 
         load_ons("NM_1_1", geography_type="LAD", time="latest")
 
         call_url = mock_get.call_args[0][0]
         assert "geography=TYPE424" in call_url
 
-    @mock.patch("kindtech.ons.api.requests.get")
+    @mock.patch("uk_open_data.ons.api.requests.get")
     def test_geography_type_with_year(self, mock_get):
         """geography_type='LAD' with time='2020' should use TYPE434."""
         mock_response = mock.MagicMock()
@@ -176,14 +176,14 @@ class TestLoadOnsGeographyType:
         mock_response.raise_for_status = mock.MagicMock()
         mock_get.return_value = mock_response
 
-        from kindtech.ons import load_ons
+        from uk_open_data.ons import load_ons
 
         load_ons("NM_1_1", geography_type="LAD", time="2020")
 
         call_url = mock_get.call_args[0][0]
         assert "geography=TYPE434" in call_url
 
-    @mock.patch("kindtech.ons.api.requests.get")
+    @mock.patch("uk_open_data.ons.api.requests.get")
     def test_dataset_alias_resolves(self, mock_get):
         """load_ons('population') should resolve to NM_2002_1."""
         mock_response = mock.MagicMock()
@@ -191,7 +191,7 @@ class TestLoadOnsGeographyType:
         mock_response.raise_for_status = mock.MagicMock()
         mock_get.return_value = mock_response
 
-        from kindtech.ons import load_ons
+        from uk_open_data.ons import load_ons
 
         load_ons("population", geography_type="LAD")
 
@@ -200,7 +200,7 @@ class TestLoadOnsGeographyType:
 
     def test_both_geography_params_raises(self):
         """Cannot use geography_type and geography together."""
-        from kindtech.ons import load_ons
+        from uk_open_data.ons import load_ons
 
         with pytest.raises(ValueError, match="Cannot specify both"):
             load_ons(

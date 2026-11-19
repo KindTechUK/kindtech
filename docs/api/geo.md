@@ -1,6 +1,6 @@
 # Geographic Data
 
-The `kindtech.geo` module provides access to UK geographic boundary data from the [ONS ArcGIS Geoportal](https://geoportal.statistics.gov.uk/).
+The `uk_open_data.geo` module provides access to UK geographic boundary data from the [ONS ArcGIS Geoportal](https://geoportal.statistics.gov.uk/).
 
 ## Functions
 
@@ -9,7 +9,7 @@ The `kindtech.geo` module provides access to UK geographic boundary data from th
 Load geographic boundary data as GeoJSON.
 
 ```python
-from kindtech.geo import load_geodata, GeographyType, CoverageArea, BoundaryType
+from uk_open_data.geo import load_geodata, GeographyType, CoverageArea, BoundaryType
 
 # Using strings
 data = load_geodata(geography_type="LAD", coverage="UK", boundary_type="BGC")
@@ -63,7 +63,7 @@ The ONS boundary service gives a few thousand features in one answer. A larger l
 Get available fields for filtering a dataset.
 
 ```python
-from kindtech.geo import get_field_info
+from uk_open_data.geo import get_field_info
 
 fields = get_field_info(geography_type="LAD")
 # [{"name": "LAD21CD", "type": "esriFieldTypeString", "alias": "LAD Code"}, ...]
@@ -89,7 +89,7 @@ fields = get_field_info(geography_type="LAD")
 List all supported geography types.
 
 ```python
-from kindtech.geo import get_available_geography_types
+from uk_open_data.geo import get_available_geography_types
 
 types = get_available_geography_types()
 # [{"code": "LAD", "description": "Local Authority Districts"}, ...]
@@ -125,7 +125,7 @@ All enums accept both string codes and enum values. They have `.code` and `.desc
 Extract feature properties from GeoJSON with normalised column names for easy joins with ONS data.
 
 ```python
-from kindtech import load_geodata, geodata_to_properties
+from uk_open_data import load_geodata, geodata_to_properties
 import pandas as pd
 
 geojson = load_geodata(geography_type="LAD", year="2024")
@@ -154,7 +154,7 @@ geo_df = pd.DataFrame(rows)
 The normalised `geography_code` column matches the column produced by `load_ons(normalize=True)`, enabling trivial joins:
 
 ```python
-from kindtech import load_geodata, load_ons, geodata_to_properties
+from uk_open_data import load_geodata, load_ons, geodata_to_properties
 import pandas as pd
 
 geojson = load_geodata(geography_type="LAD", year="2024")

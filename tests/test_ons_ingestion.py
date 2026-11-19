@@ -1,8 +1,8 @@
-"""Tests for kindtech.ons._ingestion helpers."""
+"""Tests for uk_open_data.ons._ingestion helpers."""
 
 import pytest
 
-from kindtech.ons._ingestion import (
+from uk_open_data.ons._ingestion import (
     _extract_source,
     _fetch_all,
     ingest_nomis_tables,
@@ -91,7 +91,7 @@ def test_fetch_all_raises_on_bad_structure(monkeypatch) -> None:
             return {"unexpected": "shape"}
 
     monkeypatch.setattr(
-        "kindtech.ons._ingestion.requests.get",
+        "uk_open_data.ons._ingestion.requests.get",
         lambda *a, **kw: FakeResponse(),
     )
     with pytest.raises(RuntimeError, match="Unexpected NOMIS API response"):
@@ -104,7 +104,7 @@ def test_fetch_all_raises_on_bad_structure(monkeypatch) -> None:
 def test_ingest_raises_on_empty_result(monkeypatch) -> None:
     """ingest_nomis_tables raises when _fetch_all returns nothing."""
     monkeypatch.setattr(
-        "kindtech.ons._ingestion._fetch_all",
+        "uk_open_data.ons._ingestion._fetch_all",
         lambda base_url: [],
     )
     with pytest.raises(RuntimeError, match="No datasets returned"):

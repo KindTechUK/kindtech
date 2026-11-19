@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "marimo",
-#     "kindtech",
+#     "uk-open-data",
 #     "pandas>=2.0.0",
 #     "numpy>=1.24.0",
 #     "altair",
@@ -29,7 +29,7 @@ def _(mo):
 
     A reproduction of the [Starlight case
     study](../docs/case-studies/starlight-children-mapping.md) using
-    **kindtech**.
+    **uk-open-data**.
 
     Starlight Children's Foundation supplies play resources to hospitals. They
     wanted to know whether their provision is **directed to where need is
@@ -38,7 +38,7 @@ def _(mo):
 
     This notebook combines:
 
-    - **ICB boundaries** from the ONS Geoportal (`kindtech.geo`) — England's 42
+    - **ICB boundaries** from the ONS Geoportal (`uk_open_data.geo`) — England's 42
       Integrated Care Boards, the NHS commissioning geography that replaced CCGs
     - **Synthetic admissions & provision** — the original relied on freedom-of-
       information returns from 140 trusts; we generate a realistic stand-in
@@ -57,7 +57,7 @@ def _():
     import numpy as np
     import pandas as pd
 
-    from kindtech import geodata_to_properties, load_geodata
+    from uk_open_data import geodata_to_properties, load_geodata
 
     return alt, geodata_to_properties, load_geodata, np, pd
 

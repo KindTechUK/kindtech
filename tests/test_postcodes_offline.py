@@ -14,9 +14,9 @@ import pandas as pd
 import pytest
 import requests
 
-from kindtech.cli import EXIT_INPUT_ERROR, EXIT_OK, main
-from kindtech.lenses import LensInputError, run_lens
-from kindtech.postcodes import (
+from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
+from uk_open_data.lenses import LensInputError, run_lens
+from uk_open_data.postcodes import (
     PostcodeTableError,
     build_postcode_table,
     district_to_local_authorities,
@@ -253,8 +253,10 @@ ROWS = [{"postcode": "SE13 7VC"}] * 6 + [{"postcode": "se136cm"}] * 5
 def _run(options=None):
     """Run the lens with the index replaced and the online lookup watched."""
     with (
-        mock.patch("kindtech.lenses.reach_deprivation.load_imd", return_value=_index()),
-        mock.patch("kindtech.lenses._steps.postcodes_to_geography") as online,
+        mock.patch(
+            "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
+        ),
+        mock.patch("uk_open_data.lenses._steps.postcodes_to_geography") as online,
     ):
         online.return_value = pd.DataFrame(
             {"geography_code": ["E01000002", "E01000001"]}
@@ -314,7 +316,7 @@ def test_lens_rejects_an_unknown_lookup():
 def test_not_found_warning_names_the_table_coverage(installed):
     rows = [*ROWS, {"postcode": "EH1 1VC"}]
     with mock.patch(
-        "kindtech.lenses.reach_deprivation.load_imd", return_value=_index()
+        "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
     ):
         result = run_lens("reach-deprivation", rows)
     assert any("outside England and Wales" in w for w in result.warnings)

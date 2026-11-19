@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "marimo",
-#     "kindtech",
+#     "uk-open-data",
 #     "pandas>=2.0.0",
 #     "altair",
 # ]
@@ -28,7 +28,7 @@ def _(mo):
 
     This notebook demonstrates combining geographic boundary
     data with ONS statistics — the core use case for
-    **kindtech**.
+    **uk-open-data**.
 
     We'll load Local Authority District (LAD) boundaries and
     join them with a NOMIS dataset to see statistics by area.
@@ -36,7 +36,7 @@ def _(mo):
     Both sources are normalised automatically so they share a
     `geography_code` column — no manual column matching needed.
 
-    > **Note:** This example uses **pandas**. kindtech also supports
+    > **Note:** This example uses **pandas**. uk-open-data also supports
     > polars — see the docs for BYODF (Bring Your Own DataFrame).
     """)
     return
@@ -46,7 +46,7 @@ def _(mo):
 def _():
     import pandas as pd
 
-    from kindtech import geodata_to_properties, load_geodata, load_ons
+    from uk_open_data import geodata_to_properties, load_geodata, load_ons
 
     return geodata_to_properties, load_geodata, load_ons, pd
 
@@ -157,7 +157,7 @@ def _(mo):
     ## Step 3: Join geo + statistics
 
     Both DataFrames share a `geography_code` column thanks to
-    kindtech's normalisation layer — just merge directly.
+    the package's normalisation layer — just merge directly.
     """)
     return
 

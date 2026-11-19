@@ -11,7 +11,7 @@ import unittest.mock as mock
 import pytest
 import requests
 
-from kindtech.geo import (
+from uk_open_data.geo import (
     BoundaryType,
     CoverageArea,
     GeographyType,
@@ -59,7 +59,7 @@ GEOJSON_RESPONSE = {
 }
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_basic(mock_get):
     """Test loading geodata with basic string parameters."""
     mock_response = mock.MagicMock()
@@ -76,7 +76,7 @@ def test_load_geodata_basic(mock_get):
     assert "query" in call_url
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_with_filters(mock_get):
     """Test loading geodata with filters."""
     mock_response = mock.MagicMock()
@@ -97,7 +97,7 @@ def test_load_geodata_with_filters(mock_get):
     assert call_params["where"] == "LAD21NM = 'Manchester'"
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_with_enum_parameters(mock_get):
     """Test loading geodata with enum parameters."""
     mock_response = mock.MagicMock()
@@ -122,7 +122,7 @@ def test_load_geodata_no_matching_service():
     assert len(result["features"]) == 0
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_with_request_error(mock_get):
     """Test loading geodata when request raises an exception."""
     mock_get.side_effect = requests.exceptions.RequestException("Connection error")
@@ -138,7 +138,7 @@ def test_load_geodata_reads_the_layer_a_service_holds():
     """Not every service numbers its layer 0, so the service is asked once."""
     layers = {"layers": [{"id": 3, "name": "LSOA_2021_EW_BFE_V10_RUC"}]}
     get = _answers(layers, GEOJSON_RESPONSE, GEOJSON_RESPONSE)
-    with mock.patch("kindtech.geo.api.requests.get", get):
+    with mock.patch("uk_open_data.geo.api.requests.get", get):
         first = load_geodata("LSOA", year="2021", boundary_type="BFE")
         second = load_geodata("LSOA", year="2021", boundary_type="BFE")
 
@@ -162,7 +162,7 @@ def test_load_geodata_reads_the_layer_a_service_holds():
 def test_load_geodata_tries_layer_zero_when_a_service_lists_no_layer(listing):
     """A service that cannot say is tried at layer 0, and asked again next time."""
     get = _answers(listing, GEOJSON_RESPONSE, listing, GEOJSON_RESPONSE)
-    with mock.patch("kindtech.geo.api.requests.get", get):
+    with mock.patch("uk_open_data.geo.api.requests.get", get):
         load_geodata(geography_type="LAD")
         load_geodata(geography_type="LAD")
 
@@ -179,7 +179,7 @@ def test_load_geodata_tries_layer_zero_when_a_service_lists_no_layer(listing):
 def test_get_field_info_reads_the_layer_a_service_holds():
     fields = {"fields": [{"name": "LSOA21CD"}]}
     get = _answers({"layers": [{"id": 3}]}, fields)
-    with mock.patch("kindtech.geo.api.requests.get", get):
+    with mock.patch("uk_open_data.geo.api.requests.get", get):
         result = get_field_info("LSOA", year="2021", boundary_type="BFE")
 
     assert result == fields["fields"]
@@ -217,7 +217,7 @@ def test_load_geodata_fetches_every_page_of_a_large_layer(geojson):
         _page(["Cardiff", "Derby"], True, geojson),
         _page(["Exeter"], False),
     ]
-    with mock.patch("kindtech.geo.api.requests.get", _paged(pages)) as get:
+    with mock.patch("uk_open_data.geo.api.requests.get", _paged(pages)) as get:
         result = load_geodata(geography_type="LAD", LAD21NM=["Adur", "Exeter"])
 
     names = [feature["properties"]["LAD21NM"] for feature in result["features"]]
@@ -234,7 +234,7 @@ def test_load_geodata_fetches_every_page_of_a_large_layer(geojson):
 def test_load_geodata_stops_when_a_cut_page_is_empty():
     """A service that says there is more but gives nothing ends the paging."""
     pages = [_page(["Adur"], True), _page([], True)]
-    with mock.patch("kindtech.geo.api.requests.get", _paged(pages)) as get:
+    with mock.patch("uk_open_data.geo.api.requests.get", _paged(pages)) as get:
         result = load_geodata(geography_type="LAD")
 
     assert len(result["features"]) == 1
@@ -248,7 +248,7 @@ def test_load_geodata_gives_nothing_when_a_later_page_fails(caplog):
     get = mock.Mock(
         side_effect=[first, requests.exceptions.RequestException("Connection error")]
     )
-    with mock.patch("kindtech.geo.api.requests.get", get):
+    with mock.patch("uk_open_data.geo.api.requests.get", get):
         result = load_geodata(geography_type="LAD")
 
     assert result == {"type": "FeatureCollection", "features": []}
@@ -259,7 +259,7 @@ def test_load_geodata_gives_nothing_when_the_service_repeats_a_page(caplog):
     """A service that ignores the offset is stopped after one more request."""
     response = mock.MagicMock()
     response.json.return_value = _page(["Adur", "Barnet"], True)
-    with mock.patch("kindtech.geo.api.requests.get", return_value=response) as get:
+    with mock.patch("uk_open_data.geo.api.requests.get", return_value=response) as get:
         result = load_geodata(geography_type="LAD")
 
     assert result == {"type": "FeatureCollection", "features": []}
@@ -271,8 +271,8 @@ def test_load_geodata_gives_nothing_when_the_pages_never_end(caplog):
     """A service that always says there is more is stopped at the page limit."""
     pages = [_page([f"Place {number}"], True) for number in range(5)]
     with (
-        mock.patch("kindtech.geo.api.MAX_PAGES", 3),
-        mock.patch("kindtech.geo.api.requests.get", _paged(pages)) as get,
+        mock.patch("uk_open_data.geo.api.MAX_PAGES", 3),
+        mock.patch("uk_open_data.geo.api.requests.get", _paged(pages)) as get,
     ):
         result = load_geodata(geography_type="LAD")
 
@@ -281,7 +281,7 @@ def test_load_geodata_gives_nothing_when_the_pages_never_end(caplog):
     assert "did not stop paging" in caplog.text
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_get_field_info(mock_get):
     """Test getting field info."""
     mock_response = mock.MagicMock()
@@ -300,7 +300,7 @@ def test_get_field_info(mock_get):
     assert result[1]["name"] == "LAD21NM"
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_with_year(mock_get):
     """Test loading geodata with a specific year."""
     mock_response = mock.MagicMock()
@@ -313,7 +313,7 @@ def test_load_geodata_with_year(mock_get):
     mock_get.assert_called_once()
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_with_year_and_month_fallback(mock_get):
     """Test that month filter is dropped when no exact match found."""
     mock_response = mock.MagicMock()
@@ -329,7 +329,7 @@ def test_load_geodata_with_year_and_month_fallback(mock_get):
     assert result["type"] == "FeatureCollection"
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_asks_for_simplified_outlines(mock_get):
     """``simplify_m`` reaches the service in degrees, the units of the answer."""
     mock_response = mock.MagicMock()
@@ -343,7 +343,7 @@ def test_load_geodata_asks_for_simplified_outlines(mock_get):
     assert call_params["outSR"] == 4326
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_leaves_outlines_alone_by_default(mock_get):
     mock_response = mock.MagicMock()
     mock_response.json.return_value = GEOJSON_RESPONSE
@@ -355,7 +355,7 @@ def test_load_geodata_leaves_outlines_alone_by_default(mock_get):
 
 
 @pytest.mark.parametrize("metres", [0, -5])
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_refuses_a_simplify_distance_not_above_zero(mock_get, metres):
     with pytest.raises(ValueError, match="simplify_m"):
         load_geodata(geography_type="LAD", simplify_m=metres)
@@ -363,7 +363,7 @@ def test_load_geodata_refuses_a_simplify_distance_not_above_zero(mock_get, metre
     mock_get.assert_not_called()
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_with_numeric_filter(mock_get):
     """Test filter clause with numeric value."""
     mock_response = mock.MagicMock()
@@ -376,7 +376,7 @@ def test_load_geodata_with_numeric_filter(mock_get):
     assert call_params["where"] == "OBJECTID = 42"
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_with_list_filter(mock_get):
     """Test filter clause with list value (IN clause)."""
     mock_response = mock.MagicMock()
@@ -391,7 +391,7 @@ def test_load_geodata_with_list_filter(mock_get):
     assert "'Leeds'" in call_params["where"]
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_get_field_info_no_matching_service(mock_get):
     """Test get_field_info returns empty list when no service matches."""
     result = get_field_info(geography_type="NONEXISTENT")
@@ -400,7 +400,7 @@ def test_get_field_info_no_matching_service(mock_get):
     mock_get.assert_not_called()
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_get_field_info_request_error(mock_get):
     """Test get_field_info returns empty list on request error."""
     mock_get.side_effect = requests.exceptions.RequestException("Connection error")
@@ -443,7 +443,7 @@ def test_get_available_coverage_areas():
     assert "EW" in codes
 
 
-@mock.patch("kindtech.geo.api.requests.get")
+@mock.patch("uk_open_data.geo.api.requests.get")
 def test_load_geodata_no_year_warns(mock_get, caplog):
     """Test that omitting year logs a warning with the resolved year."""
     mock_response = mock.MagicMock()
@@ -452,7 +452,7 @@ def test_load_geodata_no_year_warns(mock_get, caplog):
 
     import logging
 
-    with caplog.at_level(logging.WARNING, logger="kindtech.geo.api"):
+    with caplog.at_level(logging.WARNING, logger="uk_open_data.geo.api"):
         load_geodata(geography_type="LAD")
 
     assert "no year specified" in caplog.text.lower()
@@ -535,8 +535,8 @@ def test_geodata_to_properties_wrong_year_warns():
 
 
 def test_list_tables_top_level_import():
-    """Test that list_tables is importable from top-level kindtech."""
-    from kindtech import list_tables
+    """Test that list_tables is importable from the top of the package."""
+    from uk_open_data import list_tables
 
     result = list_tables()
     assert len(result) > 0

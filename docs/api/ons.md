@@ -1,6 +1,6 @@
 # ONS Statistics
 
-The `kindtech.ons` module provides access to UK statistics from the [ONS NOMIS API](https://www.nomisweb.co.uk/api/v01/help). Returns DataFrames in your preferred backend (pandas or polars) via [narwhals](https://narwhals-dev.github.io/narwhals/).
+The `uk_open_data.ons` module provides access to UK statistics from the [ONS NOMIS API](https://www.nomisweb.co.uk/api/v01/help). Returns DataFrames in your preferred backend (pandas or polars) via [narwhals](https://narwhals-dev.github.io/narwhals/).
 
 ## Functions
 
@@ -9,7 +9,7 @@ The `kindtech.ons` module provides access to UK statistics from the [ONS NOMIS A
 Load statistical data from the NOMIS API.
 
 ```python
-from kindtech.ons import load_ons
+from uk_open_data.ons import load_ons
 
 # Basic usage
 df = load_ons("NM_1_1")
@@ -71,7 +71,7 @@ DataFrame (pandas or polars, depending on what's installed). If both are availab
 Browse available NOMIS datasets.
 
 ```python
-from kindtech.ons import list_tables
+from uk_open_data.ons import list_tables
 
 # List all 1,615 datasets
 all_tables = list_tables()
@@ -96,7 +96,7 @@ DataFrame with columns: `id`, `name`, `sourceName`.
 
 ## Bring Your Own DataFrame
 
-The ONS module uses [narwhals](https://narwhals-dev.github.io/narwhals/) for DataFrame interoperability. Install your preferred backend alongside kindtech:
+The ONS module uses [narwhals](https://narwhals-dev.github.io/narwhals/) for DataFrame interoperability. Install your preferred backend alongside uk-open-data:
 
 ```bash
 uv add pandas   # or polars
@@ -106,7 +106,7 @@ The return type automatically matches your installed backend:
 
 ```python
 import polars as pl
-from kindtech.ons import load_ons
+from uk_open_data.ons import load_ons
 
 df = load_ons("NM_1_1", time="latest")
 assert isinstance(df, pl.DataFrame)  # polars preferred when both installed

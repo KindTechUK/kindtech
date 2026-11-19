@@ -12,7 +12,7 @@ import pandas as pd
 import pytest
 import requests
 
-from kindtech.cli import EXIT_INPUT_ERROR, EXIT_OK, main
+from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
 
 LENS_ID = "reach-deprivation"
 
@@ -48,7 +48,7 @@ def counts_file(tmp_path):
 def index():
     """Replace the deprivation index with the invented one."""
     with mock.patch(
-        "kindtech.lenses.reach_deprivation.load_imd", return_value=_index()
+        "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
     ):
         yield
 
@@ -149,7 +149,9 @@ def test_lens_run_writes_to_a_file(index, counts_file, tmp_path, capsys):
 
 def test_lens_run_reads_a_spreadsheet(index, tmp_path, capsys):
     rows = [{"Area": "E01000001", "Clients": 30}, {"Area": "E01000002", "Clients": 12}]
-    with mock.patch("kindtech.cli.read_spreadsheet_rows", return_value=rows) as read:
+    with mock.patch(
+        "uk_open_data.cli.read_spreadsheet_rows", return_value=rows
+    ) as read:
         path = tmp_path / "counts.xlsx"
         path.write_bytes(b"not a real workbook")
         args = _run_args(path, "--sheet", "Sheet1", "--json")
@@ -173,7 +175,7 @@ def test_an_unreachable_source_is_reported_without_its_address(counts_file, caps
         f"HTTPSConnectionPool: Max retries exceeded with url: {address}",
         request=requests.Request("GET", address).prepare(),
     )
-    with mock.patch("kindtech.cli.run_lens", side_effect=error):
+    with mock.patch("uk_open_data.cli.run_lens", side_effect=error):
         assert main(_run_args(counts_file)) == EXIT_INPUT_ERROR
     err = capsys.readouterr().err
     assert err.startswith(
@@ -188,7 +190,7 @@ def test_an_unreachable_source_without_an_address_is_still_reported(
     counts_file, capsys
 ):
     error = requests.ConnectionError("no route to https://example.invalid/?q=1")
-    with mock.patch("kindtech.cli.run_lens", side_effect=error):
+    with mock.patch("uk_open_data.cli.run_lens", side_effect=error):
         assert main(_run_args(counts_file)) == EXIT_INPUT_ERROR
     err = capsys.readouterr().err
     assert err.startswith("A data source this command needs could not be reached. ")
@@ -206,7 +208,7 @@ def test_a_source_that_answers_with_an_error_is_not_called_unreachable(
     error = requests.HTTPError(
         f"503 Server Error: Service Unavailable for url: {address}", response=response
     )
-    with mock.patch("kindtech.cli.run_lens", side_effect=error):
+    with mock.patch("uk_open_data.cli.run_lens", side_effect=error):
         assert main(_run_args(counts_file)) == EXIT_INPUT_ERROR
     err = capsys.readouterr().err
     assert err.startswith(

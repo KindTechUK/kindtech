@@ -11,16 +11,16 @@ import unittest.mock as mock
 import pandas as pd
 import pytest
 
-from kindtech.cli import EXIT_INPUT_ERROR, EXIT_OK, main
-from kindtech.connector.privacy import find_row_values
-from kindtech.lenses import LensInputError, describe_lens, render_map, run_lens
-from kindtech.lenses.who_we_miss import (
+from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
+from uk_open_data.connector.privacy import find_row_values
+from uk_open_data.lenses import LensInputError, describe_lens, render_map, run_lens
+from uk_open_data.lenses.who_we_miss import (
     clear_residents_cache,
     download_residents,
     keep_residents,
     residents_path,
 )
-from kindtech.postcodes import build_postcode_table, install_postcode_table
+from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 
 LENS_ID = "who-we-miss"
 COLUMNS = {"group": "Ethnicity", "count": "Clients"}
@@ -96,7 +96,7 @@ class _Nomis:
 def nomis():
     """Replace the census figures with the invented ones."""
     fake = _Nomis()
-    with mock.patch("kindtech.lenses.who_we_miss.load_ons", side_effect=fake.load):
+    with mock.patch("uk_open_data.lenses.who_we_miss.load_ons", side_effect=fake.load):
         yield fake
 
 
@@ -328,7 +328,7 @@ def test_a_table_without_every_group_is_an_input_error(nomis):
 def test_a_table_without_counts_is_an_input_error():
     empty = pd.DataFrame({"geography_code": ["E09000023"]})
     with (
-        mock.patch("kindtech.lenses.who_we_miss.load_ons", return_value=empty),
+        mock.patch("uk_open_data.lenses.who_we_miss.load_ons", return_value=empty),
         pytest.raises(LensInputError, match="could not be loaded"),
     ):
         _run(CLIENTS)
@@ -746,7 +746,7 @@ def _fake_lookup(sent: list):
 
 def _run_people(options=None, sent=None):
     with mock.patch(
-        "kindtech.lenses._steps.postcodes_to_geography",
+        "uk_open_data.lenses._steps.postcodes_to_geography",
         side_effect=_fake_lookup([] if sent is None else sent),
     ):
         return run_lens(LENS_ID, PERSON_ROWS, columns=PERSON_COLUMNS, options=options)
@@ -812,7 +812,7 @@ def test_postcodes_stay_on_this_machine_when_a_table_is_installed(nomis, tmp_pat
     packed = tmp_path / "postcodes.ktpc.gz"
     build_postcode_table(source, packed, "May 2026")
     install_postcode_table(packed)
-    with mock.patch("kindtech.lenses._steps.postcodes_to_geography") as online:
+    with mock.patch("uk_open_data.lenses._steps.postcodes_to_geography") as online:
         result = run_lens(LENS_ID, PERSON_ROWS, columns=PERSON_COLUMNS)
     online.assert_not_called()
     assert result.privacy.sent_to_third_parties == ()

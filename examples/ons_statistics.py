@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "marimo",
-#     "kindtech",
+#     "uk-open-data",
 #     "pandas>=2.0.0",
 # ]
 # ///
@@ -27,14 +27,14 @@ def _(mo):
 
     Browse and load UK statistical datasets from the
     [NOMIS API](https://www.nomisweb.co.uk/) using
-    **kindtech**.
+    **uk-open-data**.
 
     This notebook demonstrates:
     - Searching the 1,600+ NOMIS dataset catalog
     - Loading data with `load_ons()`
     - Filtering by geography, time, and measures
 
-    > **Note:** This example uses **pandas**. kindtech also supports
+    > **Note:** This example uses **pandas**. uk-open-data also supports
     > polars — see the docs for BYODF (Bring Your Own DataFrame).
     """)
     return
@@ -42,7 +42,7 @@ def _(mo):
 
 @app.cell
 def _():
-    from kindtech.ons import list_tables, load_ons
+    from uk_open_data.ons import list_tables, load_ons
 
     return list_tables, load_ons
 
