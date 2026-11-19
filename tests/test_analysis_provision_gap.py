@@ -19,6 +19,7 @@ from uk_open_data.analyses import (
     render_map,
     run_analysis,
 )
+from uk_open_data.analyses._need import FEW_PLACES, ONE_PLACE
 from uk_open_data.analyses.need_reach import NEED_BANDS, keep_need_figures
 from uk_open_data.analyses.provision_gap import NO_PROVISION, PROVISION_BANDS
 from uk_open_data.cli import EXIT_OK, main
@@ -577,6 +578,16 @@ def test_map_is_described_by_local_authority(nomis):
     assert rows["Greenwich"]["provision_band"] == "Lower provision"
     assert rows["Adur"]["provision_band"] == "Middle provision"
     assert rows["Lewisham"]["provision_band"] == "Higher provision"
+    # A place for every group on both layers: nothing is said of few places.
+    assert not [layer.note for layer in spec.layers if "fewer places" in layer.note]
+
+
+def test_map_says_so_when_few_places_have_provision(nomis):
+    two = _run(_volumes(Lewisham=90, Greenwich=40)).map
+    assert "fewer places" not in two.layers[0].note
+    assert two.layers[1].note.endswith(FEW_PLACES)
+    one = _run(_volumes(Lewisham=90)).map
+    assert one.layers[1].note.endswith(ONE_PLACE)
 
 
 def _square(number: int, code: str) -> dict:

@@ -61,7 +61,6 @@ from uk_open_data.analyses._model import (
 )
 from uk_open_data.analyses._need import (
     DEFAULT_TOP,
-    FEW_PLACES,
     MAX_TOP,
     MEASURES,
     NEED_BANDS,
@@ -71,6 +70,7 @@ from uk_open_data.analyses._need import (
     Measure,
     band_by_need,
     choose_compared,
+    few_in_need_bands,
     load_need,
     read_measure,
     read_top,
@@ -291,7 +291,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         input_mode=mode,
         figures=tuple(figures),
         tables=tables,
-        map=_map_spec(),
+        map=_map_spec(len(rows)),
         working=tuple(trail.working),
         choices=(*trail.choices, *_choices(measure, compared, within, top)),
         checks=_checks(measure, compared),
@@ -561,8 +561,12 @@ def _authority_table(rows: list[_Row], headings: dict[str, str]) -> Table:
     )
 
 
-def _map_spec() -> MapSpec:
-    """Describe the map of distance and people."""
+def _map_spec(places: int) -> MapSpec:
+    """Describe the map of distance and people.
+
+    The note on people says how few places were grouped, when there are
+    fewer than the key has groups.
+    """
     return MapSpec(
         title="Distance to your nearest site, by local authority",
         geography_type="LAD",
@@ -586,7 +590,10 @@ def _map_spec() -> MapSpec:
                 label="People",
                 value_column="need_band",
                 kind="ordinal",
-                note=f"Local authorities in five equal groups by people.{FEW_PLACES}",
+                note=(
+                    "Local authorities in five equal groups by people."
+                    f"{few_in_need_bands(places)}"
+                ),
                 categories=NEED_BANDS,
             ),
         ),

@@ -53,7 +53,6 @@ from uk_open_data.analyses._model import (
 from uk_open_data.analyses._need import (
     DEFAULT_TOP,
     FEW_AREAS,
-    FEW_PLACES,
     MAX_TOP,
     MEASURES,
     NEED_BANDS,
@@ -64,6 +63,8 @@ from uk_open_data.analyses._need import (
     band_by_need,
     choose_compared,
     equal_parts,
+    few_in_need_bands,
+    few_places,
     high_need_cut,
     load_need,
     not_listed_rows,
@@ -296,7 +297,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         input_mode=mode,
         figures=tuple(figures),
         tables=tables,
-        map=_map_spec(words),
+        map=_map_spec(words, rows),
         working=tuple(trail.working),
         choices=(*trail.choices, *_choices(measure, words, compared, top)),
         checks=_checks(mode, measure, compared),
@@ -656,8 +657,13 @@ def _how_listed(words: NeedWords) -> str:
     return LARGE_PLACES_LISTED if words is IN_NEED else MOST_RESIDENTS_LISTED
 
 
-def _map_spec(words: NeedWords) -> MapSpec:
-    """Describe the map of need and provision, in the words for the measure."""
+def _map_spec(words: NeedWords, rows: list[_Row]) -> MapSpec:
+    """Describe the map of need and provision, in the words for the measure.
+
+    Each note says how few places were grouped, when there are fewer than
+    the key has groups.
+    """
+    provided = sum(row.provision_band != NO_PROVISION for row in rows)
     return MapSpec(
         title=f"{sentence_case(words.topic)} and provision, by local authority",
         geography_type="LAD",
@@ -672,7 +678,7 @@ def _map_spec(words: NeedWords) -> MapSpec:
                 kind="ordinal",
                 note=(
                     f"Local authorities in five equal groups by {words.noun}."
-                    f"{FEW_PLACES}"
+                    f"{few_in_need_bands(len(rows))}"
                 ),
                 categories=NEED_BANDS,
             ),
@@ -684,7 +690,7 @@ def _map_spec(words: NeedWords) -> MapSpec:
                 note=(
                     "Local authorities where you provide are in three equal "
                     "groups. The lowest band holds places where you provide "
-                    "nothing." + FEW_PLACES
+                    "nothing." + few_places(provided, len(PROVISION_BANDS) - 1)
                 ),
                 categories=PROVISION_BANDS,
             ),
