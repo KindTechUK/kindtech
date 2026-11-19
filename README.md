@@ -1,6 +1,29 @@
-# kindtech API
+# uk-open-data
 
-Ergonomic access to UK public data — geographic boundaries (ONS Geoportal) and statistics (NOMIS API). Bring your own DataFrame backend (pandas or polars).
+UK open data for charities, in Python: geographic boundaries, official
+statistics, postcodes and deprivation indices, with lenses that join them to
+your own data and return figures you can check.
+
+Made by [KindTech UK](https://github.com/KindTechUK). Up to version 0.1 the
+package was called `kindtech`.
+
+## What is in it
+
+- **Data modules.** `uk_open_data.geo` loads boundaries from the ONS
+  Geoportal, `uk_open_data.ons` loads statistics from the Nomis API,
+  `uk_open_data.postcodes` turns postcodes into geography codes, and
+  `uk_open_data.imd` loads the deprivation indices. Bring your own DataFrame
+  backend, pandas or polars.
+- **[Lenses](https://kindtechuk.github.io/uk-open-data/api/lenses/).** Each
+  lens answers one question a charity asks of its own data, such as "Are we
+  reaching people in the most deprived neighbourhoods?". It returns totals,
+  the working, the sources and what a person must check. Nothing in a result
+  describes one person.
+- **[A command line](https://kindtechuk.github.io/uk-open-data/api/cli/).**
+  `uk-open-data lens run` runs a lens on a file without writing any Python.
+- **[A connector for chat assistants](https://kindtechuk.github.io/uk-open-data/api/connector/).**
+  The same lenses and data as tools for an assistant such as Claude or
+  ChatGPT. The assistant sees totals, never rows.
 
 ## Installation
 
