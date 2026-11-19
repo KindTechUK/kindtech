@@ -20,12 +20,12 @@
 ## User Guide
 
 - [Overview](https://kindtechuk.github.io/uk-open-data/api/index.md)
+- [Analyses](https://kindtechuk.github.io/uk-open-data/api/analyses/index.md)
 - [Command Line](https://kindtechuk.github.io/uk-open-data/api/cli/index.md)
 - [Connector for chat assistants](https://kindtechuk.github.io/uk-open-data/api/connector/index.md)
 - [Data Sources](https://kindtechuk.github.io/uk-open-data/api/data-sources/index.md)
 - [Geographic Data](https://kindtechuk.github.io/uk-open-data/api/geo/index.md)
 - [Deprivation (IMD)](https://kindtechuk.github.io/uk-open-data/api/imd/index.md)
-- [Lenses](https://kindtechuk.github.io/uk-open-data/api/lenses/index.md)
 - [ONS Data](https://kindtechuk.github.io/uk-open-data/api/ons/index.md)
 - [Postcodes](https://kindtechuk.github.io/uk-open-data/api/postcodes/index.md)
 - [Package FAQ](https://kindtechuk.github.io/uk-open-data/faq/index.md)

@@ -8,7 +8,7 @@
       
       
       
-        <link rel="canonical" href="https://kindtechuk.github.io/uk-open-data/api/lenses/">
+        <link rel="canonical" href="https://kindtechuk.github.io/uk-open-data/api/analyses/">
       
       
         <link rel="prev" href="../imd/">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Lenses - KindTech</title>
+        <title>Analyses - KindTech</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#lenses" class="md-skip">
+        <a href="#analyses" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Lenses
+              Analyses
             
           </span>
         </div>
@@ -780,7 +780,7 @@
   
   
   <span class="md-ellipsis">
-    Lenses
+    Analyses
     
   </span>
   
@@ -793,7 +793,7 @@
   
   
   <span class="md-ellipsis">
-    Lenses
+    Analyses
     
   </span>
   
@@ -835,27 +835,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#list_lenses" class="md-nav__link">
+  <a href="#list_analyses" class="md-nav__link">
     <span class="md-ellipsis">
-      list_lenses()
+      list_analyses()
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#describe_lenslens_id" class="md-nav__link">
+  <a href="#describe_analysisanalysis_id" class="md-nav__link">
     <span class="md-ellipsis">
-      describe_lens(lens_id)
+      describe_analysis(analysis_id)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#run_lenslens_id-data-columnsnone-optionsnone" class="md-nav__link">
+  <a href="#run_analysisanalysis_id-data-columnsnone-optionsnone" class="md-nav__link">
     <span class="md-ellipsis">
-      run_lens(lens_id, data, columns=None, options=None)
+      run_analysis(analysis_id, data, columns=None, options=None)
     </span>
   </a>
   
@@ -954,9 +954,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#writing-a-lens" class="md-nav__link">
+  <a href="#writing-an-analysis" class="md-nav__link">
     <span class="md-ellipsis">
-      Writing a lens
+      Writing an analysis
     </span>
   </a>
   
@@ -1235,27 +1235,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#list_lenses" class="md-nav__link">
+  <a href="#list_analyses" class="md-nav__link">
     <span class="md-ellipsis">
-      list_lenses()
+      list_analyses()
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#describe_lenslens_id" class="md-nav__link">
+  <a href="#describe_analysisanalysis_id" class="md-nav__link">
     <span class="md-ellipsis">
-      describe_lens(lens_id)
+      describe_analysis(analysis_id)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#run_lenslens_id-data-columnsnone-optionsnone" class="md-nav__link">
+  <a href="#run_analysisanalysis_id-data-columnsnone-optionsnone" class="md-nav__link">
     <span class="md-ellipsis">
-      run_lens(lens_id, data, columns=None, options=None)
+      run_analysis(analysis_id, data, columns=None, options=None)
     </span>
   </a>
   
@@ -1354,9 +1354,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#writing-a-lens" class="md-nav__link">
+  <a href="#writing-an-analysis" class="md-nav__link">
     <span class="md-ellipsis">
-      Writing a lens
+      Writing an analysis
     </span>
   </a>
   
@@ -1381,19 +1381,25 @@
   
 
 
-<h1 id="lenses">Lenses</h1>
-<p>A lens answers one question a charity asks of its own data. You give it a
+<h1 id="analyses">Analyses</h1>
+<p>An analysis answers one question a charity asks of its own data. You give it a
 table, say which column is which, and it joins your data to UK open data and
 returns figures you can check and reuse.</p>
-<p>Every lens returns the same things:</p>
+<p>Kindtech Evidence is built on these analyses. This page is about running them
+from Python. You can also run them from the <a href="../cli/">command line</a>, or from a
+chat assistant through the <a href="../connector/">connector</a>.</p>
+<!-- Credit: a sentence that credits DataKind UK goes here once its wording is
+agreed. -->
+
+<p>Every analysis returns the same things:</p>
 <ul>
 <li><strong>figures</strong>: the headline numbers</li>
 <li><strong>tables</strong>: totals behind the figures</li>
 <li><strong>a map description</strong>: which areas to draw and what to colour them by, when
-  the lens has a map</li>
+  the analysis has a map</li>
 <li><strong>chart descriptions</strong>: which table and columns to draw as a bar chart</li>
 <li><strong>the working</strong>: each step taken, with how many rows went in and came out</li>
-<li><strong>choices</strong>: what the lens decided for you, and the option that changes it</li>
+<li><strong>choices</strong>: what the analysis decided for you, and the option that changes it</li>
 <li><strong>checks</strong>: what a person must confirm before using the figures</li>
 <li><strong>caveats</strong>: what the figures cannot say</li>
 <li><strong>sources</strong>: publisher, edition, licence and link for every dataset used</li>
@@ -1403,11 +1409,11 @@ returns figures you can check and reuse.</p>
 from your data is repeated back, not even in a warning or an error message.</p>
 <h2 id="quick-start">Quick start</h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_lens</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_analysis</span>
 
 <span class="n">clients</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clients.csv&quot;</span><span class="p">)</span>
 
-<span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
     <span class="s2">&quot;reach-deprivation&quot;</span><span class="p">,</span>
     <span class="n">clients</span><span class="p">,</span>
     <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">},</span>
@@ -1419,13 +1425,13 @@ from your data is repeated back, not even in a warning or an error message.</p>
 <span class="n">result</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>                                <span class="c1"># everything, as plain JSON types</span>
 </code></pre></div>
 <p><code>data</code> can be a pandas or polars DataFrame, or a list of row dictionaries.
-<code>columns</code> maps each role the lens needs to one of your column names. You can
+<code>columns</code> maps each role the analysis needs to one of your column names. You can
 leave a role out when your data already has a column with that name.</p>
-<p>To run a lens on a file without writing Python, use the
+<p>To run an analysis on a file without writing Python, use the
 <a href="../cli/">command line</a>.</p>
 <h2 id="functions">Functions</h2>
-<h3 id="list_lenses"><code>list_lenses()</code></h3>
-<p>Returns a <code>LensInfo</code> for every lens: its <code>id</code>, <code>title</code>, the <code>question</code> it
+<h3 id="list_analyses"><code>list_analyses()</code></h3>
+<p>Returns an <code>AnalysisInfo</code> for every analysis: its <code>id</code>, <code>title</code>, the <code>question</code> it
 answers, a <code>summary</code>, its <code>roles</code> (the columns it can use), its <code>input_modes</code>
 (the shapes of data it accepts), its <code>options</code> and its <code>coverage</code>.</p>
 <p>An option that takes one of a fixed list of values lists them as <code>choices</code>,
@@ -1443,28 +1449,28 @@ ever repeated. If you check a result for values repeated from the input, leave
 out the listed values when there are any, compared without case, and check
 every other value in the column. Leave the whole column out only when the
 role is reported and lists no values.</p>
-<p>A role with <code>amount</code> set to <code>True</code> holds a number the lens adds up: a count of
+<p>A role with <code>amount</code> set to <code>True</code> holds a number the analysis adds up: a count of
 people or a volume. A total of it is in the result, so where one row is the
 only one for its place or group, that row's number comes back as the total.
 That is not a repeated value. A number in any other role, such as a latitude,
 never comes back.</p>
-<h3 id="describe_lenslens_id"><code>describe_lens(lens_id)</code></h3>
-<p>Returns the <code>LensInfo</code> for one lens. Raises <code>KeyError</code> for an unknown id.</p>
-<h3 id="run_lenslens_id-data-columnsnone-optionsnone"><code>run_lens(lens_id, data, columns=None, options=None)</code></h3>
-<p>Runs a lens and returns a <code>LensResult</code>.</p>
-<p>Raises <code>LensInputError</code> (a <code>ValueError</code>) when the data, the column mapping or
+<h3 id="describe_analysisanalysis_id"><code>describe_analysis(analysis_id)</code></h3>
+<p>Returns the <code>AnalysisInfo</code> for one analysis. Raises <code>KeyError</code> for an unknown id.</p>
+<h3 id="run_analysisanalysis_id-data-columnsnone-optionsnone"><code>run_analysis(analysis_id, data, columns=None, options=None)</code></h3>
+<p>Runs an analysis and returns an <code>AnalysisResult</code>.</p>
+<p>Raises <code>AnalysisInputError</code> (a <code>ValueError</code>) when the data, the column mapping or
 an option cannot be used. The message is written for a person and
 <code>error.problems</code> lists each problem separately.</p>
-<p>When a public data source the lens needs cannot be reached, the
+<p>When a public data source the analysis needs cannot be reached, the
 <code>requests.RequestException</code> is let out. Its text holds the whole web address
 that was asked for, which can hold a postcode, so show a message of your own
 rather than the text. The command line names the site alone, and says
-whether the source could not be reached or answered with an error. A lens
+whether the source could not be reached or answered with an error. An analysis
 needs no network when the public figures it uses are kept on your machine.</p>
 <h2 id="drawing-the-map">Drawing the map</h2>
 <p>A result describes its map; <code>render_map</code> draws it as an SVG picture with a
 legend and the credits the data licences ask for.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_map</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_map</span>
 
 <span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>                  <span class="c1"># the first layer: deprivation decile</span>
 <span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="s2">&quot;people&quot;</span><span class="p">)</span>  <span class="c1"># people reached, in bands</span>
@@ -1482,7 +1488,7 @@ the network, pass <code>boundaries=</code> a GeoJSON FeatureCollection you alrea
 <code>load_map_boundaries(result)</code> fetches one you can save and reuse.</p>
 <h2 id="charts">Charts</h2>
 <p><code>result.charts</code> describes the charts a result is best shown with, so a page
-can draw them without knowing the lens. Each <code>Chart</code> names a table of the
+can draw them without knowing the analysis. Each <code>Chart</code> names a table of the
 result, the column that names each group of bars (<code>category_column</code>) and one
 or more <code>series</code>, each a column with a label and a unit. Every series in a
 chart has the same unit, so one axis serves them all.</p>
@@ -1499,7 +1505,7 @@ When hiding one cell would let it be worked out from a total, a second cell is
 hidden with it. So a hidden count is not always small: do not report a hidden
 cell as "fewer than 5". Every result says this in its privacy notes. Change
 the threshold with the <code>suppress_below</code> option; it cannot go below 3.</p>
-<p>A result says which threshold was used in <code>privacy.suppress_below</code>. The lenses
+<p>A result says which threshold was used in <code>privacy.suppress_below</code>. The analyses
 about sites, provision gap and access and distance, hide nothing, and for them
 it is <code>None</code>.</p>
 <h2 id="reach-against-deprivation">Reach against deprivation</h2>
@@ -1528,7 +1534,7 @@ neighbourhoods? It covers England, using the English Indices of Deprivation
 </tr>
 </tbody>
 </table>
-<p>In <code>postcodes</code> mode the lens looks postcodes up in the
+<p>In <code>postcodes</code> mode the analysis looks postcodes up in the
 <a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table on your machine</a>
 when one is installed, and then no postcode is sent anywhere. Install it once
 with <code>uk-open-data postcodes download</code>. Without the table, the distinct,
@@ -1540,7 +1546,7 @@ postcode are never sent. The result says which happened, under <code>choices</co
 <a href="../imd/#keeping-the-english-index-on-this-machine">kept on your machine</a> when
 there is one. A result that used a copy says so in its <code>sources</code> and its
 <code>working</code>, with the note the copy was kept with.</p>
-<p>The lens then works out your <strong>catchment</strong>: the local authorities that each
+<p>The analysis then works out your <strong>catchment</strong>: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
 are about the people who live there, so they can be set against everyone who
 lives there. People outside the catchment are counted in the local authority
@@ -1642,7 +1648,7 @@ against the share of catchment residents.</p>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
     <span class="s2">&quot;reach-deprivation&quot;</span><span class="p">,</span>
     <span class="n">clients</span><span class="p">,</span>
     <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">},</span>
@@ -1682,9 +1688,9 @@ turned into a function.</p>
 </tr>
 </tbody>
 </table>
-<p>Postcodes are placed as in the first lens: on your machine when the postcode
+<p>Postcodes are placed as in the first analysis: on your machine when the postcode
 table is installed, and with postcodes.io otherwise.</p>
-<p>The lens loads a count of <strong>people in need</strong> in every local authority from
+<p>The analysis loads a count of <strong>people in need</strong> in every local authority from
 <a href="../ons/">Nomis</a>, divides the people you helped in each one by it, and lists
 the high-need local authorities where you reach the fewest people per 100 in
 need. A local authority is high need when its count is at or above the middle
@@ -1741,7 +1747,7 @@ and then kept in memory for as long as the program runs;
 <code>clear_need_cache()</code> forgets them. To run with no request to Nomis at all,
 keep a copy on the machine, in the same data folder as the
 <a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table</a>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses.need_reach</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_need_figures</span><span class="p">,</span> <span class="n">keep_need_figures</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses.need_reach</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_need_figures</span><span class="p">,</span> <span class="n">keep_need_figures</span>
 
 <span class="n">download_need_figures</span><span class="p">(</span><span class="s2">&quot;unemployed&quot;</span><span class="p">)</span>   <span class="c1"># fetch once, when a server is built</span>
 
@@ -1844,7 +1850,7 @@ in need and people reached per 100 in need for the places in <code>priority_area
 <tr>
 <td><code>postcode_lookup</code></td>
 <td><code>"auto"</code></td>
-<td>As for the first lens</td>
+<td>As for the first analysis</td>
 </tr>
 <tr>
 <td><code>need</code></td>
@@ -1863,7 +1869,7 @@ in need and people reached per 100 in need for the places in <code>priority_area
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
     <span class="s2">&quot;need-reach&quot;</span><span class="p">,</span>
     <span class="n">clients</span><span class="p">,</span>
     <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">},</span>
@@ -1914,7 +1920,7 @@ function.</p>
 </tbody>
 </table>
 <p>The <code>group</code> column holds each person's ethnic group, or their sex, in your own
-words. The lens matches each label to a group the 2021 Census publishes,
+words. The analysis matches each label to a group the 2021 Census publishes,
 counts your people by group, and sets each group's share of your people
 against its share of the residents of your <strong>catchment</strong>. A group is
 <strong>under-represented</strong> when its share of your people is below four fifths of
@@ -1947,7 +1953,7 @@ matches nothing. People whose label matches nothing are counted, left out of
 the shares, and a warning says how many there are. Codes and short forms
 cannot be matched by wording, so say where they belong with the <code>groups</code>
 option:</p>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
     <span class="s2">&quot;who-we-miss&quot;</span><span class="p">,</span>
     <span class="n">clients</span><span class="p">,</span>
     <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Ethnicity&quot;</span><span class="p">,</span> <span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">},</span>
@@ -1959,16 +1965,16 @@ option:</p>
 <p>The result names the census groups. It never repeats one of your own labels.
 The <code>group</code> role lists the census group names as its <code>reported_values</code>,
 because a label of yours can be the same as one of them.</p>
-<p>With postcodes the lens works out your catchment as the first lens does: the
+<p>With postcodes the analysis works out your catchment as the first analysis does: the
 local authorities that each hold at least 5% of the people it could place.
 People who live outside it are left out, because they are set against the
-residents of the catchment. Without postcodes the lens cannot tell where you
+residents of the catchment. Without postcodes the analysis cannot tell where you
 work, so you must name the area with <code>catchment</code>.</p>
 <p>The residents come from <a href="../ons/">Nomis</a>, for every local authority at once.
 They are public, are fetched once for each characteristic and are then kept in
 memory; <code>clear_residents_cache()</code> forgets them. To run with no request to
 Nomis, keep a copy on the machine, as for need figures:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses.who_we_miss</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_residents</span><span class="p">,</span> <span class="n">keep_residents</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses.who_we_miss</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_residents</span><span class="p">,</span> <span class="n">keep_residents</span>
 
 <span class="n">download_residents</span><span class="p">(</span><span class="s2">&quot;ethnic_group&quot;</span><span class="p">)</span>   <span class="c1"># fetch once, when a server is built</span>
 
@@ -2046,7 +2052,7 @@ group against the share of residents.</p>
 <tr>
 <td><code>postcode_lookup</code></td>
 <td><code>"auto"</code></td>
-<td>As for the first lens</td>
+<td>As for the first analysis</td>
 </tr>
 <tr>
 <td><code>characteristic</code></td>
@@ -2077,7 +2083,7 @@ group against the share of residents.</p>
 </table>
 <p>A group with a hidden count is not judged. A group nobody came from has a
 count of zero, which is shown, and is under-represented.</p>
-<p>This lens has no map yet. The residents are compared across the whole
+<p>This analysis has no map yet. The residents are compared across the whole
 catchment, not place by place.</p>
 <div class="admonition note">
 <p class="admonition-title">Before you use the figures</p>
@@ -2093,7 +2099,7 @@ It covers England and Wales, by local authority, and follows the method of the
 <a href="../../case-studies/starlight-children-mapping/">Starlight case study</a>: total
 what is provided in each place, divide by the people it is for, and look at
 the places where need is high and provision is thin.</p>
-<p>The lens is about sites and what they provide, not about people. It accepts
+<p>The analysis is about sites and what they provide, not about people. It accepts
 three shapes of data:</p>
 <table>
 <thead>
@@ -2123,14 +2129,14 @@ three shapes of data:</p>
 </table>
 <p>The volume is a number of zero or more: sessions, places, boxes, hours. A row
 whose volume is not a number stops the run, and the message says how many rows
-to correct. Postcodes are placed as in the first lens: on your machine when
+to correct. Postcodes are placed as in the first analysis: on your machine when
 the postcode table is installed, and with postcodes.io otherwise.</p>
-<p>The lens loads a count of people in every local authority from
+<p>The analysis loads a count of people in every local authority from
 <a href="../ons/">Nomis</a>, divides the volume you provide in each one by it, and lists
 the high-need local authorities with the least provision for each 1,000
 people. A local authority is high need when its count is at or above the
 middle value of the area compared.</p>
-<p>The <code>need</code> option takes the same values as in the second lens, and the same
+<p>The <code>need</code> option takes the same values as in the second analysis, and the same
 kept copies (<code>keep_need_figures</code>, <code>download_need_figures</code>) are used. The
 default here is <code>"residents"</code>, everyone who lives in the place, because
 provision is often for anyone. Choose a narrower need when what you provide is
@@ -2222,7 +2228,7 @@ people in need and volume for each 1,000 in need for the places in
 <tr>
 <td><code>postcode_lookup</code></td>
 <td><code>"auto"</code></td>
-<td>As for the first lens</td>
+<td>As for the first analysis</td>
 </tr>
 <tr>
 <td><code>need</code></td>
@@ -2241,7 +2247,7 @@ people in need and volume for each 1,000 in need for the places in
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
     <span class="s2">&quot;provision-gap&quot;</span><span class="p">,</span>
     <span class="n">sites</span><span class="p">,</span>
     <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Site postcode&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;Sessions a year&quot;</span><span class="p">},</span>
@@ -2250,14 +2256,14 @@ people in need and volume for each 1,000 in need for the places in
 
 <span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;priority_areas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
 </code></pre></div>
-<p>This lens hides no count, and has no <code>suppress_below</code> option. A volume is what
+<p>This analysis hides no count, and has no <code>suppress_below</code> option. A volume is what
 an organisation provides, not a number of people, so every total is shown,
 however small. Where a local authority holds one site, the volume shown for it
 is that site's. If your numbers are people, such as people seen at each site,
-use the need against reach lens instead, which hides small counts. The result
+use the need against reach analysis instead, which hides small counts. The result
 still names no site and repeats no postcode.</p>
 <p>The case study compares England's Integrated Care Boards and uses hospital
-admissions as the need. This lens compares local authorities and takes the
+admissions as the need. This analysis compares local authorities and takes the
 need from Nomis. Health boards, and a need column of your own, are not in it
 yet.</p>
 <div class="admonition note">
@@ -2272,7 +2278,7 @@ so large local authorities are more likely to be listed.</p>
 would a new site help most? It covers England and Wales, by local authority,
 and follows the method of the
 <a href="../../case-studies/material-focus-recycling/">Material Focus case study</a>.</p>
-<p>Like the provision gap lens, it is about sites, not about people. It accepts
+<p>Like the provision gap analysis, it is about sites, not about people. It accepts
 two shapes of data:</p>
 <table>
 <thead>
@@ -2300,12 +2306,12 @@ that is also what happens when the two columns are swapped. A site in
 Scotland or Northern Ireland still counts as a site.</p>
 <h3 id="site-postcodes-that-stay-on-your-machine">Site postcodes that stay on your machine</h3>
 <p>The <a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table</a> holds
-the neighbourhood of each postcode but no position. So the lens places a site
+the neighbourhood of each postcode but no position. So the analysis places a site
 at the centre of its neighbourhood, from a file of neighbourhood centres kept
 on your machine. In a town that moves a site by a few hundred metres, and in
 the countryside by up to a few kilometres; the result carries a caveat that
 says so. Keep the centres once, when a server is built:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span>
 
 <span class="n">download_centres</span><span class="p">(</span><span class="s2">&quot;neighbourhood&quot;</span><span class="p">)</span>   <span class="c1"># about 35,700 centres, about 1 MB</span>
 </code></pre></div>
@@ -2327,7 +2333,7 @@ says so. Keep the centres once, when a server is built:</p>
 <tr>
 <td><code>"offline"</code></td>
 <td>Placed on your machine. Nothing is sent</td>
-<td>The lens stops</td>
+<td>The analysis stops</td>
 </tr>
 <tr>
 <td><code>"online"</code></td>
@@ -2336,15 +2342,15 @@ says so. Keep the centres once, when a server is built:</p>
 </tr>
 </tbody>
 </table>
-<p>With a postcode table installed and no centres kept, the lens stops and names
+<p>With a postcode table installed and no centres kept, the analysis stops and names
 the function to run. It never falls back to sending postcodes, and it never
-fetches the centres while a lens runs. A server that sets <code>"offline"</code> cannot
+fetches the centres while an analysis runs. A server that sets <code>"offline"</code> cannot
 send a postcode. The result says which happened, under <code>choices</code> and
 <code>privacy.sent_to_third_parties</code>.</p>
 <p>The table and the centres cover England and Wales. On your machine, a site
 with a Scottish or Northern Irish postcode is not found and is left out and
 counted; give its latitude and longitude instead.</p>
-<p>The lens loads the people in every local authority from <a href="../ons/">Nomis</a> and
+<p>The analysis loads the people in every local authority from <a href="../ons/">Nomis</a> and
 the centre of every local authority from the ONS Open Geography Portal. For
 each local authority it measures the distance in a straight line from the
 centre to your nearest site, to the nearest kilometre. A local authority is
@@ -2352,13 +2358,13 @@ within reach when that distance is <code>within_km</code> or less. The list show
 local authorities beyond reach, with the most people first: the places where
 a new site would bring the most people within reach.</p>
 <p><strong>Distance is not travel time.</strong> The package has no road or public transport
-times, so the lens does not turn kilometres into minutes. And it measures from
+times, so the analysis does not turn kilometres into minutes. And it measures from
 the centre of a local authority, not from where each person lives, which is
 rough for a large rural one.</p>
-<p>The <code>need</code> option takes the same values as in the second lens, and the same
+<p>The <code>need</code> option takes the same values as in the second analysis, and the same
 kept copies. The default is <code>"residents"</code>. The centres can be kept on the
-machine too, so the lens runs with no request at all:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span><span class="p">,</span> <span class="n">keep_centres</span>
+machine too, so the analysis runs with no request at all:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span><span class="p">,</span> <span class="n">keep_centres</span>
 
 <span class="n">download_centres</span><span class="p">()</span>   <span class="c1"># fetch once, when a server is built</span>
 
@@ -2478,7 +2484,7 @@ two layers, <code>distance</code> and <code>need</code>.</p>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
     <span class="s2">&quot;access-distance&quot;</span><span class="p">,</span>
     <span class="n">sites</span><span class="p">,</span>
     <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="s2">&quot;Lat&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="s2">&quot;Long&quot;</span><span class="p">},</span>
@@ -2487,7 +2493,7 @@ two layers, <code>distance</code> and <code>need</code>.</p>
 
 <span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;priority_areas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
 </code></pre></div>
-<p>This lens hides no count, and has no <code>suppress_below</code> option. The result
+<p>This analysis hides no count, and has no <code>suppress_below</code> option. The result
 names no site and repeats no postcode or position. Distances are rounded to
 the kilometre, but the distances from several local authorities can still
 show roughly where a site is.</p>
@@ -2502,9 +2508,10 @@ refuge. A check in every result asks this.</p>
 are from a site. They do not say how far the people you see travel, or
 whether anyone far away needs you.</p>
 </div>
-<h2 id="writing-a-lens">Writing a lens</h2>
-<p>A lens is a <code>LensInfo</code> and a function that takes a <code>LensInput</code> and returns a
-<code>LensResult</code>. Register it with <code>register_lens</code>. The rules every lens keeps:</p>
+<h2 id="writing-an-analysis">Writing an analysis</h2>
+<p>An analysis is an <code>AnalysisInfo</code> and a function that takes an <code>AnalysisInput</code> and
+returns an <code>AnalysisResult</code>. Register it with <code>register_analysis</code>. The rules every
+analysis keeps:</p>
 <ol>
 <li>Totals, never rows. Report problems by how many rows they affect.</li>
 <li>Hide small counts and anything that gives them away. Do not publish two

@@ -1,18 +1,25 @@
-# Lenses
+# Analyses
 
-A lens answers one question a charity asks of its own data. You give it a
+An analysis answers one question a charity asks of its own data. You give it a
 table, say which column is which, and it joins your data to UK open data and
 returns figures you can check and reuse.
 
-Every lens returns the same things:
+Kindtech Evidence is built on these analyses. This page is about running them
+from Python. You can also run them from the [command line](cli.md), or from a
+chat assistant through the [connector](connector.md).
+
+<!-- Credit: a sentence that credits DataKind UK goes here once its wording is
+agreed. -->
+
+Every analysis returns the same things:
 
 - **figures**: the headline numbers
 - **tables**: totals behind the figures
 - **a map description**: which areas to draw and what to colour them by, when
-  the lens has a map
+  the analysis has a map
 - **chart descriptions**: which table and columns to draw as a bar chart
 - **the working**: each step taken, with how many rows went in and came out
-- **choices**: what the lens decided for you, and the option that changes it
+- **choices**: what the analysis decided for you, and the option that changes it
 - **checks**: what a person must confirm before using the figures
 - **caveats**: what the figures cannot say
 - **sources**: publisher, edition, licence and link for every dataset used
@@ -25,11 +32,11 @@ from your data is repeated back, not even in a warning or an error message.
 
 ```python
 import pandas as pd
-from uk_open_data.lenses import run_lens
+from uk_open_data.analyses import run_analysis
 
 clients = pd.read_csv("clients.csv")
 
-result = run_lens(
+result = run_analysis(
     "reach-deprivation",
     clients,
     columns={"postcode": "Client postcode"},
@@ -42,17 +49,17 @@ result.to_dict()                                # everything, as plain JSON type
 ```
 
 `data` can be a pandas or polars DataFrame, or a list of row dictionaries.
-`columns` maps each role the lens needs to one of your column names. You can
+`columns` maps each role the analysis needs to one of your column names. You can
 leave a role out when your data already has a column with that name.
 
-To run a lens on a file without writing Python, use the
+To run an analysis on a file without writing Python, use the
 [command line](cli.md).
 
 ## Functions
 
-### `list_lenses()`
+### `list_analyses()`
 
-Returns a `LensInfo` for every lens: its `id`, `title`, the `question` it
+Returns an `AnalysisInfo` for every analysis: its `id`, `title`, the `question` it
 answers, a `summary`, its `roles` (the columns it can use), its `input_modes`
 (the shapes of data it accepts), its `options` and its `coverage`.
 
@@ -74,29 +81,29 @@ out the listed values when there are any, compared without case, and check
 every other value in the column. Leave the whole column out only when the
 role is reported and lists no values.
 
-A role with `amount` set to `True` holds a number the lens adds up: a count of
+A role with `amount` set to `True` holds a number the analysis adds up: a count of
 people or a volume. A total of it is in the result, so where one row is the
 only one for its place or group, that row's number comes back as the total.
 That is not a repeated value. A number in any other role, such as a latitude,
 never comes back.
 
-### `describe_lens(lens_id)`
+### `describe_analysis(analysis_id)`
 
-Returns the `LensInfo` for one lens. Raises `KeyError` for an unknown id.
+Returns the `AnalysisInfo` for one analysis. Raises `KeyError` for an unknown id.
 
-### `run_lens(lens_id, data, columns=None, options=None)`
+### `run_analysis(analysis_id, data, columns=None, options=None)`
 
-Runs a lens and returns a `LensResult`.
+Runs an analysis and returns an `AnalysisResult`.
 
-Raises `LensInputError` (a `ValueError`) when the data, the column mapping or
+Raises `AnalysisInputError` (a `ValueError`) when the data, the column mapping or
 an option cannot be used. The message is written for a person and
 `error.problems` lists each problem separately.
 
-When a public data source the lens needs cannot be reached, the
+When a public data source the analysis needs cannot be reached, the
 `requests.RequestException` is let out. Its text holds the whole web address
 that was asked for, which can hold a postcode, so show a message of your own
 rather than the text. The command line names the site alone, and says
-whether the source could not be reached or answered with an error. A lens
+whether the source could not be reached or answered with an error. An analysis
 needs no network when the public figures it uses are kept on your machine.
 
 ## Drawing the map
@@ -105,7 +112,7 @@ A result describes its map; `render_map` draws it as an SVG picture with a
 legend and the credits the data licences ask for.
 
 ```python
-from uk_open_data.lenses import render_map
+from uk_open_data.analyses import render_map
 
 svg = render_map(result)                  # the first layer: deprivation decile
 svg = render_map(result, layer="people")  # people reached, in bands
@@ -127,7 +134,7 @@ the network, pass `boundaries=` a GeoJSON FeatureCollection you already have;
 ## Charts
 
 `result.charts` describes the charts a result is best shown with, so a page
-can draw them without knowing the lens. Each `Chart` names a table of the
+can draw them without knowing the analysis. Each `Chart` names a table of the
 result, the column that names each group of bars (`category_column`) and one
 or more `series`, each a column with a label and a unit. Every series in a
 chart has the same unit, so one axis serves them all.
@@ -150,7 +157,7 @@ hidden with it. So a hidden count is not always small: do not report a hidden
 cell as "fewer than 5". Every result says this in its privacy notes. Change
 the threshold with the `suppress_below` option; it cannot go below 3.
 
-A result says which threshold was used in `privacy.suppress_below`. The lenses
+A result says which threshold was used in `privacy.suppress_below`. The analyses
 about sites, provision gap and access and distance, hide nothing, and for them
 it is `None`.
 
@@ -167,7 +174,7 @@ It accepts two shapes of data:
 | `postcodes` | `postcode` | One row per person or case, with a home postcode |
 | `neighbourhood_counts` | `lsoa_code`, `count` | Already totalled by 2021 LSOA |
 
-In `postcodes` mode the lens looks postcodes up in the
+In `postcodes` mode the analysis looks postcodes up in the
 [postcode table on your machine](postcodes.md#looking-up-postcodes-on-this-machine)
 when one is installed, and then no postcode is sent anywhere. Install it once
 with `uk-open-data postcodes download`. Without the table, the distinct,
@@ -181,7 +188,7 @@ The deprivation index is downloaded from gov.uk, or read from a copy
 there is one. A result that used a copy says so in its `sources` and its
 `working`, with the note the copy was kept with.
 
-The lens then works out your **catchment**: the local authorities that each
+The analysis then works out your **catchment**: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
 are about the people who live there, so they can be set against everyone who
 lives there. People outside the catchment are counted in the local authority
@@ -215,7 +222,7 @@ against the share of catchment residents.
 | `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out catchment |
 
 ```python
-result = run_lens(
+result = run_analysis(
     "reach-deprivation",
     clients,
     columns={"postcode": "Client postcode"},
@@ -242,10 +249,10 @@ It accepts two shapes of data:
 | `postcodes` | `postcode` | One row per person or case, with a home postcode |
 | `area_counts` | `local_authority`, `count` | Already totalled by local authority, named or coded |
 
-Postcodes are placed as in the first lens: on your machine when the postcode
+Postcodes are placed as in the first analysis: on your machine when the postcode
 table is installed, and with postcodes.io otherwise.
 
-The lens loads a count of **people in need** in every local authority from
+The analysis loads a count of **people in need** in every local authority from
 [Nomis](ons.md), divides the people you helped in each one by it, and lists
 the high-need local authorities where you reach the fewest people per 100 in
 need. A local authority is high need when its count is at or above the middle
@@ -287,7 +294,7 @@ keep a copy on the machine, in the same data folder as the
 [postcode table](postcodes.md#looking-up-postcodes-on-this-machine):
 
 ```python
-from uk_open_data.lenses.need_reach import download_need_figures, keep_need_figures
+from uk_open_data.analyses.need_reach import download_need_figures, keep_need_figures
 
 download_need_figures("unemployed")   # fetch once, when a server is built
 
@@ -330,13 +337,13 @@ in need and people reached per 100 in need for the places in `priority_areas`.
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `suppress_below` | `5` | Counts above zero and below this are hidden |
-| `postcode_lookup` | `"auto"` | As for the first lens |
+| `postcode_lookup` | `"auto"` | As for the first analysis |
 | `need` | `"unemployed"` | The need to compare your reach with |
 | `catchment` | England and Wales | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"` |
 | `top` | `10` | How many places to list, from 1 to 50 |
 
 ```python
-result = run_lens(
+result = run_analysis(
     "need-reach",
     clients,
     columns={"postcode": "Client postcode"},
@@ -371,7 +378,7 @@ It accepts three shapes of data:
 | `people` | `group` | One row per person, with their group and no location |
 
 The `group` column holds each person's ethnic group, or their sex, in your own
-words. The lens matches each label to a group the 2021 Census publishes,
+words. The analysis matches each label to a group the 2021 Census publishes,
 counts your people by group, and sets each group's share of your people
 against its share of the residents of your **catchment**. A group is
 **under-represented** when its share of your people is below four fifths of
@@ -392,7 +399,7 @@ cannot be matched by wording, so say where they belong with the `groups`
 option:
 
 ```python
-result = run_lens(
+result = run_analysis(
     "who-we-miss",
     clients,
     columns={"group": "Ethnicity", "postcode": "Client postcode"},
@@ -406,10 +413,10 @@ The result names the census groups. It never repeats one of your own labels.
 The `group` role lists the census group names as its `reported_values`,
 because a label of yours can be the same as one of them.
 
-With postcodes the lens works out your catchment as the first lens does: the
+With postcodes the analysis works out your catchment as the first analysis does: the
 local authorities that each hold at least 5% of the people it could place.
 People who live outside it are left out, because they are set against the
-residents of the catchment. Without postcodes the lens cannot tell where you
+residents of the catchment. Without postcodes the analysis cannot tell where you
 work, so you must name the area with `catchment`.
 
 The residents come from [Nomis](ons.md), for every local authority at once.
@@ -418,7 +425,7 @@ memory; `clear_residents_cache()` forgets them. To run with no request to
 Nomis, keep a copy on the machine, as for need figures:
 
 ```python
-from uk_open_data.lenses.who_we_miss import download_residents, keep_residents
+from uk_open_data.analyses.who_we_miss import download_residents, keep_residents
 
 download_residents("ethnic_group")   # fetch once, when a server is built
 
@@ -449,7 +456,7 @@ group against the share of residents.
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `suppress_below` | `5` | Counts above zero and below this are hidden |
-| `postcode_lookup` | `"auto"` | As for the first lens |
+| `postcode_lookup` | `"auto"` | As for the first analysis |
 | `characteristic` | `"ethnic_group"` | What the group column holds |
 | `groups` | none | Your label to census group, for labels the wording does not settle |
 | `catchment` | worked out from postcodes | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"`. Needed when there are no postcodes |
@@ -459,7 +466,7 @@ group against the share of residents.
 A group with a hidden count is not judged. A group nobody came from has a
 count of zero, which is shown, and is under-represented.
 
-This lens has no map yet. The residents are compared across the whole
+This analysis has no map yet. The residents are compared across the whole
 catchment, not place by place.
 
 !!! note "Before you use the figures"
@@ -477,7 +484,7 @@ It covers England and Wales, by local authority, and follows the method of the
 what is provided in each place, divide by the people it is for, and look at
 the places where need is high and provision is thin.
 
-The lens is about sites and what they provide, not about people. It accepts
+The analysis is about sites and what they provide, not about people. It accepts
 three shapes of data:
 
 | Input mode | Columns | What it is |
@@ -488,16 +495,16 @@ three shapes of data:
 
 The volume is a number of zero or more: sessions, places, boxes, hours. A row
 whose volume is not a number stops the run, and the message says how many rows
-to correct. Postcodes are placed as in the first lens: on your machine when
+to correct. Postcodes are placed as in the first analysis: on your machine when
 the postcode table is installed, and with postcodes.io otherwise.
 
-The lens loads a count of people in every local authority from
+The analysis loads a count of people in every local authority from
 [Nomis](ons.md), divides the volume you provide in each one by it, and lists
 the high-need local authorities with the least provision for each 1,000
 people. A local authority is high need when its count is at or above the
 middle value of the area compared.
 
-The `need` option takes the same values as in the second lens, and the same
+The `need` option takes the same values as in the second analysis, and the same
 kept copies (`keep_need_figures`, `download_need_figures`) are used. The
 default here is `"residents"`, everyone who lives in the place, because
 provision is often for anyone. Choose a narrower need when what you provide is
@@ -528,13 +535,13 @@ people in need and volume for each 1,000 in need for the places in
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `postcode_lookup` | `"auto"` | As for the first lens |
+| `postcode_lookup` | `"auto"` | As for the first analysis |
 | `need` | `"residents"` | The people to set your provision against |
 | `catchment` | England and Wales | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"` |
 | `top` | `10` | How many places to list, from 1 to 50 |
 
 ```python
-result = run_lens(
+result = run_analysis(
     "provision-gap",
     sites,
     columns={"postcode": "Site postcode", "volume": "Sessions a year"},
@@ -544,15 +551,15 @@ result = run_lens(
 result.table("priority_areas").to_frame()
 ```
 
-This lens hides no count, and has no `suppress_below` option. A volume is what
+This analysis hides no count, and has no `suppress_below` option. A volume is what
 an organisation provides, not a number of people, so every total is shown,
 however small. Where a local authority holds one site, the volume shown for it
 is that site's. If your numbers are people, such as people seen at each site,
-use the need against reach lens instead, which hides small counts. The result
+use the need against reach analysis instead, which hides small counts. The result
 still names no site and repeats no postcode.
 
 The case study compares England's Integrated Care Boards and uses hospital
-admissions as the need. This lens compares local authorities and takes the
+admissions as the need. This analysis compares local authorities and takes the
 need from Nomis. Health boards, and a need column of your own, are not in it
 yet.
 
@@ -569,7 +576,7 @@ would a new site help most? It covers England and Wales, by local authority,
 and follows the method of the
 [Material Focus case study](../case-studies/material-focus-recycling.md).
 
-Like the provision gap lens, it is about sites, not about people. It accepts
+Like the provision gap analysis, it is about sites, not about people. It accepts
 two shapes of data:
 
 | Input mode | Columns | What it is |
@@ -584,14 +591,14 @@ Scotland or Northern Ireland still counts as a site.
 ### Site postcodes that stay on your machine
 
 The [postcode table](postcodes.md#looking-up-postcodes-on-this-machine) holds
-the neighbourhood of each postcode but no position. So the lens places a site
+the neighbourhood of each postcode but no position. So the analysis places a site
 at the centre of its neighbourhood, from a file of neighbourhood centres kept
 on your machine. In a town that moves a site by a few hundred metres, and in
 the countryside by up to a few kilometres; the result carries a caveat that
 says so. Keep the centres once, when a server is built:
 
 ```python
-from uk_open_data.lenses.access_distance import download_centres
+from uk_open_data.analyses.access_distance import download_centres
 
 download_centres("neighbourhood")   # about 35,700 centres, about 1 MB
 ```
@@ -601,12 +608,12 @@ What happens to site postcodes follows `postcode_lookup`:
 | `postcode_lookup` | Postcode table installed | No postcode table |
 | --- | --- | --- |
 | `"auto"` (the default) | Placed on your machine. Nothing is sent | Sent to postcodes.io |
-| `"offline"` | Placed on your machine. Nothing is sent | The lens stops |
+| `"offline"` | Placed on your machine. Nothing is sent | The analysis stops |
 | `"online"` | Sent to postcodes.io | Sent to postcodes.io |
 
-With a postcode table installed and no centres kept, the lens stops and names
+With a postcode table installed and no centres kept, the analysis stops and names
 the function to run. It never falls back to sending postcodes, and it never
-fetches the centres while a lens runs. A server that sets `"offline"` cannot
+fetches the centres while an analysis runs. A server that sets `"offline"` cannot
 send a postcode. The result says which happened, under `choices` and
 `privacy.sent_to_third_parties`.
 
@@ -614,7 +621,7 @@ The table and the centres cover England and Wales. On your machine, a site
 with a Scottish or Northern Irish postcode is not found and is left out and
 counted; give its latitude and longitude instead.
 
-The lens loads the people in every local authority from [Nomis](ons.md) and
+The analysis loads the people in every local authority from [Nomis](ons.md) and
 the centre of every local authority from the ONS Open Geography Portal. For
 each local authority it measures the distance in a straight line from the
 centre to your nearest site, to the nearest kilometre. A local authority is
@@ -623,16 +630,16 @@ local authorities beyond reach, with the most people first: the places where
 a new site would bring the most people within reach.
 
 **Distance is not travel time.** The package has no road or public transport
-times, so the lens does not turn kilometres into minutes. And it measures from
+times, so the analysis does not turn kilometres into minutes. And it measures from
 the centre of a local authority, not from where each person lives, which is
 rough for a large rural one.
 
-The `need` option takes the same values as in the second lens, and the same
+The `need` option takes the same values as in the second analysis, and the same
 kept copies. The default is `"residents"`. The centres can be kept on the
-machine too, so the lens runs with no request at all:
+machine too, so the analysis runs with no request at all:
 
 ```python
-from uk_open_data.lenses.access_distance import download_centres, keep_centres
+from uk_open_data.analyses.access_distance import download_centres, keep_centres
 
 download_centres()   # fetch once, when a server is built
 
@@ -680,7 +687,7 @@ two layers, `distance` and `need`.
 | `top` | `10` | How many places to list, from 1 to 50 |
 
 ```python
-result = run_lens(
+result = run_analysis(
     "access-distance",
     sites,
     columns={"latitude": "Lat", "longitude": "Long"},
@@ -690,7 +697,7 @@ result = run_lens(
 result.table("priority_areas").to_frame()
 ```
 
-This lens hides no count, and has no `suppress_below` option. The result
+This analysis hides no count, and has no `suppress_below` option. The result
 names no site and repeats no postcode or position. Distances are rounded to
 the kilometre, but the distances from several local authorities can still
 show roughly where a site is.
@@ -704,10 +711,11 @@ show roughly where a site is.
     are from a site. They do not say how far the people you see travel, or
     whether anyone far away needs you.
 
-## Writing a lens
+## Writing an analysis
 
-A lens is a `LensInfo` and a function that takes a `LensInput` and returns a
-`LensResult`. Register it with `register_lens`. The rules every lens keeps:
+An analysis is an `AnalysisInfo` and a function that takes an `AnalysisInput` and
+returns an `AnalysisResult`. Register it with `register_analysis`. The rules every
+analysis keeps:
 
 1. Totals, never rows. Report problems by how many rows they affect.
 2. Hide small counts and anything that gives them away. Do not publish two

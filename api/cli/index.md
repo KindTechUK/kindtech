@@ -1,42 +1,42 @@
 # Command line
 
 The package installs one command under two names, `uk-open-data` and
-`kindtech`. It runs [lenses](lenses.md) on a file without writing any Python.
+`kindtech`. It runs [analyses](analyses.md) on a file without writing any Python.
 
 ```bash
 uv add uk-open-data pandas        # the command needs pandas or polars installed
-uv run uk-open-data lens list
+uv run uk-open-data analysis list
 ```
 
 ## Commands
 
-### `lens list`
+### `analysis list`
 
-Lists every lens with the question it answers. Add `--json` for the full
+Lists every analysis with the question it answers. Add `--json` for the full
 descriptions.
 
 ```bash
-uk-open-data lens list
+uk-open-data analysis list
 # reach-deprivation: Are we reaching people in the most deprived neighbourhoods?
 ```
 
-### `lens describe LENS_ID`
+### `analysis describe ANALYSIS_ID`
 
-Shows what a lens needs: the shapes of data it accepts, the columns, and the
+Shows what an analysis needs: the shapes of data it accepts, the columns, and the
 options with their defaults. Add `--json` for the same as JSON.
 
 ```bash
-uk-open-data lens describe reach-deprivation
+uk-open-data analysis describe reach-deprivation
 ```
 
-### `lens run LENS_ID FILE`
+### `analysis run ANALYSIS_ID FILE`
 
-Runs a lens on a `.csv`, `.xlsx` or `.ods` file and prints a plain-text report:
+Runs an analysis on a `.csv`, `.xlsx` or `.ods` file and prints a plain-text report:
 the figures, the tables, the checks to make before using them, what the figures
 cannot say, the choices made, the working, the sources and a privacy summary.
 
 ```bash
-uk-open-data lens run reach-deprivation clients.csv \
+uk-open-data analysis run reach-deprivation clients.csv \
     --column postcode="Client postcode"
 ```
 
@@ -54,7 +54,7 @@ uk-open-data lens run reach-deprivation clients.csv \
 An option value is read as JSON when it is JSON, and as text otherwise:
 
 ```bash
-uk-open-data lens run reach-deprivation clients.csv \
+uk-open-data analysis run reach-deprivation clients.csv \
     --column postcode="Client postcode" \
     --option suppress_below=10 \
     --option catchment='["Lewisham", "Greenwich"]'
@@ -66,7 +66,7 @@ data, so it is safe to paste into a chat or an issue.
 
 ### `postcodes download`
 
-Fetches the postcode table, a few megabytes, so that lenses look postcodes up on
+Fetches the postcode table, a few megabytes, so that analyses look postcodes up on
 your machine and send none of them out. Run it once. `--force` fetches it
 again, and `--url` with `--sha256` fetches a copy you host yourself.
 
@@ -90,7 +90,7 @@ do not need it to use the package.
 Give an assistant the JSON summary, not your file:
 
 ```bash
-uk-open-data lens run reach-deprivation clients.csv \
+uk-open-data analysis run reach-deprivation clients.csv \
     --column postcode="Client postcode" --json --summary
 ```
 

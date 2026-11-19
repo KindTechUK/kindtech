@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://kindtechuk.github.io/uk-open-data/api/cli/">
       
       
-        <link rel="prev" href="../lenses/">
+        <link rel="prev" href="../analyses/">
       
       
         <link rel="next" href="../connector/">
@@ -766,12 +766,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../lenses/" class="md-nav__link">
+      <a href="../analyses/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Lenses
+    Analyses
     
   </span>
   
@@ -849,27 +849,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#lens-list" class="md-nav__link">
+  <a href="#analysis-list" class="md-nav__link">
     <span class="md-ellipsis">
-      lens list
+      analysis list
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#lens-describe-lens_id" class="md-nav__link">
+  <a href="#analysis-describe-analysis_id" class="md-nav__link">
     <span class="md-ellipsis">
-      lens describe LENS_ID
+      analysis describe ANALYSIS_ID
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#lens-run-lens_id-file" class="md-nav__link">
+  <a href="#analysis-run-analysis_id-file" class="md-nav__link">
     <span class="md-ellipsis">
-      lens run LENS_ID FILE
+      analysis run ANALYSIS_ID FILE
     </span>
   </a>
   
@@ -1157,27 +1157,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#lens-list" class="md-nav__link">
+  <a href="#analysis-list" class="md-nav__link">
     <span class="md-ellipsis">
-      lens list
+      analysis list
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#lens-describe-lens_id" class="md-nav__link">
+  <a href="#analysis-describe-analysis_id" class="md-nav__link">
     <span class="md-ellipsis">
-      lens describe LENS_ID
+      analysis describe ANALYSIS_ID
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#lens-run-lens_id-file" class="md-nav__link">
+  <a href="#analysis-run-analysis_id-file" class="md-nav__link">
     <span class="md-ellipsis">
-      lens run LENS_ID FILE
+      analysis run ANALYSIS_ID FILE
     </span>
   </a>
   
@@ -1245,27 +1245,27 @@
 
 <h1 id="command-line">Command line</h1>
 <p>The package installs one command under two names, <code>uk-open-data</code> and
-<code>kindtech</code>. It runs <a href="../lenses/">lenses</a> on a file without writing any Python.</p>
+<code>kindtech</code>. It runs <a href="../analyses/">analyses</a> on a file without writing any Python.</p>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>uk-open-data<span class="w"> </span>pandas<span class="w">        </span><span class="c1"># the command needs pandas or polars installed</span>
-uv<span class="w"> </span>run<span class="w"> </span>uk-open-data<span class="w"> </span>lens<span class="w"> </span>list
+uv<span class="w"> </span>run<span class="w"> </span>uk-open-data<span class="w"> </span>analysis<span class="w"> </span>list
 </code></pre></div>
 <h2 id="commands">Commands</h2>
-<h3 id="lens-list"><code>lens list</code></h3>
-<p>Lists every lens with the question it answers. Add <code>--json</code> for the full
+<h3 id="analysis-list"><code>analysis list</code></h3>
+<p>Lists every analysis with the question it answers. Add <code>--json</code> for the full
 descriptions.</p>
-<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>lens<span class="w"> </span>list
+<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>analysis<span class="w"> </span>list
 <span class="c1"># reach-deprivation: Are we reaching people in the most deprived neighbourhoods?</span>
 </code></pre></div>
-<h3 id="lens-describe-lens_id"><code>lens describe LENS_ID</code></h3>
-<p>Shows what a lens needs: the shapes of data it accepts, the columns, and the
+<h3 id="analysis-describe-analysis_id"><code>analysis describe ANALYSIS_ID</code></h3>
+<p>Shows what an analysis needs: the shapes of data it accepts, the columns, and the
 options with their defaults. Add <code>--json</code> for the same as JSON.</p>
-<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>lens<span class="w"> </span>describe<span class="w"> </span>reach-deprivation
+<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>analysis<span class="w"> </span>describe<span class="w"> </span>reach-deprivation
 </code></pre></div>
-<h3 id="lens-run-lens_id-file"><code>lens run LENS_ID FILE</code></h3>
-<p>Runs a lens on a <code>.csv</code>, <code>.xlsx</code> or <code>.ods</code> file and prints a plain-text report:
+<h3 id="analysis-run-analysis_id-file"><code>analysis run ANALYSIS_ID FILE</code></h3>
+<p>Runs an analysis on a <code>.csv</code>, <code>.xlsx</code> or <code>.ods</code> file and prints a plain-text report:
 the figures, the tables, the checks to make before using them, what the figures
 cannot say, the choices made, the working, the sources and a privacy summary.</p>
-<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>lens<span class="w"> </span>run<span class="w"> </span>reach-deprivation<span class="w"> </span>clients.csv<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>analysis<span class="w"> </span>run<span class="w"> </span>reach-deprivation<span class="w"> </span>clients.csv<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--column<span class="w"> </span><span class="nv">postcode</span><span class="o">=</span><span class="s2">&quot;Client postcode&quot;</span>
 </code></pre></div>
 <table>
@@ -1311,7 +1311,7 @@ cannot say, the choices made, the working, the sources and a privacy summary.</p
 </tbody>
 </table>
 <p>An option value is read as JSON when it is JSON, and as text otherwise:</p>
-<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>lens<span class="w"> </span>run<span class="w"> </span>reach-deprivation<span class="w"> </span>clients.csv<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>analysis<span class="w"> </span>run<span class="w"> </span>reach-deprivation<span class="w"> </span>clients.csv<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--column<span class="w"> </span><span class="nv">postcode</span><span class="o">=</span><span class="s2">&quot;Client postcode&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--option<span class="w"> </span><span class="nv">suppress_below</span><span class="o">=</span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--option<span class="w"> </span><span class="nv">catchment</span><span class="o">=</span><span class="s1">&#39;[&quot;Lewisham&quot;, &quot;Greenwich&quot;]&#39;</span>
@@ -1320,7 +1320,7 @@ cannot say, the choices made, the working, the sources and a privacy summary.</p
 wrong and exits with status 2. The message never repeats a value from your
 data, so it is safe to paste into a chat or an issue.</p>
 <h3 id="postcodes-download"><code>postcodes download</code></h3>
-<p>Fetches the postcode table, a few megabytes, so that lenses look postcodes up on
+<p>Fetches the postcode table, a few megabytes, so that analyses look postcodes up on
 your machine and send none of them out. Run it once. <code>--force</code> fetches it
 again, and <code>--url</code> with <code>--sha256</code> fetches a copy you host yourself.</p>
 <div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>postcodes<span class="w"> </span>download
@@ -1334,7 +1334,7 @@ comes in) and prints its SHA-256. This is how a new edition is published; you
 do not need it to use the package.</p>
 <h2 id="using-it-from-an-assistant">Using it from an assistant</h2>
 <p>Give an assistant the JSON summary, not your file:</p>
-<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>lens<span class="w"> </span>run<span class="w"> </span>reach-deprivation<span class="w"> </span>clients.csv<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>analysis<span class="w"> </span>run<span class="w"> </span>reach-deprivation<span class="w"> </span>clients.csv<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--column<span class="w"> </span><span class="nv">postcode</span><span class="o">=</span><span class="s2">&quot;Client postcode&quot;</span><span class="w"> </span>--json<span class="w"> </span>--summary
 </code></pre></div>
 <p>The summary holds totals only, with small counts hidden. Your rows stay on your
