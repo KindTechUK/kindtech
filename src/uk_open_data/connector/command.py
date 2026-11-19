@@ -6,6 +6,7 @@ import sys
 from collections.abc import Sequence
 
 from uk_open_data.analyses import RUNS_LOGGER
+from uk_open_data.connector.maps import keep_addresses_out_of_the_log
 
 # How the usage line names the command, unless the caller started it another way.
 PROG = "python -m uk_open_data.connector"
@@ -26,6 +27,8 @@ def main(argv: Sequence[str] | None = None, prog: str = PROG) -> None:
     logging.basicConfig(level=args.log_level, stream=sys.stderr)
     # One line for each answer given, whatever the level chosen for the rest.
     logging.getLogger(RUNS_LOGGER).setLevel(logging.INFO)
+    # The boundary service's own error lines hold the web address it was asked.
+    keep_addresses_out_of_the_log()
     from uk_open_data.connector import build_server
 
     server = build_server()

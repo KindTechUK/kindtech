@@ -1,5 +1,8 @@
 """Shared test set-up."""
 
+import logging
+from collections.abc import Iterator
+
 import connector_fakes as fakes
 import pytest
 import requests
@@ -29,6 +32,16 @@ def no_outlines_from_the_network(monkeypatch: pytest.MonkeyPatch) -> None:
         raise requests.ConnectionError("the boundary service is not asked in tests")
 
     monkeypatch.setattr(maps, "load_map_boundaries", down)
+
+
+@pytest.fixture(autouse=True)
+def outlines_log_put_back() -> Iterator[None]:
+    """Undo what a test did to the logger of the code that asks for outlines."""
+    log = logging.getLogger(maps.OUTLINES_LOGGER)
+    handlers, propagate = list(log.handlers), log.propagate
+    yield
+    log.handlers[:] = handlers
+    log.propagate = propagate
 
 
 @pytest.fixture

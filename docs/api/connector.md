@@ -315,7 +315,13 @@ map goes by the rate.
   shape of a postcode is always withheld.
 - Error messages name the argument that was wrong and never quote its value.
 - The log follows the same rule. When a data source cannot be reached, the log
-  holds the kind of error and not the web address. When a tool crashes, the
+  holds the kind of error and not the web address. The code that asks the
+  boundary service logs the address it asked, which holds the area codes of
+  the map, so the connector's command replaces each warning or error from
+  that code with one sentence that says a line was left out. A program that
+  builds the server itself and lets it fetch outlines calls
+  `uk_open_data.connector.maps.keep_addresses_out_of_the_log()` once to do
+  the same. When a tool crashes, the
   assistant is told only that the tool failed, and the log says which tool
   stopped, with what kind of error and where in the code, and leaves out the
   error's own text, which can quote a value from the rows.
