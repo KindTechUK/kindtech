@@ -226,11 +226,21 @@ none was drawn. An analysis with no map has no `map` in its answer, and neither 
 a result that was held back. The plain Python function `run_analysis_on_counts`
 draws nothing; only the server does.
 
-The outlines of the areas are fetched from the ONS Open Geography Portal by
-public area code each time a map is drawn. When they cannot be fetched the
-figures come back as usual and the note says no map was drawn. When you host
-the connector, keep the outlines on your server and pass a function that
-reads them, so that no run waits on another service:
+The outlines are fetched from the ONS Open Geography Portal each time a map is
+drawn. What is sent is public area codes only: those of the areas on the map
+and of the local authorities near it, which are drawn pale around it. When
+the outlines cannot be fetched the figures come back as usual and the note
+says no map was drawn.
+
+The figures do not wait long for a picture. The first time an area is asked
+for, the boundary service can take a minute or more, so the server waits 15
+seconds for the outlines and then sends the answer without a map, with a note
+that says so. The fetch is left to finish, and a second run a minute later is
+often quick. The outlines of every local authority are kept in memory once
+fetched, for as long as the server runs.
+
+When you host the connector, keep the outlines on your server and pass a
+function that reads them, so that no run waits on another service:
 
 ```python
 from uk_open_data.connector import build_server

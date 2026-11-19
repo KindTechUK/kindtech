@@ -6,6 +6,7 @@ the real first analysis on the small England.
 
 import asyncio
 import json
+import threading
 from typing import Any
 
 import connector_fakes as fakes
@@ -89,6 +90,47 @@ class TestThePicture:
             None,
             maps.NO_OUTLINES,
         )
+
+    def test_outlines_that_give_nothing_are_treated_the_same(self) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+
+        assert picture_for(result, boundaries=lambda _: None) == (
+            None,
+            maps.NO_OUTLINES,
+        )
+
+    def test_slow_outlines_do_not_keep_the_figures_waiting(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+        let_go = threading.Event()
+        fetched: list[str] = []
+
+        def slow(result: Any) -> dict[str, Any]:
+            let_go.wait(timeout=5)
+            fetched.append("done")
+            return fakes.square_outlines(result)
+
+        monkeypatch.setattr(maps, "MAP_SECONDS", 0.05)
+
+        picture, note = picture_for(result, boundaries=slow)
+
+        assert picture is None
+        assert note == maps.TOO_SLOW
+        # The fetch is left to finish, so the next map of these places is quick.
+        assert fetched == []
+        let_go.set()
+
+    def test_outlines_that_arrive_in_time_are_drawn(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+        monkeypatch.setattr(maps, "MAP_SECONDS", 5)
+
+        picture, note = picture_for(result, boundaries=fakes.square_outlines)
+
+        assert picture is not None
+        assert note.startswith("A map of this result was drawn")
 
     def test_a_picture_that_repeats_an_input_value_is_withheld(self) -> None:
         result = run_analysis("reach-deprivation", COUNTS)
@@ -178,6 +220,26 @@ class TestThroughTheServer:
             "drawn": False,
             "note": maps.NO_OUTLINES,
         }
+
+    def test_slow_outlines_mean_the_answer_goes_out_and_says_why(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        let_go = threading.Event()
+
+        def slow(result: Any) -> dict[str, Any]:
+            let_go.wait(timeout=5)
+            return fakes.square_outlines(result)
+
+        monkeypatch.setattr(maps, "MAP_SECONDS", 0.05)
+
+        reply = _call(RUN, map_boundaries=slow)
+        let_go.set()
+
+        answer = reply["structuredContent"]
+        assert answer["status"] == "ok"
+        assert answer["result"]["figures"]
+        assert answer["map"] == {"drawn": False, "note": maps.TOO_SLOW}
+        assert MAP_META_KEY not in (reply.get("_meta") or {})
 
     def test_an_unreachable_boundary_service_is_not_named_in_the_log(
         self, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
