@@ -6,6 +6,7 @@ tables, so the tests are isolated and repeatable.
 """
 
 import json
+import logging
 import unittest.mock as mock
 
 import pandas as pd
@@ -17,6 +18,7 @@ from uk_open_data.analyses import (
     describe_analysis,
     list_analyses,
     reach_deprivation,
+    record_run,
     register_analysis,
     run_analysis,
 )
@@ -720,3 +722,52 @@ def test_decile_chart_sets_people_against_residents(world):
         "share_of_people",
         "share_of_residents",
     ]
+
+
+# --- counting completed runs -----------------------------------------------
+
+RUNS_LOGGER = "uk_open_data.runs"
+
+
+def test_record_run_writes_one_record_with_three_fixed_words(caplog):
+    with caplog.at_level(logging.INFO, logger=RUNS_LOGGER):
+        record_run(ANALYSIS_ID, "postcodes", "page")
+    (record,) = caplog.records
+    assert record.name == RUNS_LOGGER
+    assert record.levelno == logging.INFO
+    assert record.getMessage() == (
+        "run analysis=reach-deprivation mode=postcodes door=page"
+    )
+    assert record.analysis_id == ANALYSIS_ID
+    assert record.input_mode == "postcodes"
+    assert record.door == "page"
+
+
+@pytest.mark.parametrize(
+    ("analysis_id", "input_mode", "door", "error"),
+    [
+        ("SE13 7VC", "postcodes", "page", KeyError),
+        (ANALYSIS_ID, "SE13 7VC", "page", ValueError),
+        (ANALYSIS_ID, "postcodes", "SE13 7VC", ValueError),
+        (ANALYSIS_ID, "postcodes", "python", ValueError),
+    ],
+)
+def test_record_run_refuses_a_word_off_its_lists_without_repeating_it(
+    analysis_id, input_mode, door, error, caplog
+):
+    with (
+        caplog.at_level(logging.INFO, logger=RUNS_LOGGER),
+        pytest.raises(error) as raised,
+    ):
+        record_run(analysis_id, input_mode, door)
+    assert caplog.records == []
+    assert "SE13" not in str(raised.value)
+    assert "python" not in str(raised.value)
+
+
+def test_running_an_analysis_records_nothing_by_itself(world, caplog):
+    # A run from Python is not counted: only a door that gave a person an
+    # answer calls record_run.
+    with caplog.at_level(logging.INFO, logger=RUNS_LOGGER):
+        world.run()
+    assert caplog.records == []

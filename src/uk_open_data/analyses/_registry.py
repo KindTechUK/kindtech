@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping
 from typing import Any
 
@@ -16,6 +17,11 @@ from uk_open_data.analyses._model import (
 )
 
 _ANALYSES: dict[str, Analysis] = {}
+
+# Completed runs are counted from this logger's records, by a host that keeps
+# its own logs. The package sends nothing anywhere.
+RUNS_LOGGER = "uk_open_data.runs"
+DOORS = ("cli", "page", "chat")
 
 
 def register_analysis(analysis: Analysis) -> Analysis:
@@ -88,6 +94,47 @@ def run_analysis(
             options=resolved_options,
             n_rows=table.n_rows,
         )
+    )
+
+
+def record_run(analysis_id: str, input_mode: str, door: str) -> None:
+    """Record that a run has given a person an answer.
+
+    Call it once for each answer a person receives, from the place that gave
+    it: the command line, a page or a chat assistant. It writes one record at
+    INFO level to the ``uk_open_data.runs`` logger, and that is all it does.
+    A host that keeps its logs can count the records; on a person's own
+    machine nobody collects them. Nothing is sent anywhere.
+
+    The record holds the three arguments and nothing else, and each must be
+    one of a fixed list, so no word from a person's data can reach a log. A
+    value that is not on its list is refused without being repeated.
+
+    Args:
+        analysis_id: The id of the analysis that ran.
+        input_mode: The input mode it ran in, as ``result.input_mode`` gives it.
+        door: Where the answer was given: ``"cli"``, ``"page"`` or ``"chat"``.
+
+    Raises:
+        KeyError: If there is no analysis with this id.
+        ValueError: If the analysis has no such input mode, or the door is not
+            one of the three.
+    """
+    if analysis_id not in _ANALYSES:
+        known = ", ".join(_ANALYSES) or "none"
+        raise KeyError(f"No analysis has that id. Known analyses: {known}.")
+    modes = [mode.name for mode in _ANALYSES[analysis_id].info.input_modes]
+    if input_mode not in modes:
+        msg = f"This analysis has no input mode of that name. Its modes: {modes}."
+        raise ValueError(msg)
+    if door not in DOORS:
+        raise ValueError(f"The door must be one of: {', '.join(DOORS)}.")
+    logging.getLogger(RUNS_LOGGER).info(
+        "run analysis=%s mode=%s door=%s",
+        analysis_id,
+        input_mode,
+        door,
+        extra={"analysis_id": analysis_id, "input_mode": input_mode, "door": door},
     )
 
 

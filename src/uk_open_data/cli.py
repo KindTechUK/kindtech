@@ -31,6 +31,7 @@ from uk_open_data.analyses import (
     Table,
     describe_analysis,
     list_analyses,
+    record_run,
     run_analysis,
 )
 from uk_open_data.analyses.maps import render_map
@@ -196,6 +197,7 @@ def _handle_run(args: argparse.Namespace) -> str:
     if args.map is not None:
         svg = render_map(result, layer=args.map_layer)
         args.map.write_text(svg + "\n", encoding="utf-8")
+    record_run(result.analysis_id, result.input_mode, "cli")
     if args.json:
         return _to_json(result.to_dict(include_detail=not args.summary))
     return _report_text(info, result)
