@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 import math
+import threading
 from collections.abc import Iterator
 from dataclasses import dataclass
 from html import escape
@@ -139,13 +140,18 @@ _KEY_SHORT = 44
 _KEY_ROW = 22
 
 
-def load_map_boundaries(result: AnalysisResult) -> dict[str, Any]:
+def load_map_boundaries(result: AnalysisResult, fine: bool = True) -> dict[str, Any]:
     """Fetch the outlines a result's map needs: its areas and the places around.
 
     A map of a few places is asked for in fine detail, so a borough does not
     come out as a few straight lines. A map of many places is drawn small and
     takes outlines simplified to 200 metres. So does any area whose fine
     outline does not come.
+
+    The fine outlines can be slow. The first time they are asked for an area
+    the service can take a minute or more, and a second time it takes a few
+    seconds. A caller that cannot wait passes ``fine=False`` and gets the 200
+    metre outlines of every area and of the places around, which are quick.
 
     The places around are the local authorities near the areas. They are drawn
     in pale grey, so the picture says where it is. On a map of neighbourhoods
@@ -157,8 +163,12 @@ def load_map_boundaries(result: AnalysisResult) -> dict[str, Any]:
     the whole catchment and its neighbours, so they say nothing about where
     people in the data live.
 
+    It is safe to call from two threads at once.
+
     Args:
         result: An analysis result that has a map.
+        fine: Ask for fine outlines when the map has few places. ``False``
+            takes the 200 metre outlines whatever the number of places.
 
     Returns:
         A GeoJSON FeatureCollection of the areas. It also holds
@@ -171,8 +181,8 @@ def load_map_boundaries(result: AnalysisResult) -> dict[str, Any]:
     spec = _map_of(result)
     table = result.table(spec.table)
     codes = [str(row[spec.code_column]) for row in table.rows]
-    fine = len(codes) <= _FINE_UP_TO.get(spec.geography_type, 0)
-    detail = _DETAIL_M[spec.geography_type] if fine else None
+    few = len(codes) <= _FINE_UP_TO.get(spec.geography_type, 0)
+    detail = _DETAIL_M[spec.geography_type] if fine and few else None
     features = _outlines(spec.geography_type, spec.geography_year, codes, detail)
     if detail is not None:
         # A rough outline is better than a hole in the map, or no map.
@@ -287,6 +297,9 @@ def _surroundings(
 # It is about a megabyte and the same for every map, so a process that draws
 # many maps fetches it once.
 _kept_authorities: list[dict[str, Any]] = []
+# Two maps can be fetched at once, on two threads. The second waits for the
+# first to fill the list, so it is fetched once and never held twice.
+_kept_lock = threading.Lock()
 
 
 def _every_authority() -> list[dict[str, Any]]:
@@ -295,21 +308,24 @@ def _every_authority() -> list[dict[str, Any]]:
     It is fetched the first time and kept for the life of the process. An
     answer with nothing in it is not kept, so the next map asks again.
     """
-    if not _kept_authorities:
-        _kept_authorities.extend(
-            load_geodata(
-                AROUND_TYPE,
-                year=str(AROUND_YEAR),
-                coverage="UK",
-                boundary_type=BOUNDARY_TYPE,
-            ).get("features", [])
-        )
-    return _kept_authorities
+    with _kept_lock:
+        if not _kept_authorities:
+            _kept_authorities.extend(
+                load_geodata(
+                    AROUND_TYPE,
+                    year=str(AROUND_YEAR),
+                    coverage="UK",
+                    boundary_type=BOUNDARY_TYPE,
+                ).get("features", [])
+            )
+        # A list of its own, so forgetting the outlines does not empty it.
+        return list(_kept_authorities)
 
 
 def clear_outline_cache() -> None:
     """Forget the outlines kept in memory, so the next map fetches them again."""
-    _kept_authorities.clear()
+    with _kept_lock:
+        _kept_authorities.clear()
 
 
 _Box = tuple[float, float, float, float]
