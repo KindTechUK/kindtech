@@ -349,7 +349,13 @@ def test_command_line_builds_installs_and_describes_a_table(tmp_path, capsys):
     assert main(["postcodes", "info"]) == EXIT_OK
     said = capsys.readouterr()
     assert said.err == ""
-    assert said.out.startswith("No postcode table is installed on this machine.")
+    # What a person running an analysis needs comes first, and how to make a
+    # table, which is for a developer, comes after it.
+    assert said.out.startswith(
+        "No postcode table is installed on this machine. That is fine: an "
+        "analysis then looks postcodes up with postcodes.io"
+    )
+    assert said.out.index("postcodes.io") < said.out.index("postcodes build")
     # No table is published yet, so the command must not send people to fetch one.
     assert "postcodes download" not in said.out
     assert "uk-open-data postcodes build" in said.out

@@ -119,6 +119,18 @@ def test_analysis_run_prints_a_report(index, counts_file, capsys):
     assert "Neighbourhoods in the area you serve" not in out  # the map's table
 
 
+def test_source_line_for_a_kept_copy_has_one_full_stop(index, counts_file, capsys):
+    # The note on a kept copy ends in a full stop, and the line adds its own.
+    note = "fetched from gov.uk on 2026-11-19."
+    with mock.patch(
+        "uk_open_data.analyses.reach_deprivation.kept_imd_note", return_value=note
+    ):
+        assert main(_run_args(counts_file)) == EXIT_OK
+    out = capsys.readouterr().out
+    assert "fetched from gov.uk on 2026-11-19. Open Government Licence" in out
+    assert ".." not in out.replace("...", "")
+
+
 def test_report_tables_have_plain_headings_and_units(index, counts_file, capsys):
     assert main(_run_args(counts_file)) == EXIT_OK
     lines = capsys.readouterr().out.splitlines()
