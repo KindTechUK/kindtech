@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from working_checks import check_working
+from working_checks import check_working, worked_out
 
 from uk_open_data.analyses import (
     DOORS,
@@ -405,6 +405,55 @@ def test_headline_is_hidden_when_it_would_give_a_cell_away():
         assert figure.value is None
         assert figure.suppressed is True
     assert result.privacy.cells_suppressed == 6
+
+
+# The deciles each headline figure adds up, by position. A figure that has an
+# exact value gives its sum away exactly, and the total is always shown.
+SUMS_BEHIND = {
+    "share_most_deprived_10": {0},
+    "share_most_deprived_20": {0, 1},
+    "reach_per_1000_most_deprived_20": {0, 1},
+    "reach_per_1000_elsewhere": set(range(2, 10)),
+}
+
+
+@pytest.mark.parametrize(
+    "people",
+    [
+        # One small count among the less deprived, and a partner hidden with it.
+        [(1, 30), (2, 12), (4, 3), (9, 15)],
+        # The same with thousands of people, where rounding a share to one
+        # decimal place would have blurred the sum and the exact value does not.
+        [(1, 1500), (2, 900), (3, 3), (7, 600)],
+        # Two small counts in the most deprived fifth.
+        [(1, 3), (2, 4), (5, 40), (8, 25)],
+        # One small count with nothing to pair it with on its side.
+        [(1, 3), (3, 10), (6, 20)],
+        # A small count in each fifth.
+        [(1, 2), (2, 50), (6, 4), (7, 30), (10, 9)],
+    ],
+)
+def test_an_exact_figure_gives_no_hidden_count_away(people):
+    # A share before rounding, times the total, is the exact number of people
+    # behind it. So whatever is shown exactly must leave every hidden count
+    # of the table with more than one value it could be.
+    world = _World()
+    for decile, count in people:
+        world.add(0, decile, count)
+    result = world.run()
+    rows = result.table("by_decile").rows
+    hidden = {position for position, row in enumerate(rows) if row["suppressed"]}
+    assert hidden
+    sums = [set(range(10))]  # the total is a figure
+    sums += [
+        SUMS_BEHIND[figure.id]
+        for figure in result.figures
+        if figure.id in SUMS_BEHIND and figure.exact is not None
+    ]
+    assert worked_out(hidden, sums) == []
+    # The check is not blind: with one more sum given, it finds the count.
+    assert min(hidden) in worked_out(hidden, [*sums, {min(hidden)}])
+    check_working(result)
 
 
 def test_rows_that_cannot_be_used_are_counted_not_quoted(world):
