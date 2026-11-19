@@ -1423,11 +1423,19 @@ many rows to correct.</p>
         <span class="p">{</span><span class="s2">&quot;local_authority&quot;</span><span class="p">:</span> <span class="s2">&quot;Lewisham&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">120</span><span class="p">},</span>
         <span class="p">{</span><span class="s2">&quot;local_authority&quot;</span><span class="p">:</span> <span class="s2">&quot;Greenwich&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">40</span><span class="p">},</span>
     <span class="p">],</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;catchment&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Lewisham&quot;</span><span class="p">,</span> <span class="s2">&quot;Greenwich&quot;</span><span class="p">,</span> <span class="s2">&quot;Bexley&quot;</span><span class="p">,</span> <span class="s2">&quot;Bromley&quot;</span><span class="p">]},</span>
 <span class="p">)</span>
 <span class="n">answer</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>              <span class="c1"># &quot;ok&quot;</span>
+<span class="n">answer</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;answer&quot;</span><span class="p">]</span>    <span class="c1"># the sentence to open with</span>
 <span class="n">answer</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;figures&quot;</span><span class="p">]</span>   <span class="c1"># headline figures, small counts hidden</span>
 <span class="n">answer</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;tables&quot;</span><span class="p">]</span>    <span class="c1"># the places to look at first</span>
 </code></pre></div>
+<p><code>catchment</code> names the places the charity could serve. Without it, need against
+reach compares only the local authorities that hold at least 5% of the people
+in the rows, so it cannot show a place the charity does not reach yet, and its
+result says so in a warning. With one place there is nothing to compare, and
+the answer says that too. An assistant should ask the person which area they
+could serve when the question is about where they are missing.</p>
 <p><code>status</code> is <code>ok</code>, <code>would_hide_counts</code>, <code>input_problem</code> (<code>problems</code> lists what
 to fix, for example an option the analysis needs), <code>needs_rows</code>, <code>unknown_analysis</code> or
 <code>unavailable</code> (a data source the analysis needs could not be reached).</p>

@@ -160,11 +160,20 @@ answer = run_analysis_on_counts(
         {"local_authority": "Lewisham", "count": 120},
         {"local_authority": "Greenwich", "count": 40},
     ],
+    options={"catchment": ["Lewisham", "Greenwich", "Bexley", "Bromley"]},
 )
 answer["status"]              # "ok"
+answer["result"]["answer"]    # the sentence to open with
 answer["result"]["figures"]   # headline figures, small counts hidden
 answer["result"]["tables"]    # the places to look at first
 ```
+
+`catchment` names the places the charity could serve. Without it, need against
+reach compares only the local authorities that hold at least 5% of the people
+in the rows, so it cannot show a place the charity does not reach yet, and its
+result says so in a warning. With one place there is nothing to compare, and
+the answer says that too. An assistant should ask the person which area they
+could serve when the question is about where they are missing.
 
 `status` is `ok`, `would_hide_counts`, `input_problem` (`problems` lists what
 to fix, for example an option the analysis needs), `needs_rows`, `unknown_analysis` or
