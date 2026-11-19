@@ -179,35 +179,55 @@ def run_lens_on_counts(
         ``reported``: the name or code of a public place, such as a local
         authority, or one of the group names the role lists.
     """
+    return run_and_keep_result(lens_id, counts, options, hidden_counts)[0]
+
+
+def run_and_keep_result(
+    lens_id: str,
+    counts: list[dict[str, Any]],
+    options: dict[str, Any] | None = None,
+    hidden_counts: Literal["ask", "accept"] = "ask",
+) -> tuple[dict[str, Any], engine.AnalysisResult | None, list[str]]:
+    """Run a lens as :func:`run_lens_on_counts` does, and keep what it made.
+
+    Returns:
+        The answer, then the lens result when the status is ``ok`` (``None``
+        otherwise), then the input values the answer must not repeat. The
+        server draws the map from the result, which holds the rows the answer
+        leaves out, so the result itself must never be sent to an assistant.
+    """
     try:
         info = engine.describe_analysis(lens_id).to_dict()
     except KeyError:
         known = [lens.id for lens in engine.list_analyses()]
-        return {
+        unknown = {
             "status": "unknown_lens",
             "message": "There is no lens with that id.",
             "known_lenses": known,
         }
+        return unknown, None, []
     if not _count_modes(info):
-        return {"status": "needs_rows", "message": NEEDS_ROWS}
+        return {"status": "needs_rows", "message": NEEDS_ROWS}, None, []
     problems = _count_problems(info, counts)
     if problems:
-        return _input_problem(problems)
+        return _input_problem(problems), None, []
     counts = _with_amounts_as_numbers(info, counts)
     guarded = _guarded_values(info, counts)
     try:
         result = engine.run_analysis(lens_id, counts, options=options or {})
     except engine.AnalysisInputError as error:
-        return ensure_totals_only(_input_problem(error.problems), guarded)
+        refused = ensure_totals_only(_input_problem(error.problems), guarded)
+        return refused, None, []
     except requests.RequestException as error:
         # The error text can hold a web address, so only its kind is logged.
         logger.warning("A data source could not be reached: %s", type(error).__name__)
-        return {"status": "unavailable", "message": UNAVAILABLE}
+        return {"status": "unavailable", "message": UNAVAILABLE}, None, []
     payload = result.to_dict(include_detail=False)
     hidden = _hidden_in_answer(payload)
     if hidden and hidden_counts != "accept":
-        return _would_hide_counts(hidden, payload["privacy"]["suppress_below"])
-    answer = {
+        held_back = _would_hide_counts(hidden, payload["privacy"]["suppress_below"])
+        return held_back, None, []
+    answer: dict[str, Any] = {
         "status": "ok",
         "result": ensure_totals_only(payload, guarded),
         "show_with_figures": SHOW_WITH_FIGURES,
@@ -215,7 +235,7 @@ def run_lens_on_counts(
     left_out = _rows_left_out(payload)
     if left_out:
         answer["rows_left_out"] = left_out
-    return answer
+    return answer, result, guarded
 
 
 def _hidden_in_answer(payload: dict[str, Any]) -> int:

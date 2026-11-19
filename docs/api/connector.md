@@ -167,6 +167,39 @@ and distance lens, whatever rows are passed. Its message says the lens cannot
 run in a chat, because it needs a row for each site and this tool takes totals
 only, and that it runs on the lens page or with the command line tool.
 
+#### The map
+
+A lens result describes a map, and the table that feeds it is one of the
+tables left out of an answer. So the server draws the map itself, one picture
+for each thing the map can be coloured by, and sends the pictures beside the
+answer: in the tool result's `_meta`, under `kindtech/map`, which is for the
+app the person is using and is not part of what a model is given. The tool
+points to a small page, `ui://kindtech/lens-map.html`, that shows them. An
+assistant app that supports [MCP Apps](https://github.com/modelcontextprotocol/ext-apps)
+shows that page with the answer, so the person sees the map in the chat. An
+app that does not shows the answer alone, as before.
+
+The answer itself gains `map`, with `drawn` and a `note` for the assistant: a
+picture was drawn for the person and the assistant is not given it, or why
+none was drawn. A lens with no map has no `map` in its answer, and neither has
+a result that was held back. The plain Python function `run_lens_on_counts`
+draws nothing; only the server does.
+
+The outlines of the areas are fetched from the ONS Open Geography Portal by
+public area code each time a map is drawn. When they cannot be fetched the
+figures come back as usual and the note says no map was drawn. When you host
+the connector, keep the outlines on your server and pass a function that
+reads them, so that no run waits on another service:
+
+```python
+from uk_open_data.connector import build_server
+
+server = build_server(map_boundaries=outlines_kept_here)  # takes a lens result
+```
+
+Pictures of more than about 1.5 MB together are not sent: the first layers
+that fit are, and when not even one fits the note says so.
+
 #### When counts would be hidden
 
 A lens hides a count from 1 to 4, and where it hides one count in a table it

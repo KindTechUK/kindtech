@@ -1,0 +1,230 @@
+"""Tests for the map a chat can show with a lens result.
+
+The outlines are invented squares, so nothing is fetched. The map is drawn by
+the real first lens on the small England.
+"""
+
+import asyncio
+import json
+from typing import Any
+
+import connector_fakes as fakes
+import pytest
+import requests
+
+pytest.importorskip("mcp")
+
+from mcp import Client  # noqa: E402
+
+from uk_open_data.analyses import need_reach, run_analysis  # noqa: E402
+from uk_open_data.connector import build_server, maps  # noqa: E402
+from uk_open_data.connector.maps import (  # noqa: E402
+    MAP_META_KEY,
+    MAP_VIEW,
+    MAP_VIEW_URI,
+    picture_for,
+)
+
+pytestmark = pytest.mark.usefixtures("england")
+
+COUNTS = [
+    {"lsoa_code": "E01000001", "count": 12},
+    {"lsoa_code": "E01000002", "count": 30},
+]
+RUN = {"lens_id": "reach-deprivation", "counts": COUNTS}
+APP_MIME_TYPE = "text/html;profile=mcp-app"
+
+
+def _call(arguments: dict[str, Any], **server: Any) -> dict[str, Any]:
+    """Run a lens through the server as an app would, and return the whole reply."""
+
+    async def call() -> dict[str, Any]:
+        async with Client(build_server(**server)) as client:
+            reply = await client.call_tool("run_lens_on_counts", arguments)
+        return reply.model_dump(mode="json", by_alias=True)
+
+    return asyncio.run(call())
+
+
+def _for_the_model(reply: dict[str, Any]) -> str:
+    """Everything in a reply that a model is given: its text and its structure."""
+    return json.dumps([reply["content"], reply["structuredContent"]])
+
+
+class TestThePicture:
+    def test_every_layer_is_drawn_as_a_picture(self) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+
+        picture, note = picture_for(result, boundaries=fakes.square_outlines)
+
+        assert picture is not None
+        assert picture["title"] == result.map.title
+        assert [layer["id"] for layer in picture["layers"]] == [
+            layer.id for layer in result.map.layers
+        ]
+        assert all(layer["svg"].startswith("<svg") for layer in picture["layers"])
+        assert "was drawn for the person" in note
+        assert "do not describe what it shows" in note
+
+    def test_a_lens_without_a_map_has_no_picture_and_no_note(self) -> None:
+        result = run_analysis(
+            "reach-deprivation", COUNTS, options={"catchment": "England"}
+        )
+
+        assert picture_for(result, boundaries=fakes.square_outlines) == (None, "")
+
+    def test_outlines_that_cannot_be_fetched_leave_the_figures_alone(self) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+
+        picture, note = picture_for(result)
+
+        assert picture is None
+        assert note == maps.NO_OUTLINES
+
+    def test_outlines_that_match_no_area_are_treated_the_same(self) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+        empty = {"type": "FeatureCollection", "features": []}
+
+        assert picture_for(result, boundaries=lambda _: empty) == (
+            None,
+            maps.NO_OUTLINES,
+        )
+
+    def test_a_picture_that_repeats_an_input_value_is_withheld(self) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+
+        # The picture names each neighbourhood, so a name stands in for a value
+        # from the rows.
+        picture, note = picture_for(
+            result, guarded=["Lewisham 001A"], boundaries=fakes.square_outlines
+        )
+
+        assert picture is None
+        assert note == maps.WITHHELD
+
+    def test_layers_past_the_size_limit_are_left_out(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+        whole, _ = picture_for(result, boundaries=fakes.square_outlines)
+        assert whole is not None
+        first = len(whole["layers"][0]["svg"].encode())
+
+        monkeypatch.setattr(maps, "MAX_PICTURE_BYTES", first)
+        one, _ = picture_for(result, boundaries=fakes.square_outlines)
+        monkeypatch.setattr(maps, "MAX_PICTURE_BYTES", first - 1)
+        none, note = picture_for(result, boundaries=fakes.square_outlines)
+
+        assert one is not None
+        assert len(one["layers"]) == 1
+        assert none is None
+        assert note == maps.TOO_LARGE
+
+
+class TestThroughTheServer:
+    def test_the_run_tool_points_an_app_at_the_map_view(self) -> None:
+        async def listed() -> dict[str, Any]:
+            async with Client(build_server()) as client:
+                tools = (await client.list_tools()).tools
+            return {
+                tool.name: tool.model_dump(mode="json", by_alias=True) for tool in tools
+            }
+
+        tools = asyncio.run(listed())
+
+        assert tools["run_lens_on_counts"]["_meta"]["ui"] == {
+            "resourceUri": MAP_VIEW_URI
+        }
+        assert "_meta" not in tools["find_lens"] or not tools["find_lens"]["_meta"]
+
+    def test_the_map_view_is_served_as_an_app_page(self) -> None:
+        async def read() -> dict[str, Any]:
+            async with Client(build_server()) as client:
+                reply = await client.read_resource(MAP_VIEW_URI)
+            return reply.model_dump(mode="json", by_alias=True)
+
+        (page,) = asyncio.run(read())["contents"]
+
+        assert page["mimeType"] == APP_MIME_TYPE
+        assert page["text"] == MAP_VIEW
+
+    def test_the_picture_travels_beside_the_answer_and_not_in_it(self) -> None:
+        reply = _call(RUN, map_boundaries=fakes.square_outlines)
+
+        picture = reply["_meta"][MAP_META_KEY]
+        answer = reply["structuredContent"]
+        assert [layer["id"] for layer in picture["layers"]] == ["deprivation", "people"]
+        assert answer["status"] == "ok"
+        assert answer["map"]["drawn"] is True
+        assert "<svg" not in _for_the_model(reply)
+        assert "<path" not in _for_the_model(reply)
+        assert json.loads(reply["content"][0]["text"]) == answer
+
+    def test_the_model_is_given_no_row_of_the_table_the_map_is_drawn_from(self) -> None:
+        reply = _call(RUN, map_boundaries=fakes.square_outlines)
+
+        # The picture names every neighbourhood. The answer names none.
+        assert "Lewisham 001A" in json.dumps(reply["_meta"])
+        assert "Lewisham 001A" not in _for_the_model(reply)
+
+    def test_no_outlines_means_no_picture_and_the_answer_says_so(self) -> None:
+        reply = _call(RUN)
+
+        assert MAP_META_KEY not in (reply.get("_meta") or {})
+        assert reply["structuredContent"]["status"] == "ok"
+        assert reply["structuredContent"]["map"] == {
+            "drawn": False,
+            "note": maps.NO_OUTLINES,
+        }
+
+    def test_an_unreachable_boundary_service_is_not_named_in_the_log(
+        self, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        def down(result: object) -> dict[str, Any]:
+            raise requests.ConnectionError("https://example.invalid/E01000001")
+
+        with caplog.at_level("WARNING"):
+            _call(RUN, map_boundaries=down)
+
+        assert "ConnectionError" in caplog.text
+        assert "example.invalid" not in caplog.text
+
+    def test_a_result_held_back_has_no_map(self) -> None:
+        small = [{"lsoa_code": "E01000001", "count": 3}, *COUNTS[1:]]
+
+        reply = _call({**RUN, "counts": small}, map_boundaries=fakes.square_outlines)
+
+        assert reply["structuredContent"]["status"] == "would_hide_counts"
+        assert "map" not in reply["structuredContent"]
+        assert MAP_META_KEY not in (reply.get("_meta") or {})
+
+    def test_a_lens_without_a_map_says_nothing_of_one(self) -> None:
+        need_reach.keep_need_figures("residents", fakes.NEED, "invented for a test.")
+        whole_country = {**RUN, "options": {"catchment": "England"}}
+
+        reply = _call(whole_country, map_boundaries=fakes.square_outlines)
+
+        assert reply["structuredContent"]["status"] == "ok"
+        assert "map" not in reply["structuredContent"]
+        assert MAP_META_KEY not in (reply.get("_meta") or {})
+
+
+class TestTheMapView:
+    """The page is checked as text here; a browser runs it in the design review."""
+
+    def test_it_fetches_nothing(self) -> None:
+        assert "http://" not in MAP_VIEW
+        assert "https://" not in MAP_VIEW
+        assert "fetch(" not in MAP_VIEW
+
+    def test_it_speaks_the_app_protocol(self) -> None:
+        for message in (
+            "ui/initialize",
+            "ui/notifications/initialized",
+            "ui/notifications/tool-result",
+            "ui/notifications/size-changed",
+        ):
+            assert message in MAP_VIEW
+
+    def test_it_reads_the_picture_from_where_the_server_puts_it(self) -> None:
+        assert f'const KEY = "{MAP_META_KEY}";' in MAP_VIEW

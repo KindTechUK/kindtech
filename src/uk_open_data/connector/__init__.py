@@ -33,8 +33,15 @@ _MISSING_EXTRA = (
 )
 
 
-def build_server() -> Any:
+def build_server(map_boundaries: Any = None) -> Any:
     """Build the connector's MCP server (needs the ``connector`` extra).
+
+    Args:
+        map_boundaries: A function that takes a lens result and gives the
+            outlines of the areas on its map, as GeoJSON. Left out, the
+            outlines are fetched from the ONS Open Geography Portal each time
+            a map is drawn. Pass one that reads outlines kept on your server
+            when you host the connector.
 
     Raises:
         ImportError: If the ``mcp`` package is not installed.
@@ -43,4 +50,4 @@ def build_server() -> Any:
         from uk_open_data.connector.server import build_server as _build_server
     except ImportError as error:
         raise ImportError(_MISSING_EXTRA) from error
-    return _build_server()
+    return _build_server(map_boundaries)
