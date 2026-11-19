@@ -20,17 +20,17 @@ import requests
 
 from uk_open_data._kept import kept_file, read_kept, write_kept
 from uk_open_data._mapping import geo_code_field
-from uk_open_data.geo import load_geodata
-from uk_open_data.geo._catalog import find_services, get_service_url
-from uk_open_data.lenses._model import Choice, LensInputError, Source, Step
-from uk_open_data.lenses._steps import (
+from uk_open_data.analyses._model import AnalysisInputError, Choice, Source, Step
+from uk_open_data.analyses._steps import (
     COUNTRIES,
     Position,
     Trail,
     read_postcode_column,
     warn_left_out,
 )
-from uk_open_data.lenses.sources import ons_postcode_lookup
+from uk_open_data.analyses.sources import ons_postcode_lookup
+from uk_open_data.geo import load_geodata
+from uk_open_data.geo._catalog import find_services, get_service_url
 from uk_open_data.postcodes import (
     PostcodeTableError,
     postcode_table_info,
@@ -146,9 +146,9 @@ def load_centres(trail: Trail) -> dict[str, Position]:
             msg = (
                 f"The centres of local authorities could not be loaded. {error} "
                 "Keep a copy on this machine with "
-                "uk_open_data.lenses.access_distance.download_centres()."
+                "uk_open_data.analyses.access_distance.download_centres()."
             )
-            raise LensInputError(msg) from error
+            raise AnalysisInputError(msg) from error
         where = "Fetched from the ONS Open Geography Portal."
     trail.sources.append(source)
     trail.working.append(
@@ -169,7 +169,7 @@ def locate_in_neighbourhoods(values: list[Any], trail: Trail) -> list[Position |
     Each postcode is placed at the centre of its neighbourhood. The postcode
     table on this machine gives the neighbourhood, and the neighbourhood
     centres kept on this machine give the position. Nothing is fetched and
-    nothing is sent: when either file is missing, the lens stops.
+    nothing is sent: when either file is missing, the analysis stops.
 
     Args:
         values: The postcode column.
@@ -186,7 +186,7 @@ def locate_in_neighbourhoods(values: list[Any], trail: Trail) -> list[Position |
         neighbourhoods = postcodes_to_lsoa(distinct)
         info = postcode_table_info()
     except PostcodeTableError as error:
-        raise LensInputError(str(error)) from error
+        raise AnalysisInputError(str(error)) from error
     centres, note = _kept_neighbourhood_centres()
     found_for = {
         postcode: centres.get(code) if code else None
@@ -241,19 +241,19 @@ def _kept_neighbourhood_centres() -> tuple[dict[str, Position], str]:
     """Read the neighbourhood centres kept on this machine, and their note.
 
     Raises:
-        LensInputError: If no copy is kept. They are never fetched while a
-            lens runs.
+        AnalysisInputError: If no copy is kept. They are never fetched while an
+            analysis runs.
     """
     kept = _read_kept(_LEVELS[NEIGHBOURHOOD])
     if kept is None:
         msg = (
             "The centres of neighbourhoods are not kept on this machine, so "
             "postcodes cannot be placed here. Keep them with "
-            "uk_open_data.lenses.access_distance.download_centres('neighbourhood'), "
+            "uk_open_data.analyses.access_distance.download_centres('neighbourhood'), "
             "or give a latitude and longitude for each row. No postcode was "
             "sent anywhere."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     rows, note = kept
     return _as_mapping(rows), note
 
@@ -277,9 +277,9 @@ def _read_kept(
         msg = (
             f"The centres of {level.plural} kept on this machine could not be "
             "read. Fetch them again with "
-            f"uk_open_data.lenses.access_distance.download_centres('{level.name}')."
+            f"uk_open_data.analyses.access_distance.download_centres('{level.name}')."
         )
-        raise LensInputError(msg) from error
+        raise AnalysisInputError(msg) from error
 
 
 @lru_cache(maxsize=4)
@@ -430,7 +430,7 @@ def keep_centres(
 ) -> Path:
     """Keep the centres of local authorities or neighbourhoods on this machine.
 
-    A lens that measures distance reads the copy instead of asking the ONS
+    An analysis that measures distance reads the copy instead of asking the ONS
     Open Geography Portal, so a server or a demonstration works without the
     network. The centres of neighbourhoods are what lets the postcode of a
     site be placed without sending it anywhere. The copy lives in the data

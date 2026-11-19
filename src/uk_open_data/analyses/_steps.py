@@ -1,6 +1,6 @@
-"""Steps that more than one lens takes.
+"""Steps that more than one analysis takes.
 
-Reading the options every lens has, reading the data a person gives, and
+Reading the options every analysis has, reading the data a person gives, and
 placing postcodes. Each step writes what it did to a :class:`Trail`, and none of
 them keeps or reports a value from the data.
 """
@@ -14,17 +14,17 @@ from typing import Any
 
 import narwhals as nw
 
-from uk_open_data.lenses._inputs import is_blank, tidy_postcode, to_count
-from uk_open_data.lenses._model import (
+from uk_open_data.analyses._inputs import is_blank, tidy_postcode, to_count
+from uk_open_data.analyses._model import (
+    AnalysisInputError,
     Choice,
-    LensInputError,
     Option,
     OptionChoice,
     Source,
     Step,
 )
-from uk_open_data.lenses._privacy import DEFAULT_SUPPRESS_BELOW
-from uk_open_data.lenses.sources import POSTCODES_IO, ons_postcode_lookup
+from uk_open_data.analyses._privacy import DEFAULT_SUPPRESS_BELOW
+from uk_open_data.analyses.sources import POSTCODES_IO, ons_postcode_lookup
 from uk_open_data.postcodes import (
     PostcodeTableError,
     lookup_postcodes,
@@ -110,14 +110,14 @@ def read_threshold(options: dict[str, Any]) -> int:
     """Read and check the small-count threshold."""
     value = options.get("suppress_below")
     if isinstance(value, bool) or not isinstance(value, int):
-        raise LensInputError("The option 'suppress_below' must be a whole number.")
+        raise AnalysisInputError("The option 'suppress_below' must be a whole number.")
     if value < MIN_SUPPRESS_BELOW:
         msg = (
             f"The option 'suppress_below' cannot be lower than "
             f"{MIN_SUPPRESS_BELOW}, so that counts of one or two people are "
             "always hidden."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return value
 
 
@@ -128,7 +128,7 @@ def use_postcode_table(options: dict[str, Any]) -> bool:
         msg = (
             f"The option 'postcode_lookup' must be one of: {', '.join(LOOKUP_CHOICES)}."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     if how == "auto":
         return postcode_table_path() is not None
     return how == "offline"
@@ -142,7 +142,7 @@ def named_areas(
     Args:
         wanted: The 'catchment' option: a local authority name or code, a list
             of them, or 'England', 'Wales' or 'England and Wales'.
-        names: Code to name, for every local authority the lens has figures
+        names: Code to name, for every local authority the analysis has figures
             for.
         listed_in: What those figures are, for the message when a name is not
             among them, such as "need figures".
@@ -151,7 +151,7 @@ def named_areas(
         The codes, sorted, and a label for the area.
 
     Raises:
-        LensInputError: If the option has the wrong shape, or names a place
+        AnalysisInputError: If the option has the wrong shape, or names a place
             the figures do not list.
     """
     items = [wanted] if isinstance(wanted, str) else wanted
@@ -164,7 +164,7 @@ def named_areas(
             "The option 'catchment' must be a local authority name or code, a "
             "list of them, or 'England', 'Wales' or 'England and Wales'."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     cleaned = [item.strip() for item in items]
     whole = cleaned[0].casefold() if len(cleaned) == 1 else ""
     if whole == EVERYWHERE.casefold():
@@ -181,7 +181,7 @@ def named_areas(
             f"{listed_in}: {', '.join(unknown)}. Use the names or codes that "
             "Nomis uses."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     chosen = sorted({by_key[item.casefold()] for item in cleaned})
     return tuple(chosen), ", ".join(names[code] for code in chosen)
 
@@ -258,7 +258,7 @@ def locate_postcodes(values: list[Any], trail: Trail) -> list[Position | None]:
 
     The distinct postcodes are sent to postcodes.io, and the trail says so.
     To place them on this machine instead, see
-    :func:`uk_open_data.lenses._centres.locate_in_neighbourhoods`.
+    :func:`uk_open_data.analyses._centres.locate_in_neighbourhoods`.
 
     Args:
         values: The postcode column.
@@ -352,7 +352,7 @@ def read_postcode_column(
             "None of the rows holds something shaped like a UK postcode. "
             "Check that the right column was chosen for 'postcode'."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return tidy, blank, malformed
 
 
@@ -367,7 +367,7 @@ def _look_up_on_this_machine(
             codes = postcodes_to_lsoa(postcodes)
         info = postcode_table_info()
     except PostcodeTableError as error:
-        raise LensInputError(str(error)) from error
+        raise AnalysisInputError(str(error)) from error
     edition = str(info["edition"])
     source = ons_postcode_lookup(edition, tuple(info["attribution"]))
     trail.sources.append(replace(source, used_for=_used_for(level)))
@@ -477,9 +477,9 @@ def count_by_neighbourhood(
     if bad:
         msg = (
             f"{bad} rows have a count that is not a whole number of zero or "
-            "more. Correct those rows and run the lens again."
+            "more. Correct those rows and run the analysis again."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     if blank:
         trail.warnings.append(f"{blank} rows had no neighbourhood code.")
     supplied = sum(totals.values())

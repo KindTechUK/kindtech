@@ -1,0 +1,131 @@
+"""The list of analyses and the one function that runs any of them."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any
+
+from uk_open_data.analyses._inputs import TabularData, resolve_columns
+from uk_open_data.analyses._model import (
+    Analysis,
+    AnalysisInfo,
+    AnalysisInput,
+    AnalysisInputError,
+    AnalysisResult,
+    InputMode,
+)
+
+_ANALYSES: dict[str, Analysis] = {}
+
+
+def register_analysis(analysis: Analysis) -> Analysis:
+    """Add an analysis to the list so it can be found and run by its id.
+
+    Raises:
+        ValueError: If an analysis with the same id is already registered.
+    """
+    if analysis.info.id in _ANALYSES:
+        msg = f"An analysis with the id '{analysis.info.id}' is already registered."
+        raise ValueError(msg)
+    _ANALYSES[analysis.info.id] = analysis
+    return analysis
+
+
+def list_analyses() -> list[AnalysisInfo]:
+    """Return a description of every analysis, in the order they were added."""
+    return [analysis.info for analysis in _ANALYSES.values()]
+
+
+def describe_analysis(analysis_id: str) -> AnalysisInfo:
+    """Return the description of one analysis.
+
+    Raises:
+        KeyError: If there is no analysis with this id.
+    """
+    return _get(analysis_id).info
+
+
+def run_analysis(
+    analysis_id: str,
+    data: Any,
+    columns: Mapping[str, str] | None = None,
+    options: Mapping[str, Any] | None = None,
+) -> AnalysisResult:
+    """Run an analysis on a charity's own data.
+
+    Args:
+        analysis_id: The id of the analysis, as listed by :func:`list_analyses`.
+        data: A pandas or polars DataFrame, or a list of row dictionaries.
+        columns: Which column in ``data`` plays each role the analysis needs, as
+            role name to column name. A role can be left out when the data
+            already has a column with the role's name.
+        options: Settings to change, by name. Each has a default.
+
+    Returns:
+        Figures, tables of totals, a map description, the working, the choices
+        made, checks for a person, sources and a privacy summary.
+
+    Raises:
+        KeyError: If there is no analysis with this id.
+        AnalysisInputError: If the data, columns or options cannot be used. The
+            message is safe to show: it never repeats a value from the data.
+        requests.RequestException: If a public data source the analysis needs
+            cannot be reached. Its text holds the web address asked for, so
+            show a message of your own rather than the text.
+    """
+    analysis = _get(analysis_id)
+    info = analysis.info
+    resolved_options = _resolve_options(info, options)
+    table = TabularData(data)
+    role_names = [role.name for role in info.roles]
+    matched = resolve_columns(table.columns, role_names, columns)
+    mode = _choose_mode(info, matched)
+    values = {role: table.values(matched[role]) for role in mode.roles}
+    return analysis.run(
+        AnalysisInput(
+            mode=mode,
+            values=values,
+            options=resolved_options,
+            n_rows=table.n_rows,
+        )
+    )
+
+
+def _get(analysis_id: str) -> Analysis:
+    """Return a registered analysis or raise a KeyError that lists the known ids."""
+    if analysis_id not in _ANALYSES:
+        known = ", ".join(_ANALYSES) or "none"
+        msg = f"No analysis called '{analysis_id}'. Known analyses: {known}."
+        raise KeyError(msg)
+    return _ANALYSES[analysis_id]
+
+
+def _resolve_options(
+    info: AnalysisInfo, options: Mapping[str, Any] | None
+) -> dict[str, Any]:
+    """Fill in defaults and reject options the analysis does not have."""
+    given = dict(options or {})
+    known = {option.name: option.default for option in info.options}
+    unknown = [name for name in given if name not in known]
+    if unknown:
+        msg = (
+            f"This analysis has no option called {', '.join(sorted(unknown))}. "
+            f"Its options are: {', '.join(known) or 'none'}."
+        )
+        raise AnalysisInputError(msg)
+    return {**known, **given}
+
+
+def _choose_mode(info: AnalysisInfo, matched: Mapping[str, str]) -> InputMode:
+    """Pick the first input mode whose roles all have a column."""
+    for mode in info.input_modes:
+        if all(role in matched for role in mode.roles):
+            return mode
+    needs = " or ".join(
+        " and ".join(f"'{role}'" for role in mode.roles) for mode in info.input_modes
+    )
+    msg = (
+        f"The analysis could not find the columns it needs. It needs {needs}. "
+        "Say which of your columns to use with the columns argument."
+    )
+    raise AnalysisInputError(msg)

@@ -501,7 +501,7 @@ def keep_imd(table: Any, note: str, year: int = 2025) -> Path:
             returns for England. It must have ``geography_code``,
             ``geography_name``, ``lad_code``, ``lad_name``, ``imd_decile`` and
             ``population``. Any other column it leaves out is kept as empty.
-        note: Where the figures came from, in a few words. A lens shows it
+        note: Where the figures came from, in a few words. An analysis shows it
             with the source in every result that uses the copy.
         year: The release the table stands for, ``2025`` or ``2019``.
 

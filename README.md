@@ -1,7 +1,7 @@
 # uk-open-data
 
 UK open data for charities, in Python: geographic boundaries, official
-statistics, postcodes and deprivation indices, with lenses that join them to
+statistics, postcodes and deprivation indices, with analyses that join them to
 your own data and return figures you can check.
 
 Made by [KindTech UK](https://github.com/KindTechUK). Up to version 0.1 the
@@ -14,15 +14,16 @@ package was called `kindtech`.
   `uk_open_data.postcodes` turns postcodes into geography codes, and
   `uk_open_data.imd` loads the deprivation indices. Bring your own DataFrame
   backend, pandas or polars.
-- **[Lenses](https://kindtechuk.github.io/uk-open-data/api/lenses/).** Each
-  lens answers one question a charity asks of its own data, such as "Are we
+- **[Analyses](https://kindtechuk.github.io/uk-open-data/api/analyses/).** Each
+  analysis answers one question a charity asks of its own data, such as "Are we
   reaching people in the most deprived neighbourhoods?". It returns totals,
   the working, the sources and what a person must check. Nothing in a result
   describes one person.
 - **[A command line](https://kindtechuk.github.io/uk-open-data/api/cli/).**
-  `uk-open-data lens run` runs a lens on a file without writing any Python.
+  `uk-open-data analysis run` runs an analysis on a file without writing any
+  Python.
 - **[A connector for chat assistants](https://kindtechuk.github.io/uk-open-data/api/connector/).**
-  The same lenses and data as tools for an assistant such as Claude or
+  The same analyses and data as tools for an assistant such as Claude or
   ChatGPT. The assistant sees totals, never rows.
 
 ## Installation

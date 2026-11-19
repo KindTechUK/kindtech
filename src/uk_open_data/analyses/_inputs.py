@@ -1,4 +1,4 @@
-"""Reading and checking the data a person gives to a lens.
+"""Reading and checking the data a person gives to an analysis.
 
 Nothing here keeps or reports a value from the data: problems are described by
 how many rows they affect, never by what the rows hold.
@@ -13,7 +13,7 @@ from typing import Any
 
 import narwhals as nw
 
-from uk_open_data.lenses._model import LensInputError
+from uk_open_data.analyses._model import AnalysisInputError
 
 # Outward code, optional space, inward code. Checked after tidying.
 _POSTCODE = re.compile(r"^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$")
@@ -73,7 +73,7 @@ class TabularData:
                 "The data must be a pandas or polars DataFrame, or a list of "
                 "row dictionaries."
             )
-            raise LensInputError(msg) from exc
+            raise AnalysisInputError(msg) from exc
         self.columns = list(self._frame.columns)
         self.n_rows = len(self._frame)
 
@@ -99,12 +99,12 @@ def resolve_columns(
         Role name to column name, for every role that could be matched.
 
     Raises:
-        LensInputError: If ``columns`` names a role the lens does not have, or a
+        AnalysisInputError: If ``columns`` names a role the analysis does not have, or a
             column the data does not have.
     """
     mapping = dict(columns or {})
     problems = [
-        f"This lens has no column role called '{role}'. Its roles are: "
+        f"This analysis has no column role called '{role}'. Its roles are: "
         f"{', '.join(roles)}."
         for role in mapping
         if role not in roles
@@ -116,7 +116,7 @@ def resolve_columns(
         if role in roles and column not in available
     ]
     if problems:
-        raise LensInputError(problems)
+        raise AnalysisInputError(problems)
     return {
         role: mapping.get(role, role)
         for role in roles

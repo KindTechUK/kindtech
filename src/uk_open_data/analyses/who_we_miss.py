@@ -21,19 +21,19 @@ import narwhals as nw
 
 import uk_open_data
 from uk_open_data._kept import kept_file, read_kept, write_kept
-from uk_open_data.lenses._inputs import is_blank, to_count
-from uk_open_data.lenses._model import (
+from uk_open_data.analyses._inputs import is_blank, to_count
+from uk_open_data.analyses._model import (
+    Analysis,
+    AnalysisInfo,
+    AnalysisInput,
+    AnalysisInputError,
+    AnalysisResult,
     Chart,
     ChartSeries,
     Check,
     Choice,
     Figure,
     InputMode,
-    Lens,
-    LensInfo,
-    LensInput,
-    LensInputError,
-    LensResult,
     Option,
     OptionChoice,
     Privacy,
@@ -41,8 +41,8 @@ from uk_open_data.lenses._model import (
     Step,
     Table,
 )
-from uk_open_data.lenses._privacy import SECOND_COUNT_NOTE, cells_to_hide
-from uk_open_data.lenses._steps import (
+from uk_open_data.analyses._privacy import SECOND_COUNT_NOTE, cells_to_hide
+from uk_open_data.analyses._steps import (
     COUNTRIES,
     EVERYWHERE,
     LOCAL_AUTHORITY,
@@ -55,11 +55,11 @@ from uk_open_data.lenses._steps import (
     read_threshold,
     use_postcode_table,
 )
-from uk_open_data.lenses.sources import nomis_table
+from uk_open_data.analyses.sources import nomis_table
 from uk_open_data.ons import load_ons
 
-LENS_ID = "who-we-miss"
-LENS_VERSION = "0.1"
+ANALYSIS_ID = "who-we-miss"
+ANALYSIS_VERSION = "0.1"
 RESIDENTS_FOLDER = "residents"
 RESIDENTS_FILE_FORMAT = "kindtech-residents-1"
 # Nomis code for a count of people, as opposed to a percentage.
@@ -145,8 +145,8 @@ SEX = _Characteristic(
 )
 CHARACTERISTICS = {item.id: item for item in (ETHNIC_GROUP, SEX)}
 
-INFO = LensInfo(
-    id=LENS_ID,
+INFO = AnalysisInfo(
+    id=ANALYSIS_ID,
     title="Who we are missing",
     question="Who do we reach less than their share of the people who live here?",
     summary=(
@@ -155,7 +155,7 @@ INFO = LensInfo(
         "2021 Census. It shows which groups you reach less than you would "
         "expect."
     ),
-    version=LENS_VERSION,
+    version=ANALYSIS_VERSION,
     roles=(
         Role(
             name="group",
@@ -228,7 +228,7 @@ INFO = LensInfo(
             description=(
                 "The area you serve: a list of local authority names or codes, "
                 "or 'England', 'Wales' or 'England and Wales'. With postcodes "
-                "it can be left empty, and the lens uses the local authorities "
+                "it can be left empty, and the analysis uses the local authorities "
                 "where most of your people live. Without postcodes it must be "
                 "given."
             ),
@@ -292,9 +292,9 @@ class _Catchment:
     reason: str
 
 
-def run(lens_input: LensInput) -> LensResult:
-    """Run the lens. Use :func:`uk_open_data.lenses.run_lens` to call it."""
-    options = lens_input.options
+def run(analysis_input: AnalysisInput) -> AnalysisResult:
+    """Run the analysis. Use :func:`uk_open_data.analyses.run_analysis` to call it."""
+    options = analysis_input.options
     threshold = read_threshold(options)
     cut = _cut(options)
     min_share = _min_share(options)
@@ -302,17 +302,17 @@ def run(lens_input: LensInput) -> LensResult:
     by_hand = _by_hand(options, characteristic)
     trail = Trail()
     residents = _load_residents(characteristic, trail)
-    mode = lens_input.mode.name
-    labels = lens_input.values["group"]
+    mode = analysis_input.mode.name
+    labels = analysis_input.values["group"]
     if mode == "group_counts":
-        weights = _weights(lens_input.values["count"])
+        weights = _weights(analysis_input.values["count"])
     else:
         weights = [1] * len(labels)
     supplied = sum(weights)
     places = None
     if mode == "postcodes":
         places = place_postcodes(
-            lens_input.values["postcode"],
+            analysis_input.values["postcode"],
             use_postcode_table(options),
             trail,
             LOCAL_AUTHORITY,
@@ -351,9 +351,9 @@ def run(lens_input: LensInput) -> LensResult:
             ),
         )
     )
-    return LensResult(
-        lens_id=LENS_ID,
-        lens_version=LENS_VERSION,
+    return AnalysisResult(
+        analysis_id=ANALYSIS_ID,
+        analysis_version=ANALYSIS_VERSION,
         package_version=uk_open_data.__version__,
         run_on=date.today().isoformat(),
         input_mode=mode,
@@ -384,13 +384,13 @@ def _cut(options: dict[str, Any]) -> float:
     value = options.get("under_represented_below")
     if isinstance(value, bool) or not isinstance(value, int | float):
         msg = "The option 'under_represented_below' must be a number."
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     if not 0 < value <= 1:
         msg = (
             "The option 'under_represented_below' must be above 0 and no more "
             "than 1, for example 0.8 for four fifths."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return float(value)
 
 
@@ -398,13 +398,13 @@ def _min_share(options: dict[str, Any]) -> float:
     """Read and check the share a local authority needs to join the catchment."""
     value = options.get("catchment_min_share")
     if isinstance(value, bool) or not isinstance(value, int | float):
-        raise LensInputError("The option 'catchment_min_share' must be a number.")
+        raise AnalysisInputError("The option 'catchment_min_share' must be a number.")
     if not 0 < value <= 1:
         msg = (
             "The option 'catchment_min_share' must be above 0 and no more "
             "than 1, for example 0.05 for five per cent."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return float(value)
 
 
@@ -415,7 +415,7 @@ def _characteristic(options: dict[str, Any]) -> _Characteristic:
         msg = (
             f"The option 'characteristic' must be one of: {', '.join(CHARACTERISTICS)}."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return CHARACTERISTICS[wanted]
 
 
@@ -439,14 +439,14 @@ def _by_hand(
             "The option 'groups' must map each of your labels to one of: "
             f"{', '.join(characteristic.keys)}."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     wrong = sum(1 for group in given.values() if group.strip().casefold() not in known)
     if wrong:
         msg = (
             f"{wrong} entries of the option 'groups' do not name a census "
             f"group. The groups are: {', '.join(characteristic.keys)}."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return {
         _tidy(label): known[group.strip().casefold()] for label, group in given.items()
     }
@@ -464,9 +464,9 @@ def _load_residents(characteristic: _Characteristic, trail: Trail) -> _Residents
     except (KeyError, TypeError, ValueError) as error:
         msg = (
             "The census figures kept on this machine could not be read. Fetch "
-            "them again with uk_open_data.lenses.who_we_miss.download_residents()."
+            "them again with uk_open_data.analyses.who_we_miss.download_residents()."
         )
-        raise LensInputError(msg) from error
+        raise AnalysisInputError(msg) from error
     if residents is not None:
         source = replace(
             source,
@@ -478,7 +478,7 @@ def _load_residents(characteristic: _Characteristic, trail: Trail) -> _Residents
             residents = _fetch_residents(characteristic.id)
         except ValueError as error:
             msg = f"The census figures could not be loaded from Nomis. {error}"
-            raise LensInputError(msg) from error
+            raise AnalysisInputError(msg) from error
         where = "Fetched from Nomis."
     trail.sources.append(source)
     trail.working.append(
@@ -503,7 +503,7 @@ def _fetch_residents(characteristic_id: str) -> _Residents:
 
     Raises:
         ValueError: If the table has no count by local authority, or does not
-            name every group the lens expects.
+            name every group the analysis expects.
     """
     characteristic = CHARACTERISTICS[characteristic_id]
     name_column = f"{characteristic.dimension}_name"
@@ -539,7 +539,7 @@ def _fetch_residents(characteristic_id: str) -> _Residents:
         else:
             own[key, position] = float(value)
     if len(found) != len(characteristic.groups):
-        msg = "The table does not name every group this lens compares."
+        msg = "The table does not name every group this analysis compares."
         raise ValueError(msg)
     positions = range(len(characteristic.groups))
     return _Residents(
@@ -596,16 +596,16 @@ def keep_residents(
     residents: Iterable[tuple[str, str, Mapping[str, float]]],
     note: str,
 ) -> Path:
-    """Keep residents by group on this machine, so the lens does not fetch them.
+    """Keep residents by group on this machine, so the analysis does not fetch them.
 
-    The lens reads the copy instead of asking Nomis, so a server or a
+    The analysis reads the copy instead of asking Nomis, so a server or a
     demonstration works without the network. The copy lives in the data folder
     (see :func:`uk_open_data.postcodes.offline.data_dir`).
 
     Args:
         characteristic: ``ethnic_group`` or ``sex``.
         residents: Local authority code, name, and residents by group, one per
-            local authority. The groups are named as the lens names them, for
+            local authority. The groups are named as the analysis names them, for
             example ``{"Asian": 100, "Black": 80, ...}``.
         note: Where the figures came from, in a few words. It is shown with
             the source in every result that uses the copy.
@@ -690,9 +690,9 @@ def _weights(counts: list[Any]) -> list[int]:
     if bad:
         msg = (
             f"{bad} rows have a count that is not a whole number of zero or "
-            "more. Correct those rows and run the lens again."
+            "more. Correct those rows and run the analysis again."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return [weight or 0 for weight in weights]
 
 
@@ -781,7 +781,7 @@ def _count_groups(
             "individuals. Check the 'group' column, the 'characteristic' "
             "option and the 'groups' option."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     if matched < FEW_PEOPLE:
         trail.warnings.append(
             f"Fewer than {FEW_PEOPLE} people were matched to a group. With so "
@@ -808,10 +808,10 @@ def _catchment(
         msg = (
             "Say which area you serve with the 'catchment' option: a list of "
             "local authority names or codes, or 'England', 'Wales' or "
-            "'England and Wales'. Without postcodes the lens cannot work it "
+            "'England and Wales'. Without postcodes the analysis cannot work it "
             "out."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     per_authority: Counter[str] = Counter()
     for place, weight in zip(places, weights, strict=True):
         if place in residents.counts:
@@ -881,7 +881,7 @@ def _residents_of(catchment: _Catchment, residents: _Residents) -> list[float]:
             f"The census figures list no local authority in {catchment.label}. "
             "Check the 'catchment' option."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     by_group = zip(*(residents.counts[code] for code in catchment.codes), strict=True)
     return [sum(column) for column in by_group]
 
@@ -1003,7 +1003,7 @@ def _choices(
     cut: float,
     threshold: int,
 ) -> tuple[Choice, ...]:
-    """List the choices the lens made."""
+    """List the choices the analysis made."""
     return (
         Choice(
             id="characteristic",
@@ -1102,7 +1102,7 @@ def _checks(
         Check(
             id="period",
             question="Does the data cover the period you are reporting on?",
-            why="The lens cannot tell which dates the rows are from.",
+            why="The analysis cannot tell which dates the rows are from.",
         ),
     )
 
@@ -1128,4 +1128,4 @@ def _privacy(threshold: int, trail: Trail) -> Privacy:
     )
 
 
-LENS = Lens(info=INFO, run=run)
+ANALYSIS = Analysis(info=INFO, run=run)

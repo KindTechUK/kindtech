@@ -1,8 +1,8 @@
-"""People in need by local authority, shared by the lenses that compare places.
+"""People in need by local authority, shared by the analyses that compare places.
 
 The need figures come from Nomis, are held in memory once fetched, and can be
 kept as a file on this machine. The helpers here also choose the local
-authorities a lens compares and put them in bands by need.
+authorities an analysis compares and put them in bands by need.
 """
 
 from __future__ import annotations
@@ -18,16 +18,16 @@ from typing import Any
 import narwhals as nw
 
 from uk_open_data._kept import kept_file, read_kept, write_kept
-from uk_open_data.lenses._inputs import is_blank
-from uk_open_data.lenses._model import LensInputError, Step
-from uk_open_data.lenses._steps import COUNTRIES, EVERYWHERE, Trail, named_areas
-from uk_open_data.lenses.sources import nomis_table
+from uk_open_data.analyses._inputs import is_blank
+from uk_open_data.analyses._model import AnalysisInputError, Step
+from uk_open_data.analyses._steps import COUNTRIES, EVERYWHERE, Trail, named_areas
+from uk_open_data.analyses.sources import nomis_table
 from uk_open_data.ons import load_ons
 
 DEFAULT_TOP = 10
 MAX_TOP = 50
 # When people live in fewer than one in this many of the areas compared, the
-# lens suggests naming a smaller area.
+# analysis suggests naming a smaller area.
 FEW_AREAS = 10
 NEED_BANDS = (
     "Lowest fifth",
@@ -134,9 +134,9 @@ def read_top(options: dict[str, Any]) -> int:
     """Read and check how many places to list."""
     value = options.get("top")
     if isinstance(value, bool) or not isinstance(value, int):
-        raise LensInputError("The option 'top' must be a whole number.")
+        raise AnalysisInputError("The option 'top' must be a whole number.")
     if not 1 <= value <= MAX_TOP:
-        raise LensInputError(f"The option 'top' must be from 1 to {MAX_TOP}.")
+        raise AnalysisInputError(f"The option 'top' must be from 1 to {MAX_TOP}.")
     return value
 
 
@@ -150,7 +150,7 @@ def read_measure(wanted: Any) -> Measure:
         f"The option 'need' must be one of: {', '.join(MEASURES)}. Or give a "
         "Nomis table as {'dataset': ..., 'label': ..., 'filters': {...}}."
     )
-    raise LensInputError(msg)
+    raise AnalysisInputError(msg)
 
 
 def _custom_measure(wanted: Mapping[str, Any]) -> Measure:
@@ -180,7 +180,7 @@ def _custom_measure(wanted: Mapping[str, Any]) -> Measure:
             "takes 'dataset', 'label' and 'filters'."
         )
     if problems:
-        raise LensInputError(problems)
+        raise AnalysisInputError(problems)
     return Measure(
         id="custom",
         label=str(label).strip(),
@@ -217,14 +217,14 @@ def load_need(measure: Measure, trail: Trail) -> dict[str, Authority]:
             rows = _fetch_need(measure.dataset, filters)
         except (TypeError, ValueError) as error:
             msg = f"The need figures could not be loaded from Nomis. {error}"
-            raise LensInputError(msg) from error
+            raise AnalysisInputError(msg) from error
         where = "Fetched from Nomis."
     if not rows:
         msg = (
             "The need figures list no local authority in England or Wales. "
             "Check the 'need' option."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     trail.sources.append(source)
     trail.working.append(
         Step(
@@ -260,9 +260,9 @@ def _read_kept(need: str) -> tuple[tuple[tuple[str, str, float], ...], str] | No
     except (KeyError, TypeError, ValueError) as error:
         msg = (
             "The need figures kept on this machine could not be read. Fetch "
-            "them again with uk_open_data.lenses.need_reach.download_need_figures()."
+            "them again with uk_open_data.analyses.need_reach.download_need_figures()."
         )
-        raise LensInputError(msg) from error
+        raise AnalysisInputError(msg) from error
 
 
 @lru_cache(maxsize=32)
@@ -281,7 +281,7 @@ def _fetch_need(dataset: str, filters: str) -> tuple[tuple[str, str, float], ...
             authority.
     """
     # Nomis gives every measure of a table unless one is named, and some
-    # tables hold a percentage beside each count. The lens adds the rows up,
+    # tables hold a percentage beside each count. The analysis adds the rows up,
     # so it asks for counts alone, unless the filters name another measure.
     query: dict[str, Any] = {
         "time": "latest",
@@ -315,7 +315,7 @@ def need_figures_path(need: str = "unemployed") -> Path | None:
     """Return where a need's figures are kept on this machine, or None.
 
     Args:
-        need: One of the needs the lens has built in, such as ``unemployed``.
+        need: One of the needs the analysis has built in, such as ``unemployed``.
     """
     path = kept_file(NEED_FOLDER, need)
     return path if need in MEASURES and path.is_file() else None
@@ -326,14 +326,14 @@ def keep_need_figures(
     figures: Iterable[tuple[str, str, float]],
     note: str,
 ) -> Path:
-    """Keep a need's figures on this machine, so the lens does not fetch them.
+    """Keep a need's figures on this machine, so the analysis does not fetch them.
 
-    The lens reads the copy instead of asking Nomis, so a server or a
+    The analysis reads the copy instead of asking Nomis, so a server or a
     demonstration works without the network. The copy lives in the data folder
     (see :func:`uk_open_data.postcodes.offline.data_dir`).
 
     Args:
-        need: One of the needs the lens has built in, such as ``unemployed``.
+        need: One of the needs the analysis has built in, such as ``unemployed``.
         figures: Local authority code, name and people in need, one per local
             authority.
         note: Where the figures came from, in a few words. It is shown with
@@ -343,7 +343,7 @@ def keep_need_figures(
         The path of the file written.
 
     Raises:
-        ValueError: If the need is not one the lens has built in.
+        ValueError: If the need is not one the analysis has built in.
     """
     if need not in MEASURES:
         msg = f"No need called '{need}'. Known needs: {', '.join(MEASURES)}."
@@ -365,13 +365,13 @@ def download_need_figures(need: str = "unemployed") -> Path:
     figures. Only public figures are fetched.
 
     Args:
-        need: One of the needs the lens has built in, such as ``unemployed``.
+        need: One of the needs the analysis has built in, such as ``unemployed``.
 
     Returns:
         The path of the file written.
 
     Raises:
-        ValueError: If the need is not one the lens has built in, or Nomis
+        ValueError: If the need is not one the analysis has built in, or Nomis
             does not return a count for each local authority.
     """
     if need not in MEASURES:

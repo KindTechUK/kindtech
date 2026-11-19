@@ -149,10 +149,10 @@ lens needs could not be reached).
 
 When you host the connector, keep the public figures three of the lenses
 compare with on the server when the image is built, so a run does not wait on
-Nomis: `uk_open_data.lenses.need_reach.download_need_figures` for the need against
+Nomis: `uk_open_data.analyses.need_reach.download_need_figures` for the need against
 reach lens, the same function called with `"residents"` for the provision gap
 lens, which sets provision against everyone who lives in a place unless told
-otherwise, and `uk_open_data.lenses.who_we_miss.download_residents` for the who we
+otherwise, and `uk_open_data.analyses.who_we_miss.download_residents` for the who we
 are missing lens.
 
 ## The privacy rule

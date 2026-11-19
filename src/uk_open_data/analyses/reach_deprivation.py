@@ -15,20 +15,19 @@ from typing import Any
 import narwhals as nw
 
 import uk_open_data
-from uk_open_data.imd import imd_path, kept_imd_note, load_imd
-from uk_open_data.lenses._inputs import is_blank
-from uk_open_data.lenses._model import (
+from uk_open_data.analyses._inputs import is_blank
+from uk_open_data.analyses._model import (
+    Analysis,
+    AnalysisInfo,
+    AnalysisInput,
+    AnalysisInputError,
+    AnalysisResult,
     Chart,
     ChartSeries,
     Check,
     Choice,
     Figure,
     InputMode,
-    Lens,
-    LensInfo,
-    LensInput,
-    LensInputError,
-    LensResult,
     MapLayer,
     MapSpec,
     Option,
@@ -37,14 +36,14 @@ from uk_open_data.lenses._model import (
     Step,
     Table,
 )
-from uk_open_data.lenses._privacy import (
+from uk_open_data.analyses._privacy import (
     SECOND_COUNT_NOTE,
     band_labels,
     cells_to_hide,
     count_band,
     group_hidden,
 )
-from uk_open_data.lenses._steps import (
+from uk_open_data.analyses._steps import (
     POSTCODE_LOOKUP,
     SUPPRESS_BELOW,
     Trail,
@@ -54,17 +53,18 @@ from uk_open_data.lenses._steps import (
     read_threshold,
     use_postcode_table,
 )
-from uk_open_data.lenses.sources import IOD_2025
+from uk_open_data.analyses.sources import IOD_2025
+from uk_open_data.imd import imd_path, kept_imd_note, load_imd
 
-LENS_ID = "reach-deprivation"
-LENS_VERSION = "0.1"
+ANALYSIS_ID = "reach-deprivation"
+ANALYSIS_VERSION = "0.1"
 DECILES = tuple(range(1, 11))
 MOST_DEPRIVED = (0, 1)  # positions of deciles 1 and 2
 ELSEWHERE = tuple(range(2, 10))  # positions of deciles 3 to 10
 ENGLAND = "England"
 
-INFO = LensInfo(
-    id=LENS_ID,
+INFO = AnalysisInfo(
+    id=ANALYSIS_ID,
     title="Reach against deprivation",
     question="Are we reaching people in the most deprived neighbourhoods?",
     summary=(
@@ -73,7 +73,7 @@ INFO = LensInfo(
         "your reach in the most deprived neighbourhoods of your area with your "
         "reach in the rest of it."
     ),
-    version=LENS_VERSION,
+    version=ANALYSIS_VERSION,
     roles=(
         Role(
             name="postcode",
@@ -115,7 +115,7 @@ INFO = LensInfo(
             name="catchment",
             description=(
                 "The area you serve: a list of local authority names or codes, "
-                "or 'England'. Left empty, the lens uses the local authorities "
+                "or 'England'. Left empty, the analysis uses the local authorities "
                 "where most of your people live."
             ),
             default=None,
@@ -182,25 +182,25 @@ class _Catchment:
         return ENGLAND if self.whole_country else ", ".join(self.names)
 
 
-def run(lens_input: LensInput) -> LensResult:
-    """Run the lens. Use :func:`uk_open_data.lenses.run_lens` to call it."""
-    threshold = read_threshold(lens_input.options)
-    min_share = _min_share(lens_input.options)
+def run(analysis_input: AnalysisInput) -> AnalysisResult:
+    """Run the analysis. Use :func:`uk_open_data.analyses.run_analysis` to call it."""
+    threshold = read_threshold(analysis_input.options)
+    min_share = _min_share(analysis_input.options)
     trail = Trail()
-    if lens_input.mode.name == "postcodes":
+    if analysis_input.mode.name == "postcodes":
         counts, supplied = count_by_postcode(
-            lens_input.values["postcode"],
-            use_postcode_table(lens_input.options),
+            analysis_input.values["postcode"],
+            use_postcode_table(analysis_input.options),
             trail,
         )
     else:
         counts, supplied = count_by_neighbourhood(
-            lens_input.values["lsoa_code"], lens_input.values["count"], trail
+            analysis_input.values["lsoa_code"], analysis_input.values["count"], trail
         )
     areas = _load_areas(trail)
     located = _keep_english(counts, areas, threshold, trail)
     catchment = _choose_catchment(
-        located, areas, lens_input.options.get("catchment"), min_share
+        located, areas, analysis_input.options.get("catchment"), min_share
     )
     in_catchment = _keep_catchment(located, areas, catchment, threshold, trail)
 
@@ -235,18 +235,18 @@ def run(lens_input: LensInput) -> LensResult:
             ),
         )
     )
-    return LensResult(
-        lens_id=LENS_ID,
-        lens_version=LENS_VERSION,
+    return AnalysisResult(
+        analysis_id=ANALYSIS_ID,
+        analysis_version=ANALYSIS_VERSION,
         package_version=uk_open_data.__version__,
         run_on=date.today().isoformat(),
-        input_mode=lens_input.mode.name,
+        input_mode=analysis_input.mode.name,
         figures=tuple(figures),
         tables=tuple(tables),
         map=map_spec,
         working=tuple(trail.working),
         choices=(*trail.choices, *_choices(catchment, threshold)),
-        checks=_checks(lens_input.mode.name, catchment),
+        checks=_checks(analysis_input.mode.name, catchment),
         caveats=CAVEATS,
         warnings=tuple(trail.warnings),
         sources=tuple(trail.sources),
@@ -262,13 +262,13 @@ def _min_share(options: dict[str, Any]) -> float:
     """Read and check the share a local authority needs to join the catchment."""
     value = options.get("catchment_min_share")
     if isinstance(value, bool) or not isinstance(value, int | float):
-        raise LensInputError("The option 'catchment_min_share' must be a number.")
+        raise AnalysisInputError("The option 'catchment_min_share' must be a number.")
     if not 0 < value <= 1:
         msg = (
             "The option 'catchment_min_share' must be above 0 and no more "
             "than 1, for example 0.05 for five per cent."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return float(value)
 
 
@@ -292,7 +292,7 @@ def _load_areas(trail: Trail) -> dict[str, _Area]:
             "The deprivation index kept on this machine could not be read. "
             "Fetch it again with uk_open_data.imd.download_imd()."
         )
-        raise LensInputError(msg) from error
+        raise AnalysisInputError(msg) from error
     if note is None:
         trail.sources.append(IOD_2025)
     else:
@@ -356,7 +356,7 @@ def _keep_english(
         trail.warnings.append(
             f"{outside} people were placed outside England, or in a "
             "neighbourhood code the 2025 index does not list (for example a "
-            "2011 code). This lens covers England only, so they are left out."
+            "2011 code). This analysis covers England only, so they are left out."
         )
     if n_located < threshold:
         msg = (
@@ -364,7 +364,7 @@ def _keep_english(
             "neighbourhood, which is too few to give figures that do not "
             "point at individuals."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return located
 
 
@@ -414,7 +414,7 @@ def _named_catchment(wanted: Any, areas: dict[str, _Area]) -> _Catchment:
             "The option 'catchment' must be a local authority name or code, a "
             "list of them, or 'England'."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     cleaned = [item.strip() for item in items]
     if [item.lower() for item in cleaned] == [ENGLAND.lower()]:
         return _Catchment(
@@ -433,7 +433,7 @@ def _named_catchment(wanted: Any, areas: dict[str, _Area]) -> _Catchment:
             f"2025 index: {', '.join(unknown)}. Use the names or codes as "
             "the index spells them."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     chosen = list(dict.fromkeys(by_key[item.lower()] for item in cleaned))
     return _Catchment(
         lad_codes=frozenset(chosen),
@@ -481,7 +481,7 @@ def _keep_catchment(
             f"catchment ({catchment.label}), which is too few to give figures "
             "that do not point at individuals. Check the 'catchment' option."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     if n_inside < n_located:
         trail.warnings.append(
             f"{n_located - n_inside} people live outside the catchment. They "
@@ -849,7 +849,7 @@ def _reach_figure(
 
 
 def _choices(catchment: _Catchment, threshold: int) -> tuple[Choice, ...]:
-    """List the choices the lens made."""
+    """List the choices the analysis made."""
     return (
         Choice(
             id="deprivation_measure",
@@ -910,7 +910,7 @@ def _checks(mode: str, catchment: _Catchment) -> tuple[Check, ...]:
         Check(
             id="period",
             question="Does the data cover the period you are reporting on?",
-            why="The lens cannot tell which dates the rows are from.",
+            why="The analysis cannot tell which dates the rows are from.",
         ),
         Check(
             id="catchment",
@@ -943,4 +943,4 @@ def _privacy(threshold: int, trail: Trail) -> Privacy:
     )
 
 
-LENS = Lens(info=INFO, run=run)
+ANALYSIS = Analysis(info=INFO, run=run)

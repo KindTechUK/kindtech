@@ -21,8 +21,8 @@ def main() -> None:
     assert ons_catalog.read_text(encoding="utf-8").splitlines()[0] == (
         "id,name,sourceName"
     )
-    # The command line and the lens list work with no DataFrame backend.
-    assert cli_main(["lens", "list"]) == 0
+    # The command line and the analysis list work with no DataFrame backend.
+    assert cli_main(["analysis", "list"]) == 0
     # The old name is a distribution of its own and is not part of this one.
     assert find_spec("kindtech") is None
 

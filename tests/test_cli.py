@@ -14,7 +14,7 @@ import requests
 
 from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
 
-LENS_ID = "reach-deprivation"
+ANALYSIS_ID = "reach-deprivation"
 
 
 def _index() -> pd.DataFrame:
@@ -48,7 +48,7 @@ def counts_file(tmp_path):
 def index():
     """Replace the deprivation index with the invented one."""
     with mock.patch(
-        "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
+        "uk_open_data.analyses.reach_deprivation.load_imd", return_value=_index()
     ):
         yield
 
@@ -56,9 +56,9 @@ def index():
 def _run_args(path, *extra):
     """Arguments for a run on the counts file."""
     return [
-        "lens",
+        "analysis",
         "run",
-        LENS_ID,
+        ANALYSIS_ID,
         str(path),
         "--column",
         "lsoa_code=Area",
@@ -70,38 +70,38 @@ def _run_args(path, *extra):
 
 def test_no_command_prints_help(capsys):
     assert main([]) == EXIT_INPUT_ERROR
-    assert "lens" in capsys.readouterr().out
+    assert "analysis" in capsys.readouterr().out
 
 
-def test_lens_list(capsys):
-    assert main(["lens", "list"]) == EXIT_OK
-    assert capsys.readouterr().out.startswith(f"{LENS_ID}: ")
+def test_analysis_list(capsys):
+    assert main(["analysis", "list"]) == EXIT_OK
+    assert capsys.readouterr().out.startswith(f"{ANALYSIS_ID}: ")
 
 
-def test_lens_list_json(capsys):
-    assert main(["lens", "list", "--json"]) == EXIT_OK
-    lenses = json.loads(capsys.readouterr().out)
-    assert LENS_ID in [lens["id"] for lens in lenses]
+def test_analysis_list_json(capsys):
+    assert main(["analysis", "list", "--json"]) == EXIT_OK
+    analyses = json.loads(capsys.readouterr().out)
+    assert ANALYSIS_ID in [analysis["id"] for analysis in analyses]
 
 
-def test_lens_describe(capsys):
-    assert main(["lens", "describe", LENS_ID]) == EXIT_OK
+def test_analysis_describe(capsys):
+    assert main(["analysis", "describe", ANALYSIS_ID]) == EXIT_OK
     out = capsys.readouterr().out
     assert "columns needed: lsoa_code, count" in out
     assert "suppress_below (default 5)" in out
 
 
-def test_lens_describe_json(capsys):
-    assert main(["lens", "describe", LENS_ID, "--json"]) == EXIT_OK
-    assert json.loads(capsys.readouterr().out)["id"] == LENS_ID
+def test_analysis_describe_json(capsys):
+    assert main(["analysis", "describe", ANALYSIS_ID, "--json"]) == EXIT_OK
+    assert json.loads(capsys.readouterr().out)["id"] == ANALYSIS_ID
 
 
-def test_unknown_lens_fails_with_the_known_ids(capsys):
-    assert main(["lens", "describe", "no-such-lens"]) == EXIT_INPUT_ERROR
-    assert LENS_ID in capsys.readouterr().err
+def test_unknown_analysis_fails_with_the_known_ids(capsys):
+    assert main(["analysis", "describe", "no-such-analysis"]) == EXIT_INPUT_ERROR
+    assert ANALYSIS_ID in capsys.readouterr().err
 
 
-def test_lens_run_prints_a_report(index, counts_file, capsys):
+def test_analysis_run_prints_a_report(index, counts_file, capsys):
     assert main(_run_args(counts_file)) == EXIT_OK
     out = capsys.readouterr().out
     assert "People placed in an English neighbourhood: 60" in out
@@ -112,7 +112,7 @@ def test_lens_run_prints_a_report(index, counts_file, capsys):
     assert "Catchment neighbourhoods" not in out  # the map table is left out
 
 
-def test_lens_run_json_with_options(index, counts_file, capsys):
+def test_analysis_run_json_with_options(index, counts_file, capsys):
     args = _run_args(
         counts_file,
         "--json",
@@ -131,7 +131,7 @@ def test_lens_run_json_with_options(index, counts_file, capsys):
     assert tables["by_decile"]["rows"][3]["people"] == 3
 
 
-def test_lens_run_reads_a_json_list_option(index, counts_file, capsys):
+def test_analysis_run_reads_a_json_list_option(index, counts_file, capsys):
     args = _run_args(counts_file, "--json", "--option", 'catchment=["Lewisham"]')
     assert main(args) == EXIT_OK
     payload = json.loads(capsys.readouterr().out)
@@ -139,15 +139,15 @@ def test_lens_run_reads_a_json_list_option(index, counts_file, capsys):
     assert catchment["value"] == ["Lewisham"]
 
 
-def test_lens_run_writes_to_a_file(index, counts_file, tmp_path, capsys):
+def test_analysis_run_writes_to_a_file(index, counts_file, tmp_path, capsys):
     output = tmp_path / "result.json"
     args = _run_args(counts_file, "--json", "--output", str(output))
     assert main(args) == EXIT_OK
-    assert json.loads(output.read_text(encoding="utf-8"))["lens_id"] == LENS_ID
+    assert json.loads(output.read_text(encoding="utf-8"))["analysis_id"] == ANALYSIS_ID
     assert "Written to" in capsys.readouterr().out
 
 
-def test_lens_run_reads_a_spreadsheet(index, tmp_path, capsys):
+def test_analysis_run_reads_a_spreadsheet(index, tmp_path, capsys):
     rows = [{"Area": "E01000001", "Clients": 30}, {"Area": "E01000002", "Clients": 12}]
     with mock.patch(
         "uk_open_data.cli.read_spreadsheet_rows", return_value=rows
@@ -162,7 +162,14 @@ def test_lens_run_reads_a_spreadsheet(index, tmp_path, capsys):
 
 
 def test_input_problems_exit_with_status_two(index, counts_file, capsys):
-    args = ["lens", "run", LENS_ID, str(counts_file), "--column", "postcode=Home"]
+    args = [
+        "analysis",
+        "run",
+        ANALYSIS_ID,
+        str(counts_file),
+        "--column",
+        "postcode=Home",
+    ]
     assert main(args) == EXIT_INPUT_ERROR
     err = capsys.readouterr().err
     assert "The column 'Home' given for 'postcode' is not in the data." in err
@@ -175,7 +182,7 @@ def test_an_unreachable_source_is_reported_without_its_address(counts_file, caps
         f"HTTPSConnectionPool: Max retries exceeded with url: {address}",
         request=requests.Request("GET", address).prepare(),
     )
-    with mock.patch("uk_open_data.cli.run_lens", side_effect=error):
+    with mock.patch("uk_open_data.cli.run_analysis", side_effect=error):
         assert main(_run_args(counts_file)) == EXIT_INPUT_ERROR
     err = capsys.readouterr().err
     assert err.startswith(
@@ -190,7 +197,7 @@ def test_an_unreachable_source_without_an_address_is_still_reported(
     counts_file, capsys
 ):
     error = requests.ConnectionError("no route to https://example.invalid/?q=1")
-    with mock.patch("uk_open_data.cli.run_lens", side_effect=error):
+    with mock.patch("uk_open_data.cli.run_analysis", side_effect=error):
         assert main(_run_args(counts_file)) == EXIT_INPUT_ERROR
     err = capsys.readouterr().err
     assert err.startswith("A data source this command needs could not be reached. ")
@@ -208,7 +215,7 @@ def test_a_source_that_answers_with_an_error_is_not_called_unreachable(
     error = requests.HTTPError(
         f"503 Server Error: Service Unavailable for url: {address}", response=response
     )
-    with mock.patch("uk_open_data.cli.run_lens", side_effect=error):
+    with mock.patch("uk_open_data.cli.run_analysis", side_effect=error):
         assert main(_run_args(counts_file)) == EXIT_INPUT_ERROR
     err = capsys.readouterr().err
     assert err.startswith(
@@ -222,18 +229,18 @@ def test_a_source_that_answers_with_an_error_is_not_called_unreachable(
 
 
 def test_missing_file_is_reported(capsys):
-    assert main(["lens", "run", LENS_ID, "nowhere.csv"]) == EXIT_INPUT_ERROR
+    assert main(["analysis", "run", ANALYSIS_ID, "nowhere.csv"]) == EXIT_INPUT_ERROR
     assert "was not found" in capsys.readouterr().err
 
 
 def test_other_file_types_are_rejected(tmp_path, capsys):
     path = tmp_path / "clients.pdf"
     path.write_bytes(b"")
-    assert main(["lens", "run", LENS_ID, str(path)]) == EXIT_INPUT_ERROR
+    assert main(["analysis", "run", ANALYSIS_ID, str(path)]) == EXIT_INPUT_ERROR
     assert ".csv, .xlsx or .ods" in capsys.readouterr().err
 
 
 def test_a_pair_without_equals_is_rejected(index, counts_file, capsys):
-    args = ["lens", "run", LENS_ID, str(counts_file), "--column", "postcode"]
+    args = ["analysis", "run", ANALYSIS_ID, str(counts_file), "--column", "postcode"]
     assert main(args) == EXIT_INPUT_ERROR
     assert "NAME=VALUE" in capsys.readouterr().err

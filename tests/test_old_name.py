@@ -44,15 +44,15 @@ def test_the_old_name_is_the_same_package(old_name):
 
 
 def test_modules_under_the_old_name_are_the_same_objects(old_name):
+    import kindtech.analyses.need_reach
     import kindtech.geo
-    import kindtech.lenses.need_reach
     import kindtech.postcodes.offline
 
+    import uk_open_data.analyses.need_reach
     import uk_open_data.geo
-    import uk_open_data.lenses.need_reach
 
     assert kindtech.geo is uk_open_data.geo
-    assert kindtech.lenses.need_reach is uk_open_data.lenses.need_reach
+    assert kindtech.analyses.need_reach is uk_open_data.analyses.need_reach
     assert kindtech.postcodes.offline is offline
     # Each module still knows itself by its real name.
     assert offline.__name__ == "uk_open_data.postcodes.offline"
@@ -60,11 +60,11 @@ def test_modules_under_the_old_name_are_the_same_objects(old_name):
 
 
 def test_names_can_be_imported_from_the_old_name(old_name):
+    from kindtech.analyses import run_analysis
     from kindtech.geo import load_geodata
-    from kindtech.lenses import run_lens
 
     assert load_geodata is uk_open_data.geo.load_geodata
-    assert run_lens is uk_open_data.lenses.run_lens
+    assert run_analysis is uk_open_data.analyses.run_analysis
 
 
 def test_a_patch_by_the_old_name_patches_the_real_module(old_name):
@@ -97,10 +97,10 @@ def test_importing_the_old_name_warns_once():
 def test_a_submodule_imported_first_by_the_old_name_is_loaded_once():
     code = (
         "import warnings; warnings.simplefilter('ignore')\n"
-        "import kindtech.lenses.need_reach as old\n"
-        "import sys, uk_open_data.lenses.need_reach as new\n"
-        "print(old is new, sys.modules['kindtech.lenses'] is sys.modules"
-        "['uk_open_data.lenses'])\n"
+        "import kindtech.analyses.need_reach as old\n"
+        "import sys, uk_open_data.analyses.need_reach as new\n"
+        "print(old is new, sys.modules['kindtech.analyses'] is sys.modules"
+        "['uk_open_data.analyses'])\n"
     )
     done = _python(code)
     assert done.returncode == 0, done.stderr
@@ -108,7 +108,7 @@ def test_a_submodule_imported_first_by_the_old_name_is_loaded_once():
 
 
 def test_the_new_name_gives_no_warning():
-    done = _python("import uk_open_data.lenses", "-W", "error::DeprecationWarning")
+    done = _python("import uk_open_data.analyses", "-W", "error::DeprecationWarning")
     assert done.returncode == 0, done.stderr
 
 

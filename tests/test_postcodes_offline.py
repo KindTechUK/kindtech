@@ -14,8 +14,8 @@ import pandas as pd
 import pytest
 import requests
 
+from uk_open_data.analyses import AnalysisInputError, run_analysis
 from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
-from uk_open_data.lenses import LensInputError, run_lens
 from uk_open_data.postcodes import (
     PostcodeTableError,
     build_postcode_table,
@@ -228,7 +228,7 @@ def test_download_failure_is_reported():
         download_postcode_table(url="https://example.org/t.gz", sha256="0" * 64)
 
 
-# --- the lens ---------------------------------------------------------------
+# --- the analysis ---------------------------------------------------------------
 
 
 def _index() -> pd.DataFrame:
@@ -251,20 +251,20 @@ ROWS = [{"postcode": "SE13 7VC"}] * 6 + [{"postcode": "se136cm"}] * 5
 
 
 def _run(options=None):
-    """Run the lens with the index replaced and the online lookup watched."""
+    """Run the analysis with the index replaced and the online lookup watched."""
     with (
         mock.patch(
-            "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
+            "uk_open_data.analyses.reach_deprivation.load_imd", return_value=_index()
         ),
-        mock.patch("uk_open_data.lenses._steps.postcodes_to_geography") as online,
+        mock.patch("uk_open_data.analyses._steps.postcodes_to_geography") as online,
     ):
         online.return_value = pd.DataFrame(
             {"geography_code": ["E01000002", "E01000001"]}
         )
-        return run_lens("reach-deprivation", ROWS, options=options), online
+        return run_analysis("reach-deprivation", ROWS, options=options), online
 
 
-def test_lens_uses_the_table_when_one_is_installed(installed):
+def test_analysis_uses_the_table_when_one_is_installed(installed):
     result, online = _run()
     online.assert_not_called()
     assert result.privacy.sent_to_third_parties == ()
@@ -282,7 +282,7 @@ def test_lens_uses_the_table_when_one_is_installed(installed):
     assert "on this machine" in result.working[1].detail
 
 
-def test_lens_goes_online_when_no_table_is_installed():
+def test_analysis_goes_online_when_no_table_is_installed():
     result, online = _run()
     online.assert_called_once()
     assert "postcodes.io" in result.privacy.sent_to_third_parties[0]
@@ -290,7 +290,7 @@ def test_lens_goes_online_when_no_table_is_installed():
     assert "postcodes download" in result.choices[0].reason
 
 
-def test_lens_can_be_told_to_go_online(installed):
+def test_analysis_can_be_told_to_go_online(installed):
     result, online = _run({"postcode_lookup": "online"})
     online.assert_called_once()
     reason = result.choices[0].reason
@@ -298,27 +298,27 @@ def test_lens_can_be_told_to_go_online(installed):
     assert "No postcode table is installed" not in reason
 
 
-def test_lens_told_to_go_online_without_a_table_says_none_is_installed():
+def test_analysis_told_to_go_online_without_a_table_says_none_is_installed():
     result, _ = _run({"postcode_lookup": "online"})
     assert result.choices[0].reason.startswith("No postcode table is installed")
 
 
-def test_lens_told_to_stay_offline_fails_without_a_table():
-    with pytest.raises(LensInputError, match="No postcode table is installed"):
+def test_analysis_told_to_stay_offline_fails_without_a_table():
+    with pytest.raises(AnalysisInputError, match="No postcode table is installed"):
         _run({"postcode_lookup": "offline"})
 
 
-def test_lens_rejects_an_unknown_lookup():
-    with pytest.raises(LensInputError, match="auto, offline, online"):
+def test_analysis_rejects_an_unknown_lookup():
+    with pytest.raises(AnalysisInputError, match="auto, offline, online"):
         _run({"postcode_lookup": "magic"})
 
 
 def test_not_found_warning_names_the_table_coverage(installed):
     rows = [*ROWS, {"postcode": "EH1 1VC"}]
     with mock.patch(
-        "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
+        "uk_open_data.analyses.reach_deprivation.load_imd", return_value=_index()
     ):
-        result = run_lens("reach-deprivation", rows)
+        result = run_analysis("reach-deprivation", rows)
     assert any("outside England and Wales" in w for w in result.warnings)
 
 

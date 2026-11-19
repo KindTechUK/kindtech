@@ -1,6 +1,6 @@
 """Find a lens and run one on counts, as totals only.
 
-These are thin wrappers over :mod:`uk_open_data.lenses`. They add what a chat
+These are thin wrappers over :mod:`uk_open_data.analyses`. They add what a chat
 assistant needs: a search over the lens descriptions, a check that only
 already-totalled input is accepted, and the privacy guard on what comes back.
 
@@ -15,7 +15,7 @@ from typing import Any
 
 import requests
 
-import uk_open_data.lenses as engine
+import uk_open_data.analyses as engine
 from uk_open_data.connector.privacy import ensure_totals_only, looks_like_postcode
 
 logger = logging.getLogger(__name__)
@@ -85,11 +85,11 @@ def find_lens(query: str | None = None) -> dict[str, Any]:
             Leave out to list every lens.
 
     Returns:
-        ``lenses`` holds each lens description (see ``LensInfo`` in the lens
+        ``lenses`` holds each lens description (see ``AnalysisInfo`` in the lens
         contract), best match first. ``matched`` says how many matched the
         query; when none did, every lens is listed and ``note`` says so.
     """
-    lenses = [info.to_dict() for info in engine.list_lenses()]
+    lenses = [info.to_dict() for info in engine.list_analyses()]
     words = _words(query or "")
     scored = sorted(
         ((_score(lens, words), lens) for lens in lenses),
@@ -140,9 +140,9 @@ def run_lens_on_counts(
         authority, or one of the group names the role lists.
     """
     try:
-        info = engine.describe_lens(lens_id).to_dict()
+        info = engine.describe_analysis(lens_id).to_dict()
     except KeyError:
-        known = [lens.id for lens in engine.list_lenses()]
+        known = [lens.id for lens in engine.list_analyses()]
         return {
             "status": "unknown_lens",
             "message": "There is no lens with that id.",
@@ -154,8 +154,8 @@ def run_lens_on_counts(
     counts = _with_amounts_as_numbers(info, counts)
     guarded = _guarded_values(info, counts)
     try:
-        result = engine.run_lens(lens_id, counts, options=options or {})
-    except engine.LensInputError as error:
+        result = engine.run_analysis(lens_id, counts, options=options or {})
+    except engine.AnalysisInputError as error:
         return ensure_totals_only(_input_problem(error.problems), guarded)
     except requests.RequestException as error:
         # The error text can hold a web address, so only its kind is logged.

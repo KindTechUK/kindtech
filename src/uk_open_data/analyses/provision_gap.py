@@ -5,8 +5,8 @@ provides, totals the provision in each local authority, and sets it against
 the people who live there or a count of people in need. It follows the method
 of the Starlight case study, by local authority.
 
-The lens is about sites and what they provide, not about people, so it hides
-no count. Counts of people belong in the need against reach lens.
+The analysis is about sites and what they provide, not about people, so it hides
+no count. Counts of people belong in the need against reach analysis.
 """
 
 from __future__ import annotations
@@ -18,19 +18,19 @@ from statistics import median
 from typing import Any
 
 import uk_open_data
-from uk_open_data.lenses._inputs import is_blank
-from uk_open_data.lenses._model import (
+from uk_open_data.analyses._inputs import is_blank
+from uk_open_data.analyses._model import (
+    Analysis,
+    AnalysisInfo,
+    AnalysisInput,
+    AnalysisInputError,
+    AnalysisResult,
     Chart,
     ChartSeries,
     Check,
     Choice,
     Figure,
     InputMode,
-    Lens,
-    LensInfo,
-    LensInput,
-    LensInputError,
-    LensResult,
     MapLayer,
     MapSpec,
     Option,
@@ -40,7 +40,7 @@ from uk_open_data.lenses._model import (
     Step,
     Table,
 )
-from uk_open_data.lenses._need import (
+from uk_open_data.analyses._need import (
     DEFAULT_TOP,
     FEW_AREAS,
     MAX_TOP,
@@ -57,7 +57,7 @@ from uk_open_data.lenses._need import (
     read_measure,
     read_top,
 )
-from uk_open_data.lenses._steps import (
+from uk_open_data.analyses._steps import (
     EVERYWHERE,
     LOCAL_AUTHORITY,
     POSTCODE_LOOKUP,
@@ -67,8 +67,8 @@ from uk_open_data.lenses._steps import (
     use_postcode_table,
 )
 
-LENS_ID = "provision-gap"
-LENS_VERSION = "0.1"
+ANALYSIS_ID = "provision-gap"
+ANALYSIS_VERSION = "0.1"
 NO_PROVISION = "None"
 PROVISION_BANDS = (
     NO_PROVISION,
@@ -77,8 +77,8 @@ PROVISION_BANDS = (
     "Higher provision",
 )
 
-INFO = LensInfo(
-    id=LENS_ID,
+INFO = AnalysisInfo(
+    id=ANALYSIS_ID,
     title="Provision gap",
     question="Where is provision thin against need across a region?",
     summary=(
@@ -87,7 +87,7 @@ INFO = LensInfo(
         "in need. It lists the high-need local authorities with the least "
         "provision for each 1,000 people."
     ),
-    version=LENS_VERSION,
+    version=ANALYSIS_VERSION,
     roles=(
         Role(
             name="postcode",
@@ -214,25 +214,25 @@ class _Row:
         return _per_1000(self.volume, self.authority.need)
 
 
-def run(lens_input: LensInput) -> LensResult:
-    """Run the lens. Use :func:`uk_open_data.lenses.run_lens` to call it."""
-    options = lens_input.options
+def run(analysis_input: AnalysisInput) -> AnalysisResult:
+    """Run the analysis. Use :func:`uk_open_data.analyses.run_analysis` to call it."""
+    options = analysis_input.options
     top = read_top(options)
     measure = read_measure(options.get("need"))
-    mode = lens_input.mode.name
+    mode = analysis_input.mode.name
     trail = Trail()
     authorities = load_need(measure, trail)
     if mode == "area_volumes":
         volumes, supplied = _volume_by_authority(
-            lens_input.values["local_authority"],
-            lens_input.values["volume"],
+            analysis_input.values["local_authority"],
+            analysis_input.values["volume"],
             authorities,
             trail,
         )
     else:
-        postcodes = lens_input.values["postcode"]
+        postcodes = analysis_input.values["postcode"]
         amounts = (
-            _amounts(lens_input.values["volume"])
+            _amounts(analysis_input.values["volume"])
             if mode == "sites"
             else [1.0] * len(postcodes)
         )
@@ -242,9 +242,9 @@ def run(lens_input: LensInput) -> LensResult:
     located = _keep_listed(volumes, authorities, trail)
     compared = choose_compared(options.get("catchment"), authorities)
     rows = _rows(located, authorities, compared, trail)
-    return LensResult(
-        lens_id=LENS_ID,
-        lens_version=LENS_VERSION,
+    return AnalysisResult(
+        analysis_id=ANALYSIS_ID,
+        analysis_version=ANALYSIS_VERSION,
         package_version=uk_open_data.__version__,
         run_on=date.today().isoformat(),
         input_mode=mode,
@@ -263,7 +263,7 @@ def run(lens_input: LensInput) -> LensResult:
             row_level_output=False,
             sent_to_third_parties=tuple(trail.sent),
             notes=(
-                "This lens is about sites and what they provide, not about "
+                "This analysis is about sites and what they provide, not about "
                 "people, so it hides no count.",
                 "The result holds totals for local authorities. It names no "
                 "site and repeats no postcode.",
@@ -297,9 +297,9 @@ def _amounts(raw: list[Any]) -> list[float]:
     if bad:
         msg = (
             f"{bad} rows have a volume that is not a number of zero or more. "
-            "Correct those rows and run the lens again."
+            "Correct those rows and run the analysis again."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return [amount or 0.0 for amount in amounts]
 
 
@@ -401,7 +401,7 @@ def _keep_listed(
             "None of the provision could be placed in a local authority in "
             "England or Wales. Check the location column."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     return located
 
 
@@ -420,7 +420,7 @@ def _rows(
             f"The need figures list no local authority in {compared.label}. "
             "Check the 'catchment' option."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     volume = [located.get(code, 0.0) for code in compared.codes]
     need = [authorities[code].need for code in compared.codes]
     inside = sum(volume)
@@ -441,7 +441,7 @@ def _rows(
             f"None of the provision is in the catchment ({compared.label}). "
             "Check the 'catchment' option."
         )
-        raise LensInputError(msg)
+        raise AnalysisInputError(msg)
     _warn_about_area(sum(located.values()) - inside, with_provision, compared, trail)
     cut = median(need)
     high = [amount >= cut and amount > 0 for amount in need]
@@ -702,7 +702,7 @@ def _figures(
 
 
 def _choices(measure: Measure, compared: Compared, top: int) -> tuple[Choice, ...]:
-    """List the choices the lens made."""
+    """List the choices the analysis made."""
     return (
         Choice(
             id="need",
@@ -750,8 +750,8 @@ def _checks(mode: str, measure: Measure, compared: Compared) -> tuple[Check, ...
             id="volume_is_provision",
             question="Is the volume a count of what you provide, and not of people?",
             why=(
-                "This lens shows every volume as it is. Counts of people "
-                "belong in the need against reach lens, which hides small "
+                "This analysis shows every volume as it is. Counts of people "
+                "belong in the need against reach analysis, which hides small "
                 "counts."
             ),
         )
@@ -765,7 +765,7 @@ def _checks(mode: str, measure: Measure, compared: Compared) -> tuple[Check, ...
         Check(
             id="period",
             question="Does the data cover the period you are reporting on?",
-            why="The lens cannot tell which dates the rows are from.",
+            why="The analysis cannot tell which dates the rows are from.",
         ),
         Check(
             id="need_fits",
@@ -786,4 +786,4 @@ def _checks(mode: str, measure: Measure, compared: Compared) -> tuple[Check, ...
     )
 
 
-LENS = Lens(info=INFO, run=run)
+ANALYSIS = Analysis(info=INFO, run=run)

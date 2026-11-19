@@ -1,8 +1,8 @@
 """Command line for the package.
 
-    uk-open-data lens list
-    uk-open-data lens describe reach-deprivation
-    uk-open-data lens run reach-deprivation clients.csv \\
+    uk-open-data analysis list
+    uk-open-data analysis describe reach-deprivation
+    uk-open-data analysis run reach-deprivation clients.csv \\
         --column postcode="Client postcode"
 
 The same command is also installed as ``kindtech``.
@@ -23,17 +23,17 @@ from urllib.parse import urlsplit
 import requests
 
 from uk_open_data._frames import read_spreadsheet_rows
-from uk_open_data.lenses import (
-    LensInfo,
-    LensInputError,
-    LensResult,
+from uk_open_data.analyses import (
+    AnalysisInfo,
+    AnalysisInputError,
+    AnalysisResult,
     Privacy,
     Table,
-    describe_lens,
-    list_lenses,
-    run_lens,
+    describe_analysis,
+    list_analyses,
+    run_analysis,
 )
-from uk_open_data.lenses.maps import render_map
+from uk_open_data.analyses.maps import render_map
 from uk_open_data.postcodes import (
     PostcodeTableError,
     build_postcode_table,
@@ -45,8 +45,8 @@ EXIT_OK = 0
 EXIT_INPUT_ERROR = 2
 SPREADSHEET_SUFFIXES = (".xlsx", ".ods")
 KEPT_FIGURES = (
-    "A lens can run without the network when the public figures it uses are "
-    "kept on this machine: see the page for the lens in the documentation."
+    "An analysis can run without the network when the public figures it uses are "
+    "kept on this machine: see the page for the analysis in the documentation."
 )
 
 
@@ -59,7 +59,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return EXIT_INPUT_ERROR
     try:
         text = args.handler(args)
-    except LensInputError as error:
+    except AnalysisInputError as error:
         return _fail("\n".join(error.problems))
     except PostcodeTableError as error:
         return _fail(str(error))
@@ -79,23 +79,23 @@ def _build_parser() -> argparse.ArgumentParser:
     """Build the argument parser for every command."""
     parser = argparse.ArgumentParser(
         prog="uk-open-data",
-        description="UK open data for charities: run a lens on your own data.",
+        description="UK open data for charities: run an analysis on your own data.",
     )
     commands = parser.add_subparsers(title="commands")
-    lens = commands.add_parser("lens", help="List, describe and run lenses.")
-    lens_commands = lens.add_subparsers(title="lens commands")
+    analysis = commands.add_parser("analysis", help="List, describe and run analyses.")
+    analysis_commands = analysis.add_subparsers(title="analysis commands")
 
-    listing = lens_commands.add_parser("list", help="List the lenses.")
+    listing = analysis_commands.add_parser("list", help="List the analyses.")
     listing.add_argument("--json", action="store_true", help="Print JSON.")
     listing.set_defaults(handler=_handle_list)
 
-    describe = lens_commands.add_parser("describe", help="Describe one lens.")
-    describe.add_argument("lens_id", help="The id of the lens.")
+    describe = analysis_commands.add_parser("describe", help="Describe one analysis.")
+    describe.add_argument("analysis_id", help="The id of the analysis.")
     describe.add_argument("--json", action="store_true", help="Print JSON.")
     describe.set_defaults(handler=_handle_describe)
 
-    run = lens_commands.add_parser("run", help="Run a lens on a file.")
-    run.add_argument("lens_id", help="The id of the lens.")
+    run = analysis_commands.add_parser("run", help="Run an analysis on a file.")
+    run.add_argument("analysis_id", help="The id of the analysis.")
     run.add_argument("file", type=Path, help="A .csv, .xlsx or .ods file.")
     run.add_argument("--sheet", help="Sheet name, for a spreadsheet file.")
     run.add_argument(
@@ -168,31 +168,31 @@ def _add_postcode_commands(commands: Any) -> None:
 
 
 def _handle_list(args: argparse.Namespace) -> str:
-    """List every lens."""
-    lenses = list_lenses()
+    """List every analysis."""
+    analyses = list_analyses()
     if args.json:
-        return _to_json([lens.to_dict() for lens in lenses])
-    return "\n".join(f"{lens.id}: {lens.question}" for lens in lenses)
+        return _to_json([analysis.to_dict() for analysis in analyses])
+    return "\n".join(f"{analysis.id}: {analysis.question}" for analysis in analyses)
 
 
 def _handle_describe(args: argparse.Namespace) -> str:
-    """Describe one lens."""
-    info = describe_lens(args.lens_id)
+    """Describe one analysis."""
+    info = describe_analysis(args.analysis_id)
     if args.json:
         return _to_json(info.to_dict())
     return _describe_text(info)
 
 
 def _handle_run(args: argparse.Namespace) -> str:
-    """Run a lens on a file."""
-    info = describe_lens(args.lens_id)
+    """Run an analysis on a file."""
+    info = describe_analysis(args.analysis_id)
     rows = _read_rows(args.file, args.sheet)
     columns = dict(_split_pair(pair, "--column") for pair in args.column)
     options = {
         name: _parse_value(value)
         for name, value in (_split_pair(pair, "--option") for pair in args.option)
     }
-    result = run_lens(args.lens_id, rows, columns=columns, options=options)
+    result = run_analysis(args.analysis_id, rows, columns=columns, options=options)
     if args.map is not None:
         svg = render_map(result, layer=args.map_layer)
         args.map.write_text(svg + "\n", encoding="utf-8")
@@ -246,7 +246,7 @@ def _read_rows(path: Path, sheet: str | None) -> list[dict[str, Any]]:
         content = path.read_bytes()
         return read_spreadsheet_rows(content, sheet or _first_sheet(content))
     msg = f"The file must be a .csv, .xlsx or .ods file, not '{suffix or path.name}'."
-    raise LensInputError(msg)
+    raise AnalysisInputError(msg)
 
 
 def _first_sheet(content: bytes) -> str:
@@ -260,7 +260,7 @@ def _split_pair(pair: str, flag: str) -> tuple[str, str]:
     """Split ``name=value`` into its two parts."""
     name, separator, value = pair.partition("=")
     if not separator or not name.strip():
-        raise LensInputError(f"{flag} needs NAME=VALUE, for example a=b.")
+        raise AnalysisInputError(f"{flag} needs NAME=VALUE, for example a=b.")
     return name.strip(), value.strip()
 
 
@@ -318,8 +318,8 @@ def _fail(message: str) -> int:
     return EXIT_INPUT_ERROR
 
 
-def _describe_text(info: LensInfo) -> str:
-    """Describe a lens in plain text."""
+def _describe_text(info: AnalysisInfo) -> str:
+    """Describe an analysis in plain text."""
     lines = [f"{info.title} ({info.id}, version {info.version})", info.question, ""]
     lines += [info.summary, "", f"Covers: {info.coverage}", "", "Your data can be:"]
     for mode in info.input_modes:
@@ -340,7 +340,7 @@ def _describe_text(info: LensInfo) -> str:
     return "\n".join(lines)
 
 
-def _report_text(info: LensInfo, result: LensResult) -> str:
+def _report_text(info: AnalysisInfo, result: AnalysisResult) -> str:
     """Lay out a result as a plain-text report."""
     lines = [info.title, info.question, "", "Figures"]
     lines += [
@@ -388,7 +388,7 @@ def _report_text(info: LensInfo, result: LensResult) -> str:
 
 
 def _hidden_counts(privacy: Privacy) -> list[str]:
-    """Say which counts were hidden, or nothing when the lens hides none."""
+    """Say which counts were hidden, or nothing when the analysis hides none."""
     if privacy.suppress_below is None:
         return []
     return [

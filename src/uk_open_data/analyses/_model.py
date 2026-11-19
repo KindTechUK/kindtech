@@ -1,8 +1,8 @@
-"""Data model shared by every lens.
+"""Data model shared by every analysis.
 
-A lens takes a charity's own data and returns figures a person can check and
-reuse. Everything a lens returns is a total: nothing in a
-:class:`LensResult` describes one person.
+An analysis takes a charity's own data and returns figures a person can check and
+reuse. Everything an analysis returns is a total: nothing in a
+:class:`AnalysisResult` describes one person.
 """
 
 from __future__ import annotations
@@ -14,8 +14,8 @@ from typing import Any
 from uk_open_data._frames import dicts_to_frame
 
 
-class LensInputError(ValueError):
-    """The data, column mapping or options given to a lens cannot be used.
+class AnalysisInputError(ValueError):
+    """The data, column mapping or options given to an analysis cannot be used.
 
     The message is written for a person and never repeats a value from the
     data. ``problems`` holds each problem as its own sentence.
@@ -41,11 +41,11 @@ def _plain(value: Any) -> Any:
 
 @dataclass(frozen=True)
 class Role:
-    """A column a lens can use, named by what it holds.
+    """A column an analysis can use, named by what it holds.
 
     ``reported`` is True when the column holds names that the result uses too,
     such as local authorities, so the same names can appear in its figures and
-    tables. It is False for anything about a person, and a lens never repeats
+    tables. It is False for anything about a person, and an analysis never repeats
     those.
 
     ``reported_values`` narrows that to the exact values the result uses, for
@@ -55,7 +55,7 @@ class Role:
     other value in the column. When no values are listed, every value of a
     reported column is a public name, and the caller leaves the column out.
 
-    ``amount`` is True when the column holds a number the lens adds up, such
+    ``amount`` is True when the column holds a number the analysis adds up, such
     as a count of people or a volume. A total of it appears in the result, so
     where one row is the only one for its place or group, that row's number
     comes back as the total. A caller that checks a result for repeated input
@@ -109,8 +109,8 @@ class Option:
 
 
 @dataclass(frozen=True)
-class LensInfo:
-    """What a lens is for and what it needs."""
+class AnalysisInfo:
+    """What an analysis is for and what it needs."""
 
     id: str
     title: str
@@ -236,7 +236,7 @@ class Step:
 
 @dataclass(frozen=True)
 class Choice:
-    """A choice the lens made for the person, and how to change it."""
+    """A choice the analysis made for the person, and how to change it."""
 
     id: str
     label: str
@@ -275,8 +275,8 @@ class Source:
 class Privacy:
     """How the result protects the people in the data.
 
-    ``suppress_below`` is the threshold the lens used: counts above zero and
-    below it are hidden. It is ``None`` for a lens that hides nothing, because
+    ``suppress_below`` is the threshold the analysis used: counts above zero and
+    below it are hidden. It is ``None`` for an analysis that hides nothing, because
     its data is not about people.
     """
 
@@ -288,11 +288,11 @@ class Privacy:
 
 
 @dataclass(frozen=True)
-class LensResult:
-    """Everything a lens returns."""
+class AnalysisResult:
+    """Everything an analysis returns."""
 
-    lens_id: str
-    lens_version: str
+    analysis_id: str
+    analysis_version: str
     package_version: str
     run_on: str
     input_mode: str
@@ -347,8 +347,8 @@ class LensResult:
 
 
 @dataclass(frozen=True)
-class LensInput:
-    """The input a lens receives once columns and options are resolved."""
+class AnalysisInput:
+    """The input an analysis receives once columns and options are resolved."""
 
     mode: InputMode
     values: dict[str, list[Any]]
@@ -357,8 +357,8 @@ class LensInput:
 
 
 @dataclass(frozen=True)
-class Lens:
-    """A lens: its description and the function that runs it."""
+class Analysis:
+    """An analysis: its description and the function that runs it."""
 
-    info: LensInfo
-    run: Callable[[LensInput], LensResult] = field(repr=False)
+    info: AnalysisInfo
+    run: Callable[[AnalysisInput], AnalysisResult] = field(repr=False)

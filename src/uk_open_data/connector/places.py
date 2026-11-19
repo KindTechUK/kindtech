@@ -22,9 +22,9 @@ from typing import Any
 import narwhals.stable.v2 as nw
 import requests
 
+from uk_open_data.analyses.sources import IOD_2025, POSTCODES_IO, ons_postcode_lookup
 from uk_open_data.connector.privacy import ensure_totals_only, looks_like_postcode
 from uk_open_data.imd import imd_path, kept_imd_note, load_imd
-from uk_open_data.lenses.sources import IOD_2025, POSTCODES_IO, ons_postcode_lookup
 from uk_open_data.postcodes import (
     PostcodeTableError,
     district_to_local_authorities,
