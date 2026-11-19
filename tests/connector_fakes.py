@@ -66,8 +66,17 @@ POSTCODE_LOOKUP_CSV = (
 
 
 # Invented need figures for real local authority codes: code, name, people in
-# need. The middle value is 8,500, so the last four are high need.
+# need. There are sixteen, so the top quarter is the last four, and those are
+# high need.
 NEED = (
+    ("E06000002", "Middlesbrough", 100),
+    ("E06000003", "Redcar and Cleveland", 200),
+    ("E06000004", "Stockton-on-Tees", 300),
+    ("E06000005", "Darlington", 400),
+    ("E06000006", "Halton", 500),
+    ("E06000007", "Warrington", 600),
+    ("E06000008", "Blackburn with Darwen", 700),
+    ("E06000009", "Blackpool", 800),
     ("E06000053", "Isles of Scilly", 20),
     ("E07000223", "Adur", 1000),
     ("E06000001", "Hartlepool", 3000),

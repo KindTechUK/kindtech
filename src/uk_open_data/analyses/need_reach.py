@@ -11,7 +11,6 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 from datetime import date
-from statistics import median
 from typing import Any
 
 import uk_open_data
@@ -57,6 +56,7 @@ from uk_open_data.analyses._need import (
     choose_compared,
     equal_parts,
     guess_compared,
+    high_need_cut,
     load_need,
     read_measure,
     read_top,
@@ -449,7 +449,7 @@ def _rows(
         )
         raise AnalysisInputError(msg)
     _warn_about_area(n_located - n_inside, with_people, compared, trail)
-    cut = median(need)
+    cut = high_need_cut(need)
     high = [amount >= cut and amount > 0 for amount in need]
     # When one small count needs a second count hidden with it, the smallest
     # is taken, wherever it is. The table of places matters more here than the
@@ -464,7 +464,7 @@ def _rows(
                 "For each local authority, the people you helped were divided "
                 "by the people in need and multiplied by 100. A local "
                 "authority is high need when its count of people in need is "
-                f"at or above the middle value of the area ({round(cut):,})."
+                f"in the top quarter of the area (at or above {round(cut):,})."
             ),
             rows_in=n_inside,
             rows_out=n_inside,
@@ -513,7 +513,8 @@ def _warn_about_area(
     elif len(compared.codes) < len(NEED_BANDS):
         trail.warnings.append(
             f"Only {len(compared.codes)} local authorities are compared, so "
-            "'high need' says little. It means at or above the middle value."
+            "'high need' says little. It means the top quarter, and at least "
+            "one place."
         )
 
 
@@ -796,8 +797,11 @@ def _choices(
         Choice(
             id="high_need",
             label="What counts as high need",
-            value="At or above the middle value of people in need, in the area",
-            reason="It splits the area in half, as the Smart Works study did.",
+            value="In the top quarter of the area compared, by people in need",
+            reason=(
+                "A quarter keeps the list to the places that stand out. The "
+                "Smart Works study, which this follows, used the top half."
+            ),
         ),
         Choice(
             id="catchment",

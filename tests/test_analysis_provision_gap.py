@@ -27,9 +27,17 @@ from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 ANALYSIS_ID = "provision-gap"
 COLUMNS = {"local_authority": "Area", "volume": "Sessions"}
 
-# Invented need figures for real local authority codes. The middle value is
-# 8,500, so the last four are high need.
+# Invented need figures for real local authority codes. There are sixteen, so
+# the top quarter is the last four, and those are high need.
 NEED = (
+    ("E06000002", "Middlesbrough", 100),
+    ("E06000003", "Redcar and Cleveland", 200),
+    ("E06000004", "Stockton-on-Tees", 300),
+    ("E06000005", "Darlington", 400),
+    ("E06000006", "Halton", 500),
+    ("E06000007", "Warrington", 600),
+    ("E06000008", "Blackburn with Darwen", 700),
+    ("E06000009", "Blackpool", 800),
     ("E06000053", "Isles of Scilly", 20),
     ("E07000223", "Adur", 1000),
     ("E06000001", "Hartlepool", 3000),
@@ -138,14 +146,14 @@ def test_figures_from_area_volumes(nomis):
         "volume_supplied": 160,
         "volume_located": 160,
         "volume_in_catchment": 160,
-        "areas_compared": 8,
-        "areas_without_provision": 4,
-        "people_in_need": 91020,
-        "volume_per_1000_in_need": 1.76,
+        "areas_compared": 16,
+        "areas_without_provision": 12,
+        "people_in_need": 94620,
+        "volume_per_1000_in_need": 1.69,
         "high_need_areas": 4,
         "high_need_areas_without_provision": 2,
         "share_of_provision_in_high_need_areas": 68.8,
-        "share_of_need_in_high_need_areas": 86.8,
+        "share_of_need_in_high_need_areas": 83.5,
     }
 
 
@@ -172,7 +180,7 @@ def test_kept_need_figures_are_used_and_nothing_is_fetched(nomis):
     keep_need_figures("residents", doubled, "invented for a test.")
     result = _run(SPREAD)
     assert nomis.asked == []
-    assert result.figure("people_in_need").value == 182040
+    assert result.figure("people_in_need").value == 189240
     assert result.sources[0].edition.endswith("invented for a test.")
 
 
@@ -188,7 +196,7 @@ def test_bad_need_is_rejected(nomis, need):
 def test_answer_says_where_need_is_high_and_provision_is_thin(nomis):
     result = _run(SPREAD)
     assert result.answer == (
-        "86.8% of the people in need live in the 4 local authorities with high "
+        "83.5% of the people in need live in the 4 local authorities with high "
         "need, and 68.8% of your provision is there. The places to look at "
         "first, with high need and the thinnest provision, are Birmingham, "
         "Cardiff and Manchester."
@@ -295,8 +303,8 @@ def test_catchment_can_name_local_authorities(nomis):
     result = _run(SPREAD, options={"catchment": ["Lewisham", "Greenwich", "Cardiff"]})
     assert result.figure("areas_compared").value == 3
     assert result.figure("volume_in_catchment").value == 130
-    # The middle need of the three is Lewisham's 9,000.
-    assert _names(result.table("priority_areas")) == ["Cardiff", "Lewisham"]
+    # The top quarter of three places is one place, the one with most need.
+    assert _names(result.table("priority_areas")) == ["Cardiff"]
     assert any(w.startswith("A volume of 30 is outside") for w in result.warnings)
     assert any(w.startswith("Only 3 local authorities") for w in result.warnings)
     choice = next(c for c in result.choices if c.id == "catchment")
@@ -305,7 +313,7 @@ def test_catchment_can_name_local_authorities(nomis):
 
 def test_catchment_can_be_a_country(nomis):
     result = _run(SPREAD, options={"catchment": "England"})
-    assert result.figure("areas_compared").value == 7
+    assert result.figure("areas_compared").value == 15
     assert "Cardiff" not in _names(result.table("by_local_authority"))
 
 

@@ -29,6 +29,8 @@ MAX_TOP = 50
 # When people live in fewer than one in this many of the areas compared, the
 # analysis suggests naming a smaller area.
 FEW_AREAS = 10
+# One local authority in this many is high need: the top quarter.
+HIGH_NEED_ONE_IN = 4
 NEED_BANDS = (
     "Lowest fifth",
     "Second fifth",
@@ -453,6 +455,18 @@ def guess_compared(
         named=False,
         guessed=True,
     )
+
+
+def high_need_cut(need: list[float]) -> float:
+    """Return the count at or above which a local authority is high need.
+
+    High need is the top quarter of the places compared, and at least one
+    place. With ``n`` places the cut is the count of the place ranked
+    ``n / 4`` from the top, rounded up, so places that tie with it are high
+    need too.
+    """
+    places = -(-len(need) // HIGH_NEED_ONE_IN)
+    return sorted(need, reverse=True)[places - 1]
 
 
 def equal_parts(values: list[float], parts: int) -> dict[int, int]:
