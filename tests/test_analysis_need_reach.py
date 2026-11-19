@@ -16,6 +16,7 @@ from working_checks import check_working, worked_out
 from uk_open_data.analyses import (
     AnalysisInputError,
     describe_analysis,
+    load_map_boundaries,
     render_map,
     run_analysis,
 )
@@ -1257,6 +1258,40 @@ def test_map_can_be_drawn(nomis):
         assert {texts[name] for name in ("Lewisham", "Greenwich", "Adur")} == {"name"}
         label = next(item.label for item in result.map.layers if item.id == layer)
         assert f"{label}, by local authority" in texts
+
+
+def test_map_of_a_few_authorities_is_fetched_in_fine_detail(nomis):
+    result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    shaded = {row["geography_code"] for row in result.table("by_local_authority").rows}
+    squares = {code: _square(n, code) for n, (code, _, _) in enumerate(NEED)}
+    asked = []
+
+    def service(geography_type, **wanted):
+        asked.append(wanted)
+        codes = wanted.get("LAD23CD", list(squares))
+        return {"type": "FeatureCollection", "features": [squares[c] for c in codes]}
+
+    with mock.patch("uk_open_data.analyses.maps.load_geodata", service):
+        boundaries = load_map_boundaries(result)
+    own, everywhere, *near = asked
+    # The shaded places come from the full outlines, with detail finer than
+    # twenty metres left out, and so do the places near them.
+    assert (own["boundary_type"], own["simplify_m"]) == ("BFE", 20)
+    assert set(own["LAD23CD"]) == shaded
+    assert everywhere["boundary_type"] == "BSC"
+    assert "simplify_m" not in everywhere and "LAD23CD" not in everywhere
+    assert {(n["boundary_type"], n["simplify_m"]) for n in near} == {("BFE", 20)}
+    # They are asked for ten at a time.
+    assert max(len(n["LAD23CD"]) for n in near) <= 10
+    # A shaded place is never also one of the places around, and a map of
+    # local authorities has no place that holds the others.
+    around = {f["properties"]["LAD23CD"] for f in boundaries["surroundings"]}
+    assert around and not around & shaded
+    assert {code for n in near for code in n["LAD23CD"]} == around
+    assert boundaries["focus"] == []
+    svg = render_map(result, boundaries=boundaries)
+    # "Near" reaches further than the picture, so not all of them are drawn.
+    assert 0 < svg.count('class="land"') <= len(around)
 
 
 # --- the whole result ------------------------------------------------------

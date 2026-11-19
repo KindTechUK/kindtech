@@ -321,25 +321,172 @@ def test_result_without_a_map_is_an_error():
         render_map(result, boundaries=_boundaries())
 
 
-def test_boundaries_are_fetched_in_batches_of_area_codes(result):
-    def fake_load(geography_type, year, coverage, boundary_type, **filters):
-        numbers = [int(code[-5:]) for code in filters["LSOA21CD"]]
-        return _boundaries(numbers)
+LEWISHAM, GREENWICH, HARTLEPOOL = "E09000023", "E09000011", "E06000001"
 
-    with (
-        mock.patch("uk_open_data.analyses.maps.BOUNDARY_BATCH_SIZE", 8),
-        mock.patch(
-            "uk_open_data.analyses.maps.load_geodata", side_effect=fake_load
-        ) as load,
-    ):
-        boundaries = load_map_boundaries(result)
-        svg = render_map(result)
+
+class _Service:
+    """Stands in for the boundary service and records what it was asked.
+
+    Lewisham holds the shaded squares, Greenwich lies beside them and
+    Hartlepool is far away. Each outline says how it was asked for, so a test
+    can tell a fine one from one simplified to 200 metres.
+    """
+
+    def __init__(self, fail_first=0, authorities=True, fine_authorities=None):
+        self.asked: list[dict] = []
+        self._failures = fail_first
+        self._authorities = authorities
+        self._fine = fine_authorities
+
+    def load(self, geography_type, **asked):
+        self.asked.append({"type": geography_type, **asked})
+        fine = asked.get("simplify_m")
+        if geography_type == "LSOA":
+            if self._failures:
+                self._failures -= 1
+                return {"type": "FeatureCollection", "features": []}
+            numbers = [int(code[-5:]) for code in asked["LSOA21CD"]]
+            return _boundaries(numbers)
+        places = [
+            _place(LEWISHAM, "Lewisham", -0.06, 51.39, 0.07),
+            _place(GREENWICH, "Greenwich", 0.0, 51.39, 0.07),
+            _place(HARTLEPOOL, "Hartlepool", 5.0, 54.0, 0.07),
+        ]
+        wanted = asked.get("LAD23CD")
+        if not self._authorities:
+            places = []
+        elif wanted is not None:
+            comes = wanted if self._fine is None else self._fine
+            places = [p for p in places if p["properties"]["LAD23CD"] in comes]
+        for place in places:
+            place["properties"]["detail"] = fine
+        return {"type": "FeatureCollection", "features": places}
+
+
+def _fetch(result, service, **changes):
+    """Fetch a result's outlines from a stand-in service."""
+    patches = [
+        mock.patch(f"uk_open_data.analyses.maps.{name}", value)
+        for name, value in changes.items()
+    ]
+    with mock.patch("uk_open_data.analyses.maps.load_geodata", service.load):
+        for patch in patches:
+            patch.start()
+        try:
+            return load_map_boundaries(result)
+        finally:
+            for patch in patches:
+                patch.stop()
+
+
+def _details(features) -> dict[str, object]:
+    """How each local authority's outline was asked for, by its code."""
+    return {f["properties"]["LAD23CD"]: f["properties"]["detail"] for f in features}
+
+
+def test_a_few_neighbourhoods_are_fetched_in_fine_detail(result):
+    service = _Service()
+    boundaries = _fetch(result, service, _FINE_BATCH={"LSOA": 8, "LAD": 10})
     assert len(boundaries["features"]) == AREAS
-    assert load.call_count == 6  # three batches for each of the two calls
-    assert load.call_args_list[0].args == ("LSOA",)
-    assert load.call_args_list[0].kwargs["year"] == "2021"
-    assert load.call_args_list[0].kwargs["boundary_type"] == "BSC"
+    areas = [asked for asked in service.asked if asked["type"] == "LSOA"]
+    assert len(areas) == 3  # twenty codes, eight at a time
+    assert {asked["boundary_type"] for asked in areas} == {"BFE"}
+    assert {asked["simplify_m"] for asked in areas} == {10}
+    assert {(asked["year"], asked["coverage"]) for asked in areas} == {("2021", "EW")}
+
+
+def test_many_neighbourhoods_take_the_200_metre_outlines(result):
+    service = _Service()
+    boundaries = _fetch(result, service, _FINE_UP_TO={"LSOA": 5}, BOUNDARY_BATCH_SIZE=8)
+    assert len(boundaries["features"]) == AREAS
+    areas = [asked for asked in service.asked if asked["type"] == "LSOA"]
+    assert len(areas) == 3
+    assert {asked["boundary_type"] for asked in areas} == {"BSC"}
+    assert {asked["simplify_m"] for asked in areas} == {None}
+    # A map drawn small takes its surroundings at 200 metres too, from the
+    # one request for every local authority.
+    authorities = [asked for asked in service.asked if asked["type"] == "LAD"]
+    assert len(authorities) == 1
+    assert _details(boundaries["surroundings"]) == {LEWISHAM: None, GREENWICH: None}
+
+
+def test_a_batch_that_does_not_come_is_asked_for_once_more(result):
+    service = _Service(fail_first=1)
+    boundaries = _fetch(result, service, _FINE_BATCH={"LSOA": 8, "LAD": 10})
+    assert len(boundaries["features"]) == AREAS
+    areas = [asked for asked in service.asked if asked["type"] == "LSOA"]
+    assert len(areas) == 4
+    assert areas[3]["LSOA21CD"] == areas[0]["LSOA21CD"]
+
+
+def test_rough_outlines_stand_in_when_the_fine_ones_do_not_come(result):
+    # Both tries at the fine outlines fail. A rough map is better than none.
+    service = _Service(fail_first=2)
+    boundaries = _fetch(result, service)
+    assert len(boundaries["features"]) == AREAS
+    areas = [asked for asked in service.asked if asked["type"] == "LSOA"]
+    assert [asked["boundary_type"] for asked in areas] == ["BFE", "BFE", "BSC"]
+    # The places around then come at 200 metres too, so that they still meet.
+    assert _details(boundaries["surroundings"]) == {LEWISHAM: None, GREENWICH: None}
+
+
+def test_places_around_come_from_the_same_layer_as_the_areas(result):
+    # A neighbour simplified to 200 metres does not sit on neighbourhoods
+    # drawn to 10, so the places on and near a small map are fetched again
+    # from the full outlines at the same detail.
+    service = _Service()
+    boundaries = _fetch(result, service)
+    everywhere, near = [asked for asked in service.asked if asked["type"] == "LAD"]
+    assert everywhere["boundary_type"] == "BSC"
+    assert "LAD23CD" not in everywhere
+    assert near["boundary_type"] == "BFE"
+    assert near["simplify_m"] == 10
+    # Hartlepool is far from the map, so it is neither asked for nor kept.
+    assert near["LAD23CD"] == [GREENWICH, LEWISHAM]
+    assert _details(boundaries["surroundings"]) == {LEWISHAM: 10, GREENWICH: 10}
+    # The authority the result counts as the area served holds the map.
+    assert boundaries["focus"] == [LEWISHAM]
+
+
+def test_a_neighbour_keeps_its_rough_outline_when_the_fine_one_does_not_come(result):
+    service = _Service(fine_authorities=[LEWISHAM])
+    boundaries = _fetch(result, service)
+    assert _details(boundaries["surroundings"]) == {LEWISHAM: 10, GREENWICH: None}
+
+
+def test_map_is_whole_when_the_places_around_do_not_come(result):
+    service = _Service(authorities=False)
+    boundaries = _fetch(result, service)
+    assert len(boundaries["features"]) == AREAS
+    assert boundaries["surroundings"] == []
+    svg = render_map(result, boundaries=boundaries)
     assert len(_paths(svg)) == AREAS
+    assert _paths(svg, "land") == []
+
+
+def test_map_is_drawn_with_what_it_fetches(result):
+    service = _Service()
+    with mock.patch("uk_open_data.analyses.maps.load_geodata", service.load):
+        svg = render_map(result)
+    assert len(_paths(svg)) == AREAS
+    assert len(_paths(svg, "land")) == 2
+    assert len(_paths(svg, "outline")) == 1
+    assert _texts(svg, "held") == ["Lewisham"]
+    assert _texts(svg, "near") == ["Greenwich"]
+
+
+def test_credit_carries_the_year_of_the_outlines(result):
+    words = " ".join(_texts(render_map(result, boundaries=_boundaries()), "ink2"))
+    assert words.endswith("Crown copyright and database right 2021.")
+
+
+def test_points_closer_than_a_dot_are_left_out():
+    close = [(0.0, 0.0), (0.2, 0.1), (0.3, 0.2), (5.0, 0.0), (5.0, 5.0), (0.0, 0.0)]
+    assert maps._thinned(close) == [(0.0, 0.0), (5.0, 0.0), (5.0, 5.0), (0.0, 0.0)]
+    # A ring is never thinned to less than a shape, and still closes.
+    speck = [(0.0, 0.0), (0.1, 0.0), (0.1, 0.1), (0.0, 0.1), (0.0, 0.0)]
+    assert maps._thinned(speck) == speck
+    assert maps._thinned([]) == []
 
 
 def test_command_line_saves_the_map(tmp_path, capsys):

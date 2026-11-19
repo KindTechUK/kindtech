@@ -30,11 +30,25 @@ logger = logging.getLogger(__name__)
 # The boundary service is asked for this many areas at a time, to keep each
 # request address a sensible length.
 BOUNDARY_BATCH_SIZE = 50
-BOUNDARY_TYPE = "BSC"  # super generalised: small files, fine for a still map
+BOUNDARY_TYPE = "BSC"  # simplified to 200 metres: right for a map of many places
+# A map of a few places is drawn large, so its outlines are taken from the
+# full ones, with detail finer than this many metres left out. The service
+# has no ready-made layer between the full outlines and 200 metres that is
+# open for every kind of area.
+FINE_BOUNDARY_TYPE = "BFE"
+_DETAIL_M = {"LSOA": 10, "LAD": 20}
+_FINE_UP_TO = {"LSOA": 1000, "LAD": 20}
+_FINE_BATCH = {"LSOA": 50, "LAD": 10}
+# The places around a map are local authorities. No more than this many are
+# fetched in fine detail: a map that has more near it is drawn small.
+AROUND_TYPE = "LAD"
+AROUND_YEAR = 2023
+_FINE_AROUND = 40
 _COVERAGE = {"LSOA": "EW", "MSOA": "EW"}
+# The year of the outlines that were drawn follows this, as the licence asks.
 BOUNDARY_CREDIT = (
     "Boundaries: Office for National Statistics, Open Government Licence v3.0. "
-    "Contains OS data © Crown copyright and database right."
+    "Contains OS data © Crown copyright and database right"
 )
 # What one area of a map is called, and what many are called.
 AREA_WORDS = {
@@ -126,17 +140,30 @@ _KEY_ROW = 22
 
 
 def load_map_boundaries(result: AnalysisResult) -> dict[str, Any]:
-    """Fetch the boundaries of every area on a result's map.
+    """Fetch the outlines a result's map needs: its areas and the places around.
+
+    A map of a few places is asked for in fine detail, so a borough does not
+    come out as a few straight lines. A map of many places is drawn small and
+    takes outlines simplified to 200 metres. So does any area whose fine
+    outline does not come.
+
+    The places around are the local authorities near the areas. They are drawn
+    in pale grey, so the picture says where it is. On a map of neighbourhoods
+    the local authorities that hold them are among those places, and are
+    listed as the focus. When the places around cannot be fetched the map is
+    whole without them, and nothing is said.
 
     Only area codes are sent to the boundary service. They are public codes for
-    the whole catchment, so they say nothing about where people in the data
-    live.
+    the whole catchment and its neighbours, so they say nothing about where
+    people in the data live.
 
     Args:
         result: An analysis result that has a map.
 
     Returns:
-        A GeoJSON FeatureCollection.
+        A GeoJSON FeatureCollection of the areas. It also holds
+        ``"surroundings"``, the outlines of the places around, and
+        ``"focus"``, the codes of those that hold the areas.
 
     Raises:
         ValueError: If the result has no map.
@@ -144,19 +171,166 @@ def load_map_boundaries(result: AnalysisResult) -> dict[str, Any]:
     spec = _map_of(result)
     table = result.table(spec.table)
     codes = [str(row[spec.code_column]) for row in table.rows]
-    field = geo_code_field(spec.geography_type, spec.geography_year)
+    fine = len(codes) <= _FINE_UP_TO.get(spec.geography_type, 0)
+    detail = _DETAIL_M[spec.geography_type] if fine else None
+    features = _outlines(spec.geography_type, spec.geography_year, codes, detail)
+    if detail is not None:
+        # A rough outline is better than a hole in the map, or no map.
+        left = _without_outline(features, codes)
+        features += _outlines(spec.geography_type, spec.geography_year, left, None)
+        detail = None if len(left) == len(codes) else detail
+    focus = _focus(result, spec)
+    around = _surroundings(features, set(codes), focus, detail)
+    return {
+        "type": "FeatureCollection",
+        "features": features,
+        "surroundings": around,
+        "focus": focus,
+    }
+
+
+def _outlines(
+    geography_type: str, year: int, codes: list[str], detail: int | None
+) -> list[dict[str, Any]]:
+    """Fetch outlines by code, and ask once more for any that did not come.
+
+    The service is asked for a batch of codes at a time, and the loader gives
+    nothing for a batch it could not fetch.
+    """
+    field = geo_code_field(geography_type, year)
+    features = _batches(geography_type, year, field, codes, detail)
+    left = _without_outline(features, codes)
+    return features + _batches(geography_type, year, field, left, detail)
+
+
+def _without_outline(features: list[dict[str, Any]], codes: list[str]) -> list[str]:
+    """List the codes that no outline came for."""
+    have = {_property(feature.get("properties") or {}, "CD") for feature in features}
+    return [code for code in codes if code not in have]
+
+
+def _batches(
+    geography_type: str, year: int, field: str, codes: list[str], detail: int | None
+) -> list[dict[str, Any]]:
+    """Ask the boundary service for outlines, a batch of codes at a time.
+
+    With a detail in metres the full outlines are asked for, with anything
+    finer than that left out. Without one, the 200 metre outlines are.
+    """
+    size = BOUNDARY_BATCH_SIZE if detail is None else _FINE_BATCH[geography_type]
     features: list[dict[str, Any]] = []
-    for start in range(0, len(codes), BOUNDARY_BATCH_SIZE):
-        filters: dict[str, Any] = {field: codes[start : start + BOUNDARY_BATCH_SIZE]}
+    for start in range(0, len(codes), size):
+        filters: dict[str, Any] = {field: codes[start : start + size]}
         geojson = load_geodata(
-            spec.geography_type,
-            year=str(spec.geography_year),
-            coverage=_COVERAGE.get(spec.geography_type, "UK"),
-            boundary_type=BOUNDARY_TYPE,
+            geography_type,
+            year=str(year),
+            coverage=_COVERAGE.get(geography_type, "UK"),
+            boundary_type=BOUNDARY_TYPE if detail is None else FINE_BOUNDARY_TYPE,
+            simplify_m=detail,
             **filters,
         )
         features.extend(geojson.get("features", []))
-    return {"type": "FeatureCollection", "features": features}
+    return features
+
+
+def _focus(result: AnalysisResult, spec: MapSpec) -> list[str]:
+    """List the local authorities that hold a map's neighbourhoods.
+
+    They are the ones the result counts as the area served. A map of local
+    authorities has none: its places are shaded themselves.
+    """
+    if spec.geography_type == AROUND_TYPE:
+        return []
+    table = next((t for t in result.tables if t.id == "by_local_authority"), None)
+    rows = table.rows if table else []
+    return sorted(
+        str(row["lad_code"])
+        for row in rows
+        if row.get("lad_code") and row.get("in_catchment")
+    )
+
+
+def _surroundings(
+    features: list[dict[str, Any]],
+    shaded: set[str],
+    focus: list[str],
+    detail: int | None,
+) -> list[dict[str, Any]]:
+    """Fetch the outlines of the local authorities on and near a map.
+
+    Every local authority is fetched once at 200 metres, to find the ones
+    near the map. On a map drawn in fine detail those few are then fetched
+    again from the full outlines at the same detail, so that a neighbour
+    meets the areas beside it. One that does not come keeps its 200 metre
+    outline.
+    """
+    everywhere = load_geodata(
+        AROUND_TYPE,
+        year=str(AROUND_YEAR),
+        coverage="UK",
+        boundary_type=BOUNDARY_TYPE,
+    ).get("features", [])
+    reach = _reach(features)
+    near = {
+        _property(feature.get("properties") or {}, "CD"): feature
+        for feature in everywhere
+        if reach and _overlaps(_bounds([feature]), reach)
+    }
+    for code in shaded:
+        near.pop(code, None)
+    wanted = sorted(near)
+    if detail is None or len(wanted) > _FINE_AROUND:
+        return list(near.values())
+    finer = {
+        _property(feature.get("properties") or {}, "CD"): feature
+        for feature in _outlines(AROUND_TYPE, AROUND_YEAR, wanted, detail)
+    }
+    return list({**near, **finer}.values())
+
+
+_Box = tuple[float, float, float, float]
+
+
+def _bounds(features: list[dict[str, Any]]) -> _Box | None:
+    """Return the west, south, east and north edges of some outlines."""
+    points = [
+        point
+        for feature in features
+        for ring in _rings(feature.get("geometry") or {})
+        for point in ring
+    ]
+    if not points:
+        return None
+    lons = [point[0] for point in points]
+    lats = [point[1] for point in points]
+    return min(lons), min(lats), max(lons), max(lats)
+
+
+def _reach(features: list[dict[str, Any]]) -> _Box | None:
+    """Return how far around the areas a place counts as near.
+
+    It is the box round the areas, grown on every side by its longer side on
+    the ground. That is more than a picture of the areas shows.
+    """
+    box = _bounds(features)
+    if box is None:
+        return None
+    west, south, east, north = box
+    squeeze = math.cos(math.radians((south + north) / 2))
+    grow = max((east - west) * squeeze, north - south)
+    return west - grow / squeeze, south - grow, east + grow / squeeze, north + grow
+
+
+def _overlaps(box: _Box | None, other: _Box) -> bool:
+    """Say whether two boxes share any ground."""
+    if box is None:
+        return False
+    return (
+        box[0] <= other[2]
+        and box[2] >= other[0]
+        and box[1] <= other[3]
+        and box[3] >= other[1]
+    )
 
 
 def render_map(
@@ -212,7 +386,7 @@ def render_map(
     key, note_top = _key(chosen, key_top, width)
     note = _wrap(chosen.note, _letters(width, _NOTE_SIZE))
     credit_top = note_top + len(note) * _NOTE_LINE + 6
-    credit = _wrap(_credit(result), _letters(width, _CREDIT_SIZE))
+    credit = _wrap(_credit(result, spec), _letters(width, _CREDIT_SIZE))
     height = credit_top + len(credit) * _CREDIT_LINE + _MARGIN
     scope = _scope(chosen)
     parts = [
@@ -319,8 +493,16 @@ class _View:
         return x, y - (lat - self._middle[1]) * self._scale
 
     def rings(self, rings: list[Any]) -> list[_Ring]:
-        """Return the rings of an outline as points on the picture."""
-        return [[self.point(point[0], point[1]) for point in ring] for ring in rings]
+        """Return the rings of an outline as points on the picture.
+
+        A fine outline has many points to a dot of the picture. A point that
+        is nearly on the one before it is left out, which keeps the picture
+        small and changes nothing that can be seen.
+        """
+        return [
+            _thinned([self.point(point[0], point[1]) for point in ring])
+            for ring in rings
+        ]
 
     def shows(self, rings: list[_Ring]) -> bool:
         """Say whether any part of an outline could fall inside the frame."""
@@ -343,6 +525,22 @@ class _View:
 
 
 _Ring = list[tuple[float, float]]
+# Points of an outline closer together than this, in dots, are not all kept.
+_FINEST = 0.7
+
+
+def _thinned(ring: _Ring) -> _Ring:
+    """Leave out each point that is nearly on the last one kept.
+
+    The first and last points stay, so a ring still closes, and a ring is
+    never thinned to less than a shape.
+    """
+    kept = ring[:1]
+    for x, y in ring[1:-1]:
+        if abs(x - kept[-1][0]) + abs(y - kept[-1][1]) >= _FINEST:
+            kept.append((x, y))
+    kept += ring[-1:] if len(ring) > 1 else []
+    return kept if len(kept) >= min(len(ring), 4) else ring
 
 
 @dataclass(frozen=True)
@@ -486,10 +684,10 @@ def _heading(spec: MapSpec, layer: MapLayer) -> str:
     return f"{layer.label}, by {area}"
 
 
-def _credit(result: AnalysisResult) -> str:
+def _credit(result: AnalysisResult, spec: MapSpec) -> str:
     """Say where the figures and the outlines come from."""
     names = "; ".join(f"{source.name}, {source.publisher}" for source in result.sources)
-    return f"Sources: {names}. {BOUNDARY_CREDIT}"
+    return f"Sources: {names}. {BOUNDARY_CREDIT} {spec.geography_year}."
 
 
 def _letters(width: int, size: int, letter: float = _LETTER) -> int:
