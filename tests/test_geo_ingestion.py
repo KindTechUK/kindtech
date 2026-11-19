@@ -129,6 +129,27 @@ def test_parse_long_form_buasd_before_bua() -> None:
     assert r_bua is not None and r_bua["geography"] == "BUA"
 
 
+@pytest.mark.parametrize(
+    ("name", "geography"),
+    [
+        ("Lower_layer_Super_Output_Areas_December_2021_Boundaries_EW_BGC_V5", "LSOA"),
+        ("Middle_layer_Super_Output_Areas_December_2021_Boundaries_EW_BGC_V3", "MSOA"),
+        ("Built_Up_Area_Sub_2021_EW_BGC", "BUASD"),
+        ("Built_Up_Area_2021_EW_BGC", "BUA"),
+    ],
+)
+def test_parse_long_form_ignores_capitals_in_the_name(
+    name: str, geography: str
+) -> None:
+    """The catalogue writes "Lower_layer" as well as "Lower_Layer"."""
+    result = _parse_long_form(name)
+    assert result is not None
+    assert result["geography"] == geography
+    assert result["year"] == "2021"
+    assert result["region"] == "EW"
+    assert result["resolution"] == "BGC"
+
+
 def test_parse_long_form_no_match() -> None:
     assert _parse_long_form("Unknown_Geo_2021_UK_BFC") is None
 

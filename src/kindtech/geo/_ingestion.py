@@ -54,9 +54,7 @@ _LONG_NAME_TO_CODE: dict[str, str] = {
     "NHS_England_Region": "NHSER",
     "Travel_to_Work_Area": "TTWA",
     "Built_up_Area_Sub": "BUASD",
-    "Built_Up_Area_Sub": "BUASD",
     "Built_up_Area": "BUA",
-    "Built_Up_Area": "BUA",
     "Output_Area": "OA",
     "Countries_": "CTRY",
     "Counties_": "CTY",
@@ -154,10 +152,16 @@ def _parse_short_form(name: str) -> dict[str, str] | None:
 
 
 def _parse_long_form(name: str) -> dict[str, str] | None:
-    """Parse long-form names via prefix mapping."""
+    """Parse long-form names via prefix mapping.
+
+    The prefix is matched without regard to capitals, because the catalogue
+    writes the same geography both ways ("Lower_Layer_..." and
+    "Lower_layer_...").
+    """
     geo_code = None
+    lowered = name.lower()
     for prefix, code in _LONG_NAME_TO_CODE.items():
-        if name.startswith(prefix):
+        if lowered.startswith(prefix.lower()):
             geo_code = code
             break
     if not geo_code:
