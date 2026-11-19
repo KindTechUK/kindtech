@@ -1,9 +1,9 @@
-"""Stand-ins for the connector tests: a small England and a fake lens engine.
+"""Stand-ins for the connector tests: a small England and a fake analysis engine.
 
 The deprivation rows are invented and tiny, but have the columns
 ``load_imd(nation="England")`` returns. The fake engine stands in for
-``uk_open_data.analyses`` where a test needs a lens the real engine does not have: one
-with no counts mode, or one that breaks the contract.
+``uk_open_data.analyses`` where a test needs an analysis the real engine does not
+have: one with no counts mode, or one that breaks the contract.
 """
 
 from types import SimpleNamespace
@@ -316,23 +316,23 @@ def fake_engine(*, leak: bool = False) -> SimpleNamespace:
         leak: When true, results repeat the first row's area or group in a
             warning. That breaks the contract unless the role is marked
             ``reported`` and allows the value, so the privacy guard can be
-            tested both ways. The council and group lenses are only offered
-            here, so a search still finds two lenses otherwise.
+            tested both ways. The council and group analyses are only offered
+            here, so a search still finds two analyses otherwise.
     """
-    lenses = {REACH["id"]: REACH, VOLUNTEERS["id"]: VOLUNTEERS}
+    analyses = {REACH["id"]: REACH, VOLUNTEERS["id"]: VOLUNTEERS}
     if leak:
-        lenses[COUNCILS["id"]] = COUNCILS
-        lenses[GROUPS["id"]] = GROUPS
+        analyses[COUNCILS["id"]] = COUNCILS
+        analyses[GROUPS["id"]] = GROUPS
 
     def list_analyses() -> list[SimpleNamespace]:
-        return [describe_analysis(lens_id) for lens_id in lenses]
+        return [describe_analysis(analysis_id) for analysis_id in analyses]
 
-    def describe_analysis(lens_id: str) -> SimpleNamespace:
-        info = lenses[lens_id]
+    def describe_analysis(analysis_id: str) -> SimpleNamespace:
+        info = analyses[analysis_id]
         return SimpleNamespace(id=info["id"], to_dict=lambda: info)
 
     def run_analysis(
-        lens_id: str,
+        analysis_id: str,
         data: list[dict[str, Any]],
         columns: dict[str, str] | None = None,
         options: dict[str, Any] | None = None,
@@ -343,7 +343,7 @@ def fake_engine(*, leak: bool = False) -> SimpleNamespace:
         area = next(value for value in data[0].values() if isinstance(value, str))
         warnings = [f"{area} looks unusual"] if leak else []
         payload = {
-            "analysis_id": lens_id,
+            "analysis_id": analysis_id,
             "input_mode": "neighbourhood_counts",
             "figures": [
                 {

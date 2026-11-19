@@ -1,4 +1,4 @@
-"""Kindtech connector: the lenses and open data as tools for a chat assistant.
+"""Kindtech connector: the analyses and open data as tools for a chat assistant.
 
 The functions here are plain Python and need nothing extra. The server that
 offers them to an assistant over the Model Context Protocol needs the
@@ -12,8 +12,8 @@ Every tool is read-only and returns totals, never rows.
 
 from typing import Any
 
+from uk_open_data.connector.analyses import find_analysis, run_analysis_on_counts
 from uk_open_data.connector.command import main
-from uk_open_data.connector.lenses import find_lens, run_lens_on_counts
 from uk_open_data.connector.places import describe_place
 from uk_open_data.connector.privacy import PrivacyError, ensure_totals_only
 
@@ -22,9 +22,9 @@ __all__ = [
     "build_server",
     "describe_place",
     "ensure_totals_only",
-    "find_lens",
+    "find_analysis",
     "main",
-    "run_lens_on_counts",
+    "run_analysis_on_counts",
 ]
 
 _MISSING_EXTRA = (
@@ -37,7 +37,7 @@ def build_server(map_boundaries: Any = None) -> Any:
     """Build the connector's MCP server (needs the ``connector`` extra).
 
     Args:
-        map_boundaries: A function that takes a lens result and gives the
+        map_boundaries: A function that takes an analysis result and gives the
             outlines of the areas on its map, as GeoJSON. Left out, the
             outlines are fetched from the ONS Open Geography Portal each time
             a map is drawn. Pass one that reads outlines kept on your server

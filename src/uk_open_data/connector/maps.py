@@ -1,6 +1,6 @@
-"""The map of a lens result as a picture for the person in a chat.
+"""The map of an analysis result as a picture for the person in a chat.
 
-A lens result describes a map and holds the table that feeds it, one row per
+An analysis result describes a map and holds the table that feeds it, one row per
 area. Those rows are left out of an answer, so an assistant cannot draw the
 map and is not asked to. The connector draws it here instead, and the picture
 travels beside the answer in the part of a tool result that is meant for the
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 Boundaries = Callable[[AnalysisResult], dict[str, Any]]
 """Gives the outlines of every area on a result's map, as GeoJSON."""
 
-MAP_VIEW_URI = "ui://kindtech/lens-map.html"
+MAP_VIEW_URI = "ui://kindtech/analysis-map.html"
 MAP_META_KEY = "kindtech/map"
 # Above this the pictures are not sent: an answer should not carry megabytes.
 MAX_PICTURE_BYTES = 1_500_000
@@ -31,17 +31,17 @@ DRAWN = (
     "A map of this result was drawn for the person, coloured by: {layers}. "
     "Where the app they are using shows pictures from this connector, it "
     "appears with this answer. You are not given the picture, so do not "
-    "describe what it shows. If the person sees no map, the lens page and the "
-    "command line tool draw the same one."
+    "describe what it shows. If the person sees no map, the Kindtech Evidence "
+    "page and the command line tool draw the same one."
 )
 NO_OUTLINES = (
     "No map was drawn, because the outlines of the areas could not be fetched "
-    "just now. The figures are not affected. The lens page and the command "
-    "line tool draw the map."
+    "just now. The figures are not affected. The Kindtech Evidence page and "
+    "the command line tool draw the map."
 )
 TOO_LARGE = (
     "No map was drawn, because a picture of this many areas is too large to "
-    "send with an answer. The lens page and the command line tool draw it."
+    "send with an answer. The Kindtech Evidence page and the command line tool draw it."
 )
 WITHHELD = (
     "No map was drawn, because the picture would have repeated a value from the rows."
@@ -56,7 +56,7 @@ def picture_for(
     """Draw every layer of a result's map, for the person and not the model.
 
     Args:
-        result: A lens result, with the rows of its detail tables.
+        result: An analysis result, with the rows of its detail tables.
         guarded: Values from the input rows that the picture must not repeat.
         boundaries: Gives the outlines of the areas. Left out, they are
             fetched from the ONS Open Geography Portal by public area code.
@@ -64,7 +64,7 @@ def picture_for(
     Returns:
         The picture, as ``{"title": ..., "layers": [{"id", "label", "svg"}]}``
         or ``None`` when there is none to show, then a note for the assistant
-        that says a map was drawn or why not. The note is empty when the lens
+        that says a map was drawn or why not. The note is empty when the analysis
         has no map.
     """
     if result.map is None:
@@ -237,7 +237,7 @@ MAP_VIEW = """\
     }).observe(document.documentElement);
 
   request("ui/initialize", {
-    appInfo: { name: "kindtech-lens-map", version: "1" },
+    appInfo: { name: "kindtech-analysis-map", version: "1" },
     appCapabilities: { availableDisplayModes: ["inline"] },
     protocolVersion: "2026-01-26",
   }).then(

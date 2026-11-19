@@ -58,7 +58,7 @@ CAVEATS = [
     "with Wales, Scotland or Northern Ireland.",
 ]
 
-# The 22 local authorities of Wales. The lenses cover them and this tool does
+# The 22 local authorities of Wales. The analyses cover them and this tool does
 # not, so a Welsh council's name is answered "not covered", not "not found".
 WELSH_AUTHORITIES = (
     "Blaenau Gwent",
@@ -86,7 +86,7 @@ WELSH_AUTHORITIES = (
 )
 IN_WALES = (
     "That place is in Wales. This tool describes places in England only, because "
-    "the deprivation index it reads is England's. The lenses that cover England "
+    "the deprivation index it reads is England's. The analyses that cover England "
     "and Wales still work for it."
 )
 FULL_POSTCODE = (
@@ -152,7 +152,7 @@ def describe_place(place: str) -> dict[str, Any]:
         a street address, which is never looked up or repeated) or
         ``unavailable`` (a data source could not be reached). When found it
         carries ``place``, ``figures``, ``tables``, ``caveats``, ``warnings``,
-        ``sources`` and ``privacy``, in the same shapes a lens result uses.
+        ``sources`` and ``privacy``, in the same shapes an analysis result uses.
     """
     text = " ".join(str(place).split()).upper()
     if not text:
@@ -582,7 +582,7 @@ def _percent(part: int, whole: int) -> float | None:
 def _figure(
     figure_id: str, label: str, value: Any, unit: str, note: str = ""
 ) -> dict[str, Any]:
-    """One headline figure, in the shape a lens result uses."""
+    """One headline figure, in the shape an analysis result uses."""
     return {
         "id": figure_id,
         "label": label,
