@@ -979,8 +979,9 @@ Kindtech Evidence is built on these analyses. This page is about running them
 from Python. You can also run them from the [command line](cli.md), or from a
 chat assistant through the [connector](connector.md).
 
-<!-- Credit: a sentence that credits DataKind UK goes here once its wording is
-agreed. -->
+These analyses follow work first done by
+[DataKind UK](https://www.datakind.org.uk/) volunteers with charities. The
+[case studies](../case-studies/index.md) reproduce five of those projects.
 
 Every analysis returns the same things:
 
