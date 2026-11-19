@@ -514,7 +514,7 @@ class TestWithTheFourthLens:
         assert result["input_mode"] == "area_volumes"
         assert result["privacy"]["sent_to_third_parties"] == []
         assert figures["volume_supplied"] == 1202.5
-        assert figures["areas_without_provision"] == 6
+        assert figures["areas_without_provision"] == 14
 
     def test_lists_the_places_to_look_at_and_leaves_out_the_detail(self) -> None:
         answer = run_lens_on_counts("provision-gap", VOLUMES)

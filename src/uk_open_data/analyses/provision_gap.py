@@ -14,7 +14,6 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 from datetime import date
-from statistics import median
 from typing import Any
 
 import uk_open_data
@@ -59,6 +58,7 @@ from uk_open_data.analyses._need import (
     band_by_need,
     choose_compared,
     equal_parts,
+    high_need_cut,
     load_need,
     read_measure,
     read_top,
@@ -74,7 +74,7 @@ from uk_open_data.analyses._steps import (
 )
 
 ANALYSIS_ID = "provision-gap"
-ANALYSIS_VERSION = "0.1"
+ANALYSIS_VERSION = "0.2"
 KEY_FIGURES = (
     "share_of_provision_in_high_need_areas",
     "share_of_need_in_high_need_areas",
@@ -459,7 +459,7 @@ def _rows(
         )
         raise AnalysisInputError(msg)
     _warn_about_area(sum(located.values()) - inside, with_provision, compared, trail)
-    cut = median(need)
+    cut = high_need_cut(need)
     high = [amount >= cut and amount > 0 for amount in need]
     need_bands = band_by_need(need)
     provision_bands = _provision_bands(volume, need)
@@ -470,7 +470,7 @@ def _rows(
                 "For each local authority, the volume you provide was divided "
                 "by the people in need and multiplied by 1,000. A local "
                 "authority is high need when its count of people in need is "
-                f"at or above the middle value of the area ({round(cut):,})."
+                f"in the top quarter of the area (at or above {round(cut):,})."
             ),
         )
     )
@@ -505,7 +505,8 @@ def _warn_about_area(
     if len(compared.codes) < len(NEED_BANDS):
         trail.warnings.append(
             f"Only {len(compared.codes)} local authorities are compared, so "
-            "'high need' says little. It means at or above the middle value."
+            "'high need' says little. It means the top quarter, and at least "
+            "one place."
         )
 
 
@@ -742,8 +743,8 @@ def _choices(measure: Measure, compared: Compared, top: int) -> tuple[Choice, ..
         Choice(
             id="high_need",
             label="What counts as high need",
-            value="At or above the middle value of the area compared",
-            reason="Half of the local authorities compared are high need.",
+            value="In the top quarter of the area compared, by people in need",
+            reason="A quarter keeps the list to the places that stand out.",
         ),
         Choice(
             id="catchment",

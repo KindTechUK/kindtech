@@ -18,6 +18,7 @@ from uk_open_data.analyses import (
     render_map,
     run_analysis,
 )
+from uk_open_data.analyses._need import high_need_cut
 from uk_open_data.analyses.need_reach import (
     NEED_BANDS,
     NO_REACH,
@@ -34,9 +35,17 @@ ANALYSIS_ID = "need-reach"
 EVERYWHERE = "England and Wales"
 COLUMNS = {"local_authority": "Area", "count": "Clients"}
 
-# Invented need figures for real local authority codes. The middle value is
-# 8,500, so the last four are high need.
+# Invented need figures for real local authority codes. There are sixteen, so
+# the top quarter is the last four, and those are high need.
 NEED = (
+    ("E06000002", "Middlesbrough", 100),
+    ("E06000003", "Redcar and Cleveland", 200),
+    ("E06000004", "Stockton-on-Tees", 300),
+    ("E06000005", "Darlington", 400),
+    ("E06000006", "Halton", 500),
+    ("E06000007", "Warrington", 600),
+    ("E06000008", "Blackburn with Darwen", 700),
+    ("E06000009", "Blackpool", 800),
     ("E06000053", "Isles of Scilly", 20),
     ("E07000223", "Adur", 1000),
     ("E06000001", "Hartlepool", 3000),
@@ -129,13 +138,13 @@ def test_figures_from_counts(nomis):
     assert result.figure("people_supplied").value == 100
     assert result.figure("people_located").value == 100
     assert result.figure("people_in_catchment").value == 100
-    assert result.figure("areas_compared").value == 8
-    assert result.figure("people_in_need").value == 91020
+    assert result.figure("areas_compared").value == 16
+    assert result.figure("people_in_need").value == 94620
     assert result.figure("reach_per_100_in_need").value == 0.11
     assert result.figure("high_need_areas").value == 4
     assert result.figure("high_need_areas_without_people").value == 3
     assert result.figure("share_of_people_in_high_need_areas").value == 60.0
-    assert result.figure("share_of_need_in_high_need_areas").value == 86.8
+    assert result.figure("share_of_need_in_high_need_areas").value == 83.5
 
 
 def test_need_is_added_up_for_england_and_wales_only(nomis):
@@ -182,7 +191,7 @@ def test_need_figures_are_fetched_once_and_kept(nomis):
 def test_answer_says_where_need_is_high_and_reach_is_low(nomis):
     result = _run_wide(_counts(Lewisham=60, Greenwich=30, Adur=10))
     assert result.answer == (
-        "86.8% of the people in need live in the 4 local authorities with high "
+        "83.5% of the people in need live in the 4 local authorities with high "
         "need, and 60.0% of your people do. The places to look at first, with "
         "high need and your lowest reach, are Birmingham, Manchester and Cardiff."
     )
@@ -208,10 +217,39 @@ def test_answer_does_not_give_away_a_hidden_share(nomis):
     # people in high-need places would be its count.
     result = _run_wide(_counts(Birmingham=3, Greenwich=30, Adur=20))
     assert result.answer.startswith(
-        "86.8% of the people in need live in the 4 local authorities with high "
+        "83.5% of the people in need live in the 4 local authorities with high "
         "need, and the share of your people who do is hidden to protect a small "
         "count."
     )
+
+
+# --- what counts as high need ----------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("need", "cut"),
+    [
+        ([7], 7),  # one place is the top quarter of one
+        ([1, 2, 3], 3),  # at least one place, however few there are
+        ([1, 2, 3, 4], 4),
+        ([1, 2, 3, 4, 5], 4),  # a quarter of five is rounded up to two places
+        (list(range(1, 17)), 13),  # four places of sixteen
+        ([5, 5, 5, 5], 5),  # places that tie with the cut are all high need
+    ],
+)
+def test_high_need_is_the_top_quarter_of_the_places_compared(need, cut):
+    assert high_need_cut(need) == cut
+
+
+def test_a_quarter_of_the_places_are_high_need_and_the_result_says_so(nomis):
+    result = _run_wide(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    table = result.table("by_local_authority")
+    assert {r["geography_name"] for r in table.rows if r["high_need"]} == HIGH_NEED
+    assert result.figure("high_need_areas").value == len(NEED) // 4
+    choice = next(c for c in result.choices if c.id == "high_need")
+    assert choice.value == "In the top quarter of the area compared, by people in need"
+    step = next(s for s in result.working if s.title == "Set reach against need")
+    assert "in the top quarter of the area (at or above 9,000)" in step.detail
 
 
 # --- need figures kept on this machine -------------------------------------
@@ -225,7 +263,7 @@ def test_kept_need_figures_are_used_and_nothing_is_fetched(nomis):
     assert need_figures_path() == path
     result = _run_wide(_counts(Lewisham=60))
     assert nomis.asked == []
-    assert result.figure("people_in_need").value == 182040
+    assert result.figure("people_in_need").value == 189240
     source = result.sources[0]
     assert source.id == "nomis-nm_2124_1"
     assert source.edition.endswith(
@@ -250,7 +288,7 @@ def test_download_fetches_and_keeps_the_figures(nomis):
     assert nomis.asked[0][1]["c_sex"] == [2]
     result = _run_wide(_counts(Lewisham=60), options={"need": "unemployed_men"})
     assert len(nomis.asked) == 1
-    assert result.figure("people_in_need").value == 91020
+    assert result.figure("people_in_need").value == 94620
     assert "fetched from Nomis on" in result.sources[0].edition
 
 
@@ -568,8 +606,8 @@ def test_catchment_can_name_local_authorities(nomis):
     assert result.figure("people_in_catchment").value == 90
     assert any(w.startswith("10 people live outside") for w in result.warnings)
     assert any(w.startswith("Only 3 local authorities") for w in result.warnings)
-    # The middle value of 1,000, 8,000 and 9,000 is 8,000.
-    assert _names(result.table("priority_areas")) == ["Greenwich", "Lewisham"]
+    # The top quarter of three places is one place, the one with most need.
+    assert _names(result.table("priority_areas")) == ["Lewisham"]
     choice = next(c for c in result.choices if c.id == "catchment")
     assert choice.value == "Adur, Greenwich, Lewisham"
     check = next(c for c in result.checks if c.id == "catchment")
@@ -580,9 +618,9 @@ def test_catchment_can_be_a_country(nomis):
     wales = _run(_counts(Cardiff=10), options={"catchment": "Wales"})
     assert _names(wales.table("by_local_authority")) == ["Cardiff"]
     england = _run(_counts(Lewisham=10), options={"catchment": "england"})
-    assert england.figure("areas_compared").value == 7
+    assert england.figure("areas_compared").value == 15
     both = _run(_counts(Lewisham=10), options={"catchment": "England and Wales"})
-    assert both.figure("areas_compared").value == 8
+    assert both.figure("areas_compared").value == 16
 
 
 @pytest.mark.parametrize("catchment", [["Lewisham", "Narnia"], 7, [], [""]])
@@ -630,7 +668,7 @@ def test_every_place_is_compared_when_none_holds_enough_people(nomis):
     result = _run(
         _counts(Lewisham=60, Greenwich=40), options={"catchment_min_share": 0.7}
     )
-    assert result.figure("areas_compared").value == 8
+    assert result.figure("areas_compared").value == 16
     choice = next(c for c in result.choices if c.id == "catchment")
     assert choice.value == EVERYWHERE
     assert choice.reason == (

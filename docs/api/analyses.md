@@ -310,8 +310,9 @@ table is installed, and with postcodes.io otherwise.
 The analysis loads a count of **people in need** in every local authority from
 [Nomis](ons.md), divides the people you helped in each one by it, and lists
 the high-need local authorities where you reach the fewest people per 100 in
-need. A local authority is high need when its count is at or above the middle
-value of the area compared.
+need. A local authority is high need when its count is in the top quarter of
+the area compared. With fewer than four places, the one with the largest count
+is high need.
 
 Choose the need with the `need` option:
 
@@ -563,8 +564,8 @@ the postcode table is installed, and with postcodes.io otherwise.
 The analysis loads a count of people in every local authority from
 [Nomis](ons.md), divides the volume you provide in each one by it, and lists
 the high-need local authorities with the least provision for each 1,000
-people. A local authority is high need when its count is at or above the
-middle value of the area compared.
+people. A local authority is high need when its count is in the top quarter
+of the area compared, as in the second analysis.
 
 The `need` option takes the same values as in the second analysis, and the same
 kept copies (`keep_need_figures`, `download_need_figures`) are used. The
