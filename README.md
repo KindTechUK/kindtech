@@ -44,3 +44,8 @@ the docs for the full write-ups and figures.
 ## Development
 
 See [DEVELOPERS.md](DEVELOPERS.md) for development setup and workflow instructions.
+
+## Licence
+
+Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Version 0.1.0 was
+published under the MIT License; its notice is kept in NOTICE.
