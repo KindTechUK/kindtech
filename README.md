@@ -26,6 +26,9 @@ package was called `kindtech`.
   The same analyses and data as tools for an assistant such as Claude or
   ChatGPT. The assistant sees totals, never rows.
 
+These analyses follow work first done by
+[DataKind UK](https://www.datakind.org.uk/) volunteers with charities.
+
 ## Installation
 
 Install [uk-open-data from PyPI](https://pypi.org/project/uk-open-data/):
