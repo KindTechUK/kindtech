@@ -753,6 +753,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#simpler-outlines" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simpler outlines
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#returns" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
@@ -1263,6 +1272,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#simpler-outlines" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simpler outlines
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#returns" class="md-nav__link">
     <span class="md-ellipsis">
       Returns
@@ -1479,6 +1497,12 @@
 <td>Boundary resolution</td>
 </tr>
 <tr>
+<td><code>simplify_m</code></td>
+<td><code>float</code> or <code>None</code></td>
+<td><code>None</code></td>
+<td>Ask the service to leave out detail finer than about this many metres</td>
+</tr>
+<tr>
 <td><code>**filters</code></td>
 <td>keyword args</td>
 <td></td>
@@ -1486,6 +1510,14 @@
 </tr>
 </tbody>
 </table>
+<h4 id="simpler-outlines">Simpler outlines</h4>
+<p>The ONS publishes most layers at several resolutions, and <code>boundary_type</code> picks one. Some layers are public only at full resolution and at 200 m, which is too heavy or too rough for a map of one town. For those, ask for the full-resolution layer and let the service simplify it:</p>
+<div class="highlight"><pre><span></span><code><span class="n">codes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;E01003189&quot;</span><span class="p">,</span> <span class="s2">&quot;E01003190&quot;</span><span class="p">]</span>
+<span class="n">outlines</span> <span class="o">=</span> <span class="n">load_geodata</span><span class="p">(</span>
+    <span class="s2">&quot;LSOA&quot;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s2">&quot;2021&quot;</span><span class="p">,</span> <span class="n">boundary_type</span><span class="o">=</span><span class="s2">&quot;BFE&quot;</span><span class="p">,</span> <span class="n">simplify_m</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">LSOA21CD</span><span class="o">=</span><span class="n">codes</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>A full-extent layer (<code>BFE</code>) runs to the low water mark, so a coast sits a little outside the one a clipped layer draws. The service simplifies each outline by itself, so two neighbours may no longer share exactly the same edge; keep the distance small against the size of the map.</p>
 <h4 id="returns">Returns</h4>
 <p><code>dict</code> — A GeoJSON FeatureCollection. Returns <code>{"type": "FeatureCollection", "features": []}</code> if no matching service is found or the request fails.</p>
 <p>The ONS boundary service gives a few thousand features in one answer. A larger layer, such as every neighbourhood, is fetched page by page, so the collection holds every feature. If any page fails, the collection is empty and an error is logged: you never get a part of a layer as if it were the whole. A large layer with outlines takes many requests; filter by code when you need only some areas.</p>

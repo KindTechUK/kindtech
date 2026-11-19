@@ -1925,7 +1925,21 @@ manchester = load_geodata(geography_type="LAD", LAD21NM="Manchester")
 | `month` | `str`, `Month`, or `None` | `None` | Month (e.g., `"DEC"`, `Month.DEC`) |
 | `coverage` | `str`, `CoverageArea`, or `None` | `None` | Coverage area (`"UK"`, `"GB"`, `"EW"`) |
 | `boundary_type` | `str`, `BoundaryType`, or `None` | `"BGC"` | Boundary resolution |
+| `simplify_m` | `float` or `None` | `None` | Ask the service to leave out detail finer than about this many metres |
 | `**filters` | keyword args | | Field filters (e.g., `LAD21NM="Manchester"`) |
+
+#### Simpler outlines
+
+The ONS publishes most layers at several resolutions, and `boundary_type` picks one. Some layers are public only at full resolution and at 200 m, which is too heavy or too rough for a map of one town. For those, ask for the full-resolution layer and let the service simplify it:
+
+```python
+codes = ["E01003189", "E01003190"]
+outlines = load_geodata(
+    "LSOA", year="2021", boundary_type="BFE", simplify_m=20, LSOA21CD=codes
+)
+```
+
+A full-extent layer (`BFE`) runs to the low water mark, so a coast sits a little outside the one a clipped layer draws. The service simplifies each outline by itself, so two neighbours may no longer share exactly the same edge; keep the distance small against the size of the map.
 
 #### Returns
 
