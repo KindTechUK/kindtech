@@ -3,12 +3,12 @@
 import connector_fakes as fakes
 import pytest
 
-from kindtech.connector import lenses, places
-from kindtech.lenses import reach_deprivation
-from kindtech.lenses.access_distance import clear_centres_cache
-from kindtech.lenses.need_reach import clear_need_cache
-from kindtech.lenses.who_we_miss import clear_residents_cache
-from kindtech.postcodes import build_postcode_table, install_postcode_table, offline
+from uk_open_data.connector import lenses, places
+from uk_open_data.lenses import reach_deprivation
+from uk_open_data.lenses.access_distance import clear_centres_cache
+from uk_open_data.lenses.need_reach import clear_need_cache
+from uk_open_data.lenses.who_we_miss import clear_residents_cache
+from uk_open_data.postcodes import build_postcode_table, install_postcode_table, offline
 
 
 @pytest.fixture(autouse=True)

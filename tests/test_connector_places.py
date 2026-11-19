@@ -10,8 +10,8 @@ import connector_fakes as fakes
 import pytest
 import requests
 
-from kindtech.connector import describe_place, places
-from kindtech.postcodes import offline
+from uk_open_data.connector import describe_place, places
+from uk_open_data.postcodes import offline
 
 pytestmark = pytest.mark.usefixtures("england")
 

@@ -10,8 +10,8 @@ import connector_fakes as fakes
 import pytest
 import requests
 
-from kindtech.connector import describe_place, places
-from kindtech.imd import imd_path, keep_imd
+from uk_open_data.connector import describe_place, places
+from uk_open_data.imd import imd_path, keep_imd
 
 NOTE = "invented for a test."
 REQUIRED = [

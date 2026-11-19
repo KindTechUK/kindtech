@@ -9,8 +9,8 @@ import unittest.mock as mock
 import pandas as pd
 import pytest
 
-from kindtech.imd import api as imd_api
-from kindtech.imd import download_imd, imd_path, keep_imd, kept_imd_note, load_imd
+from uk_open_data.imd import api as imd_api
+from uk_open_data.imd import download_imd, imd_path, keep_imd, kept_imd_note, load_imd
 
 # Minimal composite CSV: the real columns, two rows per nation.
 _CSV = (
@@ -41,7 +41,7 @@ def _mock_get():
     return resp
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_load_imd_uk_all_nations(mock_get):
     mock_get.return_value = _mock_get()
 
@@ -56,7 +56,7 @@ def test_load_imd_uk_all_nations(mock_get):
     assert "UK_IMD_E_rank" not in df.columns
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_geography_code_and_rank_mapping(mock_get):
     mock_get.return_value = _mock_get()
 
@@ -160,7 +160,7 @@ def test_decile_from_rank_boundaries():
     assert imd_api._decile_from_rank(6976, 6976) == 10
 
 
-@mock.patch("kindtech.imd.api._national_source_rows")
+@mock.patch("uk_open_data.imd.api._national_source_rows")
 def test_wales_official_domains(mock_rows):
     mock_rows.return_value = _WALES_ROWS
 
@@ -179,7 +179,7 @@ def test_wales_official_domains(mock_rows):
     assert "nation_decile" not in by_name.columns
 
 
-@mock.patch("kindtech.imd.api._national_source_rows")
+@mock.patch("uk_open_data.imd.api._national_source_rows")
 def test_scotland_official_domains_with_population(mock_rows):
     mock_rows.return_value = _SCOTLAND_ROWS
 
@@ -192,7 +192,7 @@ def test_scotland_official_domains_with_population(mock_rows):
     assert scotland.loc[0, "population"] == 894  # SIMD ships a denominator
 
 
-@mock.patch("kindtech.imd.api._national_source_rows")
+@mock.patch("uk_open_data.imd.api._national_source_rows")
 def test_ni_official_domains(mock_rows):
     mock_rows.return_value = _NI_ROWS
 
@@ -211,7 +211,7 @@ def test_unknown_nation_raises():
         load_imd(nation="Narnia")
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_composite_cached_across_calls(mock_get):
     mock_get.return_value = _mock_get()
 
@@ -260,7 +260,7 @@ _ENGLAND_2025_CSV = (
 )
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_england_2025_on_2021_lsoas_with_domains(mock_get):
     resp = mock.MagicMock()
     resp.raise_for_status = mock.MagicMock()
@@ -293,7 +293,7 @@ def test_england_2025_on_2021_lsoas_with_domains(mock_get):
     assert df.loc[0, "population"] == 1523
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_england_defaults_to_2025(mock_get):
     resp = mock.MagicMock()
     resp.raise_for_status = mock.MagicMock()
@@ -307,7 +307,7 @@ def test_england_defaults_to_2025(mock_get):
     assert df.loc[0, "geography_code"] == "E01000001"
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_uk_defaults_to_composite(mock_get):
     mock_get.return_value = _mock_get()
 
@@ -367,7 +367,7 @@ _ENGLAND_2019_CSV = (
 )
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_england_2019_official_on_2011_lsoas(mock_get):
     resp = mock.MagicMock()
     resp.raise_for_status = mock.MagicMock()
@@ -406,7 +406,7 @@ _KEPT_ROWS = [
 ]
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_kept_index_is_read_in_place_of_the_download(mock_get):
     assert imd_path() is None
     assert kept_imd_note() is None
@@ -440,7 +440,7 @@ def test_changing_a_loaded_table_does_not_change_the_next_one():
     assert load_imd(nation="England")["imd_decile"].tolist() == [2, 7]
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_kept_index_is_for_one_year_and_a_url_goes_round_it(mock_get):
     resp = mock.MagicMock()
     resp.raise_for_status = mock.MagicMock()
@@ -458,7 +458,7 @@ def test_kept_index_is_for_one_year_and_a_url_goes_round_it(mock_get):
     assert mock_get.call_count == 1
 
 
-@mock.patch("kindtech.imd.api.requests.get")
+@mock.patch("uk_open_data.imd.api.requests.get")
 def test_index_can_be_downloaded_and_kept(mock_get):
     resp = mock.MagicMock()
     resp.raise_for_status = mock.MagicMock()
@@ -479,7 +479,7 @@ def test_index_can_be_downloaded_and_kept(mock_get):
 def test_the_note_of_a_copy_that_was_loaded_does_not_read_the_file_again():
     keep_imd(_KEPT_ROWS, note="invented for a test.")
     load_imd(nation="England")
-    with mock.patch("kindtech.imd.api.read_kept") as read:
+    with mock.patch("uk_open_data.imd.api.read_kept") as read:
         assert kept_imd_note() == "invented for a test."
     read.assert_not_called()
     # A copy kept again is read again.

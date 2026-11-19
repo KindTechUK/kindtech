@@ -62,7 +62,7 @@ all joining on the 2021 LSOA `geography_code`:
 data), or locally with `uv run marimo edit examples/sobus_bame_referrals.py`.
 
 ```python
-from kindtech import outcode_to_geography, load_ons, load_geodata
+from uk_open_data import outcode_to_geography, load_ons, load_geodata
 
 # 1. A referral's outcode -> LSOA (the step real referral data would use)
 outcode_to_geography(["W6", "W12", "W14"], geography_type="LSOA")

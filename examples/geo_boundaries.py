@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "marimo",
-#     "kindtech",
+#     "uk-open-data",
 # ]
 # ///
 
@@ -28,7 +28,7 @@ def _(mo):
 
     Load and explore geographic boundary data from the
     [ONS Geoportal](https://geoportal.statistics.gov.uk/)
-    using **kindtech**.
+    using **uk-open-data**.
 
     This notebook demonstrates:
     - Loading boundaries with `load_geodata()`
@@ -40,7 +40,7 @@ def _(mo):
 
 @app.cell
 def _():
-    from kindtech.geo import (
+    from uk_open_data.geo import (
         get_available_boundary_types,
         get_available_geography_types,
         load_geodata,

@@ -638,66 +638,6 @@ wheels = [
 ]
 
 [[package]]
-name = "kindtech"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "narwhals" },
-    { name = "python-calamine" },
-    { name = "requests" },
-]
-
-[package.optional-dependencies]
-connector = [
-    { name = "mcp" },
-    { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "pandas", version = "3.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "mcp" },
-    { name = "mkdocs" },
-    { name = "mkdocs-llmstxt-md" },
-    { name = "mkdocs-material" },
-    { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "pandas", version = "3.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "prek" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-    { name = "ty" },
-]
-ingestion = [
-    { name = "requests" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "mcp", marker = "extra == 'connector'", specifier = ">=2.3,<3" },
-    { name = "narwhals", specifier = ">=2.18.0" },
-    { name = "pandas", marker = "extra == 'connector'", specifier = ">=2.0.0" },
-    { name = "python-calamine", specifier = ">=0.2" },
-    { name = "requests", specifier = ">=2.28" },
-]
-provides-extras = ["connector"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "mcp", specifier = ">=2.3,<3" },
-    { name = "mkdocs", specifier = ">=1.6.1" },
-    { name = "mkdocs-llmstxt-md", specifier = ">=0.2.0" },
-    { name = "mkdocs-material", specifier = ">=9.6.14" },
-    { name = "pandas", specifier = ">=2.0.0" },
-    { name = "prek", specifier = ">=0.3.5" },
-    { name = "pytest", specifier = ">=8.0" },
-    { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "ruff", specifier = ">=0.12.0" },
-    { name = "ty", specifier = ">=0.0.21" },
-]
-ingestion = [{ name = "requests", specifier = ">=2.28" }]
-
-[[package]]
 name = "markdown"
 version = "3.8.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2307,6 +2247,66 @@ sdist = { url = "https://files.pythonhosted.org/packages/5e/a7/c202b344c5ca7daf3
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl", hash = "sha256:06a47e5700f3081aab02b2e513160914ff0694bce9947d6b76ebd6bf57cfc5d1", size = 348521, upload-time = "2025-12-13T17:45:33.889Z" },
 ]
+
+[[package]]
+name = "uk-open-data"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "narwhals" },
+    { name = "python-calamine" },
+    { name = "requests" },
+]
+
+[package.optional-dependencies]
+connector = [
+    { name = "mcp" },
+    { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pandas", version = "3.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "mcp" },
+    { name = "mkdocs" },
+    { name = "mkdocs-llmstxt-md" },
+    { name = "mkdocs-material" },
+    { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pandas", version = "3.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "prek" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "ty" },
+]
+ingestion = [
+    { name = "requests" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mcp", marker = "extra == 'connector'", specifier = ">=2.3,<3" },
+    { name = "narwhals", specifier = ">=2.18.0" },
+    { name = "pandas", marker = "extra == 'connector'", specifier = ">=2.0.0" },
+    { name = "python-calamine", specifier = ">=0.2" },
+    { name = "requests", specifier = ">=2.28" },
+]
+provides-extras = ["connector"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mcp", specifier = ">=2.3,<3" },
+    { name = "mkdocs", specifier = ">=1.6.1" },
+    { name = "mkdocs-llmstxt-md", specifier = ">=0.2.0" },
+    { name = "mkdocs-material", specifier = ">=9.6.14" },
+    { name = "pandas", specifier = ">=2.0.0" },
+    { name = "prek", specifier = ">=0.3.5" },
+    { name = "pytest", specifier = ">=8.0" },
+    { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "ruff", specifier = ">=0.12.0" },
+    { name = "ty", specifier = ">=0.0.21" },
+]
+ingestion = [{ name = "requests", specifier = ">=2.28" }]
 
 [[package]]
 name = "urllib3"

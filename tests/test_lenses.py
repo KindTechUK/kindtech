@@ -11,22 +11,22 @@ import unittest.mock as mock
 import pandas as pd
 import pytest
 
-from kindtech.imd import keep_imd
-from kindtech.lenses import (
+from uk_open_data.imd import keep_imd
+from uk_open_data.lenses import (
     LensInputError,
     describe_lens,
     list_lenses,
     register_lens,
     run_lens,
 )
-from kindtech.lenses._inputs import (
+from uk_open_data.lenses._inputs import (
     TabularData,
     resolve_columns,
     tidy_postcode,
     to_count,
 )
-from kindtech.lenses._privacy import band_labels, cells_to_hide, count_band
-from kindtech.lenses.reach_deprivation import LENS
+from uk_open_data.lenses._privacy import band_labels, cells_to_hide, count_band
+from uk_open_data.lenses.reach_deprivation import LENS
 
 LENS_ID = "reach-deprivation"
 POSTCODE_COLUMN = {"postcode": "Client postcode"}
@@ -100,10 +100,10 @@ class _World:
         """Run the lens against the invented index and lookup."""
         with (
             mock.patch(
-                "kindtech.lenses.reach_deprivation.load_imd", return_value=_index()
+                "uk_open_data.lenses.reach_deprivation.load_imd", return_value=_index()
             ),
             mock.patch(
-                "kindtech.lenses._steps.postcodes_to_geography",
+                "uk_open_data.lenses._steps.postcodes_to_geography",
                 side_effect=self.fake_lookup,
             ),
         ):
@@ -543,7 +543,7 @@ def test_lens_runs_on_an_index_kept_on_this_machine():
         {"lsoa_code": _area_code(0, 1), "count": 30},
         {"lsoa_code": _area_code(0, 4), "count": 14},
     ]
-    with mock.patch("kindtech.imd.api.requests.get") as get:
+    with mock.patch("uk_open_data.imd.api.requests.get") as get:
         result = run_lens(LENS_ID, rows)
     get.assert_not_called()
     assert result.figure("people_located").value == 44
@@ -564,7 +564,7 @@ def test_an_index_kept_on_this_machine_that_cannot_be_read_is_an_input_error():
 def test_an_error_from_the_download_is_not_blamed_on_a_kept_copy():
     with (
         mock.patch(
-            "kindtech.lenses.reach_deprivation.load_imd",
+            "uk_open_data.lenses.reach_deprivation.load_imd",
             side_effect=ValueError("the published file changed"),
         ),
         pytest.raises(ValueError, match="the published file changed") as raised,
@@ -616,7 +616,7 @@ def test_every_chart_can_be_drawn_from_a_table_in_the_result(world, lens_id):
                 "obs_value": [9000, 8000],
             }
         )
-        with mock.patch("kindtech.lenses._need.load_ons", return_value=need):
+        with mock.patch("uk_open_data.lenses._need.load_ons", return_value=need):
             result = run_lens(lens_id, [{"local_authority": "Lewisham", "count": 60}])
     assert result.charts
     for chart in result.charts:

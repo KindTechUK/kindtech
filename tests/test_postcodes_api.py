@@ -10,7 +10,7 @@ import unittest.mock as mock
 import pandas as pd
 import pytest
 
-from kindtech.postcodes import (
+from uk_open_data.postcodes import (
     lookup_outcodes,
     lookup_postcodes,
     outcode_to_geography,
@@ -58,7 +58,7 @@ def _mock_post(payload):
     return resp
 
 
-@mock.patch("kindtech.postcodes.api.requests.post")
+@mock.patch("uk_open_data.postcodes.api.requests.post")
 def test_lookup_postcodes_basic(mock_post):
     mock_post.return_value = _mock_post(
         {"result": [_bulk_result("SE13 7HX"), _bulk_result("M1 1AE")]}
@@ -75,7 +75,7 @@ def test_lookup_postcodes_basic(mock_post):
     mock_post.assert_called_once()
 
 
-@mock.patch("kindtech.postcodes.api.requests.post")
+@mock.patch("uk_open_data.postcodes.api.requests.post")
 def test_lookup_postcodes_single_string(mock_post):
     mock_post.return_value = _mock_post({"result": [_bulk_result("SE13 7HX")]})
 
@@ -87,7 +87,7 @@ def test_lookup_postcodes_single_string(mock_post):
     assert sent == ["SE13 7HX"]
 
 
-@mock.patch("kindtech.postcodes.api.requests.post")
+@mock.patch("uk_open_data.postcodes.api.requests.post")
 def test_invalid_postcode_flagged_not_dropped(mock_post):
     mock_post.return_value = _mock_post(
         {"result": [_bulk_result("SE13 7HX"), {"query": "NOPE", "result": None}]}
@@ -101,7 +101,7 @@ def test_invalid_postcode_flagged_not_dropped(mock_post):
     assert pd.isna(invalid["lsoa_code"])
 
 
-@mock.patch("kindtech.postcodes.api.requests.post")
+@mock.patch("uk_open_data.postcodes.api.requests.post")
 def test_bulk_batched_over_100(mock_post):
     # 250 postcodes -> 3 batches (100, 100, 50).
     def side_effect(url, json, timeout):
@@ -118,7 +118,7 @@ def test_bulk_batched_over_100(mock_post):
     assert sizes == [100, 100, 50]
 
 
-@mock.patch("kindtech.postcodes.api.requests.post")
+@mock.patch("uk_open_data.postcodes.api.requests.post")
 def test_postcodes_to_geography_lsoa(mock_post):
     mock_post.return_value = _mock_post(
         {"result": [_bulk_result("SE13 7HX", lsoa="E01034394")]}
@@ -131,7 +131,7 @@ def test_postcodes_to_geography_lsoa(mock_post):
     assert df.loc[0, "geography_name"] == "Lewisham 040C"
 
 
-@mock.patch("kindtech.postcodes.api.requests.post")
+@mock.patch("uk_open_data.postcodes.api.requests.post")
 def test_postcodes_to_geography_lad(mock_post):
     mock_post.return_value = _mock_post({"result": [_bulk_result("SE13 7HX")]})
 
@@ -146,7 +146,7 @@ def test_postcodes_to_geography_rejects_unsupported_level():
         postcodes_to_geography(["SE13 7HX"], "CTRY")
 
 
-@mock.patch("kindtech.postcodes.api.requests.get")
+@mock.patch("uk_open_data.postcodes.api.requests.get")
 def test_lookup_outcodes_one_to_many(mock_get):
     resp = mock.MagicMock()
     resp.status_code = 200
@@ -168,7 +168,7 @@ def test_lookup_outcodes_one_to_many(mock_get):
     assert bool(df.loc[0, "valid"])
 
 
-@mock.patch("kindtech.postcodes.api.requests.get")
+@mock.patch("uk_open_data.postcodes.api.requests.get")
 def test_lookup_outcodes_invalid(mock_get):
     resp = mock.MagicMock()
     resp.status_code = 404
@@ -180,7 +180,7 @@ def test_lookup_outcodes_invalid(mock_get):
     assert df.loc[0, "admin_districts"] is None
 
 
-@mock.patch("kindtech.postcodes.api.requests.get")
+@mock.patch("uk_open_data.postcodes.api.requests.get")
 def test_outcode_to_geography_centroid(mock_get):
     centroid_resp = mock.MagicMock()
     centroid_resp.status_code = 200

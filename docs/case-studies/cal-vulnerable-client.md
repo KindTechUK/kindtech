@@ -67,7 +67,7 @@ all joining on the 2021 LSOA `geography_code`:
 data), or locally with `uv run marimo edit examples/cal_vulnerable_client.py`.
 
 ```python
-from kindtech import postcodes_to_geography, load_imd, load_geodata
+from uk_open_data import postcodes_to_geography, load_imd, load_geodata
 
 # 1. Client postcodes -> LSOA (the step real client data would use)
 clients = postcodes_to_geography(client_postcodes, geography_type="LSOA")

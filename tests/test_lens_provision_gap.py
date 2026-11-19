@@ -12,12 +12,12 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import pytest
 
-from kindtech.cli import EXIT_OK, main
-from kindtech.connector.privacy import find_row_values
-from kindtech.lenses import LensInputError, describe_lens, render_map, run_lens
-from kindtech.lenses.need_reach import NEED_BANDS, keep_need_figures
-from kindtech.lenses.provision_gap import NO_PROVISION, PROVISION_BANDS
-from kindtech.postcodes import build_postcode_table, install_postcode_table
+from uk_open_data.cli import EXIT_OK, main
+from uk_open_data.connector.privacy import find_row_values
+from uk_open_data.lenses import LensInputError, describe_lens, render_map, run_lens
+from uk_open_data.lenses.need_reach import NEED_BANDS, keep_need_figures
+from uk_open_data.lenses.provision_gap import NO_PROVISION, PROVISION_BANDS
+from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 
 LENS_ID = "provision-gap"
 COLUMNS = {"local_authority": "Area", "volume": "Sessions"}
@@ -57,7 +57,7 @@ class _Nomis:
 def nomis():
     """Replace the need figures with the invented ones."""
     fake = _Nomis()
-    with mock.patch("kindtech.lenses._need.load_ons", side_effect=fake.load):
+    with mock.patch("uk_open_data.lenses._need.load_ons", side_effect=fake.load):
         yield fake
 
 
@@ -347,7 +347,7 @@ def _fake_lookup(sent: list):
 
 def _run_sites(rows=SITES, columns=SITE_COLUMNS, options=None, sent=None):
     with mock.patch(
-        "kindtech.lenses._steps.postcodes_to_geography",
+        "uk_open_data.lenses._steps.postcodes_to_geography",
         side_effect=_fake_lookup([] if sent is None else sent),
     ):
         return _run(rows, options=options, columns=columns)
@@ -388,7 +388,7 @@ def test_sites_stay_on_this_machine_when_a_table_is_installed(nomis, tmp_path):
     packed = tmp_path / "postcodes.ktpc.gz"
     build_postcode_table(source, packed, "May 2026")
     install_postcode_table(packed)
-    with mock.patch("kindtech.lenses._steps.postcodes_to_geography") as online:
+    with mock.patch("uk_open_data.lenses._steps.postcodes_to_geography") as online:
         result = _run(SITES, columns=SITE_COLUMNS)
     online.assert_not_called()
     assert result.privacy.sent_to_third_parties == ()

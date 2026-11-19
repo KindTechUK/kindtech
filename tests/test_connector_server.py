@@ -10,7 +10,7 @@ pytest.importorskip("mcp")
 
 from mcp import Client  # noqa: E402
 
-from kindtech.connector import PrivacyError, build_server, command  # noqa: E402
+from uk_open_data.connector import PrivacyError, build_server, command  # noqa: E402
 
 TOOLS = {"find_lens", "describe_place", "run_lens_on_counts"}
 
@@ -110,12 +110,12 @@ CRASH_TEXT = "could not read https://example.invalid/?geography=ZZ999KC for 'Zeb
         (
             "run_lens_on_counts",
             {"lens_id": "reach-deprivation", "counts": [{"lsoa_code": "E01000001"}]},
-            "kindtech.connector.server.run_lens_on_counts",
+            "uk_open_data.connector.server.run_lens_on_counts",
         ),
         (
             "describe_place",
             {"place": "Lewisham"},
-            "kindtech.connector.server.describe_place",
+            "uk_open_data.connector.server.describe_place",
         ),
     ],
 )
@@ -152,7 +152,7 @@ def test_a_crash_is_not_linked_to_the_error_that_is_logged(
     def crash(*args: object, **kwargs: object) -> None:
         raise RuntimeError(CRASH_TEXT)
 
-    monkeypatch.setattr("kindtech.connector.server.describe_place", crash)
+    monkeypatch.setattr("uk_open_data.connector.server.describe_place", crash)
 
     _call("describe_place", {"place": "Lewisham"})
 
@@ -169,7 +169,7 @@ def test_the_guards_own_message_is_kept_in_the_log(
     def withheld(*args: object, **kwargs: object) -> None:
         raise PrivacyError("A value from the input rows appeared at: warnings[0].")
 
-    monkeypatch.setattr("kindtech.connector.server.run_lens_on_counts", withheld)
+    monkeypatch.setattr("uk_open_data.connector.server.run_lens_on_counts", withheld)
 
     reply = _call("run_lens_on_counts", {"lens_id": "x", "counts": [{"a": 1}]})
 
@@ -184,7 +184,7 @@ def test_command_defaults_to_stdio(monkeypatch: pytest.MonkeyPatch) -> None:
         def run(self, *args: Any, **kwargs: Any) -> None:
             ran.append((args, kwargs))
 
-    monkeypatch.setattr("kindtech.connector.build_server", Server)
+    monkeypatch.setattr("uk_open_data.connector.build_server", Server)
 
     command.main([])
     command.main(["--transport", "streamable-http", "--port", "9000"])

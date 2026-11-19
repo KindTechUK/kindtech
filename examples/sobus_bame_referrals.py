@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "marimo",
-#     "kindtech",
+#     "uk-open-data",
 #     "pandas>=2.0.0",
 #     "numpy>=1.24.0",
 #     "altair",
@@ -28,7 +28,7 @@ def _(mo):
     # Sobus: BAME Mental-Health Referrals in Hammersmith & Fulham
 
     A reproduction of the [Sobus case
-    study](../docs/case-studies/sobus-bame-analysis.md) using **kindtech**.
+    study](../docs/case-studies/sobus-bame-analysis.md) using **uk-open-data**.
 
     Sobus wanted to map the **BAME mental-health landscape** in Hammersmith &
     Fulham — were Black, Asian and minority-ethnic residents
@@ -37,7 +37,7 @@ def _(mo):
 
     This notebook combines:
 
-    - **Outcode → LSOA** mapping (`kindtech.postcodes`, via postcodes.io) — how
+    - **Outcode → LSOA** mapping (`uk_open_data.postcodes`, via postcodes.io) — how
       a referral's postcode prefix becomes a geography to aggregate on
     - **Census 2021** ethnic group by LSOA (NOMIS `NM_2041_1`, table TS021) —
       the population denominator and the BAME share of each small area
@@ -57,7 +57,7 @@ def _():
     import numpy as np
     import pandas as pd
 
-    from kindtech import (
+    from uk_open_data import (
         geodata_to_properties,
         load_geodata,
         load_ons,

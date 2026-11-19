@@ -12,9 +12,9 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import pytest
 
-from kindtech.cli import EXIT_OK, main
-from kindtech.lenses import LensInputError, describe_lens, render_map, run_lens
-from kindtech.lenses.need_reach import (
+from uk_open_data.cli import EXIT_OK, main
+from uk_open_data.lenses import LensInputError, describe_lens, render_map, run_lens
+from uk_open_data.lenses.need_reach import (
     NEED_BANDS,
     NO_REACH,
     REACH_BANDS,
@@ -23,7 +23,7 @@ from kindtech.lenses.need_reach import (
     keep_need_figures,
     need_figures_path,
 )
-from kindtech.postcodes import build_postcode_table, install_postcode_table
+from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 
 LENS_ID = "need-reach"
 COLUMNS = {"local_authority": "Area", "count": "Clients"}
@@ -67,7 +67,7 @@ class _Nomis:
 def nomis():
     """Replace the need figures with the invented ones."""
     fake = _Nomis()
-    with mock.patch("kindtech.lenses._need.load_ons", side_effect=fake.load):
+    with mock.patch("uk_open_data.lenses._need.load_ons", side_effect=fake.load):
         yield fake
 
 
@@ -325,7 +325,7 @@ def test_bad_need_is_rejected(nomis, need):
 def test_a_table_nomis_does_not_have_is_an_input_error():
     with (
         mock.patch(
-            "kindtech.lenses._need.load_ons",
+            "uk_open_data.lenses._need.load_ons",
             side_effect=ValueError("NOMIS dataset 'NM_0_0' does not exist."),
         ),
         pytest.raises(LensInputError, match="could not be loaded"),
@@ -347,7 +347,7 @@ def test_need_without_local_authorities_is_an_input_error():
         {"geography_code": ["S12000036"], "geography_name": ["x"], "obs_value": [5]}
     )
     with (
-        mock.patch("kindtech.lenses._need.load_ons", return_value=empty),
+        mock.patch("uk_open_data.lenses._need.load_ons", return_value=empty),
         pytest.raises(LensInputError, match="no local authority"),
     ):
         _run(_counts(Lewisham=60))
@@ -553,7 +553,7 @@ def test_a_wide_comparison_is_flagged_when_people_are_in_few_places():
         }
     )
     rows = [{"Area": "Place 1", "Clients": 40}, {"Area": "Place 2", "Clients": 20}]
-    with mock.patch("kindtech.lenses._need.load_ons", return_value=many):
+    with mock.patch("uk_open_data.lenses._need.load_ons", return_value=many):
         wide = _run(rows)
         named = _run(rows, options={"catchment": "England"})
     flag = "Your people live in 2 of the 30 local authorities compared."
@@ -600,7 +600,8 @@ def _fake_lookup(sent: list):
 def test_postcodes_are_placed_in_local_authorities_online(nomis):
     sent: list = []
     with mock.patch(
-        "kindtech.lenses._steps.postcodes_to_geography", side_effect=_fake_lookup(sent)
+        "uk_open_data.lenses._steps.postcodes_to_geography",
+        side_effect=_fake_lookup(sent),
     ):
         result = _run(POSTCODE_ROWS, columns=POSTCODE_COLUMN)
     assert result.input_mode == "postcodes"
@@ -633,7 +634,7 @@ def test_postcodes_stay_on_this_machine_when_a_table_is_installed(nomis, tmp_pat
     packed = tmp_path / "postcodes.ktpc.gz"
     build_postcode_table(source, packed, "May 2026")
     install_postcode_table(packed)
-    with mock.patch("kindtech.lenses._steps.postcodes_to_geography") as online:
+    with mock.patch("uk_open_data.lenses._steps.postcodes_to_geography") as online:
         result = _run(POSTCODE_ROWS, columns=POSTCODE_COLUMN)
     online.assert_not_called()
     assert result.privacy.sent_to_third_parties == ()
@@ -644,7 +645,8 @@ def test_postcodes_stay_on_this_machine_when_a_table_is_installed(nomis, tmp_pat
 
 def test_no_postcode_reaches_the_result(nomis):
     with mock.patch(
-        "kindtech.lenses._steps.postcodes_to_geography", side_effect=_fake_lookup([])
+        "uk_open_data.lenses._steps.postcodes_to_geography",
+        side_effect=_fake_lookup([]),
     ):
         result = _run(POSTCODE_ROWS, columns=POSTCODE_COLUMN)
     text = json.dumps(result.to_dict()).upper().replace(" ", "")

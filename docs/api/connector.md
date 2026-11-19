@@ -1,6 +1,6 @@
 # Connector for chat assistants
 
-The `kindtech.connector` module offers the lenses and open data to a chat
+The `uk_open_data.connector` module offers the lenses and open data to a chat
 assistant, such as Claude or ChatGPT, over the
 [Model Context Protocol](https://modelcontextprotocol.io/). A charity worker
 asks a question in their own words; the assistant calls a tool; figures come
@@ -14,8 +14,8 @@ totals, never rows**.
 The server needs the `connector` extra:
 
 ```bash
-uv add "kindtech[connector]"
-uv run python -m kindtech.connector
+uv add "uk-open-data[connector]"
+uv run python -m uk_open_data.connector
 ```
 
 That runs over stdio, which is how a desktop assistant starts a local
@@ -29,7 +29,7 @@ configuration, with the path to your checkout:
       "command": "uv",
       "args": [
         "run", "--directory", "/path/to/kindtech", "--extra", "connector",
-        "python", "-m", "kindtech.connector"
+        "python", "-m", "uk_open_data.connector"
       ]
     }
   }
@@ -40,7 +40,7 @@ To host it, run the same server over Streamable HTTP. The address to give an
 assistant then ends in `/mcp`:
 
 ```bash
-uv run python -m kindtech.connector --transport streamable-http --port 8000
+uv run python -m uk_open_data.connector --transport streamable-http --port 8000
 ```
 
 ## Tools
@@ -62,7 +62,7 @@ The answer holds each lens description, best match first.
 district such as `SE13`, or the postcode of a venue or office.
 
 ```python
-from kindtech.connector import describe_place
+from uk_open_data.connector import describe_place
 
 answer = describe_place("Lewisham")
 answer["status"]            # "found"
@@ -83,8 +83,8 @@ cover England and Wales still work for it.
 
 The deprivation index is read from a copy kept on this machine when there is
 one, and the source in the answer then says so. When you host the connector,
-keep it when the image is built (`kindtech.imd.download_imd`), so the first
-call does not wait on a download. A copy kept with `kindtech.imd.keep_imd`
+keep it when the image is built (`uk_open_data.imd.download_imd`), so the first
+call does not wait on a download. A copy kept with `uk_open_data.imd.keep_imd`
 that leaves out the types of deprivation gives the same answer without that
 table, and says so in `warnings`. A copy that cannot be read gives the status
 `unavailable`.
@@ -129,7 +129,7 @@ and to no other. Any other text there is left for the lens, which says how
 many rows to correct.
 
 ```python
-from kindtech.connector import run_lens_on_counts
+from uk_open_data.connector import run_lens_on_counts
 
 answer = run_lens_on_counts(
     "need-reach",
@@ -149,10 +149,10 @@ lens needs could not be reached).
 
 When you host the connector, keep the public figures three of the lenses
 compare with on the server when the image is built, so a run does not wait on
-Nomis: `kindtech.lenses.need_reach.download_need_figures` for the need against
+Nomis: `uk_open_data.lenses.need_reach.download_need_figures` for the need against
 reach lens, the same function called with `"residents"` for the provision gap
 lens, which sets provision against everyone who lives in a place unless told
-otherwise, and `kindtech.lenses.who_we_miss.download_residents` for the who we
+otherwise, and `uk_open_data.lenses.who_we_miss.download_residents` for the who we
 are missing lens.
 
 ## The privacy rule

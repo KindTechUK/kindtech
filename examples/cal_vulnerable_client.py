@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "marimo",
-#     "kindtech",
+#     "uk-open-data",
 #     "pandas>=2.0.0",
 #     "numpy>=1.24.0",
 #     "altair",
@@ -28,7 +28,7 @@ def _(mo):
     # Citizens Advice Lewisham: Vulnerability Hotspots
 
     A reproduction of the [CAL case
-    study](../docs/case-studies/cal-vulnerable-client.md) using **kindtech**.
+    study](../docs/case-studies/cal-vulnerable-client.md) using **uk-open-data**.
 
     Citizens Advice Lewisham wanted to find **vulnerability hotspots** — areas
     of high need with limited access to help — and to check whether their
@@ -36,9 +36,9 @@ def _(mo):
 
     This notebook combines:
 
-    - **Postcode → LSOA** mapping (`kindtech.postcodes`, via postcodes.io) —
+    - **Postcode → LSOA** mapping (`uk_open_data.postcodes`, via postcodes.io) —
       how real client postcodes become a geography to aggregate on
-    - **IMD 2025** deprivation by LSOA (`kindtech.imd`) — on **2021 LSOAs**, a
+    - **IMD 2025** deprivation by LSOA (`uk_open_data.imd`) — on **2021 LSOAs**, a
       native join to everything else
     - **Synthetic client records** — real client data is private, so we
       generate a realistic stand-in concentrated in more-deprived areas
@@ -54,7 +54,7 @@ def _():
     import numpy as np
     import pandas as pd
 
-    from kindtech import (
+    from uk_open_data import (
         geodata_to_properties,
         load_geodata,
         load_imd,

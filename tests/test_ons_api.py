@@ -11,12 +11,12 @@ import pandas as pd
 import pytest
 import requests
 
-from kindtech.ons import list_tables, load_ons
+from uk_open_data.ons import list_tables, load_ons
 
 CSV_RESPONSE = "DATE,GEOGRAPHY_NAME,OBS_VALUE\n2023,England,12345\n2023,Wales,6789\n"
 
 
-@mock.patch("kindtech.ons.api.requests.get")
+@mock.patch("uk_open_data.ons.api.requests.get")
 def test_load_ons_basic(mock_get):
     """Test loading ONS data returns a DataFrame."""
     mock_response = mock.MagicMock()
@@ -35,7 +35,7 @@ def test_load_ons_basic(mock_get):
     assert ".data.csv" in call_url
 
 
-@mock.patch("kindtech.ons.api.requests.get")
+@mock.patch("uk_open_data.ons.api.requests.get")
 def test_load_ons_with_params(mock_get):
     """Test that query parameters are passed to the URL."""
     mock_response = mock.MagicMock()
@@ -50,7 +50,7 @@ def test_load_ons_with_params(mock_get):
     assert "time=latest" in call_url
 
 
-@mock.patch("kindtech.ons.api.requests.get")
+@mock.patch("uk_open_data.ons.api.requests.get")
 def test_load_ons_list_params(mock_get):
     """Test that list parameters are joined with commas."""
     mock_response = mock.MagicMock()
@@ -64,7 +64,7 @@ def test_load_ons_list_params(mock_get):
     assert "measures=20100%2C20201" in call_url
 
 
-@mock.patch("kindtech.ons.api.requests.get")
+@mock.patch("uk_open_data.ons.api.requests.get")
 def test_load_ons_html_error(mock_get):
     """Test that an HTML error page raises ValueError."""
     mock_response = mock.MagicMock()
@@ -76,7 +76,7 @@ def test_load_ons_html_error(mock_get):
         load_ons("NM_INVALID_999")
 
 
-@mock.patch("kindtech.ons.api.requests.get")
+@mock.patch("uk_open_data.ons.api.requests.get")
 def test_load_ons_request_error(mock_get):
     """Test that a request error propagates."""
     mock_get.side_effect = requests.exceptions.RequestException("Connection error")
@@ -104,7 +104,7 @@ def test_list_tables_filter_by_name():
     assert all("population" in row.lower() for row in result["name"])
 
 
-@mock.patch("kindtech.ons.api.requests.get")
+@mock.patch("uk_open_data.ons.api.requests.get")
 def test_load_ons_truncation_warning(mock_get, caplog):
     """Test that a warning is logged when exactly 25,000 rows are returned."""
     # Build a CSV with exactly 25,000 data rows using a fixed-width
@@ -121,7 +121,7 @@ def test_load_ons_truncation_warning(mock_get, caplog):
     import warnings
 
     with (
-        caplog.at_level(logging.WARNING, logger="kindtech.ons.api"),
+        caplog.at_level(logging.WARNING, logger="uk_open_data.ons.api"),
         warnings.catch_warnings(record=True) as w,
     ):
         warnings.simplefilter("always")
@@ -133,7 +133,7 @@ def test_load_ons_truncation_warning(mock_get, caplog):
     assert any("truncated" in str(warning.message) for warning in w)
 
 
-@mock.patch("kindtech.ons.api.requests.get")
+@mock.patch("uk_open_data.ons.api.requests.get")
 def test_load_ons_csv_parse_error(mock_get):
     """Test that unparseable CSV raises ValueError."""
     mock_response = mock.MagicMock()
@@ -154,7 +154,7 @@ def test_list_tables_filter_by_source():
     assert isinstance(result, pd.DataFrame)
 
 
-@mock.patch("kindtech.ons.api.requests.get")
+@mock.patch("uk_open_data.ons.api.requests.get")
 def test_load_ons_normalize_false(mock_get):
     """Test that normalize=False preserves original UPPER_CASE columns."""
     mock_response = mock.MagicMock()
@@ -168,7 +168,7 @@ def test_load_ons_normalize_false(mock_get):
     assert "GEOGRAPHY_NAME" in result.columns
 
 
-@mock.patch("kindtech.ons.api.requests.get")
+@mock.patch("uk_open_data.ons.api.requests.get")
 def test_load_ons_normalize_default(mock_get):
     """Test that columns are lowercased by default."""
     mock_response = mock.MagicMock()
@@ -185,7 +185,7 @@ def test_load_ons_normalize_default(mock_get):
 
 def test_is_valid_dataset():
     """Test the is_valid_dataset catalog function."""
-    from kindtech.ons._catalog import is_valid_dataset
+    from uk_open_data.ons._catalog import is_valid_dataset
 
     assert is_valid_dataset("NM_1_1") is True
     assert is_valid_dataset("TOTALLY_FAKE_999") is False

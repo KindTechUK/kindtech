@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "marimo",
-#     "kindtech",
+#     "uk-open-data",
 #     "pandas>=2.0.0",
 #     "numpy>=1.24.0",
 #     "altair",
@@ -29,7 +29,7 @@ def _(mo):
 
     A reproduction of the [Smart Works case
     study](../docs/case-studies/smart-works-woman-unemployment.md) using
-    **kindtech**.
+    **uk-open-data**.
 
     Smart Works supports unemployed women back into work. With hundreds of
     thousands of unemployed women across England, they wanted to know **where
@@ -60,7 +60,7 @@ def _():
     import numpy as np
     import pandas as pd
 
-    from kindtech import geodata_to_properties, load_geodata, load_ons
+    from uk_open_data import geodata_to_properties, load_geodata, load_ons
 
     return alt, geodata_to_properties, load_geodata, load_ons, np, pd
 

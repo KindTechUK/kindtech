@@ -14,18 +14,18 @@ import pandas as pd
 import pytest
 import requests
 
-from kindtech.cli import EXIT_OK, main
-from kindtech.connector.privacy import find_row_values
-from kindtech.lenses import LensInputError, describe_lens, render_map, run_lens
-from kindtech.lenses._centres import distance_km
-from kindtech.lenses.access_distance import (
+from uk_open_data.cli import EXIT_OK, main
+from uk_open_data.connector.privacy import find_row_values
+from uk_open_data.lenses import LensInputError, describe_lens, render_map, run_lens
+from uk_open_data.lenses._centres import distance_km
+from uk_open_data.lenses.access_distance import (
     DISTANCE_BANDS,
     centres_path,
     download_centres,
     keep_centres,
 )
-from kindtech.lenses.need_reach import NEED_BANDS, keep_need_figures
-from kindtech.postcodes import build_postcode_table, install_postcode_table
+from uk_open_data.lenses.need_reach import NEED_BANDS, keep_need_figures
+from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 
 LENS_ID = "access-distance"
 COLUMNS = {"latitude": "Lat", "longitude": "Lon"}
@@ -340,7 +340,7 @@ def _fake_lookup(sent: list):
 
 def _run_postcodes(rows=POSTCODE_ROWS, sent=None):
     with mock.patch(
-        "kindtech.lenses._steps.lookup_postcodes",
+        "uk_open_data.lenses._steps.lookup_postcodes",
         side_effect=_fake_lookup([] if sent is None else sent),
     ):
         return _run(rows, columns=POSTCODE_COLUMN)
@@ -391,7 +391,7 @@ def test_no_postcode_reaches_the_result(kept):
 
 
 def test_positions_given_directly_send_nothing(kept):
-    with mock.patch("kindtech.lenses._steps.lookup_postcodes") as online:
+    with mock.patch("uk_open_data.lenses._steps.lookup_postcodes") as online:
         result = _run()
     online.assert_not_called()
     assert result.privacy.sent_to_third_parties == ()
@@ -444,9 +444,9 @@ def _run_here(rows=POSTCODE_ROWS, how=None):
     """Run with site postcodes, and fail the test if any is sent out."""
     options = None if how is None else {"postcode_lookup": how}
     with (
-        mock.patch("kindtech.lenses._steps.lookup_postcodes") as online,
-        mock.patch("kindtech.lenses._centres.requests.get") as fetch,
-        mock.patch("kindtech.lenses._centres.load_geodata") as boundaries,
+        mock.patch("uk_open_data.lenses._steps.lookup_postcodes") as online,
+        mock.patch("uk_open_data.lenses._centres.requests.get") as fetch,
+        mock.patch("uk_open_data.lenses._centres.load_geodata") as boundaries,
     ):
         try:
             return _run(rows, options=options, columns=POSTCODE_COLUMN)
@@ -526,7 +526,7 @@ def test_offline_without_a_table_stops_and_sends_nothing(kept, neighbourhoods):
 def test_online_sends_postcodes_even_with_a_table(kept, table, neighbourhoods):
     sent: list = []
     with mock.patch(
-        "kindtech.lenses._steps.lookup_postcodes", side_effect=_fake_lookup(sent)
+        "uk_open_data.lenses._steps.lookup_postcodes", side_effect=_fake_lookup(sent)
     ):
         result = _run(
             POSTCODE_ROWS,
@@ -571,7 +571,7 @@ def _boundaries(*args, **kwargs) -> dict:
 
 def test_centres_are_fetched_once_for_england_and_wales():
     keep_need_figures("residents", NEED, "invented for a test.")
-    target = "kindtech.lenses._centres.load_geodata"
+    target = "uk_open_data.lenses._centres.load_geodata"
     with mock.patch(target, side_effect=_boundaries) as fetch:
         first = _run()
         second = _run()
@@ -586,7 +586,7 @@ def test_centres_are_fetched_once_for_england_and_wales():
 
 
 def test_kept_centres_are_used_and_nothing_is_fetched(kept):
-    with mock.patch("kindtech.lenses._centres.load_geodata") as fetch:
+    with mock.patch("uk_open_data.lenses._centres.load_geodata") as fetch:
         result = _run()
     fetch.assert_not_called()
     source = next(s for s in result.sources if s.id.startswith("ons-local-authority"))
@@ -596,7 +596,9 @@ def test_kept_centres_are_used_and_nothing_is_fetched(kept):
 
 def test_download_fetches_and_keeps_the_centres():
     assert centres_path() is None
-    with mock.patch("kindtech.lenses._centres.load_geodata", side_effect=_boundaries):
+    with mock.patch(
+        "uk_open_data.lenses._centres.load_geodata", side_effect=_boundaries
+    ):
         path = download_centres()
     assert centres_path() == path
     kept_file = json.loads(path.read_text(encoding="utf-8"))
@@ -631,7 +633,7 @@ def test_download_fetches_neighbourhood_centres_page_by_page():
     ]
     asked: list = []
     assert centres_path("neighbourhood") is None
-    with mock.patch("kindtech.lenses._centres.requests.get", _pages(asked, rows)):
+    with mock.patch("uk_open_data.lenses._centres.requests.get", _pages(asked, rows)):
         path = download_centres("neighbourhood")
     assert centres_path("neighbourhood") == path
     assert path.name == "neighbourhoods-2021.json"
@@ -661,7 +663,7 @@ def test_download_fetches_neighbourhood_centres_page_by_page():
 )
 def test_neighbourhood_centres_that_cannot_be_fetched_keep_nothing(response):
     with (
-        mock.patch("kindtech.lenses._centres.requests.get", response),
+        mock.patch("uk_open_data.lenses._centres.requests.get", response),
         pytest.raises(ValueError, match="boundary service"),
     ):
         download_centres("neighbourhood")
@@ -672,7 +674,7 @@ def test_a_service_that_does_not_page_stops_the_fetch():
     same = {"features": [{"attributes": {"LSOA21CD": "E01000001"}}] * 2000}
     response = mock.Mock(return_value=mock.Mock(json=lambda: same))
     with (
-        mock.patch("kindtech.lenses._centres.requests.get", response),
+        mock.patch("uk_open_data.lenses._centres.requests.get", response),
         pytest.raises(ValueError, match="kept returning"),
     ):
         download_centres("neighbourhood")
@@ -694,7 +696,7 @@ def test_centres_that_cannot_be_fetched_are_an_input_error():
     keep_need_figures("residents", NEED, "invented for a test.")
     empty = {"type": "FeatureCollection", "features": []}
     with (
-        mock.patch("kindtech.lenses._centres.load_geodata", return_value=empty),
+        mock.patch("uk_open_data.lenses._centres.load_geodata", return_value=empty),
         pytest.raises(LensInputError, match="download_centres"),
     ):
         _run()

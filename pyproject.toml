@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kindtech"
+name = "uk-open-data"
 version = "0.1.0"
 description = "All things kindtech repository - kindtech monorepo"
 readme = "README.md"
@@ -15,8 +15,8 @@ dependencies = [
 ]
 
 [project.scripts]
-uk-open-data = "kindtech.cli:main"
-kindtech = "kindtech.cli:main"
+uk-open-data = "uk_open_data.cli:main"
+kindtech = "uk_open_data.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/KindTechUK/kindtech"
@@ -34,8 +34,8 @@ connector = [
 package-dir = {"" = "src"}
 
 [tool.setuptools.package-data]
-"kindtech.geo" = ["data/*.csv"]
-"kindtech.ons" = ["data/*.csv"]
+"uk_open_data.geo" = ["data/*.csv"]
+"uk_open_data.ons" = ["data/*.csv"]
 
 [dependency-groups]
 dev = [

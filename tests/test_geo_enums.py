@@ -2,7 +2,7 @@
 Unit tests for the KindTech Geo enums.
 """
 
-from kindtech.geo._enums import (
+from uk_open_data.geo._enums import (
     BoundaryType,
     CoverageArea,
     GeographyType,

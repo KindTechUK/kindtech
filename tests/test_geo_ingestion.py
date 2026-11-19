@@ -1,8 +1,8 @@
-"""Tests for kindtech.geo._ingestion parsing helpers."""
+"""Tests for uk_open_data.geo._ingestion parsing helpers."""
 
 import pytest
 
-from kindtech.geo._ingestion import (
+from uk_open_data.geo._ingestion import (
     _normalise_month,
     _normalise_resolution,
     _normalise_year,
@@ -184,7 +184,7 @@ def test_parse_service_unparseable() -> None:
 def test_ingest_raises_on_empty_catalog(tmp_path, monkeypatch) -> None:
     """ingest_arcgis_services raises when the API returns no services."""
     monkeypatch.setattr(
-        "kindtech.geo._ingestion._fetch_services",
+        "uk_open_data.geo._ingestion._fetch_services",
         lambda base_url: [],
     )
     with pytest.raises(RuntimeError, match="No services parsed"):

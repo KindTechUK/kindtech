@@ -1,6 +1,6 @@
 # Deprivation (IMD)
 
-The `kindtech.imd` module loads UK deprivation data, keyed on ONS geography
+The `uk_open_data.imd` module loads UK deprivation data, keyed on ONS geography
 codes so it joins to [boundaries](geo.md) and [statistics](ons.md).
 
 **A single nation returns that nation's _official_ index. `"UK"` returns a
@@ -29,7 +29,7 @@ comparison, and a nation's official index for within-nation work.
 ## `load_imd()`
 
 ```python
-from kindtech import load_imd
+from uk_open_data import load_imd
 
 england = load_imd(nation="England")          # official IoD 2025, 2021 LSOAs
 england_19 = load_imd(nation="England", year=2019)  # official IoD 2019, 2011 LSOAs
@@ -103,7 +103,7 @@ data folder, the same one that holds the
 [postcode table](postcodes.md#looking-up-postcodes-on-this-machine):
 
 ```python
-from kindtech.imd import download_imd, imd_path, keep_imd, load_imd
+from uk_open_data.imd import download_imd, imd_path, keep_imd, load_imd
 
 download_imd()            # fetch the 2025 index once, when a server is built
 imd_path()                # where the copy is, or None
@@ -127,7 +127,7 @@ or merges with population for per-capita work:
 
 ```python
 import pandas as pd
-from kindtech import load_imd, load_geodata, geodata_to_properties
+from uk_open_data import load_imd, load_geodata, geodata_to_properties
 
 imd = load_imd(nation="England")  # IoD 2025, on 2021 LSOAs
 # Default boundaries are 2021 LSOAs — a native join, no crosswalk
