@@ -11,6 +11,7 @@ from typing import Any
 
 import pandas as pd
 
+from uk_open_data._mapping import geo_code_field
 from uk_open_data.connector.places import DOMAINS
 
 # (LSOA code, LSOA name, LAD code, LAD name, rank, decile, residents)
@@ -137,6 +138,34 @@ def england_frame() -> pd.DataFrame:
             row[f"{domain}_rank"] = min(10, rank + position)
         rows.append(row)
     return pd.DataFrame(rows)
+
+
+def square_outlines(result: Any) -> dict[str, Any]:
+    """Invented outlines for a result's map: one small square for each area."""
+    spec = result.map
+    field = geo_code_field(spec.geography_type, spec.geography_year)
+    features = [
+        {
+            "type": "Feature",
+            "properties": {field: row[spec.code_column]},
+            "geometry": {"type": "Polygon", "coordinates": [_square(number)]},
+        }
+        for number, row in enumerate(result.table(spec.table).rows)
+    ]
+    return {"type": "FeatureCollection", "features": features}
+
+
+def _square(number: int) -> list[list[float]]:
+    """A small square, laid out in a row of five."""
+    west = -0.05 + 0.01 * (number % 5)
+    south = 51.40 + 0.01 * (number // 5)
+    return [
+        [west, south],
+        [west + 0.01, south],
+        [west + 0.01, south + 0.01],
+        [west, south + 0.01],
+        [west, south],
+    ]
 
 
 def outcode_frame(admin_districts: str | None) -> pd.DataFrame:
@@ -355,7 +384,7 @@ def fake_engine(*, leak: bool = False) -> SimpleNamespace:
                 return {**payload, "tables": [detailed]}
             return payload
 
-        return SimpleNamespace(to_dict=to_dict)
+        return SimpleNamespace(to_dict=to_dict, map=None)
 
     return SimpleNamespace(
         list_analyses=list_analyses,

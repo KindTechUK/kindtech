@@ -2,12 +2,13 @@
 
 import connector_fakes as fakes
 import pytest
+import requests
 
 from uk_open_data.analyses import reach_deprivation
 from uk_open_data.analyses.access_distance import clear_centres_cache
 from uk_open_data.analyses.need_reach import clear_need_cache
 from uk_open_data.analyses.who_we_miss import clear_residents_cache
-from uk_open_data.connector import lenses, places
+from uk_open_data.connector import lenses, maps, places
 from uk_open_data.postcodes import build_postcode_table, install_postcode_table, offline
 
 
@@ -17,6 +18,16 @@ def empty_data_dir(tmp_path, monkeypatch):
     folder = tmp_path / "kindtech-data"
     monkeypatch.setenv(offline.DATA_DIR_VARIABLE, str(folder))
     return folder
+
+
+@pytest.fixture(autouse=True)
+def no_outlines_from_the_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stand in for the boundary service, which no test may ask, as if it were down."""
+
+    def down(*args: object, **kwargs: object) -> None:
+        raise requests.ConnectionError("the boundary service is not asked in tests")
+
+    monkeypatch.setattr(maps, "load_map_boundaries", down)
 
 
 @pytest.fixture

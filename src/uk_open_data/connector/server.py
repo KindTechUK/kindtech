@@ -9,15 +9,25 @@ tool is read-only and returns totals, never rows.
 
 import logging
 import traceback
+from collections.abc import Callable
 from typing import Annotated, Any, Literal
 
+import pydantic_core
+from mcp.server.apps import Apps
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError, UnexpectedToolError
-from mcp.types import ToolAnnotations
+from mcp.types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import Field, ValidationError
 
 import uk_open_data
-from uk_open_data.connector.lenses import find_lens, run_lens_on_counts
+from uk_open_data.connector.lenses import find_lens, run_and_keep_result
+from uk_open_data.connector.maps import (
+    MAP_META_KEY,
+    MAP_VIEW,
+    MAP_VIEW_URI,
+    Boundaries,
+    picture_for,
+)
 from uk_open_data.connector.places import describe_place
 from uk_open_data.connector.privacy import PrivacyError
 
@@ -91,19 +101,41 @@ class TotalsOnlyServer(MCPServer):
         raise UnexpectedToolError(failed)
 
 
-def build_server() -> MCPServer:
+def build_server(map_boundaries: Boundaries | None = None) -> MCPServer:
     """Build the connector with its tools registered.
+
+    Args:
+        map_boundaries: Gives the outlines of the areas on a result's map, as
+            GeoJSON, so the map can be drawn without the network. Left out,
+            the outlines are fetched from the ONS Open Geography Portal each
+            time a map is drawn. When you host the connector, pass a function
+            that reads outlines kept on the server.
 
     Returns:
         An ``MCPServer`` ready to run over stdio (``server.run()``) or to be
         mounted as a web app (``server.streamable_http_app()``).
     """
+    apps = Apps()
+    apps.add_html_resource(
+        MAP_VIEW_URI,
+        MAP_VIEW,
+        name="lens-map",
+        title="Map of a lens result",
+        description="Shows the map drawn for a lens result.",
+    )
+    apps.tool(
+        resource_uri=MAP_VIEW_URI,
+        name="run_lens_on_counts",
+        title="Run a lens on counts",
+        annotations=READ_ONLY_OPEN_DATA,
+    )(run_lens_handler(map_boundaries))
     server = TotalsOnlyServer(
         name=SERVER_NAME,
         title=SERVER_TITLE,
         instructions=INSTRUCTIONS,
         website_url=WEBSITE_URL,
         version=uk_open_data.__version__,
+        extensions=[apps],
     )
     server.tool(name="find_lens", title="Find a lens", annotations=READ_ONLY_LOCAL)(
         handle_find_lens
@@ -113,11 +145,6 @@ def build_server() -> MCPServer:
         title="Describe a place",
         annotations=READ_ONLY_OPEN_DATA,
     )(handle_describe_place)
-    server.tool(
-        name="run_lens_on_counts",
-        title="Run a lens on counts",
-        annotations=READ_ONLY_OPEN_DATA,
-    )(handle_run_lens_on_counts)
     return server
 
 
@@ -167,53 +194,87 @@ def handle_describe_place(
     return describe_place(place)
 
 
-def handle_run_lens_on_counts(
-    lens_id: Annotated[
-        str, Field(description="The lens id from find_lens, e.g. 'reach-deprivation'.")
-    ],
-    counts: Annotated[
-        list[dict[str, Any]],
-        Field(
-            description="One object per area or group, keyed by the role names "
-            "of an input mode marked 'aggregated' in find_lens, for example "
-            "{'lsoa_code': 'E01003189', 'count': 12}, {'local_authority': "
-            "'Lewisham', 'count': 120}, {'group': 'Black Caribbean', 'count': "
-            "40} or {'local_authority': 'Lewisham', 'volume': 1200}. Totals "
-            "only: never one row per person or per site."
-        ),
-    ],
-    options: Annotated[
-        dict[str, Any] | None,
-        Field(
-            description="Lens options to change, as listed by find_lens. Leave "
-            "out to use the defaults. Where a lens needs one, such as "
-            "'catchment' (the area the charity serves), ask the person for it."
-        ),
-    ] = None,
-    hidden_counts: Annotated[
-        Literal["ask", "accept"],
-        Field(
-            description="Leave out on the first call. If the answer would hide "
-            "counts, the status is 'would_hide_counts' and nothing is shown: "
-            "tell the person, and pass 'accept' only after they have chosen "
-            "to run with those counts hidden."
-        ),
-    ] = "ask",
-) -> dict[str, Any]:
-    """Run a lens on counts that are already totalled by area or by group.
+def run_lens_handler(
+    map_boundaries: Boundaries | None = None,
+) -> Callable[..., CallToolResult]:
+    """Make the handler for running a lens, which draws maps with these outlines."""
 
-    Returns headline figures, summary tables, the working, the choices the
-    lens made, checks for the person to confirm, caveats and sources. Show the
-    checks and caveats with the figures and do not answer the checks for the
-    person. Rows about individuals are refused. Small counts are hidden, and
-    a second count with them. If the status is 'would_hide_counts', nothing
-    has been shown: tell the person what would be hidden and offer the
-    choices in the answer before calling again. A table named under
-    'rows_left_out' is not empty: its rows are for a map or a download and
-    are left out of the answer. If the status is 'unavailable', a data source
-    could not be reached: say so and try again later.
+    def handle_run_lens_on_counts(
+        lens_id: Annotated[
+            str,
+            Field(description="The lens id from find_lens, e.g. 'reach-deprivation'."),
+        ],
+        counts: Annotated[
+            list[dict[str, Any]],
+            Field(
+                description="One object per area or group, keyed by the role names "
+                "of an input mode marked 'aggregated' in find_lens, for example "
+                "{'lsoa_code': 'E01003189', 'count': 12}, {'local_authority': "
+                "'Lewisham', 'count': 120}, {'group': 'Black Caribbean', 'count': "
+                "40} or {'local_authority': 'Lewisham', 'volume': 1200}. Totals "
+                "only: never one row per person or per site."
+            ),
+        ],
+        options: Annotated[
+            dict[str, Any] | None,
+            Field(
+                description="Lens options to change, as listed by find_lens. Leave "
+                "out to use the defaults. Where a lens needs one, such as "
+                "'catchment' (the area the charity serves), ask the person for it."
+            ),
+        ] = None,
+        hidden_counts: Annotated[
+            Literal["ask", "accept"],
+            Field(
+                description="Leave out on the first call. If the answer would hide "
+                "counts, the status is 'would_hide_counts' and nothing is shown: "
+                "tell the person, and pass 'accept' only after they have chosen "
+                "to run with those counts hidden."
+            ),
+        ] = "ask",
+    ) -> Annotated[CallToolResult, dict[str, Any]]:
+        """Run a lens on counts that are already totalled by area or by group.
+
+        Returns headline figures, summary tables, the working, the choices the
+        lens made, checks for the person to confirm, caveats and sources. Show the
+        checks and caveats with the figures and do not answer the checks for the
+        person. Rows about individuals are refused. Small counts are hidden, and
+        a second count with them. If the status is 'would_hide_counts', nothing
+        has been shown: tell the person what would be hidden and offer the
+        choices in the answer before calling again. A table named under
+        'rows_left_out' is not empty: its rows are for a map or a download and
+        are left out of the answer. Where the answer has 'map', a picture of
+        the result's map was drawn for the person or its note says why not;
+        you are not given the picture, so do not describe it. If the status is
+        'unavailable', a data source could not be reached: say so and try
+        again later.
+        """
+        answer, result, guarded = run_and_keep_result(
+            lens_id, counts, options, hidden_counts
+        )
+        picture = None
+        if result is not None:
+            picture, note = picture_for(result, guarded, map_boundaries)
+            if note:
+                answer["map"] = {"drawn": picture is not None, "note": note}
+        return _tool_result(answer, {MAP_META_KEY: picture} if picture else None)
+
+    return handle_run_lens_on_counts
+
+
+def _tool_result(answer: dict[str, Any], meta: dict[str, Any] | None) -> CallToolResult:
+    """An answer as a tool result, with anything for the app only beside it.
+
+    The answer is what the model reads, as text and as structured content.
+    ``meta`` travels in the result's ``_meta``, which an app can read and which
+    is not part of what a model is given.
     """
-    return run_lens_on_counts(lens_id, counts, options, hidden_counts)
+    text = pydantic_core.to_json(answer, fallback=str, indent=2).decode()
+    return CallToolResult(
+        content=[TextContent(type="text", text=text)],
+        structured_content=answer,
+        meta=meta,
+    )
 
 
 def _log_crash(tool: str, cause: BaseException | None) -> None:

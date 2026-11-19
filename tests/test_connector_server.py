@@ -136,7 +136,7 @@ CRASH_TEXT = "could not read https://example.invalid/?geography=ZZ999KC for 'Zeb
         (
             "run_lens_on_counts",
             {"lens_id": "reach-deprivation", "counts": [{"lsoa_code": "E01000001"}]},
-            "uk_open_data.connector.server.run_lens_on_counts",
+            "uk_open_data.connector.server.run_and_keep_result",
         ),
         (
             "describe_place",
@@ -195,7 +195,7 @@ def test_the_guards_own_message_is_kept_in_the_log(
     def withheld(*args: object, **kwargs: object) -> None:
         raise PrivacyError("A value from the input rows appeared at: warnings[0].")
 
-    monkeypatch.setattr("uk_open_data.connector.server.run_lens_on_counts", withheld)
+    monkeypatch.setattr("uk_open_data.connector.server.run_and_keep_result", withheld)
 
     reply = _call("run_lens_on_counts", {"lens_id": "x", "counts": [{"a": 1}]})
 
