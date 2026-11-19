@@ -121,6 +121,20 @@ def read_threshold(options: dict[str, Any]) -> int:
     return value
 
 
+def read_min_share(options: dict[str, Any]) -> float:
+    """Read and check the share a local authority needs to join the catchment."""
+    value = options.get("catchment_min_share")
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise AnalysisInputError("The option 'catchment_min_share' must be a number.")
+    if not 0 < value <= 1:
+        msg = (
+            "The option 'catchment_min_share' must be above 0 and no more "
+            "than 1, for example 0.05 for five per cent."
+        )
+        raise AnalysisInputError(msg)
+    return float(value)
+
+
 def use_postcode_table(options: dict[str, Any]) -> bool:
     """Decide whether postcodes are looked up in the table on this machine."""
     how = options.get("postcode_lookup")

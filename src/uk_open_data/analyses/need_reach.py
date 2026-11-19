@@ -56,6 +56,7 @@ from uk_open_data.analyses._need import (
     band_by_need,
     choose_compared,
     equal_parts,
+    guess_compared,
     load_need,
     read_measure,
     read_top,
@@ -77,12 +78,13 @@ from uk_open_data.analyses._steps import (
     Trail,
     count_by_postcode,
     percent,
+    read_min_share,
     read_threshold,
     use_postcode_table,
 )
 
 ANALYSIS_ID = "need-reach"
-ANALYSIS_VERSION = "0.1"
+ANALYSIS_VERSION = "0.2"
 KEY_FIGURES = (
     "share_of_people_in_high_need_areas",
     "share_of_need_in_high_need_areas",
@@ -163,9 +165,18 @@ INFO = AnalysisInfo(
             description=(
                 "The area you could serve: a list of local authority names or "
                 "codes, or 'England', 'Wales' or 'England and Wales'. Left "
-                "empty, every local authority in England and Wales is compared."
+                "empty, the analysis uses the local authorities where most of "
+                "your people live."
             ),
             default=None,
+        ),
+        Option(
+            name="catchment_min_share",
+            description=(
+                "When the catchment is not given, a local authority joins it "
+                "if it holds at least this share of the people located."
+            ),
+            default=0.05,
         ),
         Option(
             name="top",
@@ -235,6 +246,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
     options = analysis_input.options
     threshold = read_threshold(options)
     top = read_top(options)
+    min_share = read_min_share(options)
     measure = read_measure(options.get("need"))
     trail = Trail()
     authorities = load_need(measure, trail)
@@ -253,7 +265,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
             trail,
         )
     located = _keep_listed(counts, authorities, threshold, trail)
-    compared = choose_compared(options.get("catchment"), authorities)
+    compared = _choose_area(options.get("catchment"), located, authorities, min_share)
     rows = _rows(located, authorities, compared, threshold, trail)
     figures = _figures(supplied, sum(located.values()), rows, measure, threshold)
     tables = (_priority_table(rows, top, threshold, trail), _authority_table(rows))
@@ -383,6 +395,18 @@ def _keep_listed(
     return located
 
 
+def _choose_area(
+    wanted: Any,
+    located: dict[str, int],
+    authorities: dict[str, Authority],
+    min_share: float,
+) -> Compared:
+    """Work out the area to compare, from the option or from where people live."""
+    if wanted is None:
+        return guess_compared(located, authorities, min_share)
+    return choose_compared(wanted, authorities)
+
+
 # --- the comparison --------------------------------------------------------
 
 
@@ -468,6 +492,12 @@ def _warn_about_area(
             f"{outside} people live outside the catchment and are left out. "
             "Change the 'catchment' option to include them."
         )
+    if compared.guessed:
+        trail.warnings.append(
+            "The area compared was worked out from where your people live, so "
+            "it holds only places you already reach. To see places you do not "
+            "reach, name the area you could serve with the 'catchment' option."
+        )
     if not compared.named and with_people * FEW_AREAS < len(compared.codes):
         trail.warnings.append(
             f"Your people live in {with_people} of the {len(compared.codes)} "
@@ -475,7 +505,12 @@ def _warn_about_area(
             "with the 'catchment' option, so that places you could not reach "
             "are not listed as gaps."
         )
-    if len(compared.codes) < len(NEED_BANDS):
+    if len(compared.codes) == 1:
+        trail.warnings.append(
+            "Only one local authority is compared, so there is no other place "
+            "to set it against and 'high need' says nothing."
+        )
+    elif len(compared.codes) < len(NEED_BANDS):
         trail.warnings.append(
             f"Only {len(compared.codes)} local authorities are compared, so "
             "'high need' says little. It means at or above the middle value."
@@ -722,6 +757,8 @@ def _share_in_high_need(
 def _answer(figures: list[Figure], priority: Table) -> str:
     """Say where need is high and how much of the charity's reach is there."""
     shown = values(figures)
+    if shown["areas_compared"] == 1:
+        return _answer_for_one_place(shown["reach_per_100_in_need"])
     places = high_need_places(shown["high_need_areas"])
     ours = shown["share_of_people_in_high_need_areas"]
     mine = f"the share of your people who do is {HIDDEN}"
@@ -731,6 +768,17 @@ def _answer(figures: list[Figure], priority: Table) -> str:
         f"{number(shown['share_of_need_in_high_need_areas'])}% of the people in "
         f"need live in {places}, and {mine}.{look_first(priority, LOWEST)}"
     )
+
+
+def _answer_for_one_place(reach: float | None) -> str:
+    """Say that one place alone cannot be set against any other."""
+    answer = (
+        "Only one local authority is compared, so the analysis cannot say "
+        "where need is high and your reach is low."
+    )
+    if reach is None:
+        return answer
+    return f"{answer} Across it you reached {number(reach)} people per 100 in need."
 
 
 def _choices(
