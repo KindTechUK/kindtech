@@ -1,87 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/examples/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/examples/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/api/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/api/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/api/cli/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/api/cli/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/api/connector/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/api/connector/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/api/data-sources/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/api/data-sources/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/api/geo/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/api/geo/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/api/imd/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/api/imd/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/api/lenses/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/api/lenses/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/api/ons/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/api/ons/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/api/postcodes/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/api/postcodes/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/blog/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/blog/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/blog/api-discovery/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/blog/api-discovery/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/blog/introduction/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/blog/introduction/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/case-studies/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/case-studies/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/case-studies/cal-vulnerable-client/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/case-studies/cal-vulnerable-client/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/case-studies/material-focus-recycling/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/case-studies/material-focus-recycling/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/case-studies/smart-works-woman-unemployment/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/case-studies/smart-works-woman-unemployment/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/case-studies/sobus-bame-analysis/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/case-studies/sobus-bame-analysis/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/case-studies/starlight-children-mapping/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/case-studies/starlight-children-mapping/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
     <url>
-         <loc>https://kindtechuk.github.io/kindtech/faq/</loc>
+         <loc>https://kindtechuk.github.io/uk-open-data/faq/</loc>
          <lastmod>2026-11-19</lastmod>
     </url>
 </urlset>

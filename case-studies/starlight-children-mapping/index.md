@@ -72,11 +72,11 @@ Starlight Children's Foundation needed to understand where there is overlap betw
 ### Reproduction
 
 A runnable, end-to-end reproduction lives in
-[`examples/starlight_play_provision.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py)
+[`examples/starlight_play_provision.py`](https://github.com/KindTechUK/uk-open-data/blob/main/examples/starlight_play_provision.py)
 (a [marimo](https://marimo.io/) notebook). It maps synthetic provision against
 need over England's real NHS commissioning geography:
 
-[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py)
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/starlight_play_provision.py)
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with `uv run marimo edit examples/starlight_play_provision.py`.
 

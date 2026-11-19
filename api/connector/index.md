@@ -28,7 +28,7 @@ configuration, with the path to your checkout:
     "kindtech": {
       "command": "uv",
       "args": [
-        "run", "--directory", "/path/to/kindtech", "--extra", "connector",
+        "run", "--directory", "/path/to/uk-open-data", "--extra", "connector",
         "python", "-m", "uk_open_data.connector"
       ]
     }

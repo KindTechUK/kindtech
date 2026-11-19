@@ -20,7 +20,7 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
     Browse and load datasets straight from the NOMIS API.
 
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/ons_statistics.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/ons_statistics.py)
 
 -   __Geographic boundaries__
 
@@ -28,7 +28,7 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
     Explore LAD, LSOA and other UK boundary data interactively.
 
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_boundaries.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/geo_boundaries.py)
 
 -   __Boundaries + statistics__
 
@@ -36,13 +36,13 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 
     Join geographic shapes with ONS data and map the result.
 
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_plus_ons.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/geo_plus_ons.py)
 
 </div>
 
 ## Install
 
-Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
+Install [uk-open-data from PyPI](https://pypi.org/project/uk-open-data/):
 
 ```bash
 uv add uk-open-data
@@ -122,7 +122,7 @@ run locally with `uv run marimo edit examples/<notebook>.py`.
 
     Browse and load datasets straight from the NOMIS API.
 
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/ons_statistics.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/ons_statistics.py)
 
 -   __Geographic boundaries__
 
@@ -130,7 +130,7 @@ run locally with `uv run marimo edit examples/<notebook>.py`.
 
     Explore LAD, LSOA and other UK boundary data interactively.
 
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_boundaries.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/geo_boundaries.py)
 
 -   __Boundaries + statistics__
 
@@ -138,7 +138,7 @@ run locally with `uv run marimo edit examples/<notebook>.py`.
 
     Join geographic shapes with ONS data and map the result.
 
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/geo_plus_ons.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/geo_plus_ons.py)
 
 </div>
 
@@ -150,11 +150,11 @@ projects, each chaining several connectors on `geography_code`. See the
 
 | Notebook | Case study |
 |----------|------------|
-| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/smart_works_unemployment.py) | **Smart Works** — women's unemployment vs service reach (Census 2021 + LAD boundaries) |
-| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py) | **Citizens Advice Lewisham** — deprivation vs service usage (postcodes + IMD + LSOA boundaries) |
-| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/sobus_bame_referrals.py) | **Sobus** — BAME mental-health referrals in Hammersmith & Fulham (outcodes + Census ethnicity) |
-| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py) | **Starlight** — hospital play provision vs need across ICBs |
-| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py) | **Material Focus** — travel time to the nearest recycling point (LAD boundaries + population) |
+| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/smart_works_unemployment.py) | **Smart Works** — women's unemployment vs service reach (Census 2021 + LAD boundaries) |
+| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/cal_vulnerable_client.py) | **Citizens Advice Lewisham** — deprivation vs service usage (postcodes + IMD + LSOA boundaries) |
+| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/sobus_bame_referrals.py) | **Sobus** — BAME mental-health referrals in Hammersmith & Fulham (outcodes + Census ethnicity) |
+| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/starlight_play_provision.py) | **Starlight** — hospital play provision vs need across ICBs |
+| [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/material_focus_recycling.py) | **Material Focus** — travel time to the nearest recycling point (LAD boundaries + population) |
 
 
 # Case Studies
@@ -174,11 +174,11 @@ locally with `uv run marimo edit examples/<notebook>.py`.
 
 | Case study | What it shows | Run |
 |---|---|---|
-| [Smart Works](smart-works-woman-unemployment.md) | Women's unemployment vs service reach (Census 2021 + LAD boundaries) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/smart_works_unemployment.py) |
-| [Citizens Advice Lewisham](cal-vulnerable-client.md) | Deprivation vs service usage (postcodes + IMD + LSOA boundaries) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py) |
-| [Sobus](sobus-bame-analysis.md) | BAME mental-health referrals in Hammersmith & Fulham (outcodes + Census ethnicity) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/sobus_bame_referrals.py) |
-| [Starlight](starlight-children-mapping.md) | Hospital play provision vs need across ICBs | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py) |
-| [Material Focus](material-focus-recycling.md) | Travel time to the nearest recycling point (LAD boundaries + population) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py) |
+| [Smart Works](smart-works-woman-unemployment.md) | Women's unemployment vs service reach (Census 2021 + LAD boundaries) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/smart_works_unemployment.py) |
+| [Citizens Advice Lewisham](cal-vulnerable-client.md) | Deprivation vs service usage (postcodes + IMD + LSOA boundaries) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/cal_vulnerable_client.py) |
+| [Sobus](sobus-bame-analysis.md) | BAME mental-health referrals in Hammersmith & Fulham (outcodes + Census ethnicity) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/sobus_bame_referrals.py) |
+| [Starlight](starlight-children-mapping.md) | Hospital play provision vs need across ICBs | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/starlight_play_provision.py) |
+| [Material Focus](material-focus-recycling.md) | Travel time to the nearest recycling point (LAD boundaries + population) | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/material_focus_recycling.py) |
 
 ## How each study is structured
 
@@ -191,7 +191,7 @@ locally with `uv run marimo edit examples/<notebook>.py`.
 ## Have a case study to share?
 
 Using KindTech in your own work? We'd love to feature it — open an issue or PR
-on the [GitHub repository](https://github.com/KindTechUK/kindtech).
+on the [GitHub repository](https://github.com/KindTechUK/uk-open-data).
 
 
 ## CAL Vulnerable Client Analysis
@@ -256,11 +256,11 @@ Citizens Advice Lewisham (CAL) needed to identify 'vulnerability hotspots' - are
 ### Reproduction
 
 A runnable, end-to-end reproduction lives in
-[`examples/cal_vulnerable_client.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py)
+[`examples/cal_vulnerable_client.py`](https://github.com/KindTechUK/uk-open-data/blob/main/examples/cal_vulnerable_client.py)
 (a [marimo](https://marimo.io/) notebook). It chains three KindTech connectors,
 all joining on the 2021 LSOA `geography_code`:
 
-[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py)
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/cal_vulnerable_client.py)
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with `uv run marimo edit examples/cal_vulnerable_client.py`.
 
@@ -379,11 +379,11 @@ Or
 ### Reproduction
 
 A runnable, end-to-end reproduction lives in
-[`examples/material_focus_recycling.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py)
+[`examples/material_focus_recycling.py`](https://github.com/KindTechUK/uk-open-data/blob/main/examples/material_focus_recycling.py)
 (a [marimo](https://marimo.io/) notebook). It builds the headline travel-time
 map from two KindTech connectors, joining on `geography_code`:
 
-[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py)
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/material_focus_recycling.py)
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with `uv run marimo edit examples/material_focus_recycling.py`.
 
@@ -534,12 +534,12 @@ Smart Works needed to identify gaps in their service provision and optimize thei
 ### Reproduction
 
 A runnable, end-to-end reproduction lives in
-[`examples/smart_works_unemployment.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/smart_works_unemployment.py)
+[`examples/smart_works_unemployment.py`](https://github.com/KindTechUK/uk-open-data/blob/main/examples/smart_works_unemployment.py)
 (a [marimo](https://marimo.io/) notebook). It uses only the public KindTech
 API plus a deterministic synthetic client list (the real client records are
 private):
 
-[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/smart_works_unemployment.py)
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/smart_works_unemployment.py)
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with `uv run marimo edit examples/smart_works_unemployment.py`.
 
@@ -666,11 +666,11 @@ The project successfully obtained data from multiple sources to provide a compre
 ### Reproduction
 
 A runnable, end-to-end reproduction lives in
-[`examples/sobus_bame_referrals.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/sobus_bame_referrals.py)
+[`examples/sobus_bame_referrals.py`](https://github.com/KindTechUK/uk-open-data/blob/main/examples/sobus_bame_referrals.py)
 (a [marimo](https://marimo.io/) notebook). It chains three KindTech connectors,
 all joining on the 2021 LSOA `geography_code`:
 
-[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/sobus_bame_referrals.py)
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/sobus_bame_referrals.py)
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with `uv run marimo edit examples/sobus_bame_referrals.py`.
 
@@ -822,11 +822,11 @@ Starlight Children's Foundation needed to understand where there is overlap betw
 ### Reproduction
 
 A runnable, end-to-end reproduction lives in
-[`examples/starlight_play_provision.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py)
+[`examples/starlight_play_provision.py`](https://github.com/KindTechUK/uk-open-data/blob/main/examples/starlight_play_provision.py)
 (a [marimo](https://marimo.io/) notebook). It maps synthetic provision against
 need over England's real NHS commissioning geography:
 
-[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/starlight_play_provision.py)
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/starlight_play_provision.py)
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with `uv run marimo edit examples/starlight_play_provision.py`.
 
@@ -1101,7 +1101,7 @@ configuration, with the path to your checkout:
     "kindtech": {
       "command": "uv",
       "args": [
-        "run", "--directory", "/path/to/kindtech", "--extra", "connector",
+        "run", "--directory", "/path/to/uk-open-data", "--extra", "connector",
         "python", "-m", "uk_open_data.connector"
       ]
     }
@@ -3291,8 +3291,8 @@ each new module, and include any bundled data in the package configuration.
 ### Sources
 
 - [API reference](../api/index.md): available modules and their imports.
-- [Package configuration](https://github.com/KindTechUK/kindtech/blob/v0.1.0/pyproject.toml): one distribution name and version.
-- [Released package tree](https://github.com/KindTechUK/kindtech/tree/v0.1.0/src/kindtech): subpackages included in 0.1.0.
+- [Package configuration](https://github.com/KindTechUK/uk-open-data/blob/v0.1.0/pyproject.toml): one distribution name and version.
+- [Released package tree](https://github.com/KindTechUK/uk-open-data/tree/v0.1.0/src/kindtech): subpackages included in 0.1.0.
 
 Check the package configuration and tagged source tree when the package layout
 changes or a new release adds modules.
@@ -3311,8 +3311,8 @@ version match before publishing the wheel and source distribution.
 
 ### Sources
 
-- [Successful first release](https://github.com/KindTechUK/kindtech/actions/runs/35527839991): the build and Trusted Publishing run.
-- [Release workflow](https://github.com/KindTechUK/kindtech/blob/v0.1.0/.github/workflows/release.yml): tag/version checks and publication steps.
+- [Successful first release](https://github.com/KindTechUK/uk-open-data/actions/runs/35527839991): the build and Trusted Publishing run.
+- [Release workflow](https://github.com/KindTechUK/uk-open-data/blob/v0.1.0/.github/workflows/release.yml): tag/version checks and publication steps.
 
 Recheck the PyPI project and workflow configuration before a future release.
 
@@ -3423,7 +3423,7 @@ KindTech is a lightweight Python library for accessing UK public data. It wraps 
 
 ## Getting Started
 
-Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
+Install [uk-open-data from PyPI](https://pypi.org/project/uk-open-data/):
 
 ```bash
 uv add uk-open-data

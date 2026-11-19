@@ -29,8 +29,8 @@ each new module, and include any bundled data in the package configuration.
 ### Sources
 
 - [API reference](../api/index.md): available modules and their imports.
-- [Package configuration](https://github.com/KindTechUK/kindtech/blob/v0.1.0/pyproject.toml): one distribution name and version.
-- [Released package tree](https://github.com/KindTechUK/kindtech/tree/v0.1.0/src/kindtech): subpackages included in 0.1.0.
+- [Package configuration](https://github.com/KindTechUK/uk-open-data/blob/v0.1.0/pyproject.toml): one distribution name and version.
+- [Released package tree](https://github.com/KindTechUK/uk-open-data/tree/v0.1.0/src/kindtech): subpackages included in 0.1.0.
 
 Check the package configuration and tagged source tree when the package layout
 changes or a new release adds modules.
@@ -49,8 +49,8 @@ version match before publishing the wheel and source distribution.
 
 ### Sources
 
-- [Successful first release](https://github.com/KindTechUK/kindtech/actions/runs/35527839991): the build and Trusted Publishing run.
-- [Release workflow](https://github.com/KindTechUK/kindtech/blob/v0.1.0/.github/workflows/release.yml): tag/version checks and publication steps.
+- [Successful first release](https://github.com/KindTechUK/uk-open-data/actions/runs/35527839991): the build and Trusted Publishing run.
+- [Release workflow](https://github.com/KindTechUK/uk-open-data/blob/v0.1.0/.github/workflows/release.yml): tag/version checks and publication steps.
 
 Recheck the PyPI project and workflow configuration before a future release.
 
