@@ -11,7 +11,7 @@ pytest.importorskip("mcp")
 
 from mcp import Client  # noqa: E402
 
-from uk_open_data.analyses import _registry  # noqa: E402
+from uk_open_data.analyses import DOORS, RUNS_LOGGER  # noqa: E402
 from uk_open_data.connector import (  # noqa: E402
     PrivacyError,
     analyses,
@@ -234,9 +234,7 @@ SMALL_REACH_COUNTS = [
 def _runs_counted(caplog: pytest.LogCaptureFixture) -> list[str]:
     """The lines written to the logger a host counts answers from."""
     return [
-        record.getMessage()
-        for record in caplog.records
-        if record.name == command.RUNS_LOGGER
+        record.getMessage() for record in caplog.records if record.name == RUNS_LOGGER
     ]
 
 
@@ -328,9 +326,8 @@ def test_the_count_takes_its_words_from_the_result() -> None:
     ]
 
 
-def test_the_command_counts_from_the_engines_logger() -> None:
-    assert command.RUNS_LOGGER == _registry.RUNS_LOGGER
-    assert "chat" in _registry.DOORS
+def test_chat_is_a_door_the_engine_counts() -> None:
+    assert analyses.CHAT in DOORS
 
 
 def test_the_command_keeps_the_count_whatever_the_log_level(
@@ -341,7 +338,7 @@ def test_the_command_keeps_the_count_whatever_the_log_level(
             return None
 
     monkeypatch.setattr("uk_open_data.connector.build_server", Server)
-    runs = logging.getLogger(command.RUNS_LOGGER)
+    runs = logging.getLogger(RUNS_LOGGER)
     before = runs.level
     runs.setLevel(logging.WARNING)
 

@@ -5,8 +5,8 @@ import logging
 import sys
 from collections.abc import Sequence
 
-# The engine's logger for answers given, which a host counts from its own logs.
-RUNS_LOGGER = "uk_open_data.runs"
+from uk_open_data.analyses import RUNS_LOGGER
+
 STDIO = "stdio"
 STREAMABLE_HTTP = "streamable-http"
 
