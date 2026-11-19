@@ -13,8 +13,10 @@ import pytest
 
 from uk_open_data.analyses import (
     AnalysisInputError,
+    Figure,
     describe_analysis,
     list_analyses,
+    reach_deprivation,
     register_analysis,
     run_analysis,
 )
@@ -535,6 +537,72 @@ def test_result_explains_itself(world):
     # A reader must not take every hidden count for a small one.
     assert any("not always small" in note for note in result.privacy.notes)
     json.dumps(result.to_dict())
+
+
+# --- the answer ------------------------------------------------------------
+
+MOST_DEPRIVED_ANSWER = (
+    "Of your people in the area you serve, {ours}% live in the 20% most "
+    "deprived neighbourhoods in England. Of everyone who lives in that area, "
+    "20.0% do, so you reach those neighbourhoods {verdict} their share."
+)
+
+
+def test_answer_opens_the_result_with_the_question_answered(world):
+    result = world.run()
+    assert result.answer == MOST_DEPRIVED_ANSWER.format(
+        ours="68.6", verdict="more than"
+    )
+    assert result.key_figures == (
+        "share_most_deprived_20",
+        "catchment_share_most_deprived_20",
+        "reach_per_1000_most_deprived_20",
+    )
+    payload = result.to_dict()
+    assert payload["answer"] == result.answer
+    assert payload["key_figures"] == list(result.key_figures)
+
+
+@pytest.mark.parametrize(
+    ("people", "ours", "verdict"),
+    [
+        ([(1, 5), (6, 45)], "10.0", "less than"),
+        ([(1, 10), (2, 10), (5, 80)], "20.0", "in line with"),
+    ],
+)
+def test_answer_says_which_way_the_comparison_falls(people, ours, verdict):
+    world = _World()
+    for decile, number in people:
+        world.add(0, decile, number)
+    assert world.run().answer == MOST_DEPRIVED_ANSWER.format(ours=ours, verdict=verdict)
+
+
+def test_answer_does_not_give_away_a_hidden_share():
+    world = _World()
+    world.add(0, 1, 3)  # hidden, and so is the share that rests on it
+    world.add(0, 3, 10)
+    world.add(0, 6, 20)
+    assert world.run().answer == (
+        "Of everyone who lives in the area you serve, 20.0% live in the 20% "
+        "most deprived neighbourhoods in England. The share of your people who "
+        "do is hidden to protect a small count."
+    )
+
+
+def test_answer_when_the_area_has_no_deprived_neighbourhood():
+    figures = [
+        Figure("share_most_deprived_20", "", 0.0, "percent"),
+        Figure("catchment_share_most_deprived_20", "", 0.0, "percent"),
+    ]
+    assert reach_deprivation._answer(figures) == (
+        "No neighbourhood in the area you serve is among the 20% most deprived "
+        "in England, so none of your people there live in one."
+    )
+
+
+def test_key_figures_are_figures_of_the_result(world):
+    result = world.run()
+    assert {figure.id for figure in result.figures} >= set(result.key_figures)
 
 
 # --- the index kept on this machine ----------------------------------------

@@ -112,6 +112,14 @@ def test_analysis_run_prints_a_report(index, counts_file, capsys):
     assert "Catchment neighbourhoods" not in out  # the map table is left out
 
 
+def test_the_report_opens_with_the_answer(index, counts_file, capsys):
+    assert main(_run_args(counts_file)) == EXIT_OK
+    lines = capsys.readouterr().out.splitlines()
+    # The title, the question, then the answer, before any figure.
+    assert lines[3].startswith("Of your people in the area you serve, 70.0% live")
+    assert lines.index("Figures") == 5
+
+
 def test_analysis_run_json_with_options(index, counts_file, capsys):
     args = _run_args(
         counts_file,

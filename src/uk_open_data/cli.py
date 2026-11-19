@@ -342,7 +342,7 @@ def _describe_text(info: AnalysisInfo) -> str:
 
 def _report_text(info: AnalysisInfo, result: AnalysisResult) -> str:
     """Lay out a result as a plain-text report."""
-    lines = [info.title, info.question, "", "Figures"]
+    lines = [info.title, info.question, "", result.answer, "", "Figures"]
     lines += [
         f"  {figure.label}: {_figure_value(figure.value, figure.unit, figure.note)}"
         for figure in result.figures

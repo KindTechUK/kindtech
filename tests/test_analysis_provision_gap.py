@@ -182,6 +182,26 @@ def test_bad_need_is_rejected(nomis, need):
         _run(SPREAD, options={"need": need})
 
 
+# --- the answer ------------------------------------------------------------
+
+
+def test_answer_says_where_need_is_high_and_provision_is_thin(nomis):
+    result = _run(SPREAD)
+    assert result.answer == (
+        "86.8% of the people in need live in the 4 local authorities with high "
+        "need, and 68.8% of your provision is there. The places to look at "
+        "first, with high need and the thinnest provision, are Birmingham, "
+        "Cardiff and Manchester."
+    )
+    assert result.key_figures == (
+        "share_of_provision_in_high_need_areas",
+        "share_of_need_in_high_need_areas",
+        "high_need_areas_without_provision",
+    )
+    assert {figure.id for figure in result.figures} >= set(result.key_figures)
+    assert result.to_dict()["answer"] == result.answer
+
+
 # --- reading the volumes ---------------------------------------------------
 
 

@@ -15,6 +15,13 @@ from statistics import median
 from typing import Any
 
 import uk_open_data
+from uk_open_data.analyses._answers import (
+    HIDDEN,
+    high_need_places,
+    look_first,
+    number,
+    values,
+)
 from uk_open_data.analyses._inputs import is_blank, to_count
 from uk_open_data.analyses._model import (
     Analysis,
@@ -76,6 +83,12 @@ from uk_open_data.analyses._steps import (
 
 ANALYSIS_ID = "need-reach"
 ANALYSIS_VERSION = "0.1"
+KEY_FIGURES = (
+    "share_of_people_in_high_need_areas",
+    "share_of_need_in_high_need_areas",
+    "high_need_areas_without_people",
+)
+LOWEST = "your lowest reach"
 NO_REACH = "None, or count hidden"
 REACH_BANDS = (NO_REACH, "Lower reach", "Middle reach", "Higher reach")
 # Where people go when their local authority is not in the need figures. The
@@ -273,6 +286,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         sources=tuple(trail.sources),
         privacy=_privacy(threshold, trail),
         charts=CHARTS,
+        answer=_answer(figures, tables[0]),
+        key_figures=KEY_FIGURES,
     )
 
 
@@ -702,6 +717,20 @@ def _share_in_high_need(
 
 
 # --- what the person needs to know -----------------------------------------
+
+
+def _answer(figures: list[Figure], priority: Table) -> str:
+    """Say where need is high and how much of the charity's reach is there."""
+    shown = values(figures)
+    places = high_need_places(shown["high_need_areas"])
+    ours = shown["share_of_people_in_high_need_areas"]
+    mine = f"the share of your people who do is {HIDDEN}"
+    if ours is not None:
+        mine = f"{number(ours)}% of your people do"
+    return (
+        f"{number(shown['share_of_need_in_high_need_areas'])}% of the people in "
+        f"need live in {places}, and {mine}.{look_first(priority, LOWEST)}"
+    )
 
 
 def _choices(
