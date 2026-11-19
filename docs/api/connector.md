@@ -153,9 +153,42 @@ answer["result"]["figures"]   # headline figures, small counts hidden
 answer["result"]["tables"]    # the places to look at first
 ```
 
-`status` is `ok`, `input_problem` (`problems` lists what to fix, for example
-an option the lens needs), `unknown_lens` or `unavailable` (a data source the
-lens needs could not be reached).
+`status` is `ok`, `would_hide_counts`, `input_problem` (`problems` lists what
+to fix, for example an option the lens needs), `unknown_lens` or `unavailable`
+(a data source the lens needs could not be reached).
+
+#### When counts would be hidden
+
+A lens hides a count from 1 to 4, and where it hides one count in a table it
+hides a second, so the first cannot be worked out from the total. In a chat
+that second count can be a number the person has just typed, which reads as a
+fault. So when the answer would hide any figure or table row, the first call
+holds it back and says so:
+
+```python
+answer = run_lens_on_counts(
+    "reach-deprivation",
+    [
+        {"lsoa_code": "E01003189", "count": 3},
+        {"lsoa_code": "E01003190", "count": 30},
+    ],
+)
+answer["status"]       # "would_hide_counts"
+answer["would_hide"]   # {"figures_and_rows": 3, "counts_below": 5}
+answer["choices"]      # combine the small counts first, or run as it is
+```
+
+The answer holds no figure from the run and nothing from the rows. The person
+then chooses. They can add each small count to a neighbouring area's count, or
+to a broader group's, and send the rows again, saying with the figures which
+rows were combined. Or they can take the result with those counts hidden:
+
+```python
+answer = run_lens_on_counts(lens_id, counts, hidden_counts="accept")
+answer["status"]       # "ok"
+```
+
+A lens that hides nothing, such as the provision gap lens, never asks.
 
 When you host the connector, keep the public figures three of the lenses
 compare with on the server when the image is built, so a run does not wait on

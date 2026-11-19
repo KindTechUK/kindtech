@@ -11,7 +11,7 @@ already-totalled input is accepted, and the privacy guard on what comes back.
 
 import logging
 import re
-from typing import Any
+from typing import Any, Literal
 
 import requests
 
@@ -41,6 +41,25 @@ ROWS_LEFT_OUT = (
 MAP_NEEDS_ROWS = (
     "The map in the result is drawn from one of them, so it cannot be drawn from "
     "this answer."
+)
+WOULD_HIDE = (
+    "Nothing has been shown yet. With these rows, {hidden} of the figures and "
+    "table rows in the answer would come back hidden. This lens hides a count "
+    "from 1 to {highest}, to protect the people behind it. Where it hides one "
+    "count in a table it hides a second, so the first cannot be worked out "
+    "from the total, and that second count can be a larger number the person "
+    "has just given. Tell the person this before going on and ask which of "
+    "the choices they want. Do not choose for them."
+)
+COMBINE_FIRST = (
+    "Combine first. Add each count under {below} to the count of a "
+    "neighbouring area, or of a broader group, and send the rows again. Fewer "
+    "counts, or none, are then hidden. Say with the figures which rows were "
+    "combined, because those figures then describe the two together."
+)
+RUN_AS_IT_IS = (
+    "Run as it is. Call again with the same rows and hidden_counts set to "
+    "'accept'. The answer comes back with those counts hidden."
 )
 SHOW_WITH_FIGURES = (
     "Show the checks and caveats next to the figures. The checks are for the "
@@ -114,6 +133,7 @@ def run_lens_on_counts(
     lens_id: str,
     counts: list[dict[str, Any]],
     options: dict[str, Any] | None = None,
+    hidden_counts: Literal["ask", "accept"] = "ask",
 ) -> dict[str, Any]:
     """Run a lens on data that is already totalled by area or by group.
 
@@ -128,13 +148,19 @@ def run_lens_on_counts(
             given as text, such as ``"1,200"``, is read as a number.
         options: Lens options to change. Most have a default; where a lens
             needs one, such as the catchment, the answer says so.
+        hidden_counts: What to do when the answer would hide counts.
+            ``"ask"`` holds the answer back and says so, so the person can
+            combine small counts first; ``"accept"`` returns it with those
+            counts hidden.
 
     Returns:
-        ``status`` is ``ok``, ``input_problem`` (``problems`` lists what to
-        fix), ``unknown_lens`` or ``unavailable`` (a data source the lens
-        needs could not be reached). When ok, ``result`` is the lens result as
-        plain JSON types without the rows of detail tables, and
-        ``rows_left_out`` names those tables and says why. It never repeats a
+        ``status`` is ``ok``, ``would_hide_counts`` (``would_hide`` says how
+        many and ``choices`` what the person can do), ``input_problem``
+        (``problems`` lists what to fix), ``unknown_lens`` or ``unavailable``
+        (a data source the lens needs could not be reached). When ok,
+        ``result`` is the lens result as plain JSON types without the rows of
+        detail tables, and ``rows_left_out`` names those tables and says why.
+        It never repeats a
         value that was passed in, except in a role the lens marks
         ``reported``: the name or code of a public place, such as a local
         authority, or one of the group names the role lists.
@@ -162,6 +188,9 @@ def run_lens_on_counts(
         logger.warning("A data source could not be reached: %s", type(error).__name__)
         return {"status": "unavailable", "message": UNAVAILABLE}
     payload = result.to_dict(include_detail=False)
+    hidden = _hidden_in_answer(payload)
+    if hidden and hidden_counts != "accept":
+        return _would_hide_counts(hidden, payload["privacy"]["suppress_below"])
     answer = {
         "status": "ok",
         "result": ensure_totals_only(payload, guarded),
@@ -171,6 +200,30 @@ def run_lens_on_counts(
     if left_out:
         answer["rows_left_out"] = left_out
     return answer
+
+
+def _hidden_in_answer(payload: dict[str, Any]) -> int:
+    """How many figures and table rows in an answer have their count hidden.
+
+    Rows of detail tables are not counted: they are left out of an answer.
+    """
+    rows = [row for table in payload.get("tables", []) for row in table["rows"]]
+    shown = [*payload.get("figures", []), *rows]
+    return sum(1 for item in shown if item.get("suppressed"))
+
+
+def _would_hide_counts(hidden: int, below: int) -> dict[str, Any]:
+    """The answer given in place of a result that would hide counts.
+
+    It holds no figure from the run and nothing from the rows, only how many
+    counts would be hidden and what the person can do about it.
+    """
+    return {
+        "status": "would_hide_counts",
+        "message": WOULD_HIDE.format(hidden=hidden, highest=below - 1),
+        "would_hide": {"figures_and_rows": hidden, "counts_below": below},
+        "choices": [COMBINE_FIRST.format(below=below), RUN_AS_IT_IS],
+    }
 
 
 def _rows_left_out(payload: dict[str, Any]) -> dict[str, Any]:
