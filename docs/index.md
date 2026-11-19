@@ -53,7 +53,7 @@ from kindtech import load_geodata, load_ons, geodata_to_properties
 import pandas as pd  # or polars
 
 # Load LAD boundaries (GeoJSON) and extract properties
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
 
 # Load ONS statistics — columns are normalised automatically
