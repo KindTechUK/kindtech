@@ -1278,7 +1278,8 @@ though the ONS Geography team has used
 | Endpoint | Description |
 |---|---|
 | `https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services?f=json` | Service catalog (JSON) |
-| `.../{service_name}/FeatureServer/0/query?where=1%3D1&outFields=*&f=geojson` | Query features as GeoJSON |
+| `.../{service_name}/FeatureServer?f=json` | The layers a service holds. Most hold one, numbered 0, but not all |
+| `.../{service_name}/FeatureServer/{layer}/query?where=1%3D1&outFields=*&f=geojson` | Query features as GeoJSON |
 | `https://www.arcgis.com/sharing/rest/portals/ESMARspQHYMw9BZ9?f=json` | Organisation metadata |
 | `https://www.arcgis.com/sharing/rest/community/users/ONSGeography_data?f=json` | User profile |
 

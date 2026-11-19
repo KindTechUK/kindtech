@@ -1791,7 +1791,11 @@ though the ONS Geography team has used
 <td>Service catalog (JSON)</td>
 </tr>
 <tr>
-<td><code>.../{service_name}/FeatureServer/0/query?where=1%3D1&amp;outFields=*&amp;f=geojson</code></td>
+<td><code>.../{service_name}/FeatureServer?f=json</code></td>
+<td>The layers a service holds. Most hold one, numbered 0, but not all</td>
+</tr>
+<tr>
+<td><code>.../{service_name}/FeatureServer/{layer}/query?where=1%3D1&amp;outFields=*&amp;f=geojson</code></td>
 <td>Query features as GeoJSON</td>
 </tr>
 <tr>
