@@ -12,7 +12,12 @@ import pytest
 import requests
 
 from uk_open_data.analyses import _need, need_reach, who_we_miss
-from uk_open_data.connector import PrivacyError, find_lens, run_lens_on_counts
+from uk_open_data.connector import (
+    PrivacyError,
+    find_lens,
+    lenses,
+    run_lens_on_counts,
+)
 
 COUNTS = [
     {"lsoa_code": "E01000001", "count": 12},
@@ -112,10 +117,18 @@ class TestRunLensOnCounts:
     def test_lens_without_a_counts_mode(self) -> None:
         answer = run_lens_on_counts("volunteer-travel", COUNTS)
 
-        assert answer == {
-            "status": "input_problem",
-            "problems": ["This lens cannot run on counts yet."],
-        }
+        assert answer["status"] == "needs_rows"
+        assert "cannot run in a chat" in answer["message"]
+        assert "lens page or with the command line tool" in answer["message"]
+
+    def test_find_lens_says_which_lenses_cannot_run_on_totals(self) -> None:
+        answer = find_lens()
+
+        assert answer["needs_rows"]["lenses"] == ["volunteer-travel"]
+        assert answer["needs_rows"]["note"] == lenses.NEEDS_ROWS
+
+    def test_find_lens_says_nothing_of_it_when_every_listed_lens_can(self) -> None:
+        assert "needs_rows" not in find_lens("deprived neighbourhoods")
 
     @pytest.mark.parametrize("counts", [[], "E01000001", None, ["E01000001"]])
     def test_malformed_counts(self, counts: object) -> None:
@@ -638,6 +651,24 @@ class TestWithTheFourthLens:
 
         assert answer["status"] == "input_problem"
         assert "'top'" in answer["problems"][0]
+
+
+SITES = [{"latitude": 51.4613, "longitude": -0.0117}]
+
+
+@pytest.mark.parametrize("rows", [SITES, COUNTS, [{"postcode": "ZZ99 9KC"}], []])
+def test_the_fifth_lens_says_plainly_that_it_cannot_run_in_a_chat(
+    rows: list[dict],
+) -> None:
+    answer = run_lens_on_counts("access-distance", rows)
+
+    assert answer == {"status": "needs_rows", "message": lenses.NEEDS_ROWS}
+
+
+def test_find_lens_names_the_fifth_lens_as_one_that_needs_rows() -> None:
+    answer = find_lens()
+
+    assert answer["needs_rows"]["lenses"] == ["access-distance"]
 
 
 @pytest.mark.parametrize(

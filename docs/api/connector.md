@@ -56,6 +56,11 @@ uv run python -m uk_open_data.connector --transport streamable-http --port 8000
 `query` is the question in the person's words, or left out to list every lens.
 The answer holds each lens description, best match first.
 
+A lens that takes no totals cannot run in a chat. `needs_rows` in the answer
+names the listed lenses of that kind and says where they can run. The access
+and distance lens is one: it needs a row per site that says where the site
+is.
+
 ### `describe_place`
 
 `place` is a local authority name or code, a 2021 LSOA code or a postcode
@@ -154,8 +159,13 @@ answer["result"]["tables"]    # the places to look at first
 ```
 
 `status` is `ok`, `would_hide_counts`, `input_problem` (`problems` lists what
-to fix, for example an option the lens needs), `unknown_lens` or `unavailable`
-(a data source the lens needs could not be reached).
+to fix, for example an option the lens needs), `needs_rows`, `unknown_lens` or
+`unavailable` (a data source the lens needs could not be reached).
+
+`needs_rows` is the answer for a lens that takes no totals, such as the access
+and distance lens, whatever rows are passed. Its message says the lens cannot
+run in a chat, because it needs a row for each site and this tool takes totals
+only, and that it runs on the lens page or with the command line tool.
 
 #### When counts would be hidden
 
