@@ -56,6 +56,14 @@ NEED = (
     ("E08000025", "Birmingham", 40000),
 )
 HIGH_NEED = {"Lewisham", "Cardiff", "Manchester", "Birmingham"}
+RESIDENTS_TABLE = "NM_2028_1"
+# Invented residents: fifty for each person in need, but for the place with
+# most need, which is so large that its rate is the lowest, and the place with
+# least, which is so small that its rate is the highest.
+RESIDENTS = {name: need * 50 for _, name, need in NEED} | {
+    "Birmingham": 40000 * 200,
+    "Isles of Scilly": 20 * 10,
+}
 
 
 class _Nomis:
@@ -63,12 +71,20 @@ class _Nomis:
 
     def __init__(self) -> None:
         self.asked: list[tuple[str, dict]] = []
+        # Residents by place name, given when the table of residents is asked
+        # for. A place with none here has as many residents as people in need.
+        self.residents: dict[str, int] = {}
 
     def load(self, dataset: str, **query) -> pd.DataFrame:
         """Return each authority's need split over four rows, as Nomis would."""
         self.asked.append((dataset, query))
+        people = self.residents if dataset == RESIDENTS_TABLE else {}
         rows = [
-            {"geography_code": code, "geography_name": name, "obs_value": need / 4}
+            {
+                "geography_code": code,
+                "geography_name": name,
+                "obs_value": people.get(name, need) / 4,
+            }
             for code, name, need in NEED
             for _ in range(4)
         ]
@@ -175,14 +191,15 @@ def test_the_default_need_is_unemployment_from_the_census(nomis):
 
 
 def test_need_figures_are_fetched_once_and_kept(nomis):
+    # The first run fetches the need and the residents the map sets it against.
     _run(_counts(Lewisham=60))
     _run(_counts(Greenwich=30), options={"catchment": "England"})
-    assert len(nomis.asked) == 1
+    assert [dataset for dataset, _ in nomis.asked] == ["NM_2124_1", RESIDENTS_TABLE]
     _run(_counts(Lewisham=60), options={"need": "unemployed_women"})
-    assert len(nomis.asked) == 2
+    assert len(nomis.asked) == 3
     clear_need_cache()
     _run(_counts(Lewisham=60))
-    assert len(nomis.asked) == 3
+    assert len(nomis.asked) == 5
 
 
 # --- the answer ------------------------------------------------------------
@@ -311,9 +328,9 @@ def test_each_need_keeps_its_own_figures(nomis):
     assert need_figures_path("unemployed_women") is not None
     assert need_figures_path("unemployed") is None
     _run(_counts(Lewisham=60))
-    assert len(nomis.asked) == 1
+    assert len(nomis.asked) == 2  # the need, and the residents for the map
     _run(_counts(Lewisham=60), options={"need": "unemployed_women"})
-    assert len(nomis.asked) == 1
+    assert len(nomis.asked) == 2
 
 
 def test_download_fetches_and_keeps_the_figures(nomis):
@@ -854,6 +871,7 @@ def test_no_postcode_reaches_the_result(nomis):
 
 
 def test_map_is_described_by_local_authority(nomis):
+    nomis.residents = RESIDENTS
     result = _run_wide(
         _counts(Lewisham=60, Greenwich=30, Adur=10, Cardiff=3, Manchester=4)
     )
@@ -867,8 +885,21 @@ def test_map_is_described_by_local_authority(nomis):
     assert table.detail is True
     rows = {r["geography_name"]: r for r in table.rows}
     assert {r["need_band"] for r in table.rows} <= set(NEED_BANDS)
-    assert rows["Birmingham"]["need_band"] == "Highest fifth"
-    assert rows["Isles of Scilly"]["need_band"] == "Lowest fifth"
+    # Need is shaded by its rate, so the place with most people in need is
+    # not the darkest for its size alone.
+    assert spec.layers[0].label == "People in need for each 1,000 residents"
+    assert "not darker for its size alone" in spec.layers[0].note
+    assert rows["Birmingham"]["people_in_need_per_1000_residents"] == 5.0
+    assert rows["Birmingham"]["need_band"] == "Lowest fifth"
+    assert rows["Isles of Scilly"]["people_in_need_per_1000_residents"] == 100.0
+    assert rows["Isles of Scilly"]["need_band"] == "Highest fifth"
+    assert rows["Lewisham"]["people_in_need_per_1000_residents"] == 20.0
+    # The list of places still goes by the count.
+    assert rows["Birmingham"]["high_need"] is True
+    choice = next(c for c in result.choices if c.id == "map_need")
+    assert choice.value == spec.layers[0].label
+    assert any(s.title == "Loaded the residents" for s in result.working)
+    assert len(result.sources) == 2
     # Nobody, a hidden count and a hidden count look the same on the map.
     for name in ("Birmingham", "Cardiff", "Manchester"):
         assert rows[name]["reach_band"] == NO_REACH
@@ -896,6 +927,34 @@ def _square(number: int, code: str) -> dict:
     }
 
 
+def test_map_shades_need_by_count_when_the_need_is_every_resident(nomis):
+    nomis.residents = RESIDENTS
+    result = _run_wide(_counts(Lewisham=60), options={"need": "residents"})
+    assert len(nomis.asked) == 1  # residents are the need, and are not asked twice
+    assert result.map.layers[0].label == "People in need"
+    rows = {r["geography_name"]: r for r in result.table("by_local_authority").rows}
+    assert rows["Birmingham"]["people_in_need_per_1000_residents"] is None
+    assert rows["Birmingham"]["need_band"] == "Highest fifth"
+    choice = next(c for c in result.choices if c.id == "map_need")
+    assert choice.value == "People in need"
+
+
+def test_kept_need_figures_keep_the_map_off_the_network_too(nomis):
+    # With the need kept and no residents kept, nothing is fetched and the map
+    # goes by the count. With both kept, it goes by the rate.
+    keep_need_figures("unemployed", NEED, "invented for a test.")
+    by_count = _run_wide(_counts(Lewisham=60))
+    assert by_count.map.layers[0].label == "People in need"
+    choice = next(c for c in by_count.choices if c.id == "map_need")
+    assert "no copy of the residents is kept" in choice.reason
+    residents = [(code, name, RESIDENTS[name]) for code, name, _ in NEED]
+    keep_need_figures("residents", residents, "invented for a test.")
+    by_rate = _run_wide(_counts(Lewisham=60))
+    assert by_rate.map.layers[0].label == "People in need for each 1,000 residents"
+    assert any("A copy kept on this machine" in s.edition for s in by_rate.sources[1:])
+    assert nomis.asked == []
+
+
 def test_map_can_be_drawn(nomis):
     result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
     boundaries = {
@@ -919,6 +978,7 @@ def test_result_explains_itself(nomis):
     assert result.analysis_id == ANALYSIS_ID
     assert [step.title for step in result.working] == [
         "Loaded the need figures",
+        "Loaded the residents",
         "Read the local authority counts",
         "Joined people to the need figures",
         "Set the area to compare",
