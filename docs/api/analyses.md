@@ -248,9 +248,11 @@ under `"focus"` the local authorities that hold a map's neighbourhoods. A map
 of up to 1,000 neighbourhoods or 20 local authorities is drawn large, so its
 outlines come from the full ones with detail finer than 10 or 20 metres left
 out, and so do the places near it, so that neighbours meet. A map of more is
-drawn small and takes outlines simplified to 200 metres. It asks once for
-every local authority at 200 metres, about a megabyte, to find the ones near
-the map. When the places around cannot be fetched, the map is drawn without
+drawn small and takes outlines simplified to 200 metres. It asks for every
+local authority at 200 metres, about a megabyte, to find the ones near the
+map. That answer is kept in memory for the life of the process, so a second
+map does not ask again; `uk_open_data.analyses.maps.clear_outline_cache()`
+forgets it. When the places around cannot be fetched, the map is drawn without
 them and nothing is said.
 
 ## The answer

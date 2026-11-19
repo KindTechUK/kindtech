@@ -6,6 +6,7 @@ import requests
 
 from uk_open_data.analyses import reach_deprivation
 from uk_open_data.analyses.access_distance import clear_centres_cache
+from uk_open_data.analyses.maps import clear_outline_cache
 from uk_open_data.analyses.need_reach import clear_need_cache
 from uk_open_data.analyses.who_we_miss import clear_residents_cache
 from uk_open_data.connector import analyses, maps, places
@@ -70,7 +71,9 @@ def fresh_public_figures():
     clear_need_cache()
     clear_residents_cache()
     clear_centres_cache()
+    clear_outline_cache()
     yield
     clear_need_cache()
     clear_residents_cache()
     clear_centres_cache()
+    clear_outline_cache()
