@@ -1280,6 +1280,10 @@ district such as <code>SE13</code>, or the postcode of a venue or office.</p>
 <p><code>status</code> is <code>found</code>, <code>choose</code> (several places match, listed in <code>matches</code>),
 <code>not_found</code>, <code>not_covered</code> (outside England) or <code>unavailable</code> (a data source
 could not be reached).</p>
+<p>The tool describes places in England only, because the deprivation index it
+reads is England's. A council, code or postcode in Wales gives <code>not_covered</code>
+with a message that says the place is in Wales and that the lenses which
+cover England and Wales still work for it.</p>
 <p>The deprivation index is read from a copy kept on this machine when there is
 one, and the source in the answer then says so. When you host the connector,
 keep it when the image is built (<code>kindtech.imd.download_imd</code>), so the first
@@ -1333,7 +1337,11 @@ changes the lens options.</p>
 or hours. The provision gap lens hides no small figure, because a volume is
 not a count of people, and its result says so.</p>
 <p>The answer holds the lens result without the rows of its detail tables, so an
-assistant is not handed a row per neighbourhood. Rows about individual people,
+assistant is not handed a row per neighbourhood. Such a table comes back with
+its columns and no rows, and <code>rows_left_out</code> in the answer names those tables
+and says they are not empty, so that an assistant does not report "nothing
+found". Where the result's map is drawn from one of them, the note says the
+map cannot be drawn from the answer. Rows about individual people,
 such as one postcode per person, are refused, and so is one row per site.</p>
 <p>A count or volume given as text that is nothing but a number, such as
 <code>"1200"</code> or <code>"1,200"</code>, is read as a number, because assistants often send one

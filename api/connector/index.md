@@ -76,6 +76,11 @@ answer["sources"]           # publisher, edition, licence and link
 `not_found`, `not_covered` (outside England) or `unavailable` (a data source
 could not be reached).
 
+The tool describes places in England only, because the deprivation index it
+reads is England's. A council, code or postcode in Wales gives `not_covered`
+with a message that says the place is in Wales and that the lenses which
+cover England and Wales still work for it.
+
 The deprivation index is read from a copy kept on this machine when there is
 one, and the source in the answer then says so. When you host the connector,
 keep it when the image is built (`kindtech.imd.download_imd`), so the first
@@ -110,7 +115,11 @@ or hours. The provision gap lens hides no small figure, because a volume is
 not a count of people, and its result says so.
 
 The answer holds the lens result without the rows of its detail tables, so an
-assistant is not handed a row per neighbourhood. Rows about individual people,
+assistant is not handed a row per neighbourhood. Such a table comes back with
+its columns and no rows, and `rows_left_out` in the answer names those tables
+and says they are not empty, so that an assistant does not report "nothing
+found". Where the result's map is drawn from one of them, the note says the
+map cannot be drawn from the answer. Rows about individual people,
 such as one postcode per person, are refused, and so is one row per site.
 
 A count or volume given as text that is nothing but a number, such as
