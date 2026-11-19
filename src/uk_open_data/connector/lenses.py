@@ -29,6 +29,14 @@ HOW_TO_RUN = (
     "for areas or for groups (the roles of an input mode marked 'aggregated'). "
     "Never pass rows about individual people."
 )
+NEEDS_ROWS = (
+    "This lens does not run on totals, so it cannot run in a chat. It needs a "
+    "row for each thing it measures, such as one row per site that says where "
+    "the site is, and this tool takes totals only. Run it on the lens page or "
+    "with the command line tool, where those rows are not passed through an "
+    "assistant. Do not try other rows or another lens in its place without "
+    "saying so."
+)
 UNAVAILABLE = (
     "A data source this lens needs could not be reached just now. Try again in "
     "a minute."
@@ -107,6 +115,8 @@ def find_lens(query: str | None = None) -> dict[str, Any]:
         ``lenses`` holds each lens description (see ``AnalysisInfo`` in the lens
         contract), best match first. ``matched`` says how many matched the
         query; when none did, every lens is listed and ``note`` says so.
+        ``needs_rows`` names the listed lenses that cannot run on totals, and
+        so not in a chat, and says where they can run.
     """
     lenses = [info.to_dict() for info in engine.list_analyses()]
     words = _words(query or "")
@@ -122,6 +132,9 @@ def find_lens(query: str | None = None) -> dict[str, Any]:
         "available": len(lenses),
         "how_to_run": HOW_TO_RUN,
     }
+    needs_rows = [lens["id"] for lens in answer["lenses"] if not _count_modes(lens)]
+    if needs_rows:
+        answer["needs_rows"] = {"lenses": needs_rows, "note": NEEDS_ROWS}
     if not lenses:
         answer["note"] = "No lenses are installed."
     elif words and not matched:
@@ -156,7 +169,8 @@ def run_lens_on_counts(
     Returns:
         ``status`` is ``ok``, ``would_hide_counts`` (``would_hide`` says how
         many and ``choices`` what the person can do), ``input_problem``
-        (``problems`` lists what to fix), ``unknown_lens`` or ``unavailable``
+        (``problems`` lists what to fix), ``needs_rows`` (the lens takes no
+        totals, so it cannot run here), ``unknown_lens`` or ``unavailable``
         (a data source the lens needs could not be reached). When ok,
         ``result`` is the lens result as plain JSON types without the rows of
         detail tables, and ``rows_left_out`` names those tables and says why.
@@ -174,6 +188,8 @@ def run_lens_on_counts(
             "message": "There is no lens with that id.",
             "known_lenses": known,
         }
+    if not _count_modes(info):
+        return {"status": "needs_rows", "message": NEEDS_ROWS}
     problems = _count_problems(info, counts)
     if problems:
         return _input_problem(problems)
@@ -244,8 +260,6 @@ def _rows_left_out(payload: dict[str, Any]) -> dict[str, Any]:
 def _count_problems(info: dict[str, Any], counts: object) -> list[str]:
     """What is wrong with ``counts`` for this lens, without repeating values."""
     modes = _count_modes(info)
-    if not modes:
-        return ["This lens cannot run on counts yet."]
     if not isinstance(counts, list) or not counts:
         return ["Pass at least one row of counts."]
     if len(counts) > MAX_COUNT_ROWS:

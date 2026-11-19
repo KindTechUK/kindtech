@@ -134,8 +134,9 @@ def handle_find_lens(
 
     A lens is a fixed analysis, such as "are we reaching people in the most
     deprived neighbourhoods?". Use this first to see which lenses exist, what
-    data each one needs and which options can be changed. Returns lens
-    descriptions only; it reads no data.
+    data each one needs and which options can be changed. A lens named under
+    'needs_rows' takes no totals, so it cannot run in a chat: tell the person
+    where it can run. Returns lens descriptions only; it reads no data.
     """
     return find_lens(query)
 
