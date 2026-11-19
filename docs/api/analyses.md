@@ -90,6 +90,15 @@ the screen. An option has the same label in every analysis that has it:
 The area an analysis looks across has one name wherever a person reads it:
 "the area you serve". `catchment` is only its code name.
 
+A table's columns have plain names too. `table.columns` holds the ids, which a
+program reads, and `table.headings` maps each id to the heading to show, such
+as "Your people per 100 in need" for `people_per_100_in_need`. `table.units`
+gives the unit of each column that has one, named as the units of figures
+are: `"percent"` or `"km"`. Show a table with its headings and units and it
+reads the same on a page, in a chat and on the command line. A place is a
+"Local authority" in most tables and a "Neighbourhood" in the one behind the
+first analysis's map.
+
 An option that takes one of a fixed list of values lists them as `choices`,
 each with a `value` and a `label` a person can read, so a page can show a list
 to pick from. `choices` is empty when the option is free, such as a number or
@@ -853,6 +862,7 @@ analysis keeps:
 4. State every choice and name the option that changes it. Give each option
    a `label`, use the label in quotes whenever a sentence points at the
    option, and pass `option=` or `role=` when you raise `AnalysisInputError`.
+   Give a table `headings` for any column the package has no heading for.
 5. Leave checks for a person to answer.
 6. List anything sent off the machine in `privacy.sent_to_third_parties`.
 7. Answer the question in `answer`, from figures the result shows and nothing
