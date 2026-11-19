@@ -704,6 +704,12 @@ keep_residents(
 | `people_not_matched` | People with no label, or one that matched no census group |
 | `residents` | Residents of the area you serve in the 2021 Census |
 | `groups_under_represented` | Groups you reach less than their share of residents |
+| `share_of_people_first_group` | Share of your people in the first of those groups |
+| `share_of_residents_first_group` | Share of residents in that group |
+
+The last two are the two shares the answer quotes, each with its value before
+rounding. They are there when the answer quotes them: when a group is reached
+less than its share and has people in your data.
 
 The chart `people_against_residents` sets the share of your people in each
 group against the share of residents.
