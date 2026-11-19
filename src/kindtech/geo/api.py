@@ -32,6 +32,11 @@ from ._enums import BoundaryType, CoverageArea, GeographyType, Month
 
 logger = logging.getLogger(__name__)
 
+# A boundary service answers with a few thousand features at most, and says
+# so. The rest are asked for page by page, up to this many pages.
+MAX_PAGES = 500
+FLAG = "exceededTransferLimit"
+
 
 def _resolve_service(
     geography_type: str | GeographyType,
@@ -113,7 +118,10 @@ def load_geodata(
         **filters: Field filters (e.g., LAD21NM="Manchester")
 
     Returns:
-        GeoJSON FeatureCollection as a dictionary.
+        GeoJSON FeatureCollection as a dictionary. A large layer is fetched
+        page by page, so every feature is there. The collection is empty,
+        and an error is logged, when no service matches or a request fails:
+        it is never a part of the layer.
     """
     service = _resolve_service(
         geography_type,
@@ -262,7 +270,10 @@ def _query_arcgis_service(
         filters: Optional field filters to apply.
 
     Returns:
-        GeoJSON FeatureCollection as a dictionary.
+        GeoJSON FeatureCollection as a dictionary. A layer larger than the
+        service gives in one answer is asked for page by page, so the
+        collection is whole. When any request fails, or the service does not
+        page, the collection is empty: never a part of the layer.
     """
     layer_url = f"{service_url}/0"
 
@@ -288,11 +299,53 @@ def _query_arcgis_service(
         if where_clauses:
             params["where"] = " AND ".join(where_clauses)
 
+    empty: dict[str, Any] = {"type": "FeatureCollection", "features": []}
     try:
         logger.info("Querying ArcGIS service: %s", layer_url)
-        response = requests.get(layer_url + "/query", params=params, timeout=60)
-        response.raise_for_status()
-        return response.json()
+        first = _query_page(layer_url, params, 0)
+        features = list(first.get("features") or [])
+        if not features or not _cut_short(first):
+            return first
+        for _ in range(MAX_PAGES):
+            page = _query_page(layer_url, params, len(features))
+            got = page.get("features") or []
+            if got and got[0] == features[0]:
+                # The service ignored the offset and gave the first page again.
+                break
+            features.extend(got)
+            if not got or not _cut_short(page):
+                return _whole_collection(first, features)
     except requests.exceptions.RequestException as e:
         logger.error("Error querying ArcGIS service: %s", e)
-        return {"type": "FeatureCollection", "features": []}
+        return empty
+    logger.error("The ArcGIS service did not stop paging: %s", layer_url)
+    return empty
+
+
+def _query_page(layer_url: str, params: dict[str, Any], offset: int) -> dict[str, Any]:
+    """Ask for one page of a layer, starting after ``offset`` features."""
+    asked = {**params, "resultOffset": offset} if offset else params
+    response = requests.get(layer_url + "/query", params=asked, timeout=60)
+    response.raise_for_status()
+    return response.json()
+
+
+def _cut_short(page: dict[str, Any]) -> bool:
+    """Whether the service says it has more features than it gave.
+
+    The flag is at the top of an answer in the service's own format, and
+    under ``properties`` in a GeoJSON answer.
+    """
+    properties = page.get("properties") or {}
+    return bool(page.get(FLAG) or properties.get(FLAG))
+
+
+def _whole_collection(first: dict[str, Any], features: list[Any]) -> dict[str, Any]:
+    """Put every page's features in one collection that no longer says it is cut."""
+    whole = {key: value for key, value in first.items() if key != FLAG}
+    if isinstance(whole.get("properties"), dict):
+        whole["properties"] = {
+            key: value for key, value in whole["properties"].items() if key != FLAG
+        }
+    whole["features"] = features
+    return whole

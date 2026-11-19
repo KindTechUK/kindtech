@@ -8,6 +8,7 @@ The catalog (CSV-based) is not mocked — it loads real service metadata.
 
 import unittest.mock as mock
 
+import pytest
 import requests
 
 from kindtech.geo import (
@@ -100,6 +101,101 @@ def test_load_geodata_with_request_error(mock_get):
 
     assert result["type"] == "FeatureCollection"
     assert len(result["features"]) == 0
+
+
+def _paged(pages: list[dict]) -> mock.Mock:
+    """A boundary service that gives one page for each request, in order."""
+    responses = []
+    for page in pages:
+        response = mock.MagicMock()
+        response.json.return_value = page
+        responses.append(response)
+    return mock.Mock(side_effect=responses)
+
+
+def _page(names: list[str], cut_short: bool, geojson: bool = True) -> dict:
+    """One answer from the service, which may say it has more to give."""
+    page: dict = {
+        "type": "FeatureCollection",
+        "features": [{"properties": {"LAD21NM": name}} for name in names],
+    }
+    if cut_short and geojson:
+        page["properties"] = {"exceededTransferLimit": True}
+    elif cut_short:
+        page["exceededTransferLimit"] = True
+    return page
+
+
+@pytest.mark.parametrize("geojson", [True, False])
+def test_load_geodata_fetches_every_page_of_a_large_layer(geojson):
+    """A layer cut short by the service is asked for page by page."""
+    pages = [
+        _page(["Adur", "Barnet"], True, geojson),
+        _page(["Cardiff", "Derby"], True, geojson),
+        _page(["Exeter"], False),
+    ]
+    with mock.patch("kindtech.geo.api.requests.get", _paged(pages)) as get:
+        result = load_geodata(geography_type="LAD", LAD21NM=["Adur", "Exeter"])
+
+    names = [feature["properties"]["LAD21NM"] for feature in result["features"]]
+    assert names == ["Adur", "Barnet", "Cardiff", "Derby", "Exeter"]
+    assert result["type"] == "FeatureCollection"
+    # The whole collection no longer says it was cut short.
+    assert "exceededTransferLimit" not in result
+    assert "exceededTransferLimit" not in result.get("properties", {})
+    asked = [call.kwargs["params"] for call in get.call_args_list]
+    assert [params.get("resultOffset") for params in asked] == [None, 2, 4]
+    assert all(params["where"] == asked[0]["where"] for params in asked)
+
+
+def test_load_geodata_stops_when_a_cut_page_is_empty():
+    """A service that says there is more but gives nothing ends the paging."""
+    pages = [_page(["Adur"], True), _page([], True)]
+    with mock.patch("kindtech.geo.api.requests.get", _paged(pages)) as get:
+        result = load_geodata(geography_type="LAD")
+
+    assert len(result["features"]) == 1
+    assert get.call_count == 2
+
+
+def test_load_geodata_gives_nothing_when_a_later_page_fails(caplog):
+    """A part of a layer is never returned as if it were the whole."""
+    first = mock.MagicMock()
+    first.json.return_value = _page(["Adur", "Barnet"], True)
+    get = mock.Mock(
+        side_effect=[first, requests.exceptions.RequestException("Connection error")]
+    )
+    with mock.patch("kindtech.geo.api.requests.get", get):
+        result = load_geodata(geography_type="LAD")
+
+    assert result == {"type": "FeatureCollection", "features": []}
+    assert "Error querying ArcGIS service" in caplog.text
+
+
+def test_load_geodata_gives_nothing_when_the_service_repeats_a_page(caplog):
+    """A service that ignores the offset is stopped after one more request."""
+    response = mock.MagicMock()
+    response.json.return_value = _page(["Adur", "Barnet"], True)
+    with mock.patch("kindtech.geo.api.requests.get", return_value=response) as get:
+        result = load_geodata(geography_type="LAD")
+
+    assert result == {"type": "FeatureCollection", "features": []}
+    assert get.call_count == 2
+    assert "did not stop paging" in caplog.text
+
+
+def test_load_geodata_gives_nothing_when_the_pages_never_end(caplog):
+    """A service that always says there is more is stopped at the page limit."""
+    pages = [_page([f"Place {number}"], True) for number in range(5)]
+    with (
+        mock.patch("kindtech.geo.api.MAX_PAGES", 3),
+        mock.patch("kindtech.geo.api.requests.get", _paged(pages)) as get,
+    ):
+        result = load_geodata(geography_type="LAD")
+
+    assert result == {"type": "FeatureCollection", "features": []}
+    assert get.call_count == 4
+    assert "did not stop paging" in caplog.text
 
 
 @mock.patch("kindtech.geo.api.requests.get")
