@@ -1,0 +1,2996 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://kindtechuk.github.io/uk-open-data/api/analyses/">
+      
+      
+        <link rel="prev" href="../imd/">
+      
+      
+        <link rel="next" href="../cli/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>Analyses - KindTech</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#analyses" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="KindTech" class="md-header__button md-logo" aria-label="KindTech" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KindTech
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Analyses
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/KindTechUK/uk-open-data" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KindTechUK/uk-open-data
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../examples/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Examples
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../case-studies/" class="md-tabs__link">
+          
+  
+  
+  Case Studies
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../blog/" class="md-tabs__link">
+          
+  
+  
+  Blog
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="KindTech" class="md-nav__button md-logo" aria-label="KindTech" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    KindTech
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/KindTechUK/uk-open-data" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KindTechUK/uk-open-data
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Case Studies
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Case Studies
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../case-studies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../case-studies/cal-vulnerable-client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CAL Vulnerable Client Analysis
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../case-studies/sobus-bame-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    SOBUS BAME referral mapping
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../case-studies/material-focus-recycling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Material Focus Recycling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../case-studies/smart-works-woman-unemployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Smart Works Women & Unemployment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../case-studies/starlight-children-mapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Starlight Children's Foundation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../geo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Geographic Data
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ONS Data
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../postcodes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Postcodes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../imd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Deprivation (IMD)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Analyses
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Analyses
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick start
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list_analyses" class="md-nav__link">
+    <span class="md-ellipsis">
+      list_analyses()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#describe_analysisanalysis_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      describe_analysis(analysis_id)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run_analysisanalysis_id-data-columnsnone-optionsnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      run_analysis(analysis_id, data, columns=None, options=None)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#record_runanalysis_id-input_mode-door" class="md-nav__link">
+    <span class="md-ellipsis">
+      record_run(analysis_id, input_mode, door)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drawing-the-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawing the map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-answer" class="md-nav__link">
+    <span class="md-ellipsis">
+      The answer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-a-result-and-running-it-again" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking a result and running it again
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#charts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Charts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#small-counts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Small counts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reach-against-deprivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reach against deprivation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#need-against-reach" class="md-nav__link">
+    <span class="md-ellipsis">
+      Need against reach
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#who-we-are-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Who we are missing
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provision-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      Provision gap
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#access-and-distance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Access and distance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Access and distance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#site-postcodes-that-stay-on-your-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Site postcodes that stay on your machine
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-an-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing an analysis
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Command Line
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Connector for chat assistants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Sources
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Package FAQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Blog
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Blog
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../blog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Blog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../blog/introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../blog/api-discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    How We Found the APIs Behind UK Public Data
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick start
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list_analyses" class="md-nav__link">
+    <span class="md-ellipsis">
+      list_analyses()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#describe_analysisanalysis_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      describe_analysis(analysis_id)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run_analysisanalysis_id-data-columnsnone-optionsnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      run_analysis(analysis_id, data, columns=None, options=None)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#record_runanalysis_id-input_mode-door" class="md-nav__link">
+    <span class="md-ellipsis">
+      record_run(analysis_id, input_mode, door)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drawing-the-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Drawing the map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-answer" class="md-nav__link">
+    <span class="md-ellipsis">
+      The answer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-a-result-and-running-it-again" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking a result and running it again
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#charts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Charts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#small-counts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Small counts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reach-against-deprivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reach against deprivation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#need-against-reach" class="md-nav__link">
+    <span class="md-ellipsis">
+      Need against reach
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#who-we-are-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Who we are missing
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provision-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      Provision gap
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#access-and-distance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Access and distance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Access and distance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#site-postcodes-that-stay-on-your-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Site postcodes that stay on your machine
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-an-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing an analysis
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="analyses">Analyses</h1>
+<p>An analysis answers one question a charity asks of its own data. You give it a
+table, say which column is which, and it joins your data to UK open data and
+returns figures you can check and reuse.</p>
+<p>Kindtech Evidence is built on these analyses. This page is about running them
+from Python. You can also run them from the <a href="../cli/">command line</a>, or from a
+chat assistant through the <a href="../connector/">connector</a>.</p>
+<p>These analyses follow work first done by
+<a href="https://www.datakind.org.uk/">DataKind UK</a> volunteers with charities. The
+<a href="../../case-studies/">case studies</a> reproduce five of those projects.</p>
+<p>Every analysis returns the same things:</p>
+<ul>
+<li><strong>an answer</strong>: one or two sentences that answer the question, and the
+  three figures to show first</li>
+<li><strong>figures</strong>: the headline numbers</li>
+<li><strong>tables</strong>: totals behind the figures</li>
+<li><strong>a map description</strong>: which areas to draw and what to colour them by, when
+  the analysis has a map</li>
+<li><strong>chart descriptions</strong>: which table and columns to draw as a bar chart</li>
+<li><strong>the working</strong>: each step taken, with how many rows went in and came out,
+  the figures before rounding and the code that runs it again</li>
+<li><strong>choices</strong>: what the analysis decided for you, and the option that changes it</li>
+<li><strong>checks</strong>: what a person must confirm before using the figures</li>
+<li><strong>caveats</strong>: what the figures cannot say</li>
+<li><strong>sources</strong>: publisher, edition, licence and link for every dataset used</li>
+<li><strong>a privacy summary</strong>: what was hidden, and what left your machine</li>
+</ul>
+<p>A result holds totals only. Nothing in it describes one person, and no value
+from your data is repeated back, not even in a warning or an error message.</p>
+<h2 id="quick-start">Quick start</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_analysis</span>
+
+<span class="n">clients</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clients.csv&quot;</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
+    <span class="s2">&quot;reach-deprivation&quot;</span><span class="p">,</span>
+    <span class="n">clients</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">result</span><span class="o">.</span><span class="n">answer</span>                                   <span class="c1"># the question, answered in a sentence</span>
+<span class="n">result</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;share_most_deprived_20&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>   <span class="c1"># 41.3 (per cent)</span>
+<span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;by_decile&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>            <span class="c1"># pandas or polars DataFrame</span>
+<span class="p">[</span><span class="n">check</span><span class="o">.</span><span class="n">question</span> <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">checks</span><span class="p">]</span>     <span class="c1"># what to confirm first</span>
+<span class="n">result</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>                                <span class="c1"># everything, as plain JSON types</span>
+</code></pre></div>
+<p><code>data</code> can be a pandas or polars DataFrame, or a list of row dictionaries.
+<code>columns</code> maps each role the analysis needs to one of your column names. You can
+leave a role out when your data already has a column with that name.</p>
+<p>To run an analysis on a file without writing Python, use the
+<a href="../cli/">command line</a>.</p>
+<h2 id="functions">Functions</h2>
+<h3 id="list_analyses"><code>list_analyses()</code></h3>
+<p>Returns an <code>AnalysisInfo</code> for every analysis: its <code>id</code>, <code>title</code>, the <code>question</code> it
+answers, a <code>summary</code>, its <code>roles</code> (the columns it can use), its <code>input_modes</code>
+(the shapes of data it accepts), its <code>options</code> and its <code>coverage</code>.</p>
+<p>Every option has two names. <code>name</code> is its code name, the one a call is
+written with, such as <code>catchment</code>. <code>label</code> is its short plain name, such as
+"Area you serve". Show the label beside the option. Every message that points a
+person at an option uses the label, in quotes ("Change 'Area you serve' to
+include them."), and never the code name, so the sentence matches what is on
+the screen. An option has the same label in every analysis that has it, and
+the result's <code>choices</code> use the same label for the choice it made:</p>
+<table>
+<thead>
+<tr>
+<th><code>name</code></th>
+<th><code>label</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>catchment</code></td>
+<td>Area you serve</td>
+</tr>
+<tr>
+<td><code>catchment_min_share</code></td>
+<td>Share that makes a place part of your area</td>
+</tr>
+<tr>
+<td><code>suppress_below</code></td>
+<td>Smallest count shown</td>
+</tr>
+<tr>
+<td><code>postcode_lookup</code></td>
+<td>Where postcodes are looked up</td>
+</tr>
+<tr>
+<td><code>need</code></td>
+<td>People you are trying to reach</td>
+</tr>
+<tr>
+<td><code>top</code></td>
+<td>Places listed</td>
+</tr>
+<tr>
+<td><code>characteristic</code></td>
+<td>What people are grouped by</td>
+</tr>
+<tr>
+<td><code>groups</code></td>
+<td>How your labels match census groups</td>
+</tr>
+<tr>
+<td><code>under_represented_below</code></td>
+<td>What counts as under-represented</td>
+</tr>
+<tr>
+<td><code>within_km</code></td>
+<td>Distance within reach, in kilometres</td>
+</tr>
+</tbody>
+</table>
+<p>The area an analysis looks across has one name wherever a person reads it:
+"the area you serve". <code>catchment</code> is only its code name.</p>
+<p>A table's columns have plain names too. <code>table.columns</code> holds the ids, which a
+program reads, and <code>table.headings</code> maps each id to the heading to show, such
+as "Your people per 100 in need" for <code>people_per_100_in_need</code>. <code>table.units</code>
+gives the unit of each column that has one, named as the units of figures
+are: <code>"percent"</code> or <code>"km"</code>. Show a table with its headings and units and it
+reads the same on a page, in a chat and on the command line. A place is a
+"Local authority" in most tables and a "Neighbourhood" in the one behind the
+first analysis's map.</p>
+<p>An option that takes one of a fixed list of values lists them as <code>choices</code>,
+each with a <code>value</code> and a <code>label</code> a person can read, so a page can show a list
+to pick from. <code>choices</code> is empty when the option is free, such as a number or
+a place name. For the <code>need</code> option the choices are the built-in needs; a table
+of your own is still given as a mapping.</p>
+<p>A role with <code>reported</code> set to <code>True</code> holds names the result uses too, such as
+local authorities, so the same names can appear in the result. Values of every
+other role are never repeated.</p>
+<p>A reported role can also list <code>reported_values</code>. That is for a column that
+holds a person's own words as well, such as their ethnic group: only the
+listed values are names the result uses, and no other value in the column is
+ever repeated. If you check a result for values repeated from the input, leave
+out the listed values when there are any, compared without case, and check
+every other value in the column. Leave the whole column out only when the
+role is reported and lists no values.</p>
+<p>A role with <code>amount</code> set to <code>True</code> holds a number the analysis adds up: a count of
+people or a volume. A total of it is in the result, so where one row is the
+only one for its place or group, that row's number comes back as the total.
+That is not a repeated value. A number in any other role, such as a latitude,
+never comes back.</p>
+<h3 id="describe_analysisanalysis_id"><code>describe_analysis(analysis_id)</code></h3>
+<p>Returns the <code>AnalysisInfo</code> for one analysis. Raises <code>KeyError</code> for an unknown id.</p>
+<h3 id="run_analysisanalysis_id-data-columnsnone-optionsnone"><code>run_analysis(analysis_id, data, columns=None, options=None)</code></h3>
+<p>Runs an analysis and returns an <code>AnalysisResult</code>.</p>
+<p>Raises <code>AnalysisInputError</code> (a <code>ValueError</code>) when the data, the column mapping or
+an option cannot be used. The message is written for a person and
+<code>error.problems</code> lists each problem separately.</p>
+<p><code>error.option</code> is the code name of the option the error is about, and
+<code>error.role</code> the name of the column role, so a page can mark the right box and
+a program need not search the sentence. When the problems are about several,
+it is the first of them. Each is <code>None</code> when the error is about neither, for
+example when a source could not be read. The command line adds what to type:
+"On the command line this is --option catchment=VALUE."</p>
+<p>When the columns an analysis needs were not all found, <code>error.role</code> is the
+first one still to be named. When an option was given that the analysis does
+not have, the message lists each option it does have by both names:
+"need ('People you are trying to reach')".</p>
+<p>When a public data source the analysis needs cannot be reached, the
+<code>requests.RequestException</code> is let out. Its text holds the whole web address
+that was asked for, which can hold a postcode, so show a message of your own
+rather than the text. The command line names the site alone, and says
+whether the source could not be reached or answered with an error. An analysis
+needs no network when the public figures it uses are kept on your machine.</p>
+<h3 id="record_runanalysis_id-input_mode-door"><code>record_run(analysis_id, input_mode, door)</code></h3>
+<p>Records that a run has given a person an answer, so that a host can count how
+often each analysis is used. It writes one record at <code>INFO</code> level to the
+<code>uk_open_data.runs</code> logger, and that is all it does: the package adds no handler
+and sends nothing anywhere. On a person's own machine nobody collects the
+records. A host that keeps its logs can count them.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">record_run</span>
+
+<span class="n">record_run</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">analysis_id</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">input_mode</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">)</span>
+<span class="c1"># run analysis=reach-deprivation mode=postcodes door=page</span>
+</code></pre></div>
+<p><code>run_analysis</code> never records a run by itself. Whatever gives the answer to a
+person calls <code>record_run</code> once, after the answer has been given: the command
+line does (<code>"cli"</code>), and a page (<code>"page"</code>) or a chat assistant (<code>"chat"</code>) built
+on these analyses should. A run that fails is not recorded.</p>
+<p>The record holds the three words and nothing else. Each must be on a fixed
+list (a registered analysis, one of its input modes, one of the three doors),
+so no word from a person's data can reach a log. A word that is not on its list
+raises <code>KeyError</code> (the analysis) or <code>ValueError</code> (the mode or the door), and the
+message does not repeat it. The same three words are on the record as
+<code>record.analysis_id</code>, <code>record.input_mode</code> and <code>record.door</code>.</p>
+<p>A host that keeps the records imports the logger's name, and the doors, from
+the package, so neither is typed out a second time:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOORS</span><span class="p">,</span> <span class="n">RUNS_LOGGER</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">RUNS_LOGGER</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="drawing-the-map">Drawing the map</h2>
+<p>A result describes its map; <code>render_map</code> draws it as an SVG picture with a
+key and the credits the data licences ask for.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_map</span>
+
+<span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>                  <span class="c1"># the first layer: deprivation decile</span>
+<span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="s2">&quot;people&quot;</span><span class="p">)</span>  <span class="c1"># people reached, in bands</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;map.svg&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+    <span class="n">handle</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+</code></pre></div>
+<p>The picture is drawn from the result's own table of totals, so it shows
+nothing the result does not already hold. People are shown in bands, and the
+lowest band includes zero. Hover over an area in a browser to see its name and
+value. The colours adapt to a dark page.</p>
+<p>A picture shows one layer, and its title says what the colour shows: "People
+reached, by neighbourhood". The first layer of a map is drawn in blue and the
+second in orange, so two pictures of one result do not look like the same
+measure. The shaded areas sit in a frame with a scale line. Up to twelve
+local authorities are named one by one; neighbourhoods are named by the local
+authority they are in. A name that would cover most of a small place is
+written beside it, where there is room, so its colour can be seen. Text is broken into lines to fit the width you ask for.</p>
+<p>The places around the map are drawn in pale grey, with their names where a
+name fits, when you give their outlines. Only the part of each that the frame
+shows is written to the picture, so a large neighbour does not make the file
+large. Put them among the features of
+<code>boundaries</code>, or in a list under <code>"surroundings"</code>. Codes listed under
+<code>"focus"</code> are the surrounding places that hold the shaded areas: each gets a
+darker line and its name. Codes listed under <code>"shore"</code> are surrounding places
+whose outline is where the land ends. The shaded areas are drawn no further
+than it, and the picture is framed on it. Use it when the outlines of the
+areas run out over water and the outline of the place that holds them does
+not.</p>
+<div class="highlight"><pre><span></span><code><span class="n">boundaries</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="n">areas</span><span class="p">,</span>           <span class="c1"># outlines you already have</span>
+    <span class="s2">&quot;surroundings&quot;</span><span class="p">:</span> <span class="n">nearby</span><span class="p">,</span>
+    <span class="s2">&quot;focus&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;E09000023&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;shore&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;E09000023&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+<span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">boundaries</span><span class="o">=</span><span class="n">boundaries</span><span class="p">)</span>
+</code></pre></div>
+<p><code>render_map</code> fetches the outline of each area from the ONS Open Geography
+Portal. Only the public area codes of the area you serve, and of the local
+authorities near it, are sent. To draw without the network, pass <code>boundaries=</code>
+a GeoJSON FeatureCollection you already have; <code>load_map_boundaries(result)</code>
+fetches one you can save and reuse.</p>
+<p><code>load_map_boundaries</code> fetches the places around the map as well, and lists
+under <code>"focus"</code> the local authorities that hold a map's neighbourhoods. A map
+of up to 1,000 neighbourhoods or 20 local authorities is drawn large, so its
+outlines come from the full ones with detail finer than 10 or 20 metres left
+out. So do the local authorities that hold its neighbourhoods, and the other
+places a picture of the usual width shows when there are no more than 40 of
+them, so that neighbours meet. A place further off keeps its 200 metre
+outline.</p>
+<p>The full outlines of local authorities stop at the shore. The only full
+outlines of neighbourhoods that are open run out to low water and to the
+middle of a river. So on a map of neighbourhoods the local authorities that
+hold them are also listed under <code>"shore"</code>, and a river or a bay is left
+clear. When the fine outline of one of them does not come, nothing is listed
+and the neighbourhoods are drawn whole.</p>
+<p>A map of more areas is drawn small and takes outlines simplified to 200
+metres. Every map asks for every local authority at 200 metres, nearly three
+megabytes, to find the ones near it. That answer is kept in memory for the
+life of the process, so a second map does not ask again;
+<code>uk_open_data.analyses.maps.clear_outline_cache()</code> forgets it. When the places around cannot be fetched, the map is drawn without
+them and nothing is said.</p>
+<p>The fine outlines usually come in a few seconds. At times the service has
+taken from a quarter of a minute to a minute or two for one map, and it is
+not known why. A program that cannot wait,
+such as one answering in a chat, calls <code>load_map_boundaries(result,
+fine=False)</code>. It then gets the 200 metre outlines of every area, and the
+places around from the answer kept in memory, in a second or two.
+<code>load_map_boundaries</code> is safe to call from two threads at once.</p>
+<h2 id="the-answer">The answer</h2>
+<p><code>result.answer</code> is one or two sentences that answer the question the analysis
+asks, for example:</p>
+<blockquote>
+<p>Of your people in the area you serve, 49.0% live in the 20% most deprived
+neighbourhoods in England. Of everyone who lives in that area, 20.0% do, so
+you reach those neighbourhoods more than their share.</p>
+</blockquote>
+<p>Open with it wherever you show a result, so a report, a page and a chat
+assistant all say the same thing. It is built from the figures and tables of
+the result, after small counts are hidden, so it says nothing the result does
+not already show. When the figure it rests on is hidden, it says so instead of
+giving a number. The places and groups it names are the public names in the
+result's tables, never text from your data.</p>
+<p>The sentence is careful about what it calls a gap. A place is named as one to
+look at first only when it falls below the rate for the whole area, so a list
+of one or two places does not present the place you reach most as a gap, and a
+place whose count is hidden is not named. A count of every resident is called
+"residents", not "people in need". A group with nobody in your data is named
+last, with a line saying so, because it may be a group you do not record.</p>
+<p><code>result.key_figures</code> holds the ids of up to three figures to show first, in
+order. Each is a figure of the result, and none is hidden: when a figure that
+would be shown first is hidden to protect a small count, the next one takes
+its place.</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">figure_id</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">key_figures</span><span class="p">:</span>
+    <span class="n">figure</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figure_id</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">figure</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">figure</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">figure</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="checking-a-result-and-running-it-again">Checking a result and running it again</h2>
+<p>A result shows its working, so that anyone can check it or run it again.</p>
+<p><code>result.working</code> lists each step in plain words, with how many rows went in
+and came out. <code>result.sources</code> gives each source and its date.</p>
+<p>A share or a rate is rounded before it is shown. <code>figure.exact</code> is the value
+before rounding:</p>
+<div class="highlight"><pre><span></span><code><span class="n">figure</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;share_most_deprived_20&quot;</span><span class="p">)</span>
+<span class="n">figure</span><span class="o">.</span><span class="n">value</span>   <span class="c1"># 68.6</span>
+<span class="n">figure</span><span class="o">.</span><span class="n">exact</span>   <span class="c1"># 68.57142857142857</span>
+</code></pre></div>
+<p><code>exact</code> is <code>None</code> for a count, which is not rounded, and for a figure that is
+hidden to protect a small count. It is also <code>None</code> for a distance from one
+place to a site, which is rounded to the kilometre on purpose so that it says
+less about where a site is.</p>
+<p><code>result.code</code> is the Python that runs the analysis again with the same
+settings:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Version 0.1 of this analysis, run with</span>
+<span class="c1"># uk-open-data 0.2.0. This runs it again with</span>
+<span class="c1"># the same settings. No row or heading of your table is written</span>
+<span class="c1"># here: put the name of your own column beside each role.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_analysis</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;your-table.csv&quot;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
+    <span class="s2">&quot;reach-deprivation&quot;</span><span class="p">,</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>  <span class="c1"># the name of your column</span>
+    <span class="p">},</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;suppress_below&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="s2">&quot;postcode_lookup&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;catchment_min_share&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">answer</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">figure</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">figures</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">figure</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">figure</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</code></pre></div>
+<p>It prints the answer and every figure, to set beside the ones in the result.</p>
+<p>Every setting that has a value is written out, the ones you left alone too,
+so the code gives the same result if a default changes in a later version.
+That is why it can hold a setting the list of choices in a result does not
+mention. A setting the analysis works out for itself, such as the area you
+serve when you named none, is left out. An area you named is written as you
+gave it.</p>
+<p>The setting for where postcodes are looked up is written as it was used. Code
+copied from a run that kept postcodes on one machine says so, and on another
+machine it stops and asks for the postcode table before it sends a postcode
+anywhere.</p>
+<p>The code holds no row and no heading of your table. The names of your columns
+are left for you to fill in, because a heading can hold something private. A
+setting that holds your own words, such as your own labels for groups in
+<code>who-we-miss</code>, is written as <code>{}</code> with a note to fill it in. So the code is as
+safe to share as the result is.</p>
+<p>The command line prints both as the last two parts of its report, under
+"Figures before rounding" and "To run it again in Python". The code starts at
+the margin, so it runs as it is copied.</p>
+<h2 id="charts">Charts</h2>
+<p><code>result.charts</code> describes the charts a result is best shown with, so a page
+can draw them without knowing the analysis. Each <code>Chart</code> names a table of the
+result, the column that names each group of bars (<code>category_column</code>) and one
+or more <code>series</code>, each a column with a label and a unit. Every series in a
+chart has the same unit, so one axis serves them all.</p>
+<div class="highlight"><pre><span></span><code><span class="n">chart</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">charts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">frame</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">chart</span><span class="o">.</span><span class="n">table</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+<span class="n">frame</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chart</span><span class="o">.</span><span class="n">category_column</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">column</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">chart</span><span class="o">.</span><span class="n">series</span><span class="p">])</span>
+</code></pre></div>
+<p>A value hidden to protect a small count is <code>None</code> in the table. Draw no bar
+for it.</p>
+<h2 id="small-counts">Small counts</h2>
+<p>A count from 1 to 4 that is about a named place or a group is returned as
+<code>None</code>, with <code>suppressed</code> set to <code>True</code>, and so is anything worked out from it.
+When hiding one cell would let it be worked out from a total, a second cell is
+hidden with it. So a hidden count is not always small: do not report a hidden
+cell as "fewer than 5". Every result says this in its privacy notes. Change
+the threshold with the <code>suppress_below</code> option; it cannot go below 3.</p>
+<p>A result says which threshold was used in <code>privacy.suppress_below</code>. The analyses
+about sites, provision gap and access and distance, hide nothing, and for them
+it is <code>None</code>.</p>
+<h2 id="reach-against-deprivation">Reach against deprivation</h2>
+<p><code>reach-deprivation</code> answers: are we reaching people in the most deprived
+neighbourhoods? It covers England, using the English Indices of Deprivation
+2025 on 2021 neighbourhoods (LSOAs).</p>
+<p>It accepts two shapes of data:</p>
+<table>
+<thead>
+<tr>
+<th>Input mode</th>
+<th>Columns</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>postcodes</code></td>
+<td><code>postcode</code></td>
+<td>One row per person or case, with a home postcode</td>
+</tr>
+<tr>
+<td><code>neighbourhood_counts</code></td>
+<td><code>lsoa_code</code>, <code>count</code></td>
+<td>Already totalled by 2021 LSOA</td>
+</tr>
+</tbody>
+</table>
+<p>In <code>postcodes</code> mode the analysis looks postcodes up in the
+<a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table on your machine</a>
+when one is installed, and then no postcode is sent anywhere. Install it once
+with <code>uk-open-data postcodes download</code>. Without the table, the distinct,
+well-formed postcodes are sent to <a href="https://postcodes.io/">postcodes.io</a>; no
+other column leaves your machine, and rows that are blank or not shaped like a
+postcode are never sent. The result says which happened, under <code>choices</code> and
+<code>privacy</code>. In <code>neighbourhood_counts</code> mode nothing leaves your machine.</p>
+<p>The deprivation index is downloaded from gov.uk, or read from a copy
+<a href="../imd/#keeping-the-english-index-on-this-machine">kept on your machine</a> when
+there is one. A result that used a copy says so in its <code>sources</code> and its
+<code>working</code>, with the note the copy was kept with.</p>
+<p>The analysis then works out <strong>the area you serve</strong>: the local authorities that each
+hold at least 5% of the people it could place. The decile figures and the map
+are about the people who live there, so they can be set against everyone who
+lives there. People outside the area you serve are counted in the local authority
+table, and a warning says how many there are.</p>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>people_supplied</code></td>
+<td>People in the data you gave</td>
+</tr>
+<tr>
+<td><code>people_located</code></td>
+<td>People placed in an English neighbourhood</td>
+</tr>
+<tr>
+<td><code>people_in_catchment</code></td>
+<td>People who live in the area you serve</td>
+</tr>
+<tr>
+<td><code>share_most_deprived_10</code></td>
+<td>Share of them in the 10% most deprived neighbourhoods in England</td>
+</tr>
+<tr>
+<td><code>share_most_deprived_20</code></td>
+<td>Share of them in the 20% most deprived neighbourhoods in England</td>
+</tr>
+<tr>
+<td><code>catchment_share_most_deprived_20</code></td>
+<td>Share of residents of the area you serve who live in those neighbourhoods, for comparison</td>
+</tr>
+<tr>
+<td><code>reach_per_1000_most_deprived_20</code></td>
+<td>People reached per 1,000 residents of those neighbourhoods</td>
+</tr>
+<tr>
+<td><code>reach_per_1000_elsewhere</code></td>
+<td>People reached per 1,000 residents in the rest of the area you serve</td>
+</tr>
+</tbody>
+</table>
+<p>The chart <code>people_by_decile</code> sets the share of your people in each decile
+against the share of residents of the area you serve.</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>by_decile</code></td>
+<td>One per deprivation decile: people, share of people, residents, share of residents, people per 1,000</td>
+</tr>
+<tr>
+<td><code>by_local_authority</code></td>
+<td>One per local authority; authorities outside the area you serve with few people share one unnamed row</td>
+</tr>
+<tr>
+<td><code>by_neighbourhood</code></td>
+<td>One per neighbourhood in the area you serve: decile, residents, and people in bands. This feeds the map</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>suppress_below</code></td>
+<td><code>5</code></td>
+<td>Counts above zero and below this are hidden</td>
+</tr>
+<tr>
+<td><code>postcode_lookup</code></td>
+<td><code>"auto"</code></td>
+<td><code>"offline"</code> uses the table on your machine and fails without one, <code>"online"</code> uses postcodes.io, <code>"auto"</code> uses the table when it is installed</td>
+</tr>
+<tr>
+<td><code>catchment</code></td>
+<td>worked out</td>
+<td>A local authority name or code, a list of them, or <code>"England"</code></td>
+</tr>
+<tr>
+<td><code>catchment_min_share</code></td>
+<td><code>0.05</code></td>
+<td>The share a local authority needs to join a worked-out area</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
+    <span class="s2">&quot;reach-deprivation&quot;</span><span class="p">,</span>
+    <span class="n">clients</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">},</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;catchment&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Lewisham&quot;</span><span class="p">,</span> <span class="s2">&quot;Greenwich&quot;</span><span class="p">]},</span>
+<span class="p">)</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Before you use the figures</p>
+<p>Read <code>result.checks</code> and <code>result.caveats</code>. Deprivation is measured for
+neighbourhoods, not people: someone who lives in a deprived neighbourhood
+is not necessarily deprived.</p>
+</div>
+<h2 id="need-against-reach">Need against reach</h2>
+<p><code>need-reach</code> answers: where is need high and our presence low? It covers
+England and Wales, by local authority, and is the method of the
+<a href="../../case-studies/smart-works-woman-unemployment/">Smart Works case study</a>
+turned into a function.</p>
+<p>It accepts two shapes of data:</p>
+<table>
+<thead>
+<tr>
+<th>Input mode</th>
+<th>Columns</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>postcodes</code></td>
+<td><code>postcode</code></td>
+<td>One row per person or case, with a home postcode</td>
+</tr>
+<tr>
+<td><code>area_counts</code></td>
+<td><code>local_authority</code>, <code>count</code></td>
+<td>Already totalled by local authority, named or coded</td>
+</tr>
+</tbody>
+</table>
+<p>Postcodes are placed as in the first analysis: on your machine when the postcode
+table is installed, and with postcodes.io otherwise.</p>
+<p>The analysis loads a count of <strong>people in need</strong> in every local authority from
+<a href="../ons/">Nomis</a>, divides the people you helped in each one by it, and lists
+the high-need local authorities where you reach the fewest people per 100 in
+need. A local authority is high need when its count is in the top quarter of
+the area you serve. With fewer than four places, the one with the largest count
+is high need.</p>
+<p>Choose the need with the <code>need</code> option:</p>
+<table>
+<thead>
+<tr>
+<th><code>need</code></th>
+<th>People counted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"unemployed"</code> (default)</td>
+<td>Unemployed people aged 16 to 64, not counting full-time students, Census 2021</td>
+</tr>
+<tr>
+<td><code>"unemployed_women"</code></td>
+<td>Unemployed women aged 16 to 64, not counting full-time students, Census 2021</td>
+</tr>
+<tr>
+<td><code>"unemployed_men"</code></td>
+<td>Unemployed men aged 16 to 64, not counting full-time students, Census 2021</td>
+</tr>
+<tr>
+<td><code>"residents"</code></td>
+<td>Everyone who lives there, of every age, Census 2021. Use it when what you offer is for anyone</td>
+</tr>
+<tr>
+<td><code>{"dataset": ..., "label": ..., "filters": {...}}</code></td>
+<td>Any table Nomis publishes by local authority. The filters are the category codes to add up. Counts are asked for (<code>measures</code> 20100) unless the filters name another measure</td>
+</tr>
+</tbody>
+</table>
+<p>The three unemployment needs count the census group "Economically active
+(excluding full-time students): Unemployed", as the case study does. Full-time
+students who were looking for work are a separate census group and are not
+counted. To count them too, give the table form with both groups:</p>
+<div class="highlight"><pre><span></span><code><span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;need&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;NM_2124_1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Unemployed people aged 16 to 64, with full-time students&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;filters&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;c2021_eastat_7&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+            <span class="s2">&quot;c_sex&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;c2021_age_7&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The need figures are public. They are fetched from Nomis once for each need
+and then kept in memory for as long as the program runs;
+<code>clear_need_cache()</code> forgets them. To run with no request to Nomis at all,
+keep a copy on the machine, in the same data folder as the
+<a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses.need_reach</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_need_figures</span><span class="p">,</span> <span class="n">keep_need_figures</span>
+
+<span class="n">download_need_figures</span><span class="p">(</span><span class="s2">&quot;unemployed&quot;</span><span class="p">)</span>   <span class="c1"># fetch once, when a server is built</span>
+<span class="n">download_need_figures</span><span class="p">(</span><span class="s2">&quot;residents&quot;</span><span class="p">)</span>    <span class="c1"># so the map can shade need by its rate</span>
+
+<span class="c1"># or keep figures of your own under a built-in need, for a demonstration</span>
+<span class="n">keep_need_figures</span><span class="p">(</span>
+    <span class="s2">&quot;unemployed&quot;</span><span class="p">,</span>
+    <span class="p">[(</span><span class="s2">&quot;E09000023&quot;</span><span class="p">,</span> <span class="s2">&quot;Lewisham&quot;</span><span class="p">,</span> <span class="mi">9000</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;E09000011&quot;</span><span class="p">,</span> <span class="s2">&quot;Greenwich&quot;</span><span class="p">,</span> <span class="mi">8000</span><span class="p">)],</span>
+    <span class="n">note</span><span class="o">=</span><span class="s2">&quot;invented for a demonstration.&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>A result that used a kept copy says so in its <code>sources</code> and its <code>working</code>,
+with the note the copy was kept with.</p>
+<p>The area you serve should hold the places you do not reach yet as well. Name it with <code>catchment</code>: a
+list of local authorities, or a country. When you leave it out, the analysis
+works the area out as the first analysis does: each local authority that holds
+at least 5% of the people located (<code>catchment_min_share</code>). When none does,
+every local authority in England and Wales is compared.</p>
+<p>An area worked out this way holds only places you already reach, so it can
+show where your reach is low against need but not where you reach nobody. The
+result says so in a warning. To see the places you do not reach, name the area.</p>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>people_supplied</code></td>
+<td>People in the data you gave</td>
+</tr>
+<tr>
+<td><code>people_located</code></td>
+<td>People placed in a local authority in England or Wales</td>
+</tr>
+<tr>
+<td><code>people_in_catchment</code></td>
+<td>People who live in the area you serve</td>
+</tr>
+<tr>
+<td><code>areas_compared</code></td>
+<td>Local authorities compared</td>
+</tr>
+<tr>
+<td><code>people_in_need</code></td>
+<td>People in need in the area you serve</td>
+</tr>
+<tr>
+<td><code>reach_per_100_in_need</code></td>
+<td>People you reached per 100 people in need, across the area</td>
+</tr>
+<tr>
+<td><code>high_need_areas</code></td>
+<td>Local authorities with high need</td>
+</tr>
+<tr>
+<td><code>high_need_areas_without_people</code></td>
+<td>High-need local authorities where you reached nobody</td>
+</tr>
+<tr>
+<td><code>share_of_people_in_high_need_areas</code></td>
+<td>Share of your people who live in high-need local authorities</td>
+</tr>
+<tr>
+<td><code>share_of_need_in_high_need_areas</code></td>
+<td>Share of people in need who live there, for comparison</td>
+</tr>
+</tbody>
+</table>
+<p>The charts <code>need_in_priority_areas</code> and <code>reach_in_priority_areas</code> show people
+in need and people reached per 100 in need for the places in <code>priority_areas</code>.</p>
+<p>The labels follow the need. When the need is every resident, the figures, the
+headings, the list, the working and the source say "residents" and "the local
+authorities with the most residents", not "people in need" and "high need".
+The fourth and fifth analyses do the same.</p>
+<p>The answer says so when the area was worked out from your data: it opens "In
+the 7 local authorities where most of your people live". When a fifth or more
+of the people in your data could not be placed in the area you serve, it ends
+by saying how many are not counted. When some of them could not be placed in
+any local authority, which is a name or a postcode to put right, and others
+live outside the area, which is not a mistake, it says how many of each.</p>
+<p>When only one local authority is compared every share is 100%, so
+<code>key_figures</code> names the rate and the two counts behind it instead:
+<code>reach_per_100_in_need</code>, <code>people_in_catchment</code> and <code>people_in_need</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>priority_areas</code></td>
+<td>The high-need local authorities, your lowest reach first: people in need, people, people per 100 in need. It is a list in that order and no more: a place on it can have more reach than the area as a whole</td>
+</tr>
+<tr>
+<td><code>by_local_authority</code></td>
+<td>One per local authority compared, with need and reach in bands, and people in need for each 1,000 residents. This feeds the map</td>
+</tr>
+</tbody>
+</table>
+<p>The map shades need by its rate, people in need for each 1,000 residents, in
+five equal groups. With fewer than five places, each is a group of its own,
+from the lowest group to the highest, and one place alone is in the middle
+group. The three groups of the reach layer work the same way. The note of a
+layer says so when its places are fewer than its groups, and says nothing of
+it otherwise. A count would
+make the largest places darkest whatever their need. The list of high-need places still goes by the count, as
+the case study does. The residents are the census count of everyone who lives
+in each local authority, loaded beside the need figures.</p>
+<p>The map falls back to the count in two cases, and the result says which way
+it went in its choices (<code>map_need</code>) and in the note of the map's <code>need</code> layer.
+One is when the need is every resident, so there is no rate to work out. The
+other is when the need figures came from a copy kept on the machine and no
+copy of the residents is kept beside it: the analysis does not fetch them, so
+that a run kept off the network stays off it.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>suppress_below</code></td>
+<td><code>5</code></td>
+<td>Counts above zero and below this are hidden</td>
+</tr>
+<tr>
+<td><code>postcode_lookup</code></td>
+<td><code>"auto"</code></td>
+<td>As for the first analysis</td>
+</tr>
+<tr>
+<td><code>need</code></td>
+<td><code>"unemployed"</code></td>
+<td>The need to compare your reach with</td>
+</tr>
+<tr>
+<td><code>catchment</code></td>
+<td>worked out</td>
+<td>A local authority name or code, a list of them, or <code>"England"</code>, <code>"Wales"</code> or <code>"England and Wales"</code></td>
+</tr>
+<tr>
+<td><code>catchment_min_share</code></td>
+<td><code>0.05</code></td>
+<td>The share a local authority needs to join a worked-out area</td>
+</tr>
+<tr>
+<td><code>top</code></td>
+<td><code>10</code></td>
+<td>How many places to list, from 1 to 50</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
+    <span class="s2">&quot;need-reach&quot;</span><span class="p">,</span>
+    <span class="n">clients</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">},</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;need&quot;</span><span class="p">:</span> <span class="s2">&quot;unemployed_women&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;priority_areas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+</code></pre></div>
+<p>A local authority with a hidden count is still ranked. It is ranked as if it
+had the largest count that would be hidden, which depends on the threshold
+alone, so the order of the list gives nothing away.</p>
+<div class="admonition note">
+<p class="admonition-title">Before you use the figures</p>
+<p>Read <code>result.checks</code> and <code>result.caveats</code>. Low reach is not the same as
+unmet need: another organisation may already serve the place. Need is a
+count of people, so large local authorities are more likely to be listed.</p>
+</div>
+<h2 id="who-we-are-missing">Who we are missing</h2>
+<p><code>who-we-miss</code> answers: who do we reach less than their share of the people who
+live here? It covers England and Wales, and is the method of the
+<a href="../../case-studies/sobus-bame-analysis/">Sobus case study</a> turned into a
+function.</p>
+<p>It accepts three shapes of data:</p>
+<table>
+<thead>
+<tr>
+<th>Input mode</th>
+<th>Columns</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>postcodes</code></td>
+<td><code>group</code>, <code>postcode</code></td>
+<td>One row per person, with their group and home postcode</td>
+</tr>
+<tr>
+<td><code>group_counts</code></td>
+<td><code>group</code>, <code>count</code></td>
+<td>Already totalled by group</td>
+</tr>
+<tr>
+<td><code>people</code></td>
+<td><code>group</code></td>
+<td>One row per person, with their group and no location</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>group</code> column holds each person's ethnic group, or their sex, in your own
+words. The analysis matches each label to a group the 2021 Census publishes,
+counts your people by group, and sets each group's share of your people
+against its share of the residents of <strong>the area you serve</strong>. A group is
+<strong>under-represented</strong> when its share of your people is below four fifths of
+its share of residents.</p>
+<p>Choose what the column holds with the <code>characteristic</code> option:</p>
+<table>
+<thead>
+<tr>
+<th><code>characteristic</code></th>
+<th>Groups compared</th>
+<th>Census table</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"ethnic_group"</code> (default)</td>
+<td>Asian, Black, Mixed, White, Other</td>
+<td>TS021</td>
+</tr>
+<tr>
+<td><code>"sex"</code></td>
+<td>Female, Male</td>
+<td>TS008</td>
+</tr>
+</tbody>
+</table>
+<p>Labels are matched by their wording. "Black Caribbean" is Black, "White and
+Black Caribbean" is Mixed, "Any other ethnic group" is Other, and "Not stated"
+matches nothing. People whose label matches nothing are counted, left out of
+the shares, and a warning says how many there are. Codes and short forms
+cannot be matched by wording, so say where they belong with the <code>groups</code>
+option:</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
+    <span class="s2">&quot;who-we-miss&quot;</span><span class="p">,</span>
+    <span class="n">clients</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Ethnicity&quot;</span><span class="p">,</span> <span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">},</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;BAF&quot;</span><span class="p">:</span> <span class="s2">&quot;Black&quot;</span><span class="p">,</span> <span class="s2">&quot;WBR&quot;</span><span class="p">:</span> <span class="s2">&quot;White&quot;</span><span class="p">}},</span>
+<span class="p">)</span>
+
+<span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;by_group&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+</code></pre></div>
+<p>The result names the census groups. It never repeats one of your own labels.
+The <code>group</code> role lists the census group names as its <code>reported_values</code>,
+because a label of yours can be the same as one of them.</p>
+<p>With postcodes the analysis works out the area you serve as the first analysis does: the
+local authorities that each hold at least 5% of the people it could place.
+People who live outside it are left out, because they are set against the
+residents of the area you serve. Without postcodes the analysis cannot tell where you
+work, so you must name the area with <code>catchment</code>.</p>
+<p>The residents come from <a href="../ons/">Nomis</a>, for every local authority at once.
+They are public, are fetched once for each characteristic and are then kept in
+memory; <code>clear_residents_cache()</code> forgets them. To run with no request to
+Nomis, keep a copy on the machine, as for need figures:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses.who_we_miss</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_residents</span><span class="p">,</span> <span class="n">keep_residents</span>
+
+<span class="n">download_residents</span><span class="p">(</span><span class="s2">&quot;ethnic_group&quot;</span><span class="p">)</span>   <span class="c1"># fetch once, when a server is built</span>
+
+<span class="c1"># or keep figures of your own, for a demonstration</span>
+<span class="n">keep_residents</span><span class="p">(</span>
+    <span class="s2">&quot;sex&quot;</span><span class="p">,</span>
+    <span class="p">[(</span><span class="s2">&quot;E09000023&quot;</span><span class="p">,</span> <span class="s2">&quot;Lewisham&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Female&quot;</span><span class="p">:</span> <span class="mi">156000</span><span class="p">,</span> <span class="s2">&quot;Male&quot;</span><span class="p">:</span> <span class="mi">144000</span><span class="p">})],</span>
+    <span class="n">note</span><span class="o">=</span><span class="s2">&quot;invented for a demonstration.&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>people_supplied</code></td>
+<td>People in the data you gave</td>
+</tr>
+<tr>
+<td><code>people_in_catchment</code></td>
+<td>People set against residents: with postcodes, those who live in the area you serve</td>
+</tr>
+<tr>
+<td><code>people_matched</code></td>
+<td>People whose label matched a census group. The shares are of these people</td>
+</tr>
+<tr>
+<td><code>people_not_matched</code></td>
+<td>People with no label, or one that matched no census group</td>
+</tr>
+<tr>
+<td><code>residents</code></td>
+<td>Residents of the area you serve in the 2021 Census</td>
+</tr>
+<tr>
+<td><code>groups_under_represented</code></td>
+<td>Groups you reach less than their share of residents</td>
+</tr>
+<tr>
+<td><code>share_of_people_first_group</code></td>
+<td>Share of your people in the first of those groups</td>
+</tr>
+<tr>
+<td><code>share_of_residents_first_group</code></td>
+<td>Share of residents in that group</td>
+</tr>
+</tbody>
+</table>
+<p>The last two are the two shares the answer quotes, each with its value before
+rounding. They are there when the answer quotes them: when a group is reached
+less than its share and has people in your data.</p>
+<p>The chart <code>people_against_residents</code> sets the share of your people in each
+group against the share of residents.</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>by_group</code></td>
+<td>One per census group: people, share of people, residents, share of residents, <code>representation</code> (the first share divided by the second) and whether the group is under-represented</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>suppress_below</code></td>
+<td><code>5</code></td>
+<td>Counts above zero and below this are hidden</td>
+</tr>
+<tr>
+<td><code>postcode_lookup</code></td>
+<td><code>"auto"</code></td>
+<td>As for the first analysis</td>
+</tr>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>"ethnic_group"</code></td>
+<td>What the group column holds</td>
+</tr>
+<tr>
+<td><code>groups</code></td>
+<td>none</td>
+<td>Your label to census group, for labels the wording does not settle</td>
+</tr>
+<tr>
+<td><code>catchment</code></td>
+<td>worked out from postcodes</td>
+<td>A local authority name or code, a list of them, or <code>"England"</code>, <code>"Wales"</code> or <code>"England and Wales"</code>. Needed when there are no postcodes</td>
+</tr>
+<tr>
+<td><code>catchment_min_share</code></td>
+<td><code>0.05</code></td>
+<td>The share a local authority needs to join a worked-out area</td>
+</tr>
+<tr>
+<td><code>under_represented_below</code></td>
+<td><code>0.8</code></td>
+<td>A group is under-represented below this fraction of its share of residents</td>
+</tr>
+</tbody>
+</table>
+<p>A group with a hidden count is not judged. A group nobody came from has a
+count of zero, which is shown, and is under-represented.</p>
+<p>This analysis has no map yet. The residents are compared across the whole
+area you serve, not place by place.</p>
+<div class="admonition note">
+<p class="admonition-title">Before you use the figures</p>
+<p>Read <code>result.checks</code> and <code>result.caveats</code>. A gap is not proof of a
+barrier: groups differ in age and in need, and the census counts
+residents of every age. With few people, a gap can be chance. Do not
+publish two runs with different areas side by side, because a small
+count can be worked out by taking one from the other.</p>
+</div>
+<h2 id="provision-gap">Provision gap</h2>
+<p><code>provision-gap</code> answers: where is provision thin against need across a region?
+It covers England and Wales, by local authority, and follows the method of the
+<a href="../../case-studies/starlight-children-mapping/">Starlight case study</a>: total
+what is provided in each place, divide by the people it is for, and look at
+the places where need is high and provision is thin.</p>
+<p>The analysis is about sites and what they provide, not about people. It accepts
+three shapes of data:</p>
+<table>
+<thead>
+<tr>
+<th>Input mode</th>
+<th>Columns</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sites</code></td>
+<td><code>postcode</code>, <code>volume</code></td>
+<td>One row per site or service, with how much it provides</td>
+</tr>
+<tr>
+<td><code>area_volumes</code></td>
+<td><code>local_authority</code>, <code>volume</code></td>
+<td>Already totalled by local authority, named or coded</td>
+</tr>
+<tr>
+<td><code>site_list</code></td>
+<td><code>postcode</code></td>
+<td>One row per site or service. Each site counts as one</td>
+</tr>
+</tbody>
+</table>
+<p>The volume is a number of zero or more: sessions, places, boxes, hours. A row
+whose volume is not a number stops the run, and the message says how many rows
+to correct. Postcodes are placed as in the first analysis: on your machine when
+the postcode table is installed, and with postcodes.io otherwise.</p>
+<p>The analysis loads a count of people in every local authority from
+<a href="../ons/">Nomis</a>, divides the provision in each one by it, and lists
+the high-need local authorities with the least provision per 1,000
+people. A local authority is high need when its count is in the top quarter
+of the area you serve, as in the second analysis.</p>
+<p>The <code>need</code> option takes the same values as in the second analysis, and the same
+kept copies (<code>keep_need_figures</code>, <code>download_need_figures</code>) are used. The
+default here is <code>"residents"</code>, everyone who lives in the place, because
+provision is often for anyone. Choose a narrower need when what you provide is
+for a group Nomis counts.</p>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>volume_supplied</code></td>
+<td>Provision in the data you gave</td>
+</tr>
+<tr>
+<td><code>volume_located</code></td>
+<td>Provision placed in a local authority in England or Wales</td>
+</tr>
+<tr>
+<td><code>volume_in_catchment</code></td>
+<td>Provision in the area you serve</td>
+</tr>
+<tr>
+<td><code>areas_compared</code></td>
+<td>Local authorities compared</td>
+</tr>
+<tr>
+<td><code>areas_without_provision</code></td>
+<td>Local authorities where you provide nothing</td>
+</tr>
+<tr>
+<td><code>people_in_need</code></td>
+<td>People in need in the area you serve</td>
+</tr>
+<tr>
+<td><code>volume_per_1000_in_need</code></td>
+<td>Provision per 1,000 people in need, across the area</td>
+</tr>
+<tr>
+<td><code>high_need_areas</code></td>
+<td>Local authorities with high need</td>
+</tr>
+<tr>
+<td><code>high_need_areas_without_provision</code></td>
+<td>High-need local authorities where you provide nothing</td>
+</tr>
+<tr>
+<td><code>share_of_provision_in_high_need_areas</code></td>
+<td>Share of your provision that is in high-need local authorities</td>
+</tr>
+<tr>
+<td><code>share_of_need_in_high_need_areas</code></td>
+<td>Share of people in need who live there, for comparison</td>
+</tr>
+</tbody>
+</table>
+<p>The charts <code>need_in_priority_areas</code> and <code>provision_in_priority_areas</code> show
+people in need and provision per 1,000 in need for the places in
+<code>priority_areas</code>. The map has two layers, <code>need</code> and <code>provision</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>priority_areas</code></td>
+<td>The high-need local authorities, thinnest provision first: people in need, volume, volume per 1,000 in need. The labels follow the need, as in the second analysis</td>
+</tr>
+<tr>
+<td><code>by_local_authority</code></td>
+<td>One per local authority compared, with need and provision in bands. This feeds the map</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>postcode_lookup</code></td>
+<td><code>"auto"</code></td>
+<td>As for the first analysis</td>
+</tr>
+<tr>
+<td><code>need</code></td>
+<td><code>"residents"</code></td>
+<td>The people to set your provision against</td>
+</tr>
+<tr>
+<td><code>catchment</code></td>
+<td>England and Wales</td>
+<td>A local authority name or code, a list of them, or <code>"England"</code>, <code>"Wales"</code> or <code>"England and Wales"</code></td>
+</tr>
+<tr>
+<td><code>top</code></td>
+<td><code>10</code></td>
+<td>How many places to list, from 1 to 50</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
+    <span class="s2">&quot;provision-gap&quot;</span><span class="p">,</span>
+    <span class="n">sites</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Site postcode&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;Sessions a year&quot;</span><span class="p">},</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;catchment&quot;</span><span class="p">:</span> <span class="s2">&quot;Wales&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;priority_areas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+</code></pre></div>
+<p>This analysis hides no count, and has no <code>suppress_below</code> option. Provision is
+what an organisation provides, not a number of people, so every total is shown,
+however small. Where a local authority holds one site, the provision shown for
+it is that site's. If your numbers are people, such as people seen at each site,
+use the need against reach analysis instead, which hides small counts. The result
+still names no site and repeats no postcode.</p>
+<p>The case study compares England's Integrated Care Boards and uses hospital
+admissions as the need. This analysis compares local authorities and takes the
+need from Nomis. Health boards, and a need column of your own, are not in it
+yet.</p>
+<div class="admonition note">
+<p class="admonition-title">Before you use the figures</p>
+<p>Read <code>result.checks</code> and <code>result.caveats</code>. Thin provision is not the same
+as unmet need: another organisation may already provide there. Provision
+is counted where a site is, and people travel. Need is a count of people,
+so large local authorities are more likely to be listed.</p>
+</div>
+<h2 id="access-and-distance">Access and distance</h2>
+<p><code>access-distance</code> answers: how far are people from our nearest site, and where
+would a new site help most? It covers England and Wales, by local authority,
+and follows the method of the
+<a href="../../case-studies/material-focus-recycling/">Material Focus case study</a>.</p>
+<p>Like the provision gap analysis, it is about sites, not about people. It accepts
+two shapes of data:</p>
+<table>
+<thead>
+<tr>
+<th>Input mode</th>
+<th>Columns</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>site_coordinates</code></td>
+<td><code>latitude</code>, <code>longitude</code></td>
+<td>One row per site, in degrees. West is negative</td>
+</tr>
+<tr>
+<td><code>site_postcodes</code></td>
+<td><code>postcode</code></td>
+<td>One row per site. Placed on your machine when the postcode table and the centres of neighbourhoods are there</td>
+</tr>
+</tbody>
+</table>
+<p>A row whose position is outside the United Kingdom is left out and counted;
+that is also what happens when the two columns are swapped. A site in
+Scotland or Northern Ireland still counts as a site.</p>
+<h3 id="site-postcodes-that-stay-on-your-machine">Site postcodes that stay on your machine</h3>
+<p>The <a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table</a> holds
+the neighbourhood of each postcode but no position. So the analysis places a site
+at the centre of its neighbourhood, from a file of neighbourhood centres kept
+on your machine. In a town that moves a site by a few hundred metres, and in
+the countryside by up to a few kilometres; the result carries a caveat that
+says so. Keep the centres once, when a server is built:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span>
+
+<span class="n">download_centres</span><span class="p">(</span><span class="s2">&quot;neighbourhood&quot;</span><span class="p">)</span>   <span class="c1"># about 35,700 centres, about 1 MB</span>
+</code></pre></div>
+<p>What happens to site postcodes follows <code>postcode_lookup</code>:</p>
+<table>
+<thead>
+<tr>
+<th><code>postcode_lookup</code></th>
+<th>Postcode table installed</th>
+<th>No postcode table</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"auto"</code> (the default)</td>
+<td>Placed on your machine. Nothing is sent</td>
+<td>Sent to postcodes.io</td>
+</tr>
+<tr>
+<td><code>"offline"</code></td>
+<td>Placed on your machine. Nothing is sent</td>
+<td>The analysis stops</td>
+</tr>
+<tr>
+<td><code>"online"</code></td>
+<td>Sent to postcodes.io</td>
+<td>Sent to postcodes.io</td>
+</tr>
+</tbody>
+</table>
+<p>With a postcode table installed and no centres kept, the analysis stops and names
+the function to run. It never falls back to sending postcodes, and it never
+fetches the centres while an analysis runs. A server that sets <code>"offline"</code> cannot
+send a postcode. The result says which happened, under <code>choices</code> and
+<code>privacy.sent_to_third_parties</code>.</p>
+<p>The table and the centres cover England and Wales. On your machine, a site
+with a Scottish or Northern Irish postcode is not found and is left out and
+counted; give its latitude and longitude instead.</p>
+<p>The analysis loads the people in every local authority from <a href="../ons/">Nomis</a> and
+the centre of every local authority from the ONS Open Geography Portal. For
+each local authority it measures the distance in a straight line from the
+centre to your nearest site, to the nearest kilometre. A local authority is
+within reach when that distance is <code>within_km</code> or less. The list shows the
+local authorities beyond reach, with the most people first: the places where
+a new site would bring the most people within reach.</p>
+<p><strong>Distance is not travel time.</strong> The package has no road or public transport
+times, so the analysis does not turn kilometres into minutes. And it measures from
+the centre of a local authority, not from where each person lives, which is
+rough for a large rural one.</p>
+<p>The <code>need</code> option takes the same values as in the second analysis, and the same
+kept copies. The default is <code>"residents"</code>. The centres can be kept on the
+machine too, so the analysis runs with no request at all:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span><span class="p">,</span> <span class="n">keep_centres</span>
+
+<span class="n">download_centres</span><span class="p">()</span>   <span class="c1"># fetch once, when a server is built</span>
+
+<span class="c1"># or keep centres of your own, for a demonstration</span>
+<span class="n">keep_centres</span><span class="p">(</span>
+    <span class="p">[(</span><span class="s2">&quot;E09000023&quot;</span><span class="p">,</span> <span class="mf">51.45</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;E09000011&quot;</span><span class="p">,</span> <span class="mf">51.47</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)],</span>
+    <span class="n">note</span><span class="o">=</span><span class="s2">&quot;invented for a demonstration.&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># the same for the centres of neighbourhoods, which place site postcodes</span>
+<span class="n">keep_centres</span><span class="p">(</span>
+    <span class="p">[(</span><span class="s2">&quot;E01003189&quot;</span><span class="p">,</span> <span class="mf">51.46</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">)],</span>
+    <span class="n">note</span><span class="o">=</span><span class="s2">&quot;invented for a demonstration.&quot;</span><span class="p">,</span>
+    <span class="n">level</span><span class="o">=</span><span class="s2">&quot;neighbourhood&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sites_supplied</code></td>
+<td>Sites in the data you gave</td>
+</tr>
+<tr>
+<td><code>sites_located</code></td>
+<td>Sites placed in the United Kingdom</td>
+</tr>
+<tr>
+<td><code>areas_compared</code></td>
+<td>Local authorities compared</td>
+</tr>
+<tr>
+<td><code>people_in_need</code></td>
+<td>People in the area you serve</td>
+</tr>
+<tr>
+<td><code>average_distance_km</code></td>
+<td>Average distance from the centre of each person's local authority to your nearest site. A place with many people counts for more</td>
+</tr>
+<tr>
+<td><code>share_of_people_within_reach</code></td>
+<td>Share of people in a local authority whose centre is within <code>within_km</code> of a site</td>
+</tr>
+<tr>
+<td><code>people_beyond_reach</code></td>
+<td>People in a local authority whose centre is farther than that</td>
+</tr>
+<tr>
+<td><code>areas_beyond_reach</code></td>
+<td>Local authorities whose centre is farther than that</td>
+</tr>
+<tr>
+<td><code>farthest_distance_km</code></td>
+<td>Distance from the centre of the farthest local authority to a site</td>
+</tr>
+</tbody>
+</table>
+<p>Every distance is from the centre of a local authority, the one the ONS
+publishes for it, and every person is counted there. That is coarse. A London
+borough is a few kilometres across, so 10 km says something about it. A large
+rural local authority can be 50 km across: a site can be inside it and still
+be farther than 10 km from its centre, and the place is then listed as far
+from a site. The answer, the labels, the headings and a caveat all say that
+distance is from the centre. Where the places you work in are large, set
+<code>within_km</code> higher and read the distances, not only who is within reach.</p>
+<p>The charts <code>people_in_priority_areas</code> and <code>distance_in_priority_areas</code> show
+the people and the distance for the places in <code>priority_areas</code>. The map has
+two layers, <code>distance</code> and <code>need</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>priority_areas</code></td>
+<td>The local authorities beyond reach, most people first: people, distance in kilometres. Empty when every place is within reach</td>
+</tr>
+<tr>
+<td><code>by_local_authority</code></td>
+<td>One per local authority compared, with people and distance in bands. This feeds the map</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>postcode_lookup</code></td>
+<td><code>"auto"</code></td>
+<td>How site postcodes are placed. See the table above</td>
+</tr>
+<tr>
+<td><code>need</code></td>
+<td><code>"residents"</code></td>
+<td>The people to measure distance for</td>
+</tr>
+<tr>
+<td><code>catchment</code></td>
+<td>England and Wales</td>
+<td>A local authority name or code, a list of them, or <code>"England"</code>, <code>"Wales"</code> or <code>"England and Wales"</code></td>
+</tr>
+<tr>
+<td><code>within_km</code></td>
+<td><code>10</code></td>
+<td>How many kilometres from a site counts as within reach</td>
+</tr>
+<tr>
+<td><code>top</code></td>
+<td><code>10</code></td>
+<td>How many places to list, from 1 to 50</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
+    <span class="s2">&quot;access-distance&quot;</span><span class="p">,</span>
+    <span class="n">sites</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="s2">&quot;Lat&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="s2">&quot;Long&quot;</span><span class="p">},</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;catchment&quot;</span><span class="p">:</span> <span class="s2">&quot;Wales&quot;</span><span class="p">,</span> <span class="s2">&quot;within_km&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;priority_areas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+</code></pre></div>
+<p>This analysis hides no count, and has no <code>suppress_below</code> option. The result
+names no site and repeats no postcode or position. Distances are rounded to
+the kilometre, but the distances from several local authorities can still
+show roughly where a site is.</p>
+<div class="admonition warning">
+<p class="admonition-title">Confidential addresses</p>
+<p>Do not share a result if the address of a site is confidential, such as a
+refuge. A check in every result asks this.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Before you use the figures</p>
+<p>Read <code>result.checks</code> and <code>result.caveats</code>. The figures say how far people
+are from a site. They do not say how far the people you see travel, or
+whether anyone far away needs you.</p>
+</div>
+<h2 id="writing-an-analysis">Writing an analysis</h2>
+<p>An analysis is an <code>AnalysisInfo</code> and a function that takes an <code>AnalysisInput</code> and
+returns an <code>AnalysisResult</code>. Register it with <code>register_analysis</code>. The rules every
+analysis keeps:</p>
+<ol>
+<li>Totals, never rows. Report problems by how many rows they affect.</li>
+<li>Hide small counts and anything that gives them away. Do not publish two
+   breakdowns that can be taken from each other to get a small count. Say in
+   the privacy notes that a hidden count is not always small.</li>
+<li>Give every figure a source.</li>
+<li>State every choice and name the option that changes it. Give each option
+   a <code>label</code>, use the label in quotes whenever a sentence points at the
+   option, and pass <code>option=</code> or <code>role=</code> when you raise <code>AnalysisInputError</code>.
+   Give a table <code>headings</code> for any column the package has no heading for.</li>
+<li>Leave checks for a person to answer.</li>
+<li>List anything sent off the machine in <code>privacy.sent_to_third_parties</code>.</li>
+<li>Answer the question in <code>answer</code>, from figures the result shows and nothing
+   else, and name the figures to show first in <code>key_figures</code>.</li>
+<li>Give a share or a rate its <code>exact</code> value, from <code>before_rounding</code>, when the
+   figure is shown, and never when it is hidden. Mark an option <code>private</code>
+   when the value a person gives holds words from their own data, so the
+   code that runs the analysis again leaves it out. <code>run_analysis</code> writes
+   <code>result.code</code> for you.</li>
+</ol>
+        <div id="llms-copy-button" style="position: fixed; z-index: 1100; top: 80px; right: 20px;">
+            <button onclick="copyMarkdownToClipboard()" style="cursor: pointer; background: #007acc; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Copy Markdown</button>
+        </div>
+        <script>
+        async function copyMarkdownToClipboard() {
+            try {
+                const currentPath = window.location.pathname;
+                const mdPath = currentPath.endsWith('/') ? currentPath + 'index.md' : currentPath.replace(/\.html$/, '.md');
+
+                const response = await fetch(mdPath);
+                if (response.ok) {
+                    const markdown = await response.text();
+                    await navigator.clipboard.writeText(markdown);
+                    // Show feedback
+                    const button = document.querySelector('#llms-copy-button button');
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    button.style.background = '#28a745';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.background = '#007acc';
+                    }, 2000);
+                } else {
+                    throw new Error('Markdown file not found');
+                }
+            } catch (err) {
+                console.error('Failed to copy markdown:', err);
+                alert('Failed to copy markdown content');
+            }
+        }
+        </script>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.instant", "navigation.tracking", "content.code.copy", "content.tooltips", "search.suggest", "search.highlight", "toc.follow"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>
