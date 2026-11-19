@@ -36,15 +36,23 @@ BOUNDARY_TYPE = "BSC"  # simplified to 200 metres: right for a map of many place
 # full ones, with detail finer than this many metres left out. The service
 # has no ready-made layer between the full outlines and 200 metres that is
 # open for every kind of area.
-FINE_BOUNDARY_TYPE = "BFE"
+#
+# The full outlines of local authorities come from the layer that stops at
+# the shore. For neighbourhoods the only full layer that is open runs out to
+# low water and to the middle of a river, so neighbourhoods are drawn inside
+# the outline of the local authorities that hold them.
+_FINE_TYPE = {"LSOA": "BFE", "LAD": "BFC"}
 _DETAIL_M = {"LSOA": 10, "LAD": 20}
 _FINE_UP_TO = {"LSOA": 1000, "LAD": 20}
 _FINE_BATCH = {"LSOA": 50, "LAD": 10}
-# The places around a map are local authorities. No more than this many are
-# fetched in fine detail: a map that has more near it is drawn small.
+# The places around a map are local authorities. Those in the picture are
+# fetched in fine detail when there are no more than this many: a picture
+# that holds more is drawn small, and 200 metres is less than a dot of it.
 AROUND_TYPE = "LAD"
 AROUND_YEAR = 2023
 _FINE_AROUND = 40
+# How wide a picture is when the caller does not say.
+_WIDTH = 720
 _COVERAGE = {"LSOA": "EW", "MSOA": "EW"}
 # The year of the outlines that were drawn follows this, as the licence asks.
 BOUNDARY_CREDIT = (
@@ -154,10 +162,17 @@ def load_map_boundaries(result: AnalysisResult, fine: bool = True) -> dict[str, 
     metre outlines of every area and of the places around, which are quick.
 
     The places around are the local authorities near the areas. They are drawn
-    in pale grey, so the picture says where it is. On a map of neighbourhoods
-    the local authorities that hold them are among those places, and are
-    listed as the focus. When the places around cannot be fetched the map is
-    whole without them, and nothing is said.
+    in pale grey, so the picture says where it is. On a map in fine detail
+    the ones a picture of the usual width shows come in fine detail too, so
+    that each meets the areas beside it. On a map of neighbourhoods the local
+    authorities that hold them are among those places, and are listed as the
+    focus. When the places around cannot be fetched the map is whole without
+    them, and nothing is said.
+
+    Fine outlines of neighbourhoods run out over water, to the middle of a
+    river. Fine outlines of local authorities stop at the shore. So when the
+    focus has its fine outlines it is also listed as the shore, and the
+    picture draws the neighbourhoods no further than it.
 
     Only area codes are sent to the boundary service. They are public codes for
     the whole catchment and its neighbours, so they say nothing about where
@@ -172,8 +187,9 @@ def load_map_boundaries(result: AnalysisResult, fine: bool = True) -> dict[str, 
 
     Returns:
         A GeoJSON FeatureCollection of the areas. It also holds
-        ``"surroundings"``, the outlines of the places around, and
-        ``"focus"``, the codes of those that hold the areas.
+        ``"surroundings"``, the outlines of the places around,
+        ``"focus"``, the codes of those that hold the areas, and
+        ``"shore"``, the codes of those the areas are drawn inside.
 
     Raises:
         ValueError: If the result has no map.
@@ -190,12 +206,13 @@ def load_map_boundaries(result: AnalysisResult, fine: bool = True) -> dict[str, 
         features += _outlines(spec.geography_type, spec.geography_year, left, None)
         detail = None if len(left) == len(codes) else detail
     focus = _focus(result, spec)
-    around = _surroundings(features, set(codes), focus, detail)
+    around, fine_around = _surroundings(features, set(codes), focus, detail is not None)
     return {
         "type": "FeatureCollection",
         "features": features,
         "surroundings": around,
         "focus": focus,
+        "shore": focus if focus and set(focus) <= fine_around else [],
     }
 
 
@@ -228,6 +245,7 @@ def _batches(
     finer than that left out. Without one, the 200 metre outlines are.
     """
     size = BOUNDARY_BATCH_SIZE if detail is None else _FINE_BATCH[geography_type]
+    layer = BOUNDARY_TYPE if detail is None else _FINE_TYPE[geography_type]
     features: list[dict[str, Any]] = []
     for start in range(0, len(codes), size):
         filters: dict[str, Any] = {field: codes[start : start + size]}
@@ -235,7 +253,7 @@ def _batches(
             geography_type,
             year=str(year),
             coverage=_COVERAGE.get(geography_type, "UK"),
-            boundary_type=BOUNDARY_TYPE if detail is None else FINE_BOUNDARY_TYPE,
+            boundary_type=layer,
             simplify_m=detail,
             **filters,
         )
@@ -264,15 +282,20 @@ def _surroundings(
     features: list[dict[str, Any]],
     shaded: set[str],
     focus: list[str],
-    detail: int | None,
-) -> list[dict[str, Any]]:
+    fine: bool,
+) -> tuple[list[dict[str, Any]], set[str]]:
     """Fetch the outlines of the local authorities on and near a map.
 
     Every local authority is fetched at 200 metres, once for the life of
     the process, to find the ones near the map. On a map drawn in fine detail
-    those few are then fetched again from the full outlines at the same
-    detail, so that a neighbour meets the areas beside it. One that does not
-    come keeps its 200 metre outline.
+    some are then fetched again from the full outlines: the ones that hold
+    the areas, always, and the others a picture shows, when they are few. So
+    a neighbour meets the areas beside it, and the line round a place fits
+    the neighbourhoods inside it. One that does not come keeps its 200 metre
+    outline.
+
+    Returns:
+        The outlines, and the codes of those that came in fine detail.
     """
     everywhere = _every_authority()
     reach = _reach(features)
@@ -283,19 +306,36 @@ def _surroundings(
     }
     for code in shaded:
         near.pop(code, None)
-    wanted = sorted(near)
-    if detail is None or len(wanted) > _FINE_AROUND:
-        return list(near.values())
-    finer = {
-        _property(feature.get("properties") or {}, "CD"): feature
-        for feature in _outlines(AROUND_TYPE, AROUND_YEAR, wanted, detail)
+    if not fine or not near:
+        return list(near.values()), set()
+    held = [code for code in focus if code in near]
+    finer = _fine_authorities(held)
+    # The picture is framed on the places that hold the areas when their fine
+    # outlines came, because those stop at the shore.
+    framed = list(finer.values()) if held and len(finer) == len(held) else features
+    shapes = [list(_rings(feature.get("geometry") or {})) for feature in framed]
+    shown = _View(shapes, _WIDTH, 0).ground()
+    beside = [
+        code
+        for code in sorted(near)
+        if code not in held and _overlaps(_bounds([near[code]]), shown)
+    ]
+    if len(beside) <= _FINE_AROUND:
+        finer.update(_fine_authorities(beside))
+    return list({**near, **finer}.values()), set(finer)
+
+
+def _fine_authorities(codes: list[str]) -> dict[str, dict[str, Any]]:
+    """Fetch the fine outlines of some local authorities, by code."""
+    fetched = _outlines(AROUND_TYPE, AROUND_YEAR, codes, _DETAIL_M[AROUND_TYPE])
+    return {
+        _property(feature.get("properties") or {}, "CD"): feature for feature in fetched
     }
-    return list({**near, **finer}.values())
 
 
 # The 200 metre outline of every local authority, once it has been fetched.
-# It is about a megabyte and the same for every map, so a process that draws
-# many maps fetches it once.
+# It is nearly three megabytes and the same for every map, so a process that
+# draws many maps fetches it once.
 _kept_authorities: list[dict[str, Any]] = []
 # Two maps can be fetched at once, on two threads. The second waits for the
 # first to fill the list, so it is fetched once and never held twice.
@@ -377,7 +417,7 @@ def render_map(
     result: AnalysisResult,
     layer: str | None = None,
     boundaries: dict[str, Any] | None = None,
-    width: int = 720,
+    width: int = _WIDTH,
 ) -> str:
     """Draw one layer of a result's map as an SVG picture.
 
@@ -391,7 +431,9 @@ def render_map(
             pale grey. They can be among the features or in a list under
             ``"surroundings"``. Codes listed under ``"focus"`` are the
             surrounding places that hold the shaded areas: each gets a darker
-            line and its name.
+            line and its name. Codes listed under ``"shore"`` are surrounding
+            places whose outline is where the land ends: the shaded areas are
+            drawn no further than it.
         width: Width of the picture in pixels.
 
     Returns:
@@ -418,26 +460,34 @@ def render_map(
             len(rows),
         )
     title = _wrap(_heading(spec, chosen), _letters(width, _TITLE_SIZE, _BOLD_LETTER))
-    view = _View([shapes[code] for code in drawn], width, len(title) * _TITLE_LINE + 18)
+    land = _shore(geojson, set(rows))
+    framed = land or [shapes[code] for code in drawn]
+    view = _View(framed, width, len(title) * _TITLE_LINE + 18)
     areas = {code: (rows[code], view.rings(shapes[code])) for code in drawn}
     around = _around(geojson, set(rows), view)
-    names = _place_names(areas, around)
+    shore = [ring for rings in land for ring in view.rings(rings)]
+    scope = _scope(chosen)
+    inside = f' clip-path="url(#{scope}-shore)"' if shore else ""
+    names = _place_names(areas, around, shore)
     key_top = round(view.top + view.height) + 16
     key, note_top = _key(chosen, key_top, width)
     note = _wrap(chosen.note, _letters(width, _NOTE_SIZE))
     credit_top = note_top + len(note) * _NOTE_LINE + 6
     credit = _wrap(_credit(result, spec), _letters(width, _CREDIT_SIZE))
     height = credit_top + len(credit) * _CREDIT_LINE + _MARGIN
-    scope = _scope(chosen)
     parts = [
         _open_svg(width, height, spec, chosen),
         _style(chosen, spec.layers.index(chosen)),
         f'<rect class="surface" width="{width}" height="{height}"/>',
         _lines(title, 26, _TITLE_LINE, "ink", _TITLE_SIZE, bold=True),
         f'<clipPath id="{scope}-frame">{view.frame()}</clipPath>',
+        f'<clipPath id="{scope}-shore"><path d="{_d(shore)}"/></clipPath>'
+        * bool(shore),
         f'<g clip-path="url(#{scope}-frame)">',
         *(_ring_path(place.rings, "land") for place in around),
+        f"<g{inside}>",
         *(_area_path(rings, row, chosen) for row, rings in areas.values()),
+        "</g>",
         *(_ring_path(place.rings, "outline") for place in around if place.focus),
         *(_name_text(name) for name in _around_names(around, view, names)),
         *(_name_text(name) for name in names),
@@ -532,6 +582,13 @@ class _View:
         x += (lon - self._middle[0]) * self._squeeze * self._scale
         return x, y - (lat - self._middle[1]) * self._scale
 
+    def ground(self) -> _Box:
+        """Return the west, south, east and north edges of what the frame shows."""
+        across = self.width / 2 / (self._squeeze * self._scale)
+        up = self.height / 2 / self._scale
+        lon, lat = self._middle
+        return lon - across, lat - up, lon + across, lat + up
+
     def rings(self, rings: list[Any]) -> list[_Ring]:
         """Return the rings of an outline as points on the picture.
 
@@ -622,6 +679,24 @@ def _around(geojson: dict[str, Any], shaded: set[str], view: _View) -> list[_Pla
             continue
         places.append(_Place(_property(properties, "NM"), rings, code in focus))
     return places
+
+
+def _shore(geojson: dict[str, Any], shaded: set[str]) -> list[list[Any]]:
+    """Return the outlines the shaded areas are drawn inside, if there are any.
+
+    They are the outlines of the places listed as the shore, one list of
+    rings for each. When the outline of one of them is not there, there is no
+    shore, so that no shaded area is lost.
+    """
+    listed = {str(code) for code in geojson.get("shore", [])} - shaded
+    features = [*geojson.get("features", []), *geojson.get("surroundings", [])]
+    found = {}
+    for feature in features:
+        code = _property(feature.get("properties") or {}, "CD")
+        rings = list(_rings(feature.get("geometry") or {}))
+        if code in listed and rings:
+            found[code] = rings
+    return list(found.values()) if listed and len(found) == len(listed) else []
 
 
 def _property(properties: dict[str, Any], ending: str) -> str:
@@ -883,7 +958,9 @@ def _name_text(name: _Name) -> str:
 
 
 def _place_names(
-    areas: dict[str, tuple[dict[str, Any], list[_Ring]]], around: list[_Place]
+    areas: dict[str, tuple[dict[str, Any], list[_Ring]]],
+    around: list[_Place],
+    shore: list[_Ring] | None = None,
 ) -> list[_Name]:
     """Name the shaded places.
 
@@ -891,25 +968,44 @@ def _place_names(
     its neighbourhoods. With places drawn around them even a single authority
     is named, so the picture says where it is. Larger areas are named one by
     one when there are few enough to read.
+
+    When the areas are drawn inside a shore, the middle is of the part that
+    is drawn, so a name is not put out on the water.
     """
+    edge = _span([point for ring in shore or [] for point in ring])
     grouped = any(row.get("lad_name") for row, _ in areas.values())
     if not grouped and len(areas) > _MAX_NAMES:
         return []
     boxes: dict[str, list[tuple[float, float]]] = {}
     for row, rings in areas.values():
         name = str(row.get("lad_name") if grouped else row.get("geography_name") or "")
-        boxes.setdefault(name, []).extend(point for ring in rings for point in ring)
+        boxes.setdefault(name, []).extend(
+            (x, y)
+            for ring in rings
+            for x, y in ring
+            if edge is None or (edge[0] <= x <= edge[2] and edge[1] <= y <= edge[3])
+        )
     boxes.pop("", None)
     if grouped and len(boxes) < 2 and not around:
         return []
     names = []
     for name, points in boxes.items():
-        xs = [x for x, _ in points]
-        ys = [y for _, y in points]
+        box = _span(points)
+        if box is None:
+            continue
         wide = len(name) * _NAME_LETTER * (1.25 if grouped else 1.1)
-        spot = ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2)
+        spot = ((box[0] + box[2]) / 2, (box[1] + box[3]) / 2)
         names.append(_Name(name, *spot, wide, "held" if grouped else "name"))
     return names
+
+
+def _span(points: list[tuple[float, float]]) -> _Box | None:
+    """Return the left, top, right and bottom of some points on the picture."""
+    if not points:
+        return None
+    xs = [x for x, _ in points]
+    ys = [y for _, y in points]
+    return min(xs), min(ys), max(xs), max(ys)
 
 
 def _around_names(around: list[_Place], view: _View, taken: list[_Name]) -> list[_Name]:

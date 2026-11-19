@@ -1274,20 +1274,23 @@ def test_map_of_a_few_authorities_is_fetched_in_fine_detail(nomis):
     with mock.patch("uk_open_data.analyses.maps.load_geodata", service):
         boundaries = load_map_boundaries(result)
     own, everywhere, *near = asked
-    # The shaded places come from the full outlines, with detail finer than
-    # twenty metres left out, and so do the places near them.
-    assert (own["boundary_type"], own["simplify_m"]) == ("BFE", 20)
+    # The shaded places come from the full outlines that stop at the shore,
+    # with detail finer than twenty metres left out, and so do the places
+    # the picture shows beside them.
+    assert (own["boundary_type"], own["simplify_m"]) == ("BFC", 20)
     assert set(own["LAD23CD"]) == shaded
     assert everywhere["boundary_type"] == "BSC"
     assert "simplify_m" not in everywhere and "LAD23CD" not in everywhere
-    assert {(n["boundary_type"], n["simplify_m"]) for n in near} == {("BFE", 20)}
+    assert {(n["boundary_type"], n["simplify_m"]) for n in near} == {("BFC", 20)}
     # They are asked for ten at a time.
     assert max(len(n["LAD23CD"]) for n in near) <= 10
     # A shaded place is never also one of the places around, and a map of
     # local authorities has no place that holds the others.
     around = {f["properties"]["LAD23CD"] for f in boundaries["surroundings"]}
     assert around and not around & shaded
-    assert {code for n in near for code in n["LAD23CD"]} == around
+    # Those the picture does not show keep their 200 metre outlines.
+    fine = {code for n in near for code in n["LAD23CD"]}
+    assert fine and fine < around
     assert boundaries["focus"] == []
     svg = render_map(result, boundaries=boundaries)
     # "Near" reaches further than the picture, so not all of them are drawn.
