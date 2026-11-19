@@ -95,8 +95,9 @@ an option cannot be used. The message is written for a person and
 When a public data source the lens needs cannot be reached, the
 `requests.RequestException` is let out. Its text holds the whole web address
 that was asked for, which can hold a postcode, so show a message of your own
-rather than the text. The command line names the site alone. A lens needs no
-network when the public figures it uses are kept on your machine.
+rather than the text. The command line names the site alone, and says
+whether the source could not be reached or answered with an error. A lens
+needs no network when the public figures it uses are kept on your machine.
 
 ## Drawing the map
 

@@ -44,6 +44,10 @@ from kindtech.postcodes import (
 EXIT_OK = 0
 EXIT_INPUT_ERROR = 2
 SPREADSHEET_SUFFIXES = (".xlsx", ".ods")
+KEPT_FIGURES = (
+    "A lens can run without the network when the public figures it uses are "
+    "kept on this machine: see the page for the lens in the documentation."
+)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -64,7 +68,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     except FileNotFoundError as error:
         return _fail(f"The file '{error.filename}' was not found.")
     except requests.RequestException as error:
-        return _fail(_unreachable(error))
+        return _fail(_source_problem(error))
     except (OSError, ValueError) as error:
         return _fail(str(error))
     _emit(text, getattr(args, "output", None))
@@ -285,20 +289,26 @@ def _emit(text: str, output: Path | None) -> None:
     sys.stdout.write(f"Written to {output}\n")
 
 
-def _unreachable(error: requests.RequestException) -> str:
-    """Say that a data source could not be reached, without its web address.
+def _source_problem(error: requests.RequestException) -> str:
+    """Say what went wrong with a data source, without its web address.
 
     The text of the error holds the whole address, which can hold what was
     asked for, such as a postcode. Only the name of the site is given.
     """
-    address = getattr(error.request, "url", None)
+    response = error.response
+    address = getattr(error.request, "url", None) or getattr(response, "url", None)
     site = urlsplit(address).hostname if address else None
     where = f" ({site})" if site else ""
+    if response is not None:
+        return (
+            f"A data source this command needs answered with an error{where}, "
+            f"status {response.status_code}. Try again in a minute. If it "
+            "keeps happening, the source may not hold what was asked for: "
+            f"check any table named in the options. {KEPT_FIGURES}"
+        )
     return (
         f"A data source this command needs could not be reached{where}. Check "
-        "the connection and try again. A lens can run without the network "
-        "when the public figures it uses are kept on this machine: see the "
-        "page for the lens in the documentation."
+        f"the connection and try again. {KEPT_FIGURES}"
     )
 
 
