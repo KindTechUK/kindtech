@@ -1,7 +1,7 @@
 """Smoke-test an installed distribution of the package."""
 
-import warnings
 from importlib.resources import files
+from importlib.util import find_spec
 
 import uk_open_data
 from uk_open_data.cli import main as cli_main
@@ -23,11 +23,8 @@ def main() -> None:
     )
     # The command line and the lens list work with no DataFrame backend.
     assert cli_main(["lens", "list"]) == 0
-    # The package's old name is installed too, and is the same package.
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
-        import kindtech.geo
-    assert kindtech.geo is uk_open_data.geo
+    # The old name is a distribution of its own and is not part of this one.
+    assert find_spec("kindtech") is None
 
 
 if __name__ == "__main__":

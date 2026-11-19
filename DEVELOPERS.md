@@ -61,17 +61,31 @@ uv run --group dev mkdocs build --strict
 ## Releases
 
 PyPI releases are published by `.github/workflows/release.yml` when a version tag
-such as `v0.1.0` is pushed. Before tagging, update `[project].version`, merge the
-change to `main`, and confirm CI passes. The workflow verifies that the tag matches
-the package version, builds and smoke-tests both distributions, generates
+such as `v0.2.0` is pushed. One tag publishes two projects: `uk-open-data`, and
+`kindtech`, the package's old name, which is built from `packaging/kindtech` and
+depends on the same version of `uk-open-data`.
+
+Before tagging, set the same version in `pyproject.toml` and in
+`packaging/kindtech/pyproject.toml` (its own version and the version of
+`uk-open-data` it depends on), run `uv lock`, merge the change to `main`, and
+confirm CI passes. The workflow verifies that the tag matches both versions,
+builds and smoke-tests the distributions of both projects, generates
 attestations, and publishes through the `pypi` environment using Trusted
-Publishing. Do not upload distributions manually.
+Publishing, `uk-open-data` first. Do not upload distributions manually.
 
-### Does KindTech need separate PyPI registration?
+### Why is the old name a package of its own?
 
-No. The configured pending publisher can create the project during the first
-trusted publish, so no priming upload is needed. A pending publisher does not
-reserve the project name before that first publish.
+Version 0.1.0 was published as `kindtech` and owns the `kindtech` folder in a
+person's environment. If `uk-open-data` shipped that folder too, upgrading
+`kindtech` with pip would install the new files and then remove them with the
+old version. So `uk-open-data` holds only `uk_open_data`, and the `kindtech`
+distribution holds the old import name.
+
+### Do the projects need separate PyPI registration?
+
+Each needs its own trusted publisher on PyPI. A pending publisher can create a
+project during its first trusted publish, so no priming upload is needed. A
+pending publisher does not reserve the project name before that first publish.
 
 ### Why test installed wheel and source distributions?
 
