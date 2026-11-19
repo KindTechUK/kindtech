@@ -65,6 +65,11 @@ When the file, a column or an option cannot be used, the command prints what is
 wrong and exits with status 2. The message never repeats a value from your
 data, so it is safe to paste into a chat or an issue.
 
+A run that prints its answer writes one line to the `uk_open_data.runs` logger,
+with the analysis, the input mode and the word `cli`. Nothing collects it on
+your machine and nothing is sent anywhere. See
+[`record_run`](analyses.md#record_runanalysis_id-input_mode-door).
+
 ### `postcodes download`
 
 Fetches the postcode table, a few megabytes, so that analyses look postcodes up on

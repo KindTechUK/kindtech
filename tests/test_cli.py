@@ -6,6 +6,7 @@ are written to a temporary folder, so the tests are isolated and repeatable.
 """
 
 import json
+import logging
 import unittest.mock as mock
 
 import pandas as pd
@@ -252,3 +253,18 @@ def test_a_pair_without_equals_is_rejected(index, counts_file, capsys):
     args = ["analysis", "run", ANALYSIS_ID, str(counts_file), "--column", "postcode"]
     assert main(args) == EXIT_INPUT_ERROR
     assert "NAME=VALUE" in capsys.readouterr().err
+
+
+def test_a_run_that_answers_is_recorded_once(index, counts_file, capsys, caplog):
+    with caplog.at_level(logging.INFO, logger="uk_open_data.runs"):
+        assert main(_run_args(counts_file)) == EXIT_OK
+    assert [record.getMessage() for record in caplog.records] == [
+        "run analysis=reach-deprivation mode=neighbourhood_counts door=cli"
+    ]
+
+
+def test_a_run_that_fails_is_not_recorded(index, counts_file, capsys, caplog):
+    args = _run_args(counts_file, "--option", "no_such_option=1")
+    with caplog.at_level(logging.INFO, logger="uk_open_data.runs"):
+        assert main(args) == EXIT_INPUT_ERROR
+    assert caplog.records == []

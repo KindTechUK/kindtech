@@ -47,6 +47,7 @@ from uk_open_data.analyses._model import (
 from uk_open_data.analyses._registry import (
     describe_analysis,
     list_analyses,
+    record_run,
     register_analysis,
     run_analysis,
 )
@@ -86,6 +87,7 @@ __all__ = [
     "describe_analysis",
     "list_analyses",
     "load_map_boundaries",
+    "record_run",
     "register_analysis",
     "render_map",
     "run_analysis",

@@ -109,6 +109,33 @@ rather than the text. The command line names the site alone, and says
 whether the source could not be reached or answered with an error. An analysis
 needs no network when the public figures it uses are kept on your machine.
 
+### `record_run(analysis_id, input_mode, door)`
+
+Records that a run has given a person an answer, so that a host can count how
+often each analysis is used. It writes one record at `INFO` level to the
+`uk_open_data.runs` logger, and that is all it does: the package adds no handler
+and sends nothing anywhere. On a person's own machine nobody collects the
+records. A host that keeps its logs can count them.
+
+```python
+from uk_open_data.analyses import record_run
+
+record_run(result.analysis_id, result.input_mode, "page")
+# run analysis=reach-deprivation mode=postcodes door=page
+```
+
+`run_analysis` never records a run by itself. Whatever gives the answer to a
+person calls `record_run` once, after the answer has been given: the command
+line does (`"cli"`), and a page (`"page"`) or a chat assistant (`"chat"`) built
+on these analyses should. A run that fails is not recorded.
+
+The record holds the three words and nothing else. Each must be on a fixed
+list (a registered analysis, one of its input modes, one of the three doors),
+so no word from a person's data can reach a log. A word that is not on its list
+raises `KeyError` (the analysis) or `ValueError` (the mode or the door), and the
+message does not repeat it. The same three words are on the record as
+`record.analysis_id`, `record.input_mode` and `record.door`.
+
 ## Drawing the map
 
 A result describes its map; `render_map` draws it as an SVG picture with a
