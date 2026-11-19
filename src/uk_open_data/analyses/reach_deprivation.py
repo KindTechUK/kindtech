@@ -50,6 +50,7 @@ from uk_open_data.analyses._steps import (
     POSTCODE_LOOKUP,
     SUPPRESS_BELOW,
     Trail,
+    before_rounding,
     count_by_neighbourhood,
     count_by_postcode,
     percent,
@@ -796,6 +797,7 @@ def _figures(
             percent(sum(residents[:2]), sum(residents)),
             "percent",
             note="The comparison for the share of your people.",
+            exact=before_rounding(sum(residents[:2]), sum(residents)),
         ),
     ]
     return figures + _reach_figures(people, hide, residents, threshold)
@@ -820,7 +822,13 @@ def _share_figure(
             suppressed=True,
         )
     part = sum(people[position] for position in positions)
-    return Figure(figure_id, label, percent(part, sum(people)), "percent")
+    return Figure(
+        figure_id,
+        label,
+        percent(part, sum(people)),
+        "percent",
+        exact=before_rounding(part, sum(people)),
+    )
 
 
 def _reach_figures(
@@ -875,7 +883,13 @@ def _reach_figure(
             note="The area you serve has no neighbourhoods of this kind.",
         )
     reached = sum(people[position] for position in positions)
-    return Figure(figure_id, label, _per_1000(reached, lived), "per_1000")
+    return Figure(
+        figure_id,
+        label,
+        _per_1000(reached, lived),
+        "per_1000",
+        exact=before_rounding(reached, lived, 1000),
+    )
 
 
 # --- what the person needs to know -----------------------------------------

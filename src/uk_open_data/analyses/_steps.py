@@ -559,3 +559,12 @@ def count_by_neighbourhood(
 def percent(part: float, whole: float) -> float | None:
     """Return a percentage to one decimal place, or None when there is no whole."""
     return round(100 * part / whole, 1) if whole else None
+
+
+def before_rounding(part: float, whole: float, per: float = 100) -> float | None:
+    """Return a share or a rate as it was before rounding, for a figure's ``exact``.
+
+    Give it only for a figure that is shown. A figure hidden to protect a
+    small count has no exact value either.
+    """
+    return per * part / whole if whole else None

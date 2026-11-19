@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 
 import pandas as pd
 import pytest
+from working_checks import check_working
 
 from uk_open_data.analyses import (
     AnalysisInputError,
@@ -629,6 +630,10 @@ def test_charts_use_columns_of_the_list(nomis):
 
 def test_result_explains_itself(nomis):
     result = _run(SPREAD)
+    options = check_working(result)
+    assert options["need"] == "residents"
+    rate = result.figure("volume_per_1000_in_need")
+    assert round(rate.exact, 2) == rate.value
     # Every column has a plain heading to show in place of its id.
     assert not [
         column

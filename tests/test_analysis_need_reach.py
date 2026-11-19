@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 
 import pandas as pd
 import pytest
+from working_checks import check_working
 
 from uk_open_data.analyses import (
     AnalysisInputError,
@@ -1161,6 +1162,14 @@ def test_map_can_be_drawn(nomis):
 
 def test_result_explains_itself(nomis):
     result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    options = check_working(result)
+    assert options["need"] == "unemployed"
+    again = _run(_counts(Lewisham=60, Greenwich=30, Adur=10), options=options)
+    assert again.answer == result.answer
+    # A share hidden to protect a small count has no exact value either.
+    hidden = _run(_counts(Lewisham=60, Greenwich=3, Adur=10, Cardiff=30))
+    check_working(hidden)
+    assert [f.exact for f in hidden.figures if f.suppressed] in ([], [None])
     # Every column has a plain heading to show in place of its id.
     assert not [
         column
