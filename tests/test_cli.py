@@ -195,6 +195,30 @@ def test_an_unreachable_source_without_an_address_is_still_reported(
     assert "example.invalid" not in err
 
 
+def test_a_source_that_answers_with_an_error_is_not_called_unreachable(
+    counts_file, capsys
+):
+    address = "https://www.nomisweb.co.uk/api/v01/dataset/NM_1_1.data.csv?secret=1"
+    response = requests.Response()
+    response.status_code = 503
+    response.url = address
+    response.request = requests.Request("GET", address).prepare()
+    error = requests.HTTPError(
+        f"503 Server Error: Service Unavailable for url: {address}", response=response
+    )
+    with mock.patch("kindtech.cli.run_lens", side_effect=error):
+        assert main(_run_args(counts_file)) == EXIT_INPUT_ERROR
+    err = capsys.readouterr().err
+    assert err.startswith(
+        "A data source this command needs answered with an error "
+        "(www.nomisweb.co.uk), status 503."
+    )
+    assert "could not be reached" not in err
+    assert "Check the connection" not in err
+    for part in ("https", "NM_1_1", "secret", "Server Error"):
+        assert part not in err
+
+
 def test_missing_file_is_reported(capsys):
     assert main(["lens", "run", LENS_ID, "nowhere.csv"]) == EXIT_INPUT_ERROR
     assert "was not found" in capsys.readouterr().err
