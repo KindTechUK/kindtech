@@ -1310,7 +1310,8 @@ def _named(svg: str) -> dict[str, tuple[float, float]]:
 
 def test_a_name_sits_beside_a_place_too_small_to_hold_it(nomis):
     # Places far apart are drawn small. A name on top of a small place would
-    # hide the colour that says how much need it has.
+    # hide the colour that says how much need it has. "Small" is a place the
+    # name would cover more than half of.
     result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
     rows = result.table("by_local_authority").rows
     codes = {row["geography_name"]: row["geography_code"] for row in rows}

@@ -129,9 +129,10 @@ _SCALE_LENGTHS = (0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500)
 _MAX_SCALE_WIDTH = 110
 # Larger areas are named one by one when there are no more than this many.
 _MAX_NAMES = 12
-# A name covers a place that is narrower than the name and no taller than
-# this. It is then written this far to one side of the place.
-_NAME_COVERS = 20
+# A name covers a place when the name, this tall, takes up more than this
+# share of the box round the place. It is then written this far to one side.
+_NAME_TALL = 14
+_NAME_COVERS = 0.5
 _NAME_GAP = 5
 # A name is tried on lines this far apart, in letters about this wide.
 _NAME_STEP = 10
@@ -1046,7 +1047,8 @@ def _place_names(
     its neighbourhoods. With places drawn around them even a single authority
     is named, so the picture says where it is. Larger areas are named one by
     one when there are few enough to read. A place the name would cover is
-    named beside it, so its colour can still be seen.
+    named beside it, so its colour can still be seen, when there is room
+    beside it that is not on another shaded place.
 
     When the areas are drawn inside a shore, the middle is of the part that
     is drawn, so a name is not put out on the water.
@@ -1056,8 +1058,10 @@ def _place_names(
     if not grouped and len(areas) > _MAX_NAMES:
         return []
     boxes: dict[str, list[tuple[float, float]]] = {}
+    outlines: dict[str, list[_Ring]] = {}
     for row, rings in areas.values():
         name = str(row.get("lad_name") if grouped else row.get("geography_name") or "")
+        outlines.setdefault(name, []).extend(rings)
         boxes.setdefault(name, []).extend(
             (x, y)
             for ring in rings
@@ -1074,24 +1078,47 @@ def _place_names(
             continue
         wide = len(name) * _NAME_LETTER * (1.25 if grouped else 1.1)
         spot = ((box[0] + box[2]) / 2, (box[1] + box[3]) / 2)
-        covered = box[2] - box[0] < wide and box[3] - box[1] < _NAME_COVERS
-        if covered and not grouped:
-            spot = _beside(box, wide, view)
+        room = (box[2] - box[0]) * (box[3] - box[1])
+        if not grouped and wide * _NAME_TALL > _NAME_COVERS * room:
+            others = [rings for other, rings in outlines.items() if other != name]
+            spot = _beside(box, wide, view, others) or spot
         names.append(_Name(name, *spot, wide, "held" if grouped else "name"))
     return names
 
 
-def _beside(box: _Box, wide: float, view: _View) -> tuple[float, float]:
-    """Find the spot for a name next to a place that is too small to hold it.
+def _beside(
+    box: _Box, wide: float, view: _View, others: list[list[_Ring]]
+) -> tuple[float, float] | None:
+    """Find a spot for a name next to a place that is too small to hold it.
 
-    It is to the right of the place, or to the left when the frame ends
-    first.
+    It is to the right of the place, or else to the left. A side is no good
+    when the name would run out of the frame or sit on another shaded place.
+    There may be no such spot.
     """
     y = (box[1] + box[3]) / 2
-    right = box[2] + _NAME_GAP + wide / 2
-    if right + wide / 2 <= view.left + view.width - 4:
-        return right, y
-    return box[0] - _NAME_GAP - wide / 2, y
+    for x in (box[2] + _NAME_GAP + wide / 2, box[0] - _NAME_GAP - wide / 2):
+        ends = (x - wide / 2, x, x + wide / 2)
+        in_frame = view.left + 4 <= ends[0] and ends[2] <= view.left + view.width - 4
+        if in_frame and not any(
+            _holds(rings, end, y) for rings in others for end in ends
+        ):
+            return x, y
+    return None
+
+
+def _holds(rings: list[_Ring], x: float, y: float) -> bool:
+    """Say whether a point on the picture is inside an outline.
+
+    A line from the point to the right crosses the outline an odd number of
+    times when the point is inside.
+    """
+    crossings = sum(
+        1
+        for ring in rings
+        for (x1, y1), (x2, y2) in zip(ring, [ring[-1], *ring[:-1]], strict=True)
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) / (y2 - y1) * (x2 - x1)
+    )
+    return crossings % 2 == 1
 
 
 def _span(points: list[tuple[float, float]]) -> _Box | None:
