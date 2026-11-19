@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 SERVER_NAME = "kindtech"
 SERVER_TITLE = "Kindtech open data for charities"
-WEBSITE_URL = "https://github.com/KindTechUK/kindtech"
+WEBSITE_URL = "https://github.com/KindTechUK/uk-open-data"
 
 INSTRUCTIONS = """\
 Kindtech answers questions a UK charity asks of its own figures and of open \

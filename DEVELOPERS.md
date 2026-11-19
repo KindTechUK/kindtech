@@ -13,8 +13,8 @@ Instead of the traditional `pip install -e .`, use:
 
 ```bash
 # Clone the repository
-git clone https://github.com/KindTechUK/kindtech
-cd kindtech
+git clone https://github.com/KindTechUK/uk-open-data
+cd uk-open-data
 
 # Install the package in development mode with all dev dependencies
 uv sync --group dev

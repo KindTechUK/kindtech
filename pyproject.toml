@@ -21,10 +21,10 @@ uk-open-data = "uk_open_data.cli:main"
 kindtech = "uk_open_data.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/KindTechUK/kindtech"
-Documentation = "https://kindtechuk.github.io/kindtech/"
-Repository = "https://github.com/KindTechUK/kindtech"
-Issues = "https://github.com/KindTechUK/kindtech/issues"
+Homepage = "https://github.com/KindTechUK/uk-open-data"
+Documentation = "https://kindtechuk.github.io/uk-open-data/"
+Repository = "https://github.com/KindTechUK/uk-open-data"
+Issues = "https://github.com/KindTechUK/uk-open-data/issues"
 
 [project.optional-dependencies]
 connector = [

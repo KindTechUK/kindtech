@@ -61,11 +61,11 @@ Or
 ### Reproduction
 
 A runnable, end-to-end reproduction lives in
-[`examples/material_focus_recycling.py`](https://github.com/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py)
+[`examples/material_focus_recycling.py`](https://github.com/KindTechUK/uk-open-data/blob/main/examples/material_focus_recycling.py)
 (a [marimo](https://marimo.io/) notebook). It builds the headline travel-time
 map from two KindTech connectors, joining on `geography_code`:
 
-[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py)
+[![Open in marimo](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/KindTechUK/uk-open-data/blob/main/examples/material_focus_recycling.py)
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with `uv run marimo edit examples/material_focus_recycling.py`.
 
