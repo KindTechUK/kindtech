@@ -323,13 +323,13 @@ def test_answer_names_the_groups_reached_less_than_their_share(nomis):
     result = _run(CLIENTS)
     assert result.answer == (
         AGAINST + "2 of the 5 groups less than their share: Black and Other. "
-        "The first, Black, is 15.0% of your people and 25.0% of the people who "
-        "live there. Nobody in your data is recorded as Other."
+        "The first, Black, is 30 of your people, 15.0%, against 25.0% of the "
+        "people who live there. Nobody in your data is recorded as Other."
     )
     assert result.key_figures == (
         "groups_under_represented",
         "people_matched",
-        "residents",
+        "people_not_matched",
     )
     assert {figure.id for figure in result.figures} >= set(result.key_figures)
     assert result.to_dict()["answer"] == result.answer
@@ -349,16 +349,16 @@ def test_answer_names_the_least_reached_first_and_counts_the_rest():
     rows = [_group(name, ratio) for name, ratio in ratios.items()]
     assert who_we_miss._answer(rows) == (
         AGAINST + "4 of the 5 groups less than their share: B, D, A and 1 more. "
-        "The first, B, is 2.0% of your people and 20.0% of the people who live "
-        "there."
+        "The first, B, is 10 of your people, 2.0%, against 20.0% of the people "
+        "who live there."
     )
 
 
 def test_answer_gives_both_shares_of_a_single_group():
     rows = [_group("A", 0.5), _group("B", 1.2)]
     assert who_we_miss._answer(rows) == (
-        AGAINST + "one group less than its share: A. It is 10.0% of your people "
-        "and 20.0% of the people who live there."
+        AGAINST + "one group less than its share: A. It is 50 of your people, "
+        "10.0%, against 20.0% of the people who live there."
     )
 
 
@@ -367,8 +367,8 @@ def test_answer_names_groups_with_nobody_last_and_says_so():
     rows = [_group("A", 0), _group("B", 0.5), _group("C", 0), _group("D", 1)]
     assert who_we_miss._answer(rows) == (
         AGAINST + "3 of the 4 groups less than their share: B, A and C. The "
-        "first, B, is 10.0% of your people and 20.0% of the people who live "
-        "there. Nobody in your data is recorded as A or C."
+        "first, B, is 50 of your people, 10.0%, against 20.0% of the people who "
+        "live there. Nobody in your data is recorded as A or C."
     )
 
 

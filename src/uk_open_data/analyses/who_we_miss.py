@@ -65,7 +65,9 @@ from uk_open_data.ons import load_ons
 
 ANALYSIS_ID = "who-we-miss"
 ANALYSIS_VERSION = "0.1"
-KEY_FIGURES = ("groups_under_represented", "people_matched", "residents")
+# People matched to no group are left out of every share, so they are shown
+# beside the people who were matched.
+KEY_FIGURES = ("groups_under_represented", "people_matched", "people_not_matched")
 RESIDENTS_FOLDER = "residents"
 RESIDENTS_FILE_FORMAT = "kindtech-residents-1"
 # Nomis code for a count of people, as opposed to a percentage.
@@ -1039,8 +1041,11 @@ def _shares_of_the_first(under: list[dict[str, Any]]) -> str:
         return ""
     first = under[0]
     subject = "It" if len(under) == 1 else f"The first, {first['group']},"
+    # The count goes with the share, so a share that rests on a handful of
+    # people is not read as a firm finding.
     return (
-        f" {subject} is {number(first['share_of_people'])}% of your people and "
+        f" {subject} is {number(first['people'])} of your people, "
+        f"{number(first['share_of_people'])}%, against "
         f"{number(first['share_of_residents'])}% of the people who live there."
     )
 

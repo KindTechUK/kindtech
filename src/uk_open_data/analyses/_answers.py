@@ -17,6 +17,8 @@ AREA = "the area you serve"
 HIDDEN = "hidden to protect a small count"
 NAMED = 3  # how many places or groups a sentence names before it counts the rest
 SHOWN_FIRST = 3  # how many key figures a result names
+# An answer says how many people it leaves out when they are this share or more.
+LARGE_SHARE_LEFT_OUT = 0.2
 
 
 @dataclass(frozen=True)
@@ -26,11 +28,43 @@ class NeedWords:
     people: str
     per: str
     high: str
+    # For labels and headings: what is counted, and the places with most of it.
+    noun: str = "people in need"
+    places: str = "high-need local authorities"
+    # What a label calls the total: "People in need in the area you serve".
+    counted: str = "People in need"
+    # What a title sets beside reach or provision: "Need and reach".
+    topic: str = "need"
+
+    def headings(self) -> dict[str, str]:
+        """Headings for the columns about need, in the words that fit."""
+        if self.noun == IN_NEED.noun:
+            return {}
+        return {
+            "people_in_need": "Residents",
+            "people_per_100_in_need": "Your people per 100 residents",
+            "volume_per_1000_in_need": "What you provide per 1,000 residents",
+            "high_need": "Among the most residents",
+            "need_band": "Residents (band)",
+        }
 
 
 IN_NEED = NeedWords("the people in need", "in need", "high need")
-# Every resident is not a need, so the sentence must not call it one.
-ALL_RESIDENTS = NeedWords("residents", "residents", "the most residents")
+# Every resident is not a need, so no sentence, label or heading calls it one.
+ALL_RESIDENTS = NeedWords(
+    "residents",
+    "residents",
+    "the most residents",
+    noun="residents",
+    places="the local authorities with the most residents",
+    counted="People",
+    topic="residents",
+)
+
+
+def sentence_case(text: str) -> str:
+    """Start a label with a capital letter and leave the rest as it is."""
+    return text[:1].upper() + text[1:]
 
 
 def need_words(residents: bool) -> NeedWords:
@@ -97,6 +131,20 @@ def look_first(
         return f" The place to look at first, with {high} and {lowest}, is {places[0]}."
     return (
         f" The places to look at first, with {high} and {lowest}, are {names(places)}."
+    )
+
+
+def not_counted(supplied: int, counted: int) -> str:
+    """Say how many people an answer leaves out, when it is a large share.
+
+    The sentence starts with a space so it can follow another.
+    """
+    left_out = supplied - counted
+    if left_out < LARGE_SHARE_LEFT_OUT * supplied:
+        return ""
+    return (
+        f" {number(left_out)} of the {number(supplied)} people in your data "
+        f"could not be placed in {AREA} and are not counted."
     )
 
 

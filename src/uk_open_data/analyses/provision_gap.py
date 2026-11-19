@@ -18,10 +18,13 @@ from typing import Any
 
 import uk_open_data
 from uk_open_data.analyses._answers import (
+    IN_NEED,
+    NeedWords,
     high_need_places,
     look_first,
     need_words,
     number,
+    sentence_case,
     values,
 )
 from uk_open_data.analyses._inputs import is_blank
@@ -194,30 +197,43 @@ CAVEATS = (
     "already provide in a place where you provide little.",
     "Provision is counted where a site is. People travel, so a site can serve "
     "the local authority next door.",
+)
+LARGE_PLACES_LISTED = (
     "Need is a count of people, so a large local authority is more likely to "
-    "be listed as high need than a small one with the same rate.",
+    "be listed as high need than a small one with the same rate."
+)
+# Every resident is not a need, so this says what the count is instead.
+MOST_RESIDENTS_LISTED = (
+    "The places listed are the ones with the most residents. That says where "
+    "most people live, not where need is highest."
 )
 
-CHARTS = (
-    Chart(
-        id="need_in_priority_areas",
-        title="People in need in the places listed",
-        table="priority_areas",
-        category_column="geography_name",
-        series=(ChartSeries("people_in_need", "People in need", "people"),),
-    ),
-    Chart(
-        id="provision_in_priority_areas",
-        title="Provision for each 1,000 people in need in the places listed",
-        table="priority_areas",
-        category_column="geography_name",
-        series=(
-            ChartSeries(
-                "volume_per_1000_in_need", "Volume per 1,000 in need", "per_1000"
+
+def _charts(words: NeedWords) -> tuple[Chart, ...]:
+    """The two charts of the places listed, in the words that fit the measure."""
+    counted = sentence_case(words.noun)
+    return (
+        Chart(
+            id="need_in_priority_areas",
+            title=f"{counted} in the places listed",
+            table="priority_areas",
+            category_column="geography_name",
+            series=(ChartSeries("people_in_need", counted, "people"),),
+        ),
+        Chart(
+            id="provision_in_priority_areas",
+            title=f"Provision for each 1,000 {words.noun} in the places listed",
+            table="priority_areas",
+            category_column="geography_name",
+            series=(
+                ChartSeries(
+                    "volume_per_1000_in_need",
+                    f"What you provide per 1,000 {words.noun}",
+                    "per_1000",
+                ),
             ),
         ),
-    ),
-)
+    )
 
 
 @dataclass(frozen=True)
@@ -264,8 +280,9 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
     located = _keep_listed(volumes, authorities, trail)
     compared = choose_compared(options.get("catchment"), authorities)
     rows = _rows(located, authorities, compared, trail)
-    figures = _figures(supplied, sum(located.values()), rows, measure)
-    tables = (_priority_table(rows, top, trail), _authority_table(rows))
+    words = need_words(measure.id == RESIDENTS.id)
+    figures = _figures(supplied, sum(located.values()), rows, words, measure)
+    tables = (_priority_table(rows, top, words, trail), _authority_table(rows, words))
     return AnalysisResult(
         analysis_id=ANALYSIS_ID,
         analysis_version=ANALYSIS_VERSION,
@@ -274,11 +291,11 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         input_mode=mode,
         figures=tuple(figures),
         tables=tables,
-        map=_map_spec(),
+        map=_map_spec(words),
         working=tuple(trail.working),
-        choices=(*trail.choices, *_choices(measure, compared, top)),
+        choices=(*trail.choices, *_choices(measure, words, compared, top)),
         checks=_checks(mode, measure, compared),
-        caveats=(*CAVEATS, measure.caveat),
+        caveats=(*CAVEATS, _how_listed(words), measure.caveat),
         warnings=tuple(trail.warnings),
         sources=tuple(trail.sources),
         privacy=Privacy(
@@ -296,7 +313,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
                 "The need figures are public counts and are shown in full.",
             ),
         ),
-        charts=CHARTS,
+        charts=_charts(words),
         answer=_answer(figures, tables[0], measure),
         key_figures=KEY_FIGURES,
     )
@@ -555,7 +572,9 @@ def _table_row(row: _Row) -> dict[str, Any]:
     }
 
 
-def _priority_table(rows: list[_Row], top: int, trail: Trail) -> Table:
+def _priority_table(
+    rows: list[_Row], top: int, words: NeedWords, trail: Trail
+) -> Table:
     """The high-need local authorities with the least provision."""
     high = [row for row in rows if row.high_need]
     ranked = sorted(
@@ -579,7 +598,8 @@ def _priority_table(rows: list[_Row], top: int, trail: Trail) -> Table:
     )
     return Table(
         id="priority_areas",
-        title="High need and thin provision: the places to look at first",
+        title=f"Places with {words.high}, thinnest provision first",
+        headings=words.headings(),
         columns=(
             "rank",
             "geography_code",
@@ -592,11 +612,15 @@ def _priority_table(rows: list[_Row], top: int, trail: Trail) -> Table:
     )
 
 
-def _authority_table(rows: list[_Row]) -> Table:
+def _authority_table(rows: list[_Row], words: NeedWords) -> Table:
     """Every local authority compared, for the map and for a closer look."""
     return Table(
         id="by_local_authority",
-        title="Need and provision in every local authority in the area you serve",
+        headings=words.headings(),
+        title=(
+            f"{sentence_case(words.topic)} and provision in every local "
+            "authority in the area you serve"
+        ),
         columns=(
             "geography_code",
             "geography_name",
@@ -620,10 +644,15 @@ def _authority_table(rows: list[_Row]) -> Table:
     )
 
 
-def _map_spec() -> MapSpec:
-    """Describe the map of need and provision."""
+def _how_listed(words: NeedWords) -> str:
+    """The caveat about what puts a place on the list, for the measure."""
+    return LARGE_PLACES_LISTED if words is IN_NEED else MOST_RESIDENTS_LISTED
+
+
+def _map_spec(words: NeedWords) -> MapSpec:
+    """Describe the map of need and provision, in the words for the measure."""
     return MapSpec(
-        title="Need and provision, by local authority",
+        title=f"{sentence_case(words.topic)} and provision, by local authority",
         geography_type="LAD",
         geography_year=2023,
         table="by_local_authority",
@@ -631,15 +660,15 @@ def _map_spec() -> MapSpec:
         layers=(
             MapLayer(
                 id="need",
-                label="People in need",
+                label=sentence_case(words.noun),
                 value_column="need_band",
                 kind="ordinal",
-                note="Local authorities in five equal groups by people in need.",
+                note=f"Local authorities in five equal groups by {words.noun}.",
                 categories=NEED_BANDS,
             ),
             MapLayer(
                 id="provision",
-                label="Provision for each 1,000 people in need",
+                label=f"Provision for each 1,000 {words.noun}",
                 value_column="provision_band",
                 kind="ordinal",
                 note=(
@@ -657,9 +686,13 @@ def _map_spec() -> MapSpec:
 
 
 def _figures(
-    supplied: float, located: float, rows: list[_Row], measure: Measure
+    supplied: float,
+    located: float,
+    rows: list[_Row],
+    words: NeedWords,
+    measure: Measure,
 ) -> list[Figure]:
-    """Build the headline figures."""
+    """Build the headline figures, in the words that fit the measure."""
     volume = [row.volume for row in rows]
     need = [row.authority.need for row in rows]
     high = [i for i, row in enumerate(rows) if row.high_need]
@@ -695,34 +728,38 @@ def _figures(
         ),
         Figure(
             "people_in_need",
-            f"People in need in the area you serve: {measure.label}",
+            f"{words.counted} in the area you serve: {measure.label}",
             round(sum(need)),
             "people",
         ),
         Figure(
             "volume_per_1000_in_need",
-            "Volume for each 1,000 people in need, across the area",
+            f"Volume for each 1,000 {words.noun}, across the area",
             _per_1000(in_catchment, sum(need)),
             "per_1000",
         ),
         Figure(
-            "high_need_areas", "Local authorities with high need", len(high), "areas"
+            "high_need_areas",
+            f"Local authorities with {words.high}",
+            len(high),
+            "areas",
+            note=f"The top quarter of the places in it, by {words.noun}.",
         ),
         Figure(
             "high_need_areas_without_provision",
-            "High-need local authorities where you provide nothing",
+            f"{sentence_case(words.places)} where you provide nothing",
             sum(1 for i in high if not volume[i]),
             "areas",
         ),
         Figure(
             "share_of_provision_in_high_need_areas",
-            "Share of your provision that is in high-need local authorities",
+            f"Share of your provision that is in {words.places}",
             percent(sum(volume[i] for i in high), in_catchment),
             "percent",
         ),
         Figure(
             "share_of_need_in_high_need_areas",
-            "Share of people in need who live in those local authorities",
+            f"Share of {words.noun} who live in those local authorities",
             percent(sum(need[i] for i in high), sum(need)),
             "percent",
             note="Compare this with the share of your provision.",
@@ -753,7 +790,9 @@ def _answer(figures: list[Figure], priority: Table, measure: Measure) -> str:
     )
 
 
-def _choices(measure: Measure, compared: Compared, top: int) -> tuple[Choice, ...]:
+def _choices(
+    measure: Measure, words: NeedWords, compared: Compared, top: int
+) -> tuple[Choice, ...]:
     """List the choices the analysis made."""
     return (
         Choice(
@@ -765,8 +804,8 @@ def _choices(measure: Measure, compared: Compared, top: int) -> tuple[Choice, ..
         ),
         Choice(
             id="high_need",
-            label="What counts as high need",
-            value="In the top quarter of the area you serve, by people in need",
+            label=f"What counts as {words.high}",
+            value=f"In the top quarter of the area you serve, by {words.noun}",
             reason="A quarter keeps the list to the places that stand out.",
         ),
         Choice(
