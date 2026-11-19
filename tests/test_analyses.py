@@ -805,7 +805,7 @@ def test_a_table_gives_every_column_a_heading():
     assert table.headings == {
         "geography_name": "Neighbourhood",  # its own
         "share_of_people": "Share of your people",  # the shared one
-        "distance_km": "Distance to your nearest site",
+        "distance_km": "From its centre to your nearest site",
         "my_own": "my_own",  # a column the package does not know
     }
     assert table.units == {"share_of_people": "percent", "distance_km": "km"}
