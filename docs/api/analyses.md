@@ -190,7 +190,7 @@ logging.getLogger(RUNS_LOGGER).setLevel(logging.INFO)
 ## Drawing the map
 
 A result describes its map; `render_map` draws it as an SVG picture with a
-legend and the credits the data licences ask for.
+key and the credits the data licences ask for.
 
 ```python
 from uk_open_data.analyses import render_map
@@ -206,6 +206,26 @@ The picture is drawn from the result's own table of totals, so it shows
 nothing the result does not already hold. People are shown in bands, and the
 lowest band includes zero. Hover over an area in a browser to see its name and
 value. The colours adapt to a dark page.
+
+A picture shows one layer, and its title says what the colour shows: "People
+reached, by neighbourhood". The first layer of a map is drawn in blue and the
+second in orange, so two pictures of one result do not look like the same
+measure. The shaded areas sit in a frame with a scale line. Up to twelve
+local authorities are named one by one; neighbourhoods are named by the local
+authority they are in. Text is broken into lines to fit the width you ask for.
+
+The places around the map are drawn in pale grey, with their names where a
+name fits, when you give their outlines. Put them among the features of
+`boundaries`, or in a list under `"surroundings"`. Codes listed under
+`"focus"` are the surrounding places that hold the shaded areas: each gets a
+darker line and its name.
+
+```python
+boundaries = load_map_boundaries(result)
+boundaries["surroundings"] = nearby["features"]  # outlines you already have
+boundaries["focus"] = ["E09000023"]
+svg = render_map(result, boundaries=boundaries)
+```
 
 `render_map` fetches the outline of each area from the ONS Open Geography
 Portal. Only the public area codes of the area you serve are sent. To draw without
