@@ -37,10 +37,12 @@ jobs:
         run: uv run --group dev ruff format --check .
 
       - name: ast-grep scan
-        run: uv run --with ast-grep-cli ast-grep scan --config .ast-grep/sgconfig.yml src/
+        run: >-
+          uv run --with ast-grep-cli ast-grep scan --config .ast-grep/sgconfig.yml
+          src/ packaging/kindtech/src/
 
       - name: Type check (ty)
-        run: uv run --group dev ty check src
+        run: uv run --group dev ty check src packaging/kindtech/src
 
       - name: Build docs
         run: uv run --group dev mkdocs build --strict
@@ -92,6 +94,19 @@ jobs:
 
       - name: Smoke-test source distribution
         run: uv run --isolated --no-project --with dist/*.tar.gz tests/smoke_test.py
+
+      - name: Build distributions of the old name
+        run: uv build --no-sources --package kindtech --out-dir dist-old-name
+
+      - name: Smoke-test wheel of the old name
+        run: >-
+          uv run --isolated --no-project --with dist/*.whl
+          --with dist-old-name/*.whl tests/old_name_smoke_test.py
+
+      - name: Smoke-test source distribution of the old name
+        run: >-
+          uv run --isolated --no-project --with dist/*.tar.gz
+          --with dist-old-name/*.tar.gz tests/old_name_smoke_test.py
 
       - name: Smoke-test pandas backend
         run: >-

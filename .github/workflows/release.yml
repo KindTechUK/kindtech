@@ -27,10 +27,12 @@ jobs:
           enable-cache: false
           version: "0.12.6"
 
-      - name: Verify tag matches package version
+      - name: Verify tag matches both package versions
         run: |
           package_version="$(uv version --short)"
+          old_name_version="$(uv version --short --package kindtech)"
           test "v${package_version}" = "${GITHUB_REF_NAME}"
+          test "${old_name_version}" = "${package_version}"
 
       - name: Build distributions
         run: uv build --no-sources
@@ -41,15 +43,64 @@ jobs:
       - name: Smoke-test source distribution
         run: uv run --isolated --no-project --with dist/*.tar.gz tests/smoke_test.py
 
+      - name: Build distributions of the old name
+        run: uv build --no-sources --package kindtech --out-dir dist-old-name
+
+      - name: Smoke-test wheel of the old name
+        run: >-
+          uv run --isolated --no-project --with dist/*.whl
+          --with dist-old-name/*.whl tests/old_name_smoke_test.py
+
+      - name: Smoke-test source distribution of the old name
+        run: >-
+          uv run --isolated --no-project --with dist/*.tar.gz
+          --with dist-old-name/*.tar.gz tests/old_name_smoke_test.py
+
       - name: Upload distributions
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: distributions
           path: dist/
 
+      - name: Upload distributions of the old name
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: distributions-old-name
+          path: dist-old-name/
+
   publish:
-    name: Publish distributions
+    name: Publish uk-open-data
     needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/uk-open-data/
+    permissions:
+      id-token: write
+    steps:
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: false
+          version: "0.12.6"
+
+      - name: Download distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: distributions
+          path: dist/
+
+      - name: Generate attestations
+        uses: astral-sh/attest-action@f589a42a7efb6fe400b4f400de60b4bc90390027 # v0.0.6
+
+      - name: Publish to PyPI
+        run: uv publish
+
+  # The old name depends on the same version of uk-open-data, so it is
+  # published second.
+  publish-old-name:
+    name: Publish kindtech, the old name
+    needs: publish
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -66,7 +117,7 @@ jobs:
       - name: Download distributions
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: distributions
+          name: distributions-old-name
           path: dist/
 
       - name: Generate attestations

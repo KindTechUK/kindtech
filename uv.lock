@@ -12,6 +12,12 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 
+[manifest]
+members = [
+    "kindtech",
+    "uk-open-data",
+]
+
 [[package]]
 name = "annotated-types"
 version = "0.8.0"
@@ -636,6 +642,26 @@ sdist = { url = "https://files.pythonhosted.org/packages/19/74/a633ee74eb36c44aa
 wheels = [
     { url = "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl", hash = "sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe", size = 18437, upload-time = "2025-09-08T01:34:57.871Z" },
 ]
+
+[[package]]
+name = "kindtech"
+version = "0.1.0"
+source = { editable = "packaging/kindtech" }
+dependencies = [
+    { name = "uk-open-data" },
+]
+
+[package.optional-dependencies]
+connector = [
+    { name = "uk-open-data", extra = ["connector"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "uk-open-data", editable = "." },
+    { name = "uk-open-data", extras = ["connector"], marker = "extra == 'connector'", editable = "." },
+]
+provides-extras = ["connector"]
 
 [[package]]
 name = "markdown"
@@ -2267,6 +2293,7 @@ connector = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "kindtech" },
     { name = "mcp" },
     { name = "mkdocs" },
     { name = "mkdocs-llmstxt-md" },
@@ -2295,6 +2322,7 @@ provides-extras = ["connector"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "kindtech", editable = "packaging/kindtech" },
     { name = "mcp", specifier = ">=2.3,<3" },
     { name = "mkdocs", specifier = ">=1.6.1" },
     { name = "mkdocs-llmstxt-md", specifier = ">=0.2.0" },

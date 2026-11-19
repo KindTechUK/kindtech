@@ -17,9 +17,12 @@ from uk_open_data.geo import load_geodata
 from uk_open_data.ons import load_ons
 ```
 
-The package was called `kindtech` up to version 0.1. Code that imports
-`kindtech` still works and gives a deprecation warning: `kindtech.geo` is the
-same module as `uk_open_data.geo`.
+The package was called `kindtech` up to version 0.1. The `kindtech` project on
+PyPI is kept for that name: installing or upgrading it installs the same
+version of `uk-open-data`, and code that imports `kindtech` still works and
+gives a deprecation warning. `kindtech.geo` is the same module as
+`uk_open_data.geo`. Installing `uk-open-data` alone does not add the old import
+name.
 
 New modules can be added under `src/uk_open_data/<name>/` and included in future
 `uk-open-data` releases. Because they remain inside the same distribution, they do
@@ -37,21 +40,32 @@ changes or a new release adds modules.
 
 _Created: 2026-09-20 · Updated: 2026-09-20 · Verified: 2026-09-20 · Scope/version: 0.1.0_
 
-## Does KindTech still need to be registered on PyPI?
+## Which projects on PyPI does a release publish?
 
-**Short answer:** No. [KindTech 0.1.0 is published on PyPI](https://pypi.org/project/kindtech/0.1.0/).
-Its first successful Trusted Publishing run created the project.
+**Short answer:** Two, from one tag. `uk-open-data` is the package.
+[`kindtech`](https://pypi.org/project/kindtech/) is its old name: a small
+distribution that depends on the same version of `uk-open-data` and holds the
+`kindtech` import name.
 
-Future releases use the existing GitHub workflow and PyPI publisher. Update the
-package version, complete the release checks, and push the corresponding `v*`
-tag when the release is approved. The workflow checks that the tag and package
-version match before publishing the wheel and source distribution.
+Both use Trusted Publishing from the release workflow, so each project on PyPI
+needs its own trusted publisher that names this repository, the workflow file
+`release.yml` and the environment `pypi`. For `uk-open-data`, a pending
+publisher creates the project on the first release. `kindtech` was created by
+the 0.1.0 release and needs a publisher that names the repository as it is
+called now.
+
+To release, set the same version in `pyproject.toml` and in
+`packaging/kindtech/pyproject.toml` (twice there: its own version and the
+version of `uk-open-data` it depends on), complete the release checks, and push
+the matching `v*` tag when the release is approved. The workflow checks that
+the tag and both versions match, publishes `uk-open-data`, then `kindtech`.
 
 ### Sources
 
-- [Successful first release](https://github.com/KindTechUK/uk-open-data/actions/runs/35527839991): the build and Trusted Publishing run.
-- [Release workflow](https://github.com/KindTechUK/uk-open-data/blob/v0.1.0/.github/workflows/release.yml): tag/version checks and publication steps.
+- [Release workflow](https://github.com/KindTechUK/uk-open-data/blob/main/.github/workflows/release.yml): the checks and the two publishing jobs.
+- [The old name's package](https://github.com/KindTechUK/uk-open-data/tree/main/packaging/kindtech): what the `kindtech` distribution holds.
+- [First release, 0.1.0](https://pypi.org/project/kindtech/0.1.0/): published as `kindtech`.
 
-Recheck the PyPI project and workflow configuration before a future release.
+Recheck the two PyPI projects and their publishers before a release.
 
-_Created: 2026-09-20 · Updated: 2026-09-20 · Verified: 2026-09-20 · Scope/version: 0.1.0_
+_Created: 2026-09-20 · Updated: 2026-11-19 · Verified: 2026-11-19 (builds and installs; no release has run yet) · Scope/version: 0.2_

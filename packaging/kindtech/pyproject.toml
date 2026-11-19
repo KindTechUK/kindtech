@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+# The old name of uk-open-data. Keep the version, and the version it depends
+# on, the same as the version in the pyproject.toml at the top of the
+# repository: tests/test_old_name_package.py checks it.
+[project]
+name = "kindtech"
+version = "0.1.0"
+description = "The old name of uk-open-data: installs it and keeps `import kindtech` working"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.10"
+dependencies = [
+    "uk-open-data==0.1.0",
+]
+
+[project.optional-dependencies]
+connector = [
+    "uk-open-data[connector]==0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/KindTechUK/uk-open-data"
+Documentation = "https://kindtechuk.github.io/uk-open-data/"
+Repository = "https://github.com/KindTechUK/uk-open-data"
+Issues = "https://github.com/KindTechUK/uk-open-data/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.uv.sources]
+uk-open-data = { workspace = true }
