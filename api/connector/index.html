@@ -1278,12 +1278,17 @@ district such as <code>SE13</code>.</p>
 <span class="n">answer</span><span class="p">[</span><span class="s2">&quot;sources&quot;</span><span class="p">]</span>           <span class="c1"># publisher, edition, licence and link</span>
 </code></pre></div>
 <p><code>status</code> is <code>found</code>, <code>choose</code> (several places match, listed in <code>matches</code>),
-<code>not_found</code>, <code>not_covered</code> (outside England), <code>not_accepted</code> (a full postcode)
-or <code>unavailable</code> (a data source could not be reached).</p>
+<code>not_found</code>, <code>not_covered</code> (outside England), <code>not_accepted</code> (a full postcode
+or a street address) or <code>unavailable</code> (a data source could not be reached).</p>
 <p>A full postcode is not accepted, even a venue's, because nothing tells a
 venue's postcode from a person's home. It is not looked up, sent anywhere or
 repeated, and the message asks for the first half of the postcode or the name
 of the place. For one neighbourhood, pass its 2021 LSOA code.</p>
+<p>A street address is not accepted either: a postcode inside other words, or a
+number beside a word such as "Road", "Flat" or "House". The tool describes
+areas, not buildings, and an address can be a person's home. The message says
+an address should not be sent and asks for the council area or the first half
+of the postcode.</p>
 <p>The tool describes places in England only, because the deprivation index it
 reads is England's. A council, code or postcode in Wales gives <code>not_covered</code>
 with a message that says the place is in Wales and that the lenses which
