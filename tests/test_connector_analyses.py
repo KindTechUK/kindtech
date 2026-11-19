@@ -79,6 +79,12 @@ class TestRunAnalysisOnCounts:
         assert answer["result"]["tables"][0]["rows"] == []
         assert "checks" in answer["show_with_figures"]
 
+    def test_a_result_with_no_answer_sentence_asks_for_none(self) -> None:
+        # The stand-in result has no answer, as a result from an older engine.
+        answer = run_analysis_on_counts("reach-deprivation", COUNTS)
+
+        assert "open_with" not in answer
+
     def test_says_which_tables_have_their_rows_left_out(self) -> None:
         answer = run_analysis_on_counts("reach-deprivation", COUNTS)
 
@@ -313,6 +319,15 @@ class TestWithTheRealAnalysis:
         assert result["privacy"]["sent_to_third_parties"] == []
         assert result["checks"]
         assert result["sources"]
+
+    def test_the_answer_sentence_comes_through_to_open_the_reply(self) -> None:
+        answer = run_analysis_on_counts("reach-deprivation", COUNTS)
+
+        result = answer["result"]
+        assert result["answer"].startswith("Of your people in the area you serve")
+        assert "share_most_deprived_20" in result["key_figures"]
+        assert "result.answer, in its exact words" in answer["open_with"]
+        assert "result.key_figures" in answer["open_with"]
 
     def test_map_rows_are_left_out(self) -> None:
         result = run_analysis_on_counts("reach-deprivation", COUNTS)["result"]

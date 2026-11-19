@@ -69,6 +69,12 @@ RUN_AS_IT_IS = (
     "Run as it is. Call again with the same rows and hidden_counts set to "
     "'accept'. The answer comes back with those counts hidden."
 )
+OPEN_WITH_ANSWER = (
+    "Open your reply with the sentence in result.answer, in its exact words. "
+    "It is the analysis's own answer to the question, and the Kindtech "
+    "Evidence page and the command line tool show the same words. Then give "
+    "the figures named in result.key_figures before any others."
+)
 SHOW_WITH_FIGURES = (
     "Show the checks and caveats next to the figures. The checks are for the "
     "person to answer, not for an assistant."
@@ -235,6 +241,8 @@ def run_and_keep_result(
         "result": ensure_totals_only(payload, guarded),
         "show_with_figures": SHOW_WITH_FIGURES,
     }
+    if payload.get("answer"):
+        answer["open_with"] = OPEN_WITH_ANSWER
     left_out = _rows_left_out(payload)
     if left_out:
         answer["rows_left_out"] = left_out

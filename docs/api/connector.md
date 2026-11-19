@@ -137,6 +137,14 @@ found". Where the result's map is drawn from one of them, the note says the
 map cannot be drawn from the answer. Rows about individual people,
 such as one postcode per person, are refused, and so is one row per site.
 
+The result holds `answer`, one or two sentences that answer the analysis's
+question, and `key_figures`, the ids of the figures behind them. Both come
+through as the analysis wrote them. Where a result has an answer, `open_with`
+tells the assistant to begin its reply with that sentence in its exact words,
+so a person reads the same words in a chat as on the Kindtech Evidence page
+and at the command line. The sentence passes the same check as the rest of the
+result: it is withheld if it repeats a value from the rows.
+
 A count or volume given as text that is nothing but a number, such as
 `"1200"` or `"1,200"`, is read as a number, because assistants often send one
 that way. This applies to the roles an analysis marks `amount` in its description

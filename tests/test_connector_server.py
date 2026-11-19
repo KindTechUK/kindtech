@@ -93,6 +93,13 @@ def test_a_run_that_would_hide_counts_is_held_back_through_the_server() -> None:
     assert accepted["structuredContent"]["status"] == "ok"
 
 
+def test_the_assistant_is_told_to_open_with_the_answer() -> None:
+    description = " ".join(_tools()["run_analysis_on_counts"]["description"].split())
+
+    assert "Open with the answer" in (build_server().instructions or "")
+    assert "Open your reply with result.answer in its exact words" in description
+
+
 @pytest.mark.usefixtures("england")
 def test_describe_place_through_the_server() -> None:
     reply = _call("describe_place", {"place": "Lewisham"})
