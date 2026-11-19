@@ -125,6 +125,48 @@ def test_other_nations_are_not_covered(code: str) -> None:
     assert describe_place(code)["status"] == "not_covered"
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "Cardiff",
+        "cardiff council",
+        "City of Cardiff Council",
+        "Anglesey",
+        "Rhondda Cynon Taf",
+        "Vale of Glamorgan",
+        "Newport",
+    ],
+)
+def test_a_welsh_council_is_not_covered_and_the_answer_says_why(name: str) -> None:
+    answer = describe_place(name)
+
+    assert answer["status"] == "not_covered"
+    assert "in Wales" in answer["message"]
+    assert "lenses that cover England and Wales" in answer["message"]
+
+
+@pytest.mark.parametrize("code", ["W06000015", "W01000001"])
+def test_a_welsh_code_says_it_is_in_wales(code: str) -> None:
+    assert "in Wales" in describe_place(code)["message"]
+
+
+@pytest.mark.parametrize("code", ["S01006506", "N00000001"])
+def test_another_nations_code_does_not_say_wales(code: str) -> None:
+    assert "Wales" not in describe_place(code)["message"]
+
+
+@pytest.mark.parametrize("name", ["Atlantis", "Edinburgh", "the", "council"])
+def test_a_name_that_is_no_council_in_england_or_wales_is_not_found(name: str) -> None:
+    assert describe_place(name)["status"] == "not_found"
+
+
+def test_an_english_match_wins_over_a_welsh_name() -> None:
+    # "Newcastle" is in two English names and in no Welsh one; "Lewisham" is
+    # English only. Neither answer may change.
+    assert describe_place("Newcastle")["status"] == "choose"
+    assert describe_place("Lewisham")["status"] == "found"
+
+
 def test_postcode_gives_its_neighbourhood_without_repeating_it(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

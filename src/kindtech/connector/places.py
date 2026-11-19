@@ -59,6 +59,38 @@ CAVEATS = [
     "with Wales, Scotland or Northern Ireland.",
 ]
 
+# The 22 local authorities of Wales. The lenses cover them and this tool does
+# not, so a Welsh council's name is answered "not covered", not "not found".
+WELSH_AUTHORITIES = (
+    "Blaenau Gwent",
+    "Bridgend",
+    "Caerphilly",
+    "Cardiff",
+    "Carmarthenshire",
+    "Ceredigion",
+    "Conwy",
+    "Denbighshire",
+    "Flintshire",
+    "Gwynedd",
+    "Isle of Anglesey",
+    "Merthyr Tydfil",
+    "Monmouthshire",
+    "Neath Port Talbot",
+    "Newport",
+    "Pembrokeshire",
+    "Powys",
+    "Rhondda Cynon Taf",
+    "Swansea",
+    "Torfaen",
+    "Vale of Glamorgan",
+    "Wrexham",
+)
+IN_WALES = (
+    "That place is in Wales. This tool describes places in England only, because "
+    "the deprivation index it reads is England's. The lenses that cover England "
+    "and Wales still work for it."
+)
+
 NO_DOMAINS = (
     "The copy of the deprivation index kept on this machine does not hold the "
     "types of deprivation, so that table is left out."
@@ -138,7 +170,7 @@ class _IndexCopyError(RuntimeError):
 def _describe(text: str) -> dict[str, Any]:
     """Work out what kind of place ``text`` names and describe it."""
     if _OTHER_NATION_CODE.match(text):
-        return _not_covered()
+        return _not_covered(in_wales=text.startswith("W"))
     if _LSOA_CODE.match(text):
         return _describe_neighbourhood(text, matched_from="neighbourhood_code")
     if _AUTHORITY_CODE.match(text):
@@ -147,7 +179,10 @@ def _describe(text: str) -> dict[str, Any]:
         return _describe_postcode(text)
     if _OUTCODE.match(text):
         return _describe_outcode(text)
-    return _describe_authorities(_by_authority_name(text), "name")
+    codes = _by_authority_name(text)
+    if not codes and _names_welsh_authority(text):
+        return _not_covered(in_wales=True)
+    return _describe_authorities(codes, "name")
 
 
 def _describe_postcode(postcode: str) -> dict[str, Any]:
@@ -156,7 +191,7 @@ def _describe_postcode(postcode: str) -> dict[str, Any]:
     if not code:
         return _status("not_found", "That postcode was not found in England.")
     if not code.startswith("E"):
-        return _not_covered()
+        return _not_covered(in_wales=code.startswith("W"))
     answer = _describe_neighbourhood(code, matched_from="postcode")
     return _record_lookup(answer, "One postcode")
 
@@ -446,6 +481,13 @@ def _by_authority_name(text: str) -> list[str]:
     return [code for code, key in keys.items() if f" {wanted} " in f" {key} "]
 
 
+def _names_welsh_authority(text: str) -> bool:
+    """Whether ``text`` names a local authority in Wales, matched as in England."""
+    wanted = _name_key(text)
+    keys = [_name_key(name) for name in WELSH_AUTHORITIES]
+    return bool(wanted) and any(f" {wanted} " in f" {key} " for key in keys)
+
+
 def _name_key(name: str) -> str:
     """Reduce a council or area name to the words that identify it."""
     plain = re.sub(r"[^a-z0-9 ]", " ", name.casefold().replace("&", " and "))
@@ -572,8 +614,10 @@ def _record_lookup(answer: dict[str, Any], what: str) -> dict[str, Any]:
     return answer
 
 
-def _not_covered() -> dict[str, Any]:
+def _not_covered(*, in_wales: bool = False) -> dict[str, Any]:
     """The answer for a place outside England."""
+    if in_wales:
+        return _status("not_covered", IN_WALES)
     return _status(
         "not_covered",
         "That place is outside England. Only England is covered so far.",
