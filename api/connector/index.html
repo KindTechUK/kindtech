@@ -1266,8 +1266,8 @@ assistant then ends in <code>/mcp</code>:</p>
 <p><code>query</code> is the question in the person's words, or left out to list every lens.
 The answer holds each lens description, best match first.</p>
 <h3 id="describe_place"><code>describe_place</code></h3>
-<p><code>place</code> is a local authority name or code, a 2021 LSOA code, a postcode
-district such as <code>SE13</code>, or the postcode of a venue or office.</p>
+<p><code>place</code> is a local authority name or code, a 2021 LSOA code or a postcode
+district such as <code>SE13</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">describe_place</span>
 
 <span class="n">answer</span> <span class="o">=</span> <span class="n">describe_place</span><span class="p">(</span><span class="s2">&quot;Lewisham&quot;</span><span class="p">)</span>
@@ -1278,8 +1278,12 @@ district such as <code>SE13</code>, or the postcode of a venue or office.</p>
 <span class="n">answer</span><span class="p">[</span><span class="s2">&quot;sources&quot;</span><span class="p">]</span>           <span class="c1"># publisher, edition, licence and link</span>
 </code></pre></div>
 <p><code>status</code> is <code>found</code>, <code>choose</code> (several places match, listed in <code>matches</code>),
-<code>not_found</code>, <code>not_covered</code> (outside England) or <code>unavailable</code> (a data source
-could not be reached).</p>
+<code>not_found</code>, <code>not_covered</code> (outside England), <code>not_accepted</code> (a full postcode)
+or <code>unavailable</code> (a data source could not be reached).</p>
+<p>A full postcode is not accepted, even a venue's, because nothing tells a
+venue's postcode from a person's home. It is not looked up, sent anywhere or
+repeated, and the message asks for the first half of the postcode or the name
+of the place. For one neighbourhood, pass its 2021 LSOA code.</p>
 <p>The tool describes places in England only, because the deprivation index it
 reads is England's. A council, code or postcode in Wales gives <code>not_covered</code>
 with a message that says the place is in Wales and that the lenses which
@@ -1291,13 +1295,12 @@ call does not wait on a download. A copy kept with <code>uk_open_data.imd.keep_i
 that leaves out the types of deprivation gives the same answer without that
 table, and says so in <code>warnings</code>. A copy that cannot be read gives the status
 <code>unavailable</code>.</p>
-<p>A postcode or postcode district is looked up in the
+<p>A postcode district is looked up in the
 <a href="../postcodes/">postcode table on this machine</a> when one is installed, so it is
 not sent anywhere. Without a table it is sent to postcodes.io. Either way the
-answer says which happened under <code>privacy</code>, and the postcode is never repeated
-in the answer. When you host the connector, install the table when the image
-is built (<code>uk-open-data postcodes download</code>), so venue postcodes stay on your
-server.</p>
+answer says which happened under <code>privacy</code>. When you host the connector,
+install the table when the image is built (<code>uk-open-data postcodes download</code>),
+so a district stays on your server.</p>
 <h3 id="run_lens_on_counts"><code>run_lens_on_counts</code></h3>
 <p><code>lens_id</code> names the lens. <code>counts</code> holds one object per area or group, keyed by
 the role names of an input mode the lens marks as <code>aggregated</code>. <code>options</code>
