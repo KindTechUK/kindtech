@@ -596,10 +596,48 @@ def test_answer_when_the_area_has_no_deprived_neighbourhood():
         Figure("share_most_deprived_20", "", 0.0, "percent"),
         Figure("catchment_share_most_deprived_20", "", 0.0, "percent"),
     ]
-    assert reach_deprivation._answer(figures) == (
+    assert reach_deprivation._answer(figures, whole_country=False) == (
         "No neighbourhood in the area you serve is among the 20% most deprived "
         "in England, so none of your people there live in one."
     )
+
+
+def test_answer_says_england_when_the_area_is_the_whole_country(world):
+    result = world.run(options={"catchment": "England"})
+    assert result.answer.startswith(
+        "Of your people in England, 68.6% live in the 20% most deprived "
+        "neighbourhoods in England. Of everyone who lives in England, "
+    )
+    assert "area you serve" not in result.answer
+    assert "outside" not in result.answer
+
+
+def test_answer_says_how_many_people_a_narrow_area_leaves_out():
+    world = _World()
+    world.add(0, 1, 30)
+    world.add(0, 6, 30)
+    world.add(1, 1, 20)  # a quarter of the people, in the other local authority
+    result = world.run(options={"catchment": AUTHORITIES[0][1]})
+    assert result.answer.endswith(
+        " 20 of your people live outside that area and are not counted in these shares."
+    )
+    # A few people outside the area are not worth a sentence.
+    world.add(0, 3, 40)
+    assert "outside" not in world.run(options={"catchment": AUTHORITIES[0][1]}).answer
+
+
+def test_a_hidden_key_figure_gives_way_to_one_that_can_be_shown():
+    world = _World()
+    world.add(0, 1, 3)  # hidden, and so is the share that rests on it
+    world.add(0, 3, 10)
+    world.add(0, 6, 20)
+    result = world.run()
+    assert result.key_figures == (
+        "catchment_share_most_deprived_20",
+        "people_in_catchment",
+        "people_located",
+    )
+    assert not any(result.figure(i).suppressed for i in result.key_figures)
 
 
 def test_key_figures_are_figures_of_the_result(world):

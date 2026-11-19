@@ -227,7 +227,7 @@ def test_nowhere_beyond_reach_is_said_not_hidden(kept):
 
 AVERAGE = (
     "Counting each person at the centre of their local authority, {who} are "
-    "80.8 km from your nearest site on average, and {share}% are within "
+    "80.8 km from your nearest site on average, and {share} are within "
     "{within} km of one."
 )
 
@@ -235,14 +235,14 @@ AVERAGE = (
 def test_answer_says_how_far_people_are_and_where_a_site_would_help(kept):
     result = _run()
     assert result.answer == (
-        AVERAGE.format(who="people", share="40.7", within="10")
-        + " Of the places farther away, a new site would reach most people in "
-        "Birmingham."
+        AVERAGE.format(who="residents", share="40.7%", within="10")
+        + " Of the places farther away, a new site would reach most residents "
+        "in Birmingham."
     )
     assert result.key_figures == (
         "average_distance_km",
         "share_of_people_within_reach",
-        "people_beyond_reach",
+        "areas_beyond_reach",
     )
     assert {figure.id for figure in result.figures} >= set(result.key_figures)
     assert result.to_dict()["answer"] == result.answer
@@ -251,16 +251,23 @@ def test_answer_says_how_far_people_are_and_where_a_site_would_help(kept):
 def test_answer_says_when_nowhere_is_beyond_reach(kept):
     result = _run(options={"within_km": 500})
     assert result.answer == (
-        AVERAGE.format(who="people", share="100.0", within="500")
+        AVERAGE.format(who="residents", share="all", within="500")
         + " No local authority compared is farther away than that."
     )
+
+
+def test_answer_says_none_when_no_place_is_within_reach(kept):
+    # The two sites are a little way from the centres they are nearest to.
+    result = _run(options={"within_km": 0.1})
+    assert result.figure("areas_beyond_reach").value == len(NEED)
+    assert ", and none are within 0.1 km of one." in result.answer
 
 
 def test_answer_says_people_in_need_when_a_need_is_chosen(kept):
     keep_need_figures("unemployed", NEED, "invented for a test.")
     result = _run(options={"need": "unemployed"})
     assert result.answer == (
-        AVERAGE.format(who="people in need", share="40.7", within="10")
+        AVERAGE.format(who="people in need", share="40.7%", within="10")
         + " Of the places farther away, a new site would reach most people in "
         "need in Birmingham."
     )

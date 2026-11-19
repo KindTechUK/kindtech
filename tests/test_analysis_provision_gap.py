@@ -195,11 +195,13 @@ def test_bad_need_is_rejected(nomis, need):
 
 def test_answer_says_where_need_is_high_and_provision_is_thin(nomis):
     result = _run(SPREAD)
+    # The default sets provision against every resident, which is not a
+    # need, so the sentence does not call it one.
     assert result.answer == (
-        "83.5% of the people in need live in the 4 local authorities with high "
-        "need, and 68.8% of your provision is there. The places to look at "
-        "first, with high need and the thinnest provision, are Birmingham, "
-        "Cardiff and Manchester."
+        "83.5% of residents live in the 4 local authorities with the most "
+        "residents, and 68.8% of your provision is there. The places to look "
+        "at first, with the most residents and the thinnest provision, are "
+        "Birmingham, Cardiff and Manchester."
     )
     assert result.key_figures == (
         "share_of_provision_in_high_need_areas",
@@ -208,6 +210,27 @@ def test_answer_says_where_need_is_high_and_provision_is_thin(nomis):
     )
     assert {figure.id for figure in result.figures} >= set(result.key_figures)
     assert result.to_dict()["answer"] == result.answer
+
+
+def test_answer_says_need_when_a_need_is_chosen(nomis):
+    result = _run(SPREAD, options={"need": "unemployed"})
+    assert result.answer.startswith(
+        "83.5% of the people in need live in the 4 local authorities with high "
+        "need, and 68.8% of your provision is there. The places to look at "
+        "first, with high need and the thinnest provision, are "
+    )
+
+
+def test_answer_does_not_name_a_place_with_more_provision_than_the_area(nomis):
+    # Lewisham is the one high-need place of the three, and it has more
+    # provision for its people than the area as a whole, so it is no gap.
+    result = _run(
+        _volumes(Lewisham=90, Greenwich=40, Adur=1),
+        options={"catchment": ["Lewisham", "Greenwich", "Adur"]},
+    )
+    assert _names(result.table("priority_areas")) == ["Lewisham"]
+    assert "look at first" not in result.answer
+    assert result.answer.endswith("of your provision is there.")
 
 
 # --- reading the volumes ---------------------------------------------------

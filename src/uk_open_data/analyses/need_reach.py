@@ -18,7 +18,9 @@ from uk_open_data.analyses._answers import (
     HIDDEN,
     high_need_places,
     look_first,
+    need_words,
     number,
+    shown_first,
     values,
 )
 from uk_open_data.analyses._inputs import is_blank, to_count
@@ -49,6 +51,7 @@ from uk_open_data.analyses._need import (
     MAX_TOP,
     MEASURES,
     NEED_BANDS,
+    RESIDENTS,
     Authority,
     Compared,
     Measure,
@@ -89,6 +92,9 @@ KEY_FIGURES = (
     "share_of_people_in_high_need_areas",
     "share_of_need_in_high_need_areas",
     "high_need_areas_without_people",
+    # These two stand in when a figure above is hidden.
+    "reach_per_100_in_need",
+    "people_in_catchment",
 )
 LOWEST = "your lowest reach"
 NO_REACH = "None, or count hidden"
@@ -298,8 +304,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         sources=tuple(trail.sources),
         privacy=_privacy(threshold, trail),
         charts=CHARTS,
-        answer=_answer(figures, tables[0]),
-        key_figures=KEY_FIGURES,
+        answer=_answer(figures, tables[0], measure),
+        key_figures=shown_first(figures, KEY_FIGURES),
     )
 
 
@@ -712,7 +718,7 @@ def _figures(
             "Local authorities with high need",
             len(high),
             "areas",
-            note="At or above the middle value of people in need.",
+            note="The top quarter of the places compared, by people in need.",
         ),
         Figure(
             "high_need_areas_without_people",
@@ -755,23 +761,31 @@ def _share_in_high_need(
 # --- what the person needs to know -----------------------------------------
 
 
-def _answer(figures: list[Figure], priority: Table) -> str:
+def _answer(figures: list[Figure], priority: Table, measure: Measure) -> str:
     """Say where need is high and how much of the charity's reach is there."""
     shown = values(figures)
+    words = need_words(measure.id == RESIDENTS.id)
+    overall = shown["reach_per_100_in_need"]
     if shown["areas_compared"] == 1:
-        return _answer_for_one_place(shown["reach_per_100_in_need"])
-    places = high_need_places(shown["high_need_areas"])
+        return _answer_for_one_place(overall, words.per)
+    places = high_need_places(shown["high_need_areas"], words.high)
     ours = shown["share_of_people_in_high_need_areas"]
-    mine = f"the share of your people who do is {HIDDEN}"
-    if ours is not None:
-        mine = f"{number(ours)}% of your people do"
+    if ours is None:
+        # The rate across the area is not hidden, so it carries the answer.
+        mine = (
+            f"the share of your people who do is {HIDDEN}. Across the area you "
+            f"reached {number(overall)} people per 100 {words.per}."
+        )
+    else:
+        mine = f"{number(ours)}% of your people do."
+    first = look_first(priority, LOWEST, "people_per_100_in_need", overall, words.high)
     return (
-        f"{number(shown['share_of_need_in_high_need_areas'])}% of the people in "
-        f"need live in {places}, and {mine}.{look_first(priority, LOWEST)}"
+        f"{number(shown['share_of_need_in_high_need_areas'])}% of {words.people} "
+        f"live in {places}, and {mine}{first}"
     )
 
 
-def _answer_for_one_place(reach: float | None) -> str:
+def _answer_for_one_place(reach: float | None, per: str) -> str:
     """Say that one place alone cannot be set against any other."""
     answer = (
         "Only one local authority is compared, so the analysis cannot say "
@@ -779,7 +793,7 @@ def _answer_for_one_place(reach: float | None) -> str:
     )
     if reach is None:
         return answer
-    return f"{answer} Across it you reached {number(reach)} people per 100 in need."
+    return f"{answer} Across it you reached {number(reach)} people per 100 {per}."
 
 
 def _choices(

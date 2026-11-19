@@ -82,7 +82,7 @@ ANALYSIS_VERSION = "0.1"
 KEY_FIGURES = (
     "average_distance_km",
     "share_of_people_within_reach",
-    "people_beyond_reach",
+    "areas_beyond_reach",
 )
 DEFAULT_WITHIN_KM = 10
 MAX_WITHIN_KM = 500
@@ -634,12 +634,11 @@ def _answer(
 ) -> str:
     """Say how far people are from a site and where a new one would help most."""
     shown = values(figures)
-    who = "people" if measure.id == RESIDENTS.id else "people in need"
+    who = "residents" if measure.id == RESIDENTS.id else "people in need"
     first = (
         f"Counting each person at the centre of their local authority, {who} "
         f"are {number(shown['average_distance_km'])} km from your nearest site "
-        f"on average, and {number(shown['share_of_people_within_reach'])}% are "
-        f"within {within:g} km of one."
+        f"on average, and {_share_within(shown)} are within {within:g} km of one."
     )
     places = column(priority, "geography_name")
     if not places:
@@ -648,6 +647,19 @@ def _answer(
         f"{first} Of the places farther away, a new site would reach most "
         f"{who} in {places[0]}."
     )
+
+
+def _share_within(shown: dict[str, Any]) -> str:
+    """The share of people within reach, in words when it is all or none.
+
+    A share can round to 0.0% or 100.0% while a few places fall the other
+    side, so the words are used only when every place does.
+    """
+    if shown["areas_beyond_reach"] == shown["areas_compared"]:
+        return "none"
+    if shown["areas_beyond_reach"] == 0:
+        return "all"
+    return f"{number(shown['share_of_people_within_reach'])}%"
 
 
 def _choices(
