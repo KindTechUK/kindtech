@@ -1501,6 +1501,11 @@ reach analysis, the same function called with <code>"residents"</code> for the p
 analysis, which sets provision against everyone who lives in a place unless told
 otherwise, and <code>uk_open_data.analyses.who_we_miss.download_residents</code> for the who we
 are missing analysis.</p>
+<p>The <code>"residents"</code> figures serve two analyses. Need against reach uses them too,
+to shade its map by people in need for each 1,000 residents. When the need
+figures are kept and the residents are not, it does not fetch them: the map is
+shaded by the count and the result says so in its choices. Keep both and the
+map goes by the rate.</p>
 <h2 id="the-privacy-rule">The privacy rule</h2>
 <ul>
 <li>No tool accepts rows about people. <code>run_analysis_on_counts</code> takes only input

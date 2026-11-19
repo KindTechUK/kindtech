@@ -2167,6 +2167,12 @@ analysis, which sets provision against everyone who lives in a place unless told
 otherwise, and `uk_open_data.analyses.who_we_miss.download_residents` for the who we
 are missing analysis.
 
+The `"residents"` figures serve two analyses. Need against reach uses them too,
+to shade its map by people in need for each 1,000 residents. When the need
+figures are kept and the residents are not, it does not fetch them: the map is
+shaded by the count and the result says so in its choices. Keep both and the
+map goes by the rate.
+
 ## The privacy rule
 
 - No tool accepts rows about people. `run_analysis_on_counts` takes only input
