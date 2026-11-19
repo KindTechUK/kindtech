@@ -232,12 +232,13 @@ and of the local authorities near it, which are drawn pale around it. When
 the outlines cannot be fetched the figures come back as usual and the note
 says no map was drawn.
 
-The figures do not wait long for a picture. The first time an area is asked
-for, the boundary service can take a minute or more, so the server waits 15
-seconds for the outlines and then sends the answer without a map, with a note
-that says so. The fetch is left to finish, and a second run a minute later is
-often quick. The outlines of every local authority are kept in memory once
-fetched, for as long as the server runs.
+The figures do not wait long for a picture. A map in a chat is drawn from the
+quick outlines, simplified to 200 metres, where the page and the command line
+ask for finer ones that can take a minute or more the first time. Should even
+the quick ones be slow, the server waits 15 seconds and then sends the answer
+without a map, with a note that says so. The fetch is left to finish, and a
+second run a minute later is often quick. The outlines of every local
+authority are kept in memory once fetched, for as long as the server runs.
 
 When you host the connector, keep the outlines on your server and pass a
 function that reads them, so that no run waits on another service:

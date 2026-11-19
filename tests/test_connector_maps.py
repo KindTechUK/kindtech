@@ -135,6 +135,35 @@ class TestThePicture:
         assert picture is not None
         assert note.startswith("A map of this result was drawn")
 
+    def test_a_chat_asks_for_the_quick_outlines(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+        asked: list[dict[str, Any]] = []
+
+        def loader(result: Any, **how: Any) -> dict[str, Any]:
+            asked.append(how)
+            return fakes.square_outlines(result)
+
+        monkeypatch.setattr(maps, "load_map_boundaries", loader)
+
+        picture, _ = picture_for(result)
+
+        assert picture is not None
+        assert asked == [{"fine": False}]
+
+    def test_outlines_passed_in_are_asked_for_as_they_are(self) -> None:
+        result = run_analysis("reach-deprivation", COUNTS)
+        asked: list[tuple[Any, ...]] = []
+
+        def kept(*given: Any) -> dict[str, Any]:
+            asked.append(given)
+            return fakes.square_outlines(result)
+
+        picture_for(result, boundaries=kept)
+
+        assert asked == [(result,)]
+
     def test_a_picture_that_repeats_an_input_value_is_withheld(self) -> None:
         result = run_analysis("reach-deprivation", COUNTS)
 
