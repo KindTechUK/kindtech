@@ -13,6 +13,8 @@ import pandas as pd
 import pytest
 
 from uk_open_data.analyses import (
+    DOORS,
+    RUNS_LOGGER,
     AnalysisInputError,
     Figure,
     describe_analysis,
@@ -764,7 +766,12 @@ def test_decile_chart_sets_people_against_residents(world):
 
 # --- counting completed runs -----------------------------------------------
 
-RUNS_LOGGER = "uk_open_data.runs"
+
+def test_the_logger_and_the_doors_can_be_imported_by_a_host():
+    # A host sets this logger up to keep the records, and a door names itself
+    # with one of these words, so neither should be typed out a second time.
+    assert RUNS_LOGGER == "uk_open_data.runs"
+    assert DOORS == ("cli", "page", "chat")
 
 
 def test_record_run_writes_one_record_with_three_fixed_words(caplog):

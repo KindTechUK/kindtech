@@ -136,6 +136,17 @@ raises `KeyError` (the analysis) or `ValueError` (the mode or the door), and the
 message does not repeat it. The same three words are on the record as
 `record.analysis_id`, `record.input_mode` and `record.door`.
 
+A host that keeps the records imports the logger's name, and the doors, from
+the package, so neither is typed out a second time:
+
+```python
+import logging
+
+from uk_open_data.analyses import DOORS, RUNS_LOGGER
+
+logging.getLogger(RUNS_LOGGER).setLevel(logging.INFO)
+```
+
 ## Drawing the map
 
 A result describes its map; `render_map` draws it as an SVG picture with a
