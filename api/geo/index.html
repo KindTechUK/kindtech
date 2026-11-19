@@ -1488,6 +1488,7 @@
 </table>
 <h4 id="returns">Returns</h4>
 <p><code>dict</code> — A GeoJSON FeatureCollection. Returns <code>{"type": "FeatureCollection", "features": []}</code> if no matching service is found or the request fails.</p>
+<p>The ONS boundary service gives a few thousand features in one answer. A larger layer, such as every neighbourhood, is fetched page by page, so the collection holds every feature. If any page fails, the collection is empty and an error is logged: you never get a part of a layer as if it were the whole. A large layer with outlines takes many requests; filter by code when you need only some areas.</p>
 <hr />
 <h3 id="get_field_info"><code>get_field_info()</code></h3>
 <p>Get available fields for filtering a dataset.</p>

@@ -1931,6 +1931,8 @@ manchester = load_geodata(geography_type="LAD", LAD21NM="Manchester")
 
 `dict` — A GeoJSON FeatureCollection. Returns `{"type": "FeatureCollection", "features": []}` if no matching service is found or the request fails.
 
+The ONS boundary service gives a few thousand features in one answer. A larger layer, such as every neighbourhood, is fetched page by page, so the collection holds every feature. If any page fails, the collection is empty and an error is logged: you never get a part of a layer as if it were the whole. A large layer with outlines takes many requests; filter by code when you need only some areas.
+
 ---
 
 ### `get_field_info()`
