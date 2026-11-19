@@ -310,8 +310,9 @@ table is installed, and with postcodes.io otherwise.
 The analysis loads a count of **people in need** in every local authority from
 [Nomis](ons.md), divides the people you helped in each one by it, and lists
 the high-need local authorities where you reach the fewest people per 100 in
-need. A local authority is high need when its count is at or above the middle
-value of the area compared.
+need. A local authority is high need when its count is in the top quarter of
+the area compared. With fewer than four places, the one with the largest count
+is high need.
 
 Choose the need with the `need` option:
 
@@ -364,9 +365,15 @@ keep_need_figures(
 A result that used a kept copy says so in its `sources` and its `working`,
 with the note the copy was kept with.
 
-By default every local authority in England and Wales is compared. If you
-serve a smaller area, name it with `catchment`, so that places you could not
-reach are not listed as gaps.
+The area compared is the area you could serve. Name it with `catchment`: a
+list of local authorities, or a country. When you leave it out, the analysis
+works the area out as the first analysis does: each local authority that holds
+at least 5% of the people located (`catchment_min_share`). When none does,
+every local authority in England and Wales is compared.
+
+An area worked out this way holds only places you already reach, so it can
+show where your reach is low against need but not where you reach nobody. The
+result says so in a warning. To see the places you do not reach, name the area.
 
 | Figure | Meaning |
 | --- | --- |
@@ -394,7 +401,8 @@ in need and people reached per 100 in need for the places in `priority_areas`.
 | `suppress_below` | `5` | Counts above zero and below this are hidden |
 | `postcode_lookup` | `"auto"` | As for the first analysis |
 | `need` | `"unemployed"` | The need to compare your reach with |
-| `catchment` | England and Wales | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"` |
+| `catchment` | worked out | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"` |
+| `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out catchment |
 | `top` | `10` | How many places to list, from 1 to 50 |
 
 ```python
@@ -556,8 +564,8 @@ the postcode table is installed, and with postcodes.io otherwise.
 The analysis loads a count of people in every local authority from
 [Nomis](ons.md), divides the volume you provide in each one by it, and lists
 the high-need local authorities with the least provision for each 1,000
-people. A local authority is high need when its count is at or above the
-middle value of the area compared.
+people. A local authority is high need when its count is in the top quarter
+of the area compared, as in the second analysis.
 
 The `need` option takes the same values as in the second analysis, and the same
 kept copies (`keep_need_figures`, `download_need_figures`) are used. The
