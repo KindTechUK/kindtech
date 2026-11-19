@@ -718,7 +718,19 @@ def test_both_sexes_are_hidden_when_one_count_is_small(nomis):
 
 def test_too_few_people_is_an_input_error(nomis):
     with pytest.raises(AnalysisInputError, match="Fewer than 5 people"):
+        _run(_counts(White_British=4, Not_stated=3))
+
+
+def test_labels_that_match_nothing_are_the_reason_given_not_too_few_people(nomis):
+    with pytest.raises(AnalysisInputError) as raised:
         _run(_counts(White_British=4, Not_stated=30))
+    message = str(raised.value)
+    assert message.startswith(
+        "30 people have no label, or a label that matched no census group, so "
+        "too few are left to give figures."
+    )
+    assert "'groups' option" in message
+    assert "Not stated" not in message  # the label as typed is not repeated
 
 
 def test_few_people_brings_a_warning_about_chance(nomis):
