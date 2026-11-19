@@ -160,10 +160,10 @@ def load_map_boundaries(result: AnalysisResult, fine: bool = True) -> dict[str, 
     takes outlines simplified to 200 metres. So does any area whose fine
     outline does not come.
 
-    The fine outlines can be slow. The first time they are asked for an area
-    the service can take a minute or more, and a second time it takes a few
-    seconds. A caller that cannot wait passes ``fine=False`` and gets the 200
-    metre outlines of every area and of the places around, which are quick.
+    The fine outlines usually come in a few seconds. At times the service
+    has taken a minute or more, and it is not known why. A caller that cannot
+    wait passes ``fine=False`` and gets the 200 metre outlines of every area
+    and of the places around, which are quick.
 
     The places around are the local authorities near the areas. They are drawn
     in pale grey, so the picture says where it is. On a map in fine detail

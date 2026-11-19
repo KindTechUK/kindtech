@@ -587,7 +587,7 @@ def test_every_authority_is_fetched_once_for_the_life_of_the_process(result):
 
 
 def test_a_caller_that_cannot_wait_takes_the_quick_outlines(result):
-    # The fine outlines can take a minute the first time. With fine=False
+    # The fine outlines can take a minute at times. With fine=False
     # nothing fine is asked for, and the places around still come.
     service = _Service()
     with mock.patch("uk_open_data.analyses.maps.load_geodata", service.load):
