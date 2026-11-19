@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "uk-open-data"
 version = "0.1.0"
-description = "All things kindtech repository - kindtech monorepo"
+description = "UK open data in Python: boundaries, statistics, postcodes and deprivation indices, joined to your own data"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
