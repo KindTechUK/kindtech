@@ -40,7 +40,9 @@ from uk_open_data.postcodes import (
     build_postcode_table,
     download_postcode_table,
     postcode_table_info,
+    postcode_table_path,
 )
+from uk_open_data.postcodes.offline import missing_table_message
 
 EXIT_OK = 0
 EXIT_INPUT_ERROR = 2
@@ -210,7 +212,16 @@ def _handle_postcodes_download(args: argparse.Namespace) -> str:
 
 
 def _handle_postcodes_info(args: argparse.Namespace) -> str:
-    """Describe the installed postcode table."""
+    """Describe the installed postcode table, or say that there is none.
+
+    Having no table is not a mistake: postcodes are then looked up online. So
+    the command says so and ends as a command that worked.
+    """
+    if postcode_table_path() is None:
+        return (
+            f"{missing_table_message()}\nUntil one is installed, an analysis "
+            "looks postcodes up with postcodes.io, and says so in its result."
+        )
     return _table_text()
 
 

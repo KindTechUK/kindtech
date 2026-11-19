@@ -15,7 +15,7 @@ import pytest
 import requests
 
 from uk_open_data.analyses import AnalysisInputError, run_analysis
-from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
+from uk_open_data.cli import EXIT_OK, main
 from uk_open_data.postcodes import (
     PostcodeTableError,
     build_postcode_table,
@@ -113,7 +113,17 @@ def test_build_rejects_a_source_with_nothing_to_keep(tmp_path):
 
 def test_nothing_is_installed_to_begin_with():
     assert postcode_table_path() is None
-    with pytest.raises(PostcodeTableError, match="postcodes download"):
+    # No table is published yet, so the message says how to make one.
+    with pytest.raises(PostcodeTableError, match="postcodes build"):
+        postcode_to_lsoa("SE13 7VC")
+
+
+def test_a_published_table_is_what_the_message_points_to():
+    published = {"url": "https://example.org/t.gz", "sha256": "0", "edition": "x"}
+    with (
+        mock.patch("uk_open_data.postcodes.offline.PUBLISHED_TABLE", published),
+        pytest.raises(PostcodeTableError, match="postcodes download"),
+    ):
         postcode_to_lsoa("SE13 7VC")
 
 
@@ -335,8 +345,15 @@ def test_command_line_builds_installs_and_describes_a_table(tmp_path, capsys):
     assert "7 postcodes in 6 neighbourhoods" in out
     digest = out.strip().splitlines()[-1].removeprefix("sha256: ")
 
-    assert main(["postcodes", "info"]) == EXIT_INPUT_ERROR
-    assert "No postcode table is installed" in capsys.readouterr().err
+    # Having no table is not a mistake, so the command says so and ends well.
+    assert main(["postcodes", "info"]) == EXIT_OK
+    said = capsys.readouterr()
+    assert said.err == ""
+    assert said.out.startswith("No postcode table is installed on this machine.")
+    # No table is published yet, so the command must not send people to fetch one.
+    assert "postcodes download" not in said.out
+    assert "uk-open-data postcodes build" in said.out
+    assert "looks postcodes up with postcodes.io" in said.out
 
     url = "https://example.org/postcodes.ktpc.gz"
     with mock.patch("requests.get", return_value=_response(table.read_bytes())):

@@ -256,13 +256,24 @@ def _open_table() -> _Table:
     """Open the installed table, or say how to get one."""
     path = postcode_table_path()
     if path is None:
-        msg = (
-            "No postcode table is installed on this machine. Fetch one with "
-            "`uk-open-data postcodes download`, or call "
+        raise PostcodeTableError(missing_table_message())
+    return _cached_table(str(path), path.stat().st_mtime_ns)
+
+
+def missing_table_message() -> str:
+    """Say that no table is installed, and how to get one for this version."""
+    if PUBLISHED_TABLE is None:
+        how = (
+            "None has been published for this version yet. To make one, build "
+            "it from the ONS lookup with `uk-open-data postcodes build` and "
+            "install it with uk_open_data.postcodes.install_postcode_table()."
+        )
+    else:
+        how = (
+            "Fetch one with `uk-open-data postcodes download`, or call "
             "uk_open_data.postcodes.download_postcode_table()."
         )
-        raise PostcodeTableError(msg)
-    return _cached_table(str(path), path.stat().st_mtime_ns)
+    return f"No postcode table is installed on this machine. {how}"
 
 
 @lru_cache(maxsize=2)
