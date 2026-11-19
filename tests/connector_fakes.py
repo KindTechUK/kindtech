@@ -139,19 +139,6 @@ def england_frame() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def postcode_frame(lsoa_code: str | None) -> pd.DataFrame:
-    """What ``lookup_postcodes`` returns for one postcode."""
-    return pd.DataFrame(
-        [
-            {
-                "postcode": SECRET_POSTCODE,
-                "valid": lsoa_code is not None,
-                "lsoa_code": lsoa_code,
-            }
-        ]
-    )
-
-
 def outcode_frame(admin_districts: str | None) -> pd.DataFrame:
     """What ``lookup_outcodes`` returns for one postcode district."""
     return pd.DataFrame(
