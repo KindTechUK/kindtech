@@ -186,8 +186,9 @@ def test_kept_need_figures_are_used_and_nothing_is_fetched(nomis):
 
 @pytest.mark.parametrize("need", ["everyone", 7, None, {"dataset": "NM_1_1"}])
 def test_bad_need_is_rejected(nomis, need):
-    with pytest.raises(AnalysisInputError, match="need"):
+    with pytest.raises(AnalysisInputError, match="Who counts as in need") as caught:
         _run(SPREAD, options={"need": need})
+    assert caught.value.option == "need"
 
 
 # --- the answer ------------------------------------------------------------
@@ -301,8 +302,9 @@ def test_top_sets_the_length_of_the_list(nomis):
 
 @pytest.mark.parametrize("top", [0, 51, 2.5, "ten", True])
 def test_bad_top_is_rejected(nomis, top):
-    with pytest.raises(AnalysisInputError, match="top"):
+    with pytest.raises(AnalysisInputError, match="Places listed") as caught:
         _run(SPREAD, options={"top": top})
+    assert caught.value.option == "top"
 
 
 def test_volumes_are_shown_however_small(nomis):
@@ -331,7 +333,7 @@ def test_catchment_can_name_local_authorities(nomis):
     assert any(w.startswith("A volume of 30 is outside") for w in result.warnings)
     assert any(w.startswith("Only 3 local authorities") for w in result.warnings)
     choice = next(c for c in result.choices if c.id == "catchment")
-    assert choice.reason == "You set the catchment."
+    assert choice.reason == "You gave the area."
 
 
 def test_catchment_can_be_a_country(nomis):
@@ -347,21 +349,25 @@ def test_a_catchment_with_no_provision_is_an_input_error(nomis):
 
 @pytest.mark.parametrize("catchment", [["Lewisham", "Narnia"], 7, [], [""]])
 def test_bad_catchment_is_rejected(nomis, catchment):
-    with pytest.raises(AnalysisInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="Area you serve") as caught:
         _run(SPREAD, options={"catchment": catchment})
+    assert caught.value.option == "catchment"
 
 
 def test_a_wide_comparison_is_flagged_when_provision_is_in_few_places():
     many = [(f"E060000{n:02d}", f"Place {n}", 1000 + n) for n in range(60)]
     keep_need_figures("residents", many, "invented for a test.")
-    flag = "You provide in 2 of the 60 local authorities compared."
+    flag = (
+        "No area was given, so all 60 local authorities in England and Wales "
+        "are looked at, and you provide in 2 of them."
+    )
     wide = _run(_volumes(Place_1=10, Place_2=20))
     named = _run(
         _volumes(Place_1=10, Place_2=20),
         options={"catchment": [f"Place {n}" for n in range(1, 6)]},
     )
     assert any(w.startswith(flag) for w in wide.warnings)
-    assert not any(w.startswith("You provide in") for w in named.warnings)
+    assert not any(w.startswith("No area was given") for w in named.warnings)
 
 
 # --- sites -----------------------------------------------------------------
@@ -556,7 +562,7 @@ def test_result_explains_itself(nomis):
         "Loaded the need figures",
         "Read the local authority volumes",
         "Joined provision to the need figures",
-        "Set the area to compare",
+        "Set the area you serve",
         "Set provision against need",
         "Listed the places with high need and thin provision",
     ]

@@ -24,6 +24,7 @@ from uk_open_data.analyses._answers import (
     values,
 )
 from uk_open_data.analyses._inputs import is_blank, to_count
+from uk_open_data.analyses._labels import LABELS, said
 from uk_open_data.analyses._model import (
     Analysis,
     AnalysisInfo,
@@ -167,9 +168,10 @@ INFO = AnalysisInfo(
         POSTCODE_LOOKUP,
         Option(
             name="need",
+            label=LABELS["need"],
             description=(
-                "The need to compare your reach with. One of: "
-                f"{', '.join(MEASURES)}. Or a table Nomis publishes by local "
+                "The need to compare your reach with: one of "
+                "the measures listed, or a table Nomis publishes by local "
                 "authority, as {'dataset': a Nomis dataset id, 'label': what "
                 "it counts, 'filters': the categories to add up}."
             ),
@@ -181,24 +183,29 @@ INFO = AnalysisInfo(
         ),
         Option(
             name="catchment",
+            label=LABELS["catchment"],
             description=(
-                "The area you could serve: a list of local authority names or "
-                "codes, or 'England', 'Wales' or 'England and Wales'. Left "
-                "empty, the analysis uses the local authorities where most of "
-                "your people live."
+                "The area you serve, with the places in it that you do not "
+                "reach yet: a list of local authority names or codes, or "
+                "'England', 'Wales' or 'England and Wales'. Left empty, the "
+                "analysis uses the local authorities where most of your "
+                "people live."
             ),
             default=None,
         ),
         Option(
             name="catchment_min_share",
+            label=LABELS["catchment_min_share"],
             description=(
-                "When the catchment is not given, a local authority joins it "
-                "if it holds at least this share of the people located."
+                "When the area you serve is not given, a local authority "
+                "joins it if it holds at least this share of the people "
+                "located."
             ),
             default=0.05,
         ),
         Option(
             name="top",
+            label=LABELS["top"],
             description=(
                 f"How many high-need, low-reach places to list, from 1 to {MAX_TOP}."
             ),
@@ -371,7 +378,7 @@ def _count_by_authority(
             f"{bad} rows have a count that is not a whole number of zero or "
             "more. Correct those rows and run the analysis again."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, role="count")
     if blank:
         trail.warnings.append(f"{blank} rows had no local authority.")
     if unknown:
@@ -471,9 +478,9 @@ def _rows(
     if not compared.codes:
         msg = (
             f"The need figures list no local authority in {compared.label}. "
-            "Check the 'catchment' option."
+            f"Check {said('catchment')}."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="catchment")
     people = [located.get(code, 0) for code in compared.codes]
     need = [authorities[code].need for code in compared.codes]
     n_located = sum(located.values())
@@ -481,7 +488,7 @@ def _rows(
     with_people = sum(1 for n in people if n > 0)
     trail.working.append(
         Step(
-            title="Set the area to compare",
+            title="Set the area you serve",
             detail=(
                 f"Area: {compared.label}. {compared.reason} {n_inside} of the "
                 f"{n_located} people located live in it, in {with_people} of "
@@ -493,11 +500,11 @@ def _rows(
     )
     if n_inside < threshold:
         msg = (
-            f"Fewer than {threshold} of the people located live in the "
-            f"catchment ({compared.label}), which is too few to give figures "
-            "that do not point at individuals. Check the 'catchment' option."
+            f"Fewer than {threshold} of the people located live in the area "
+            f"you serve ({compared.label}), which is too few to give figures "
+            f"that do not point at individuals. Check {said('catchment')}."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="catchment")
     _warn_about_area(n_located - n_inside, with_people, compared, trail)
     cut = high_need_cut(need)
     high = [amount >= cut and amount > 0 for amount in need]
@@ -540,23 +547,24 @@ def _rows(
 def _warn_about_area(
     outside: int, with_people: int, compared: Compared, trail: Trail
 ) -> None:
-    """Warn when the area compared looks too wide, too narrow or too small."""
+    """Warn when the area looks too wide, too narrow or too small."""
     if outside:
         trail.warnings.append(
-            f"{outside} people live outside the catchment and are left out. "
-            "Change the 'catchment' option to include them."
+            f"{outside} people live outside the area you serve and are left "
+            f"out. Change {said('catchment')} to include them."
         )
     if compared.guessed:
         trail.warnings.append(
-            "The area compared was worked out from where your people live, so "
-            "it holds only places you already reach. To see places you do not "
-            "reach, name the area you could serve with the 'catchment' option."
+            "The area you serve was worked out from where your people live, "
+            "so it holds only places you already reach. To see places you do "
+            f"not reach, fill in {said('catchment')}."
         )
     if not compared.named and with_people * FEW_AREAS < len(compared.codes):
         trail.warnings.append(
-            f"Your people live in {with_people} of the {len(compared.codes)} "
-            "local authorities compared. If you serve a smaller area, name it "
-            "with the 'catchment' option, so that places you could not reach "
+            f"No area was given, so all {len(compared.codes)} local "
+            f"authorities in {compared.label} are looked at, and your people "
+            f"live in {with_people} of them. If you serve a smaller area, "
+            f"fill in {said('catchment')}, so that places you could not reach "
             "are not listed as gaps."
         )
     if len(compared.codes) == 1:
@@ -657,10 +665,10 @@ def _priority_table(rows: list[_Row], top: int, threshold: int, trail: Trail) ->
 
 
 def _authority_table(rows: list[_Row]) -> Table:
-    """Every local authority compared, for the map and for a closer look."""
+    """Every local authority in the area, for the map and for a closer look."""
     return Table(
         id="by_local_authority",
-        title="Need and reach in every local authority compared",
+        title="Need and reach in every local authority in the area you serve",
         columns=(
             "geography_code",
             "geography_name",
@@ -752,15 +760,20 @@ def _figures(
         ),
         Figure(
             "people_in_catchment",
-            "People who live in the area compared",
+            "People who live in the area you serve",
             in_catchment,
             "people",
             note="The figures below are about these people.",
         ),
-        Figure("areas_compared", "Local authorities compared", len(rows), "areas"),
+        Figure(
+            "areas_compared",
+            "Local authorities in the area you serve",
+            len(rows),
+            "areas",
+        ),
         Figure(
             "people_in_need",
-            f"People in need in the area compared: {measure.label}",
+            f"People in need in the area you serve: {measure.label}",
             round(sum(need)),
             "people",
         ),
@@ -775,7 +788,7 @@ def _figures(
             "Local authorities with high need",
             len(high),
             "areas",
-            note="The top quarter of the places compared, by people in need.",
+            note="The top quarter of the places in it, by people in need.",
         ),
         Figure(
             "high_need_areas_without_people",
@@ -888,7 +901,7 @@ def _choices(
         Choice(
             id="high_need",
             label="What counts as high need",
-            value="In the top quarter of the area compared, by people in need",
+            value="In the top quarter of the area you serve, by people in need",
             reason=(
                 "A quarter keeps the list to the places that stand out. The "
                 "Smart Works study, which this follows, used the top half."
@@ -896,7 +909,7 @@ def _choices(
         ),
         Choice(
             id="catchment",
-            label="Area compared",
+            label=LABELS["catchment"],
             value=compared.label,
             reason=compared.reason,
             option="catchment",
@@ -956,16 +969,16 @@ def _checks(mode: str, measure: Measure, compared: Compared) -> tuple[Check, ...
             question=f"Is this the need you work on: {measure.label}?",
             why=(
                 "Reach is only meaningful against the people you are trying "
-                "to help. Change the 'need' option if another measure fits "
+                f"to help. Change {said('need')} if another measure fits "
                 "better."
             ),
         ),
         Check(
             id="catchment",
-            question=f"Is this the area you could serve: {compared.label}?",
+            question=f"Is this the area you serve: {compared.label}?",
             why=(
-                "A place you could never reach is not a gap. Name the area "
-                "with the 'catchment' option."
+                "A place you could never reach is not a gap. Change "
+                f"{said('catchment')} if it is not."
             ),
         ),
     )

@@ -23,6 +23,7 @@ import uk_open_data
 from uk_open_data._kept import kept_file, read_kept, write_kept
 from uk_open_data.analyses._answers import AREA, names, number
 from uk_open_data.analyses._inputs import is_blank, to_count
+from uk_open_data.analyses._labels import LABELS, said
 from uk_open_data.analyses._model import (
     Analysis,
     AnalysisInfo,
@@ -209,9 +210,8 @@ INFO = AnalysisInfo(
         POSTCODE_LOOKUP,
         Option(
             name="characteristic",
-            description=(
-                f"What the group column holds. One of: {', '.join(CHARACTERISTICS)}."
-            ),
+            label=LABELS["characteristic"],
+            description="What the column of groups holds.",
             default=ETHNIC_GROUP.id,
             choices=tuple(
                 OptionChoice(item.id, item.label) for item in CHARACTERISTICS.values()
@@ -219,6 +219,7 @@ INFO = AnalysisInfo(
         ),
         Option(
             name="groups",
+            label=LABELS["groups"],
             description=(
                 "Which census group each of your own labels belongs to, as "
                 "your label to census group. Labels left out are matched by "
@@ -228,6 +229,7 @@ INFO = AnalysisInfo(
         ),
         Option(
             name="catchment",
+            label=LABELS["catchment"],
             description=(
                 "The area you serve: a list of local authority names or codes, "
                 "or 'England', 'Wales' or 'England and Wales'. With postcodes "
@@ -239,14 +241,17 @@ INFO = AnalysisInfo(
         ),
         Option(
             name="catchment_min_share",
+            label=LABELS["catchment_min_share"],
             description=(
-                "When the catchment is not given, a local authority joins it "
-                "if it holds at least this share of the people located."
+                "When the area you serve is not given, a local authority "
+                "joins it if it holds at least this share of the people "
+                "located."
             ),
             default=0.05,
         ),
         Option(
             name="under_represented_below",
+            label=LABELS["under_represented_below"],
             description=(
                 "A group is under-represented when its share of your people "
                 "is below this fraction of its share of residents."
@@ -336,7 +341,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         Step(
             title="Set your people against residents",
             detail=(
-                f"Catchment: {catchment.label}. {catchment.reason} It had "
+                f"Area: {catchment.label}. {catchment.reason} It had "
                 f"{round(sum(lived)):,} residents in the census. For each "
                 "group, its share of your people was divided by its share of "
                 "residents. A group is under-represented when the result is "
@@ -388,14 +393,14 @@ def _cut(options: dict[str, Any]) -> float:
     """Read and check the fraction below which a group is under-represented."""
     value = options.get("under_represented_below")
     if isinstance(value, bool) or not isinstance(value, int | float):
-        msg = "The option 'under_represented_below' must be a number."
-        raise AnalysisInputError(msg)
+        msg = f"{said('under_represented_below')} must be a number."
+        raise AnalysisInputError(msg, option="under_represented_below")
     if not 0 < value <= 1:
         msg = (
-            "The option 'under_represented_below' must be above 0 and no more "
+            f"{said('under_represented_below')} must be above 0 and no more "
             "than 1, for example 0.8 for four fifths."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="under_represented_below")
     return float(value)
 
 
@@ -403,10 +408,8 @@ def _characteristic(options: dict[str, Any]) -> _Characteristic:
     """Read and check what the group column holds."""
     wanted = options.get("characteristic")
     if not isinstance(wanted, str) or wanted not in CHARACTERISTICS:
-        msg = (
-            f"The option 'characteristic' must be one of: {', '.join(CHARACTERISTICS)}."
-        )
-        raise AnalysisInputError(msg)
+        msg = f"{said('characteristic')} must be one of: {', '.join(CHARACTERISTICS)}."
+        raise AnalysisInputError(msg, option="characteristic")
     return CHARACTERISTICS[wanted]
 
 
@@ -427,17 +430,17 @@ def _by_hand(
         for label, group in given.items()
     ):
         msg = (
-            "The option 'groups' must map each of your labels to one of: "
+            f"{said('groups')} must map each of your labels to one of: "
             f"{', '.join(characteristic.keys)}."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="groups")
     wrong = sum(1 for group in given.values() if group.strip().casefold() not in known)
     if wrong:
         msg = (
-            f"{wrong} entries of the option 'groups' do not name a census "
+            f"{wrong} entries in {said('groups')} do not name a census "
             f"group. The groups are: {', '.join(characteristic.keys)}."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="groups")
     return {
         _tidy(label): known[group.strip().casefold()] for label, group in given.items()
     }
@@ -683,7 +686,7 @@ def _weights(counts: list[Any]) -> list[int]:
             f"{bad} rows have a count that is not a whole number of zero or "
             "more. Correct those rows and run the analysis again."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, role="count")
     return [weight or 0 for weight in weights]
 
 
@@ -750,8 +753,8 @@ def _count_groups(
         Step(
             title="Matched your labels to census groups",
             detail=(
-                f"{len(per_label)} distinct labels. {set_by_hand} were set by "
-                f"the 'groups' option and the rest were matched by their "
+                f"{len(per_label)} distinct labels. {set_by_hand} were set in "
+                f"{said('groups')} and the rest were matched by their "
                 f"wording. {matched} people were matched to a group and "
                 f"{not_matched} were not, {blank} of them with no label."
             ),
@@ -762,11 +765,12 @@ def _count_groups(
     if not_matched:
         trail.warnings.append(
             f"{not_matched} people have no label, or a label that matched no "
-            "census group. They are left out of the shares. Use the 'groups' "
-            "option to say which group a label belongs to."
+            f"census group. They are left out of the shares. Use {said('groups')} "
+            "to say which group a label belongs to."
         )
     if matched < threshold:
-        raise AnalysisInputError(_too_few_matched(not_matched, threshold))
+        msg = _too_few_matched(not_matched, threshold)
+        raise AnalysisInputError(msg, role="group")
     if matched < FEW_PEOPLE:
         trail.warnings.append(
             f"Fewer than {FEW_PEOPLE} people were matched to a group. With so "
@@ -778,7 +782,7 @@ def _count_groups(
 def _too_few_matched(not_matched: int, threshold: int) -> str:
     """Say why too few people were matched: few were given, or few fitted."""
     check = (
-        "Check the 'group' column, the 'characteristic' option and the 'groups' option."
+        f"Check the column of groups, {said('characteristic')} and {said('groups')}."
     )
     if not_matched < threshold:
         return (
@@ -805,15 +809,14 @@ def _catchment(
     """Work out the area served, from the option or from where people live."""
     if wanted is not None:
         codes, label = named_areas(wanted, residents.names, "census figures")
-        return _Catchment(codes, label, "You set the catchment.")
+        return _Catchment(codes, label, "You gave the area.")
     if places is None:
         msg = (
-            "Say which area you serve with the 'catchment' option: a list of "
-            "local authority names or codes, or 'England', 'Wales' or "
-            "'England and Wales'. Without postcodes the analysis cannot work it "
-            "out."
+            f"Fill in {said('catchment')}: a list of local authority names or "
+            "codes, or 'England', 'Wales' or 'England and Wales'. Without "
+            "postcodes the analysis cannot work it out."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="catchment")
     per_authority: Counter[str] = Counter()
     for place, weight in zip(places, weights, strict=True):
         if place in residents.counts:
@@ -856,11 +859,11 @@ def _keep_catchment(
     located = sum(1 for place in places if place is not None)
     trail.working.append(
         Step(
-            title="Kept the people who live in the catchment",
+            title="Kept the people who live in the area you serve",
             detail=(
                 f"{sum(kept)} of the {located} people located live in "
                 f"{catchment.label}. The rest are left out, because they are "
-                "set against the residents of the catchment."
+                "set against the residents of the area you serve."
             ),
             rows_in=located,
             rows_out=sum(kept),
@@ -868,10 +871,10 @@ def _keep_catchment(
     )
     if sum(kept) < located:
         trail.warnings.append(
-            f"{located - sum(kept)} people live outside the catchment, or in "
-            "a local authority the census figures do not list (for example "
-            "one whose boundary has changed), and are left out. Change the "
-            "'catchment' option to include them."
+            f"{located - sum(kept)} people live outside the area you serve, "
+            "or in a local authority the census figures do not list (for "
+            "example one whose boundary has changed), and are left out. "
+            f"Change {said('catchment')} to include them."
         )
     return kept
 
@@ -881,9 +884,9 @@ def _residents_of(catchment: _Catchment, residents: _Residents) -> list[float]:
     if not catchment.codes:
         msg = (
             f"The census figures list no local authority in {catchment.label}. "
-            "Check the 'catchment' option."
+            f"Check {said('catchment')}."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="catchment")
     by_group = zip(*(residents.counts[code] for code in catchment.codes), strict=True)
     return [sum(column) for column in by_group]
 
@@ -959,11 +962,11 @@ def _figures(
         Figure("people_supplied", "People in the data you gave", supplied, "people"),
         Figure(
             "people_in_catchment",
-            "People set against the residents of the catchment",
+            "People set against the residents of the area you serve",
             considered,
             "people",
             note=(
-                "With postcodes, the people who live in the catchment. "
+                "With postcodes, the people who live in the area you serve. "
                 "Without, everyone in your data."
             ),
         ),
@@ -982,7 +985,7 @@ def _figures(
         ),
         Figure(
             "residents",
-            "Residents of the catchment in the 2021 Census",
+            "Residents of the area you serve in the 2021 Census",
             round(sum(lived)),
             "people",
         ),
@@ -1066,7 +1069,7 @@ def _choices(
             id="characteristic",
             label="What people are grouped by",
             value=characteristic.label,
-            reason="It is what the 'characteristic' option says.",
+            reason="It is what you chose, or the usual choice if you chose nothing.",
             option="characteristic",
         ),
         Choice(
@@ -1076,13 +1079,13 @@ def _choices(
             reason=(
                 "These are the groups the 2021 Census publishes for every "
                 "local authority. Your labels were matched to them by their "
-                "wording, unless the 'groups' option set them."
+                f"wording, unless {said('groups')} set them."
             ),
             option="groups",
         ),
         Choice(
             id="catchment",
-            label="Catchment",
+            label=LABELS["catchment"],
             value=catchment.label,
             reason=catchment.reason,
             option="catchment",
@@ -1137,7 +1140,7 @@ def _checks(
             why=(
                 "Labels were matched by their wording, which can be wrong for "
                 "codes and short forms. Compare the counts with your own, and "
-                "set any label with the 'groups' option."
+                f"set any label in {said('groups')}."
             ),
         ),
         Check(
@@ -1178,7 +1181,7 @@ def _privacy(threshold: int, trail: Trail) -> Privacy:
             "The number of people matched to no group is shown even when it "
             "is small, because it says nothing about which group they are in.",
             "The census figures are public counts and are shown in full.",
-            "A second run with a different catchment gives a second set of "
+            "A second run with a different area gives a second set of "
             "counts. Publish one, because a small count can be worked out by "
             "taking one from the other.",
         ),

@@ -85,7 +85,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         _emit(error.report, getattr(args, "output", None))
         return _fail(MAP_NOT_DRAWN)
     except AnalysisInputError as error:
-        return _fail("\n".join(error.problems))
+        return _fail("\n".join([*error.problems, *_how_to_set(error)]))
     except PostcodeTableError as error:
         return _fail(str(error))
     except KeyError as error:
@@ -393,6 +393,19 @@ def _source_problem(error: requests.RequestException) -> str:
     )
 
 
+def _how_to_set(error: AnalysisInputError) -> list[str]:
+    """Say how the option or column an input error is about is typed here.
+
+    A message names an option as a page shows it, such as 'Area you serve'.
+    The command line takes its code name, so that is added.
+    """
+    if error.option is not None:
+        return [f"On the command line this is --option {error.option}=VALUE."]
+    if error.role is not None:
+        return [f"On the command line this is --column {error.role}=COLUMN."]
+    return []
+
+
 def _fail(message: str) -> int:
     """Report a problem on standard error and return the error status."""
     sys.stderr.write(message + "\n")
@@ -411,8 +424,8 @@ def _describe_text(info: AnalysisInfo) -> str:
     lines += ["", "Options:"]
     for option in info.options:
         lines.append(
-            f"  {option.name} (default {json.dumps(option.default)}): "
-            f"{option.description}"
+            f"  {option.label or option.name} (--option {option.name}=VALUE, "
+            f"default {json.dumps(option.default)}): {option.description}"
         )
         lines += [
             f"    {json.dumps(choice.value)}: {choice.label}"

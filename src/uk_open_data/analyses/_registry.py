@@ -173,6 +173,6 @@ def _choose_mode(info: AnalysisInfo, matched: Mapping[str, str]) -> InputMode:
     )
     msg = (
         f"The analysis could not find the columns it needs. It needs {needs}. "
-        "Say which of your columns to use with the columns argument."
+        "Say which of your columns holds each one."
     )
     raise AnalysisInputError(msg)

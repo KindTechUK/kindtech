@@ -563,7 +563,7 @@ class TestWithTheThirdAnalysis:
         answer = run_analysis_on_counts("who-we-miss", GROUP_COUNTS)
 
         assert answer["status"] == "input_problem"
-        assert "'catchment'" in answer["problems"][0]
+        assert "'Area you serve'" in answer["problems"][0]
 
     def test_rows_about_people_are_refused(self) -> None:
         rows = [{"group": "White", "postcode": "ZZ99 9KC"}]
@@ -675,7 +675,7 @@ class TestWithTheFourthAnalysis:
         answer = run_analysis_on_counts("provision-gap", VOLUMES, options={"top": 99})
 
         assert answer["status"] == "input_problem"
-        assert "'top'" in answer["problems"][0]
+        assert "'Places listed'" in answer["problems"][0]
 
 
 SITES = [{"latitude": 51.4613, "longitude": -0.0117}]

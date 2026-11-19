@@ -20,7 +20,7 @@ from datetime import date
 from typing import Any
 
 import uk_open_data
-from uk_open_data.analyses._answers import column, number, values
+from uk_open_data.analyses._answers import AREA, column, number, values
 from uk_open_data.analyses._centres import centres_path as centres_path
 from uk_open_data.analyses._centres import clear_centres_cache as clear_centres_cache
 from uk_open_data.analyses._centres import (
@@ -31,6 +31,7 @@ from uk_open_data.analyses._centres import (
 from uk_open_data.analyses._centres import download_centres as download_centres
 from uk_open_data.analyses._centres import keep_centres as keep_centres
 from uk_open_data.analyses._inputs import is_blank
+from uk_open_data.analyses._labels import LABELS, said
 from uk_open_data.analyses._model import (
     Analysis,
     AnalysisInfo,
@@ -151,9 +152,10 @@ INFO = AnalysisInfo(
         POSTCODE_LOOKUP,
         Option(
             name="need",
+            label=LABELS["need"],
             description=(
-                "The people to measure distance for. One of: "
-                f"{', '.join(MEASURES)}. Or a table Nomis publishes by local "
+                "The people to measure distance for: one of "
+                "the measures listed, or a table Nomis publishes by local "
                 "authority, as {'dataset': a Nomis dataset id, 'label': what "
                 "it counts, 'filters': the categories to add up}."
             ),
@@ -164,15 +166,18 @@ INFO = AnalysisInfo(
         ),
         Option(
             name="catchment",
+            label=LABELS["catchment"],
             description=(
-                "The area you could serve: a list of local authority names or "
-                "codes, or 'England', 'Wales' or 'England and Wales'. Left "
-                "empty, every local authority in England and Wales is compared."
+                "The area you serve, with the places in it that you do not "
+                "reach yet: a list of local authority names or codes, or "
+                "'England', 'Wales' or 'England and Wales'. Left empty, every "
+                "local authority in England and Wales is compared."
             ),
             default=None,
         ),
         Option(
             name="within_km",
+            label=LABELS["within_km"],
             description=(
                 "How many kilometres from a site counts as within reach, "
                 f"above 0 and up to {MAX_WITHIN_KM}."
@@ -181,6 +186,7 @@ INFO = AnalysisInfo(
         ),
         Option(
             name="top",
+            label=LABELS["top"],
             description=(
                 f"How many places far from a site to list, from 1 to {MAX_TOP}."
             ),
@@ -309,10 +315,11 @@ def _within_km(options: dict[str, Any]) -> float:
     """Read and check the distance that counts as within reach."""
     value = options.get("within_km")
     if isinstance(value, bool) or not isinstance(value, int | float):
-        raise AnalysisInputError("The option 'within_km' must be a number.")
+        msg = f"{said('within_km')} must be a number."
+        raise AnalysisInputError(msg, option="within_km")
     if not 0 < value <= MAX_WITHIN_KM:
-        msg = f"The option 'within_km' must be above 0 and up to {MAX_WITHIN_KM}."
-        raise AnalysisInputError(msg)
+        msg = f"{said('within_km')} must be above 0 and up to {MAX_WITHIN_KM}."
+        raise AnalysisInputError(msg, option="within_km")
     return value
 
 
@@ -415,15 +422,15 @@ def _rows(
     missing = len(compared.codes) - len(codes)
     if missing:
         trail.warnings.append(
-            f"{missing} local authorities in the area compared have no centre "
-            "in the boundary figures and are left out."
+            f"{missing} local authorities in the area you serve have no "
+            "centre in the boundary figures and are left out."
         )
     if not codes:
         msg = (
             f"No local authority in {compared.label} has both need figures "
-            "and a centre. Check the 'catchment' option."
+            f"and a centre. Check {said('catchment')}."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="catchment")
     need_bands = band_by_need([authorities[code].need for code in codes])
     distances = [
         round(min(distance_km(centres[code], site) for site in sites)) for code in codes
@@ -485,9 +492,9 @@ def _priority_table(rows: list[_Row], top: int, within: float, trail: Trail) -> 
     )
     if not beyond:
         trail.warnings.append(
-            f"Every local authority compared is within {within:g} km of a "
-            "site, so no place is listed. Lower the 'within_km' option to "
-            "list the farthest."
+            f"Every local authority in the area you serve is within "
+            f"{within:g} km of a site, so no place is listed. Lower "
+            f"{said('within_km')} to list the farthest."
         )
     return Table(
         id="priority_areas",
@@ -507,7 +514,10 @@ def _authority_table(rows: list[_Row]) -> Table:
     """Every local authority compared, for the map and for a closer look."""
     return Table(
         id="by_local_authority",
-        title="People and distance to a site in every local authority compared",
+        title=(
+            "People and distance to a site in every local authority in the "
+            "area you serve"
+        ),
         columns=(
             "geography_code",
             "geography_name",
@@ -582,10 +592,15 @@ def _figures(
             "count",
             note="Distances are measured to these sites.",
         ),
-        Figure("areas_compared", "Local authorities compared", len(rows), "areas"),
+        Figure(
+            "areas_compared",
+            "Local authorities in the area you serve",
+            len(rows),
+            "areas",
+        ),
         Figure(
             "people_in_need",
-            f"People in the area compared: {measure.label}",
+            f"People in the area you serve: {measure.label}",
             round(people),
             "people",
         ),
@@ -642,7 +657,7 @@ def _answer(
     )
     places = column(priority, "geography_name")
     if not places:
-        return f"{first} No local authority compared is farther away than that."
+        return f"{first} No local authority in {AREA} is farther away than that."
     return (
         f"{first} Of the places farther away, a new site would reach most "
         f"{who} in {places[0]}."
@@ -697,7 +712,7 @@ def _choices(
         ),
         Choice(
             id="catchment",
-            label="Area compared",
+            label=LABELS["catchment"],
             value=compared.label,
             reason=compared.reason,
             option="catchment",
@@ -745,15 +760,15 @@ def _checks(measure: Measure, compared: Compared) -> tuple[Check, ...]:
             question=f"Are these the people your sites are for: {measure.label}?",
             why=(
                 "Distance matters for the people who would use a site. "
-                "Change the 'need' option if another measure fits better."
+                f"Change {said('need')} if another measure fits better."
             ),
         ),
         Check(
             id="catchment",
-            question=f"Is this the area you could serve: {compared.label}?",
+            question=f"Is this the area you serve: {compared.label}?",
             why=(
-                "A place you could never reach is not a gap. Name the area "
-                "with the 'catchment' option."
+                "A place you could never reach is not a gap. Change "
+                f"{said('catchment')} if it is not."
             ),
         ),
     )

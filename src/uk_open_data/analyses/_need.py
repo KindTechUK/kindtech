@@ -19,6 +19,7 @@ import narwhals as nw
 
 from uk_open_data._kept import kept_file, read_kept, write_kept
 from uk_open_data.analyses._inputs import is_blank
+from uk_open_data.analyses._labels import said
 from uk_open_data.analyses._model import AnalysisInputError, Source, Step
 from uk_open_data.analyses._steps import COUNTRIES, EVERYWHERE, Trail, named_areas
 from uk_open_data.analyses.sources import nomis_table
@@ -140,9 +141,11 @@ def read_top(options: dict[str, Any]) -> int:
     """Read and check how many places to list."""
     value = options.get("top")
     if isinstance(value, bool) or not isinstance(value, int):
-        raise AnalysisInputError("The option 'top' must be a whole number.")
+        msg = f"{said('top')} must be a whole number."
+        raise AnalysisInputError(msg, option="top")
     if not 1 <= value <= MAX_TOP:
-        raise AnalysisInputError(f"The option 'top' must be from 1 to {MAX_TOP}.")
+        msg = f"{said('top')} must be from 1 to {MAX_TOP}."
+        raise AnalysisInputError(msg, option="top")
     return value
 
 
@@ -153,10 +156,10 @@ def read_measure(wanted: Any) -> Measure:
     if isinstance(wanted, Mapping):
         return _custom_measure(wanted)
     msg = (
-        f"The option 'need' must be one of: {', '.join(MEASURES)}. Or give a "
+        f"{said('need')} must be one of: {', '.join(MEASURES)}. Or give a "
         "Nomis table as {'dataset': ..., 'label': ..., 'filters': {...}}."
     )
-    raise AnalysisInputError(msg)
+    raise AnalysisInputError(msg, option="need")
 
 
 def _custom_measure(wanted: Mapping[str, Any]) -> Measure:
@@ -167,26 +170,26 @@ def _custom_measure(wanted: Mapping[str, Any]) -> Measure:
     unknown = sorted(set(wanted) - {"dataset", "label", "filters"})
     problems = []
     if not isinstance(dataset, str) or not dataset.strip():
-        problems.append("The option 'need' must give a Nomis 'dataset' id.")
+        problems.append(f"{said('need')} must give a Nomis 'dataset' id.")
     if not isinstance(label, str) or not label.strip():
         problems.append(
-            "The option 'need' must give a 'label' that says what is counted."
+            f"{said('need')} must give a 'label' that says what is counted."
         )
     if not isinstance(filters, Mapping) or any(
         not isinstance(name, str) or name.lower() in RESERVED_FILTERS
         for name in filters
     ):
         problems.append(
-            "The 'filters' of the option 'need' must be category names and "
+            f"The 'filters' of {said('need')} must be category names and "
             f"codes, and cannot set {', '.join(RESERVED_FILTERS)}."
         )
     if unknown:
         problems.append(
-            f"The option 'need' has no entry called {', '.join(unknown)}. It "
+            f"{said('need')} has no entry called {', '.join(unknown)}. It "
             "takes 'dataset', 'label' and 'filters'."
         )
     if problems:
-        raise AnalysisInputError(problems)
+        raise AnalysisInputError(problems, option="need")
     return Measure(
         id="custom",
         label=str(label).strip(),
@@ -215,9 +218,9 @@ def load_need(measure: Measure, trail: Trail) -> dict[str, Authority]:
     if not rows:
         msg = (
             "The need figures list no local authority in England or Wales. "
-            "Check the 'need' option."
+            f"Check {said('need')}."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="need")
     trail.sources.append(source)
     trail.working.append(
         Step(
@@ -463,22 +466,20 @@ def clear_need_cache() -> None:
 
 
 def choose_compared(wanted: Any, authorities: dict[str, Authority]) -> Compared:
-    """Work out which local authorities to compare, from the catchment option."""
+    """Work out which local authorities to compare, from the area given."""
     if wanted is None:
         return Compared(
             codes=tuple(sorted(authorities)),
             label=EVERYWHERE,
             reason=(
-                "No catchment was given, so every local authority in England "
-                "and Wales is compared."
+                "No area was given, so every local authority in England and "
+                "Wales is compared."
             ),
             named=False,
         )
     names = {code: area.name for code, area in authorities.items()}
     codes, label = named_areas(wanted, names, "need figures")
-    return Compared(
-        codes=codes, label=label, reason="You set the catchment.", named=True
-    )
+    return Compared(codes=codes, label=label, reason="You gave the area.", named=True)
 
 
 def guess_compared(
