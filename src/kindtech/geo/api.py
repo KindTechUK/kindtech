@@ -37,6 +37,9 @@ logger = logging.getLogger(__name__)
 MAX_PAGES = 500
 FLAG = "exceededTransferLimit"
 
+# The number of the layer each service holds, kept once a service has said.
+_LAYERS: dict[str, int] = {}
+
 # One degree of latitude, near enough for telling a service how much detail
 # to leave out of an outline.
 METRES_PER_DEGREE = 111_320
@@ -248,7 +251,7 @@ def get_field_info(
     if not service:
         return []
 
-    layer_url = f"{service['url']}/0"
+    layer_url = _layer_url(service["url"])
     try:
         response = requests.get(layer_url, params={"f": "json"}, timeout=60)
         response.raise_for_status()
@@ -293,7 +296,7 @@ def _query_arcgis_service(
         collection is whole. When any request fails, or the service does not
         page, the collection is empty: never a part of the layer.
     """
-    layer_url = f"{service_url}/0"
+    layer_url = _layer_url(service_url)
 
     params: dict[str, Any] = {
         "f": "geojson",
@@ -341,6 +344,36 @@ def _query_arcgis_service(
         return empty
     logger.error("The ArcGIS service did not stop paging: %s", layer_url)
     return empty
+
+
+def _layer_url(service_url: str) -> str:
+    """The address of the layer a boundary service holds.
+
+    Most services hold one layer, numbered 0, but not all: the 2021
+    neighbourhoods at full extent hold only layer 3. A service is asked for
+    its layers once and the answer is kept. When it cannot be asked, or
+    lists no layer, layer 0 is tried and nothing is kept, so the next call
+    asks again.
+    """
+    if service_url not in _LAYERS:
+        layer = _first_layer(service_url)
+        if layer is None:
+            return f"{service_url}/0"
+        _LAYERS[service_url] = layer
+    return f"{service_url}/{_LAYERS[service_url]}"
+
+
+def _first_layer(service_url: str) -> int | None:
+    """Ask a service for the number of its first layer, or None if it has none."""
+    try:
+        response = requests.get(service_url, params={"f": "json"}, timeout=60)
+        response.raise_for_status()
+        layers = response.json().get("layers") or []
+    except (requests.exceptions.RequestException, ValueError) as error:
+        logger.warning("Could not list the layers of %s: %s", service_url, error)
+        return None
+    number = layers[0].get("id") if layers else None
+    return number if isinstance(number, int) else None
 
 
 def _query_page(layer_url: str, params: dict[str, Any], offset: int) -> dict[str, Any]:

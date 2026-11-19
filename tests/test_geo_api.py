@@ -15,6 +15,7 @@ from kindtech.geo import (
     BoundaryType,
     CoverageArea,
     GeographyType,
+    api,
     geodata_to_properties,
     get_available_boundary_types,
     get_available_coverage_areas,
@@ -22,6 +23,35 @@ from kindtech.geo import (
     get_field_info,
     load_geodata,
 )
+
+REAL_FIRST_LAYER = api._first_layer
+
+
+@pytest.fixture(autouse=True)
+def layer_zero(monkeypatch):
+    """Every service holds layer 0, and is not asked, unless a test says so."""
+    monkeypatch.setattr(api, "_LAYERS", {})
+    monkeypatch.setattr(api, "_first_layer", lambda service_url: 0)
+
+
+@pytest.fixture
+def asks_for_layers(monkeypatch):
+    """Let a test see the request that asks a service for its layers."""
+    monkeypatch.setattr(api, "_first_layer", REAL_FIRST_LAYER)
+
+
+def _answers(*payloads: object) -> mock.Mock:
+    """A service that gives these answers in order; an exception is raised."""
+    responses = []
+    for payload in payloads:
+        if isinstance(payload, Exception):
+            responses.append(payload)
+            continue
+        response = mock.MagicMock()
+        response.json.return_value = payload
+        responses.append(response)
+    return mock.Mock(side_effect=responses)
+
 
 GEOJSON_RESPONSE = {
     "type": "FeatureCollection",
@@ -101,6 +131,59 @@ def test_load_geodata_with_request_error(mock_get):
 
     assert result["type"] == "FeatureCollection"
     assert len(result["features"]) == 0
+
+
+@pytest.mark.usefixtures("asks_for_layers")
+def test_load_geodata_reads_the_layer_a_service_holds():
+    """Not every service numbers its layer 0, so the service is asked once."""
+    layers = {"layers": [{"id": 3, "name": "LSOA_2021_EW_BFE_V10_RUC"}]}
+    get = _answers(layers, GEOJSON_RESPONSE, GEOJSON_RESPONSE)
+    with mock.patch("kindtech.geo.api.requests.get", get):
+        first = load_geodata("LSOA", year="2021", boundary_type="BFE")
+        second = load_geodata("LSOA", year="2021", boundary_type="BFE")
+
+    assert first == second == GEOJSON_RESPONSE
+    asked = [call.args[0] for call in get.call_args_list]
+    assert asked[0].endswith("/FeatureServer")
+    assert asked[1].endswith("/FeatureServer/3/query")
+    # The second call did not ask for the layers again.
+    assert asked[2].endswith("/FeatureServer/3/query")
+
+
+@pytest.mark.usefixtures("asks_for_layers")
+@pytest.mark.parametrize(
+    "listing",
+    [
+        requests.exceptions.RequestException("Connection error"),
+        {"layers": []},
+        {"error": {"code": 499, "message": "Token Required"}},
+    ],
+)
+def test_load_geodata_tries_layer_zero_when_a_service_lists_no_layer(listing):
+    """A service that cannot say is tried at layer 0, and asked again next time."""
+    get = _answers(listing, GEOJSON_RESPONSE, listing, GEOJSON_RESPONSE)
+    with mock.patch("kindtech.geo.api.requests.get", get):
+        load_geodata(geography_type="LAD")
+        load_geodata(geography_type="LAD")
+
+    asked = [call.args[0] for call in get.call_args_list]
+    assert [url.rsplit("/FeatureServer", 1)[1] for url in asked] == [
+        "",
+        "/0/query",
+        "",
+        "/0/query",
+    ]
+
+
+@pytest.mark.usefixtures("asks_for_layers")
+def test_get_field_info_reads_the_layer_a_service_holds():
+    fields = {"fields": [{"name": "LSOA21CD"}]}
+    get = _answers({"layers": [{"id": 3}]}, fields)
+    with mock.patch("kindtech.geo.api.requests.get", get):
+        result = get_field_info("LSOA", year="2021", boundary_type="BFE")
+
+    assert result == fields["fields"]
+    assert get.call_args_list[1].args[0].endswith("/FeatureServer/3")
 
 
 def _paged(pages: list[dict]) -> mock.Mock:
