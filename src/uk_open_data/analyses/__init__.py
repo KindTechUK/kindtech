@@ -45,6 +45,8 @@ from uk_open_data.analyses._model import (
     Table,
 )
 from uk_open_data.analyses._registry import (
+    DOORS,
+    RUNS_LOGGER,
     describe_analysis,
     list_analyses,
     record_run,
@@ -64,6 +66,8 @@ for _analysis in (
     register_analysis(_analysis)
 
 __all__ = [
+    "DOORS",
+    "RUNS_LOGGER",
     "Chart",
     "ChartSeries",
     "Check",
