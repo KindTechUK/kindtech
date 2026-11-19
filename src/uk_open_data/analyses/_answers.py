@@ -45,7 +45,7 @@ class NeedWords:
         return {
             "people_in_need": "Residents",
             "people_per_100_in_need": "Your people per 100 residents",
-            "volume_per_1000_in_need": "What you provide per 1,000 residents",
+            "volume_per_1000_in_need": "Provision per 1,000 residents",
             "high_need": "Among the most residents",
             "need_band": "Residents, grouped",
         }
