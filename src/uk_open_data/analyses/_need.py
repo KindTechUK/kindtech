@@ -125,6 +125,8 @@ class Compared:
     label: str
     reason: str
     named: bool
+    # True when the area was worked out from where the people live.
+    guessed: bool = False
 
 
 # --- options ---------------------------------------------------------------
@@ -413,6 +415,43 @@ def choose_compared(wanted: Any, authorities: dict[str, Authority]) -> Compared:
     codes, label = named_areas(wanted, names, "need figures")
     return Compared(
         codes=codes, label=label, reason="You set the catchment.", named=True
+    )
+
+
+def guess_compared(
+    located: dict[str, int], authorities: dict[str, Authority], min_share: float
+) -> Compared:
+    """Take the area served to be the local authorities where most people live.
+
+    A local authority joins the area when it holds at least ``min_share`` of
+    the people located. When none does, every local authority is compared.
+    """
+    total = sum(located.values())
+    chosen = [
+        code
+        for code, n in sorted(located.items(), key=lambda item: (-item[1], item[0]))
+        if total and n / total >= min_share
+    ]
+    if not chosen:
+        return Compared(
+            codes=tuple(sorted(authorities)),
+            label=EVERYWHERE,
+            reason=(
+                f"No local authority holds as much as {min_share:.0%} of the "
+                "people located, so every local authority in England and "
+                "Wales is compared."
+            ),
+            named=False,
+        )
+    return Compared(
+        codes=tuple(sorted(chosen)),
+        label=", ".join(authorities[code].name for code in chosen),
+        reason=(
+            f"Each of these local authorities holds at least {min_share:.0%} "
+            "of the people located."
+        ),
+        named=False,
+        guessed=True,
     )
 
 

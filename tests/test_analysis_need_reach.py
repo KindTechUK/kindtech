@@ -31,6 +31,7 @@ from uk_open_data.cli import EXIT_OK, main
 from uk_open_data.postcodes import build_postcode_table, install_postcode_table
 
 ANALYSIS_ID = "need-reach"
+EVERYWHERE = "England and Wales"
 COLUMNS = {"local_authority": "Area", "count": "Clients"}
 
 # Invented need figures for real local authority codes. The middle value is
@@ -87,6 +88,11 @@ def _run(rows, options=None, columns=COLUMNS):
     return run_analysis(ANALYSIS_ID, rows, columns=columns, options=options)
 
 
+def _run_wide(rows, options=None, columns=COLUMNS):
+    """Run with every local authority compared, as when the area is named so."""
+    return _run(rows, {"catchment": EVERYWHERE, **(options or {})}, columns)
+
+
 def _names(table) -> list[str]:
     return [row["geography_name"] for row in table.rows]
 
@@ -104,6 +110,7 @@ def test_analysis_is_described():
         "postcode_lookup",
         "need",
         "catchment",
+        "catchment_min_share",
         "top",
     }
     assert info.coverage == "England and Wales"
@@ -117,7 +124,7 @@ def test_analysis_is_described():
 
 
 def test_figures_from_counts(nomis):
-    result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    result = _run_wide(_counts(Lewisham=60, Greenwich=30, Adur=10))
     assert result.input_mode == "area_counts"
     assert result.figure("people_supplied").value == 100
     assert result.figure("people_located").value == 100
@@ -132,7 +139,7 @@ def test_figures_from_counts(nomis):
 
 
 def test_need_is_added_up_for_england_and_wales_only(nomis):
-    result = _run(_counts(Lewisham=60))
+    result = _run_wide(_counts(Lewisham=60))
     table = result.table("by_local_authority")
     assert len(table.rows) == len(NEED)
     assert {row["geography_code"][0] for row in table.rows} == {"E", "W"}
@@ -173,7 +180,7 @@ def test_need_figures_are_fetched_once_and_kept(nomis):
 
 
 def test_answer_says_where_need_is_high_and_reach_is_low(nomis):
-    result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    result = _run_wide(_counts(Lewisham=60, Greenwich=30, Adur=10))
     assert result.answer == (
         "86.8% of the people in need live in the 4 local authorities with high "
         "need, and 60.0% of your people do. The places to look at first, with "
@@ -189,7 +196,7 @@ def test_answer_says_where_need_is_high_and_reach_is_low(nomis):
 
 
 def test_answer_names_the_first_places_of_the_list_and_no_others(nomis):
-    result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10), options={"top": 1})
+    result = _run_wide(_counts(Lewisham=60, Greenwich=30, Adur=10), options={"top": 1})
     assert result.answer.endswith(
         "The place to look at first, with high need and your lowest reach, is "
         "Birmingham."
@@ -199,7 +206,7 @@ def test_answer_names_the_first_places_of_the_list_and_no_others(nomis):
 def test_answer_does_not_give_away_a_hidden_share(nomis):
     # Birmingham is the only high-need place with people, so the share of
     # people in high-need places would be its count.
-    result = _run(_counts(Birmingham=3, Greenwich=30, Adur=20))
+    result = _run_wide(_counts(Birmingham=3, Greenwich=30, Adur=20))
     assert result.answer.startswith(
         "86.8% of the people in need live in the 4 local authorities with high "
         "need, and the share of your people who do is hidden to protect a small "
@@ -216,7 +223,7 @@ def test_kept_need_figures_are_used_and_nothing_is_fetched(nomis):
     assert need_figures_path() is None
     path = keep_need_figures("unemployed", INVENTED, "invented for a demonstration.")
     assert need_figures_path() == path
-    result = _run(_counts(Lewisham=60))
+    result = _run_wide(_counts(Lewisham=60))
     assert nomis.asked == []
     assert result.figure("people_in_need").value == 182040
     source = result.sources[0]
@@ -241,7 +248,7 @@ def test_download_fetches_and_keeps_the_figures(nomis):
     path = download_need_figures("unemployed_men")
     assert path == need_figures_path("unemployed_men")
     assert nomis.asked[0][1]["c_sex"] == [2]
-    result = _run(_counts(Lewisham=60), options={"need": "unemployed_men"})
+    result = _run_wide(_counts(Lewisham=60), options={"need": "unemployed_men"})
     assert len(nomis.asked) == 1
     assert result.figure("people_in_need").value == 91020
     assert "fetched from Nomis on" in result.sources[0].edition
@@ -404,7 +411,7 @@ def test_places_can_be_names_or_codes_in_any_case(nomis):
         {"Area": "E09000023", "Clients": "1,000"},
         {"Area": "e09000011", "Clients": 30.0},
     ]
-    result = _run(rows)
+    result = _run_wide(rows)
     table = result.table("by_local_authority")
     people = {row["geography_name"]: row["people"] for row in table.rows}
     assert people["Lewisham"] == 1020
@@ -442,7 +449,7 @@ def test_too_few_people_is_an_input_error(nomis):
 
 
 def test_priority_areas_are_high_need_with_the_lowest_reach(nomis):
-    result = _run(_counts(Lewisham=90, Cardiff=10, Manchester=40, Greenwich=50))
+    result = _run_wide(_counts(Lewisham=90, Cardiff=10, Manchester=40, Greenwich=50))
     table = result.table("priority_areas")
     assert table.detail is False
     # Birmingham has nobody. Then reach per 100: Cardiff 0.1, Manchester 0.2,
@@ -455,13 +462,13 @@ def test_priority_areas_are_high_need_with_the_lowest_reach(nomis):
 
 
 def test_places_with_nobody_are_listed_by_need(nomis):
-    result = _run(_counts(Greenwich=50))
+    result = _run_wide(_counts(Greenwich=50))
     table = result.table("priority_areas")
     assert _names(table) == ["Birmingham", "Manchester", "Cardiff", "Lewisham"]
 
 
 def test_top_sets_the_length_of_the_list(nomis):
-    result = _run(_counts(Greenwich=50), options={"top": 2})
+    result = _run_wide(_counts(Greenwich=50), options={"top": 2})
     assert _names(result.table("priority_areas")) == ["Birmingham", "Manchester"]
     choice = next(c for c in result.choices if c.id == "top")
     assert choice.value == 2
@@ -477,7 +484,7 @@ def test_bad_top_is_rejected(nomis, top):
 
 
 def test_small_counts_are_hidden_in_both_tables(nomis):
-    result = _run(_counts(Lewisham=60, Birmingham=3, Cardiff=4, Greenwich=30))
+    result = _run_wide(_counts(Lewisham=60, Birmingham=3, Cardiff=4, Greenwich=30))
     for table_id in ("priority_areas", "by_local_authority"):
         rows = {r["geography_name"]: r for r in result.table(table_id).rows}
         for name in ("Birmingham", "Cardiff"):
@@ -492,7 +499,7 @@ def test_small_counts_are_hidden_in_both_tables(nomis):
 def test_a_hidden_count_is_ranked_as_the_most_it_could_be(nomis):
     # Birmingham's 3 is ranked as 4 in 40,000 and Cardiff's 4 as 4 in 10,000.
     # Manchester's 6 in 20,000 falls between them.
-    result = _run(_counts(Lewisham=60, Birmingham=3, Cardiff=4, Manchester=6))
+    result = _run_wide(_counts(Lewisham=60, Birmingham=3, Cardiff=4, Manchester=6))
     assert _names(result.table("priority_areas")) == [
         "Birmingham",
         "Manchester",
@@ -504,7 +511,7 @@ def test_a_hidden_count_is_ranked_as_the_most_it_could_be(nomis):
 def test_one_small_count_has_the_smallest_other_count_hidden_with_it(nomis):
     # The total is shown, so Birmingham's 3 could be worked out if it were the
     # only count hidden. Adur's 8 is the smallest other count.
-    result = _run(_counts(Lewisham=60, Birmingham=3, Cardiff=20, Adur=8))
+    result = _run_wide(_counts(Lewisham=60, Birmingham=3, Cardiff=20, Adur=8))
     rows = {r["geography_name"]: r for r in result.table("by_local_authority").rows}
     assert rows["Birmingham"]["suppressed"] is True
     assert rows["Adur"]["suppressed"] is True
@@ -516,7 +523,7 @@ def test_one_small_count_has_the_smallest_other_count_hidden_with_it(nomis):
 
 
 def test_a_count_hidden_to_protect_another_is_flagged_in_the_list(nomis):
-    result = _run(_counts(Lewisham=60, Birmingham=3, Cardiff=20))
+    result = _run_wide(_counts(Lewisham=60, Birmingham=3, Cardiff=20))
     table = result.table("priority_areas")
     rows = {r["geography_name"]: r for r in table.rows}
     assert rows["Cardiff"]["suppressed"] is True
@@ -589,6 +596,76 @@ def test_catchment_with_too_few_people_is_an_input_error(nomis):
         _run(_counts(Lewisham=60, Adur=2), options={"catchment": "Adur"})
 
 
+GUESSED = "The area compared was worked out from where your people live"
+
+
+def test_the_area_is_worked_out_from_where_most_people_live(nomis):
+    # Cardiff holds 3 of 103 people, under 5%, so it is left out of the area.
+    result = _run(_counts(Greenwich=30, Lewisham=60, Adur=10, Cardiff=3))
+    assert result.figure("areas_compared").value == 3
+    assert result.figure("people_in_catchment").value == 100
+    assert _names(result.table("by_local_authority")) == [
+        "Adur",
+        "Greenwich",
+        "Lewisham",
+    ]
+    choice = next(c for c in result.choices if c.id == "catchment")
+    assert choice.value == "Lewisham, Greenwich, Adur"  # most people first
+    assert choice.reason == (
+        "Each of these local authorities holds at least 5% of the people located."
+    )
+    assert any(w.startswith(GUESSED) for w in result.warnings)
+    assert any(w.startswith("3 people live outside") for w in result.warnings)
+
+
+def test_the_share_that_joins_a_place_to_the_area_can_be_changed(nomis):
+    result = _run(
+        _counts(Lewisham=60, Greenwich=30, Adur=10),
+        options={"catchment_min_share": 0.5},
+    )
+    assert _names(result.table("by_local_authority")) == ["Lewisham"]
+
+
+def test_every_place_is_compared_when_none_holds_enough_people(nomis):
+    result = _run(
+        _counts(Lewisham=60, Greenwich=40), options={"catchment_min_share": 0.7}
+    )
+    assert result.figure("areas_compared").value == 8
+    choice = next(c for c in result.choices if c.id == "catchment")
+    assert choice.value == EVERYWHERE
+    assert choice.reason == (
+        "No local authority holds as much as 70% of the people located, so "
+        "every local authority in England and Wales is compared."
+    )
+    assert not any(w.startswith(GUESSED) for w in result.warnings)
+
+
+def test_one_place_alone_is_not_called_a_gap(nomis):
+    # A charity whose people nearly all live in one place gets that place as
+    # its area. The answer must not present it as a place to look at first.
+    result = _run(_counts(Lewisham=120, Greenwich=4))
+    assert result.figure("areas_compared").value == 1
+    assert result.answer == (
+        "Only one local authority is compared, so the analysis cannot say "
+        "where need is high and your reach is low. Across it you reached "
+        "1.33 people per 100 in need."
+    )
+    assert any(
+        w.startswith("Only one local authority is compared") for w in result.warnings
+    )
+
+
+def test_a_named_area_is_not_called_worked_out(nomis):
+    result = _run(_counts(Lewisham=60), options={"catchment": ["Lewisham", "Adur"]})
+    assert not any(w.startswith(GUESSED) for w in result.warnings)
+
+
+@pytest.mark.parametrize("share", ["a lot", 0, 1.5, True, None])
+def test_bad_share_is_rejected(nomis, share):
+    with pytest.raises(AnalysisInputError, match="catchment_min_share"):
+        _run(_counts(Lewisham=60), options={"catchment_min_share": share})
+
+
 def test_a_wide_comparison_is_flagged_when_people_are_in_few_places():
     many = pd.DataFrame(
         {
@@ -599,7 +676,8 @@ def test_a_wide_comparison_is_flagged_when_people_are_in_few_places():
     )
     rows = [{"Area": "Place 1", "Clients": 40}, {"Area": "Place 2", "Clients": 20}]
     with mock.patch("uk_open_data.analyses._need.load_ons", return_value=many):
-        wide = _run(rows)
+        # No place holds every person, so the whole country is compared.
+        wide = _run(rows, options={"catchment_min_share": 1})
         named = _run(rows, options={"catchment": "England"})
     flag = "Your people live in 2 of the 30 local authorities compared."
     assert any(w.startswith(flag) for w in wide.warnings)
@@ -704,7 +782,9 @@ def test_no_postcode_reaches_the_result(nomis):
 
 
 def test_map_is_described_by_local_authority(nomis):
-    result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10, Cardiff=3, Manchester=4))
+    result = _run_wide(
+        _counts(Lewisham=60, Greenwich=30, Adur=10, Cardiff=3, Manchester=4)
+    )
     spec = result.map
     assert (spec.geography_type, spec.geography_year) == ("LAD", 2023)
     assert spec.table == "by_local_authority"

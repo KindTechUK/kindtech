@@ -53,6 +53,7 @@ from uk_open_data.analyses._steps import (
     named_areas,
     percent,
     place_postcodes,
+    read_min_share,
     read_threshold,
     use_postcode_table,
 )
@@ -299,7 +300,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
     options = analysis_input.options
     threshold = read_threshold(options)
     cut = _cut(options)
-    min_share = _min_share(options)
+    min_share = read_min_share(options)
     characteristic = _characteristic(options)
     by_hand = _by_hand(options, characteristic)
     trail = Trail()
@@ -393,20 +394,6 @@ def _cut(options: dict[str, Any]) -> float:
         msg = (
             "The option 'under_represented_below' must be above 0 and no more "
             "than 1, for example 0.8 for four fifths."
-        )
-        raise AnalysisInputError(msg)
-    return float(value)
-
-
-def _min_share(options: dict[str, Any]) -> float:
-    """Read and check the share a local authority needs to join the catchment."""
-    value = options.get("catchment_min_share")
-    if isinstance(value, bool) or not isinstance(value, int | float):
-        raise AnalysisInputError("The option 'catchment_min_share' must be a number.")
-    if not 0 < value <= 1:
-        msg = (
-            "The option 'catchment_min_share' must be above 0 and no more "
-            "than 1, for example 0.05 for five per cent."
         )
         raise AnalysisInputError(msg)
     return float(value)

@@ -51,6 +51,7 @@ from uk_open_data.analyses._steps import (
     count_by_neighbourhood,
     count_by_postcode,
     percent,
+    read_min_share,
     read_threshold,
     use_postcode_table,
 )
@@ -191,7 +192,7 @@ class _Catchment:
 def run(analysis_input: AnalysisInput) -> AnalysisResult:
     """Run the analysis. Use :func:`uk_open_data.analyses.run_analysis` to call it."""
     threshold = read_threshold(analysis_input.options)
-    min_share = _min_share(analysis_input.options)
+    min_share = read_min_share(analysis_input.options)
     trail = Trail()
     if analysis_input.mode.name == "postcodes":
         counts, supplied = count_by_postcode(
@@ -264,20 +265,6 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
 
 
 # --- options ---------------------------------------------------------------
-
-
-def _min_share(options: dict[str, Any]) -> float:
-    """Read and check the share a local authority needs to join the catchment."""
-    value = options.get("catchment_min_share")
-    if isinstance(value, bool) or not isinstance(value, int | float):
-        raise AnalysisInputError("The option 'catchment_min_share' must be a number.")
-    if not 0 < value <= 1:
-        msg = (
-            "The option 'catchment_min_share' must be above 0 and no more "
-            "than 1, for example 0.05 for five per cent."
-        )
-        raise AnalysisInputError(msg)
-    return float(value)
 
 
 # --- deprivation -----------------------------------------------------------
