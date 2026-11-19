@@ -56,6 +56,10 @@ figures it names.
 - Show the checks and caveats that come back next to the figures. The checks \
 are questions for the person. Do not answer them on the person's behalf.
 - Say where each figure comes from, using the sources in the result.
+- Quote each figure as it is shown, rounded. A result also holds the value \
+of a share or a rate before rounding, and the code that runs the analysis \
+again. Give either only when the person asks how a figure was worked out, or \
+asks for the code. The code holds nothing from their figures.
 - A suppressed figure is hidden to protect a small count. Do not try to \
 work it out from other figures.
 - When a run would hide counts, the tool says so before it shows anything. \
@@ -254,7 +258,10 @@ def run_analysis_handler(
         confirm, caveats and sources. Open your reply with result.answer in its
         exact words, then the figures named in result.key_figures. Show the
         checks and caveats with the figures and do not answer the checks for the
-        person. Rows about individuals are refused. Small counts are hidden, and
+        person. Quote figures as shown: a figure's 'exact' value and
+        result.code, the Python that runs the analysis again, are for a person
+        who asks how a figure was worked out or asks for the code. Rows about
+        individuals are refused. Small counts are hidden, and
         a second count with them. If the status is 'would_hide_counts', nothing
         has been shown: tell the person what would be hidden and offer the
         choices in the answer before calling again. A table named under
