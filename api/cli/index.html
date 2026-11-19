@@ -1320,6 +1320,10 @@ made, the working, the sources and a privacy summary.</p>
 <p>When the file, a column or an option cannot be used, the command prints what is
 wrong and exits with status 2. The message never repeats a value from your
 data, so it is safe to paste into a chat or an issue.</p>
+<p>A run that prints its answer writes one line to the <code>uk_open_data.runs</code> logger,
+with the analysis, the input mode and the word <code>cli</code>. Nothing collects it on
+your machine and nothing is sent anywhere. See
+<a href="../analyses/#record_runanalysis_id-input_mode-door"><code>record_run</code></a>.</p>
 <h3 id="postcodes-download"><code>postcodes download</code></h3>
 <p>Fetches the postcode table, a few megabytes, so that analyses look postcodes up on
 your machine and send none of them out. Run it once. <code>--force</code> fetches it

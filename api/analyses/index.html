@@ -861,6 +861,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#record_runanalysis_id-input_mode-door" class="md-nav__link">
+    <span class="md-ellipsis">
+      record_run(analysis_id, input_mode, door)
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1270,6 +1279,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#record_runanalysis_id-input_mode-door" class="md-nav__link">
+    <span class="md-ellipsis">
+      record_run(analysis_id, input_mode, door)
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1488,6 +1506,27 @@ that was asked for, which can hold a postcode, so show a message of your own
 rather than the text. The command line names the site alone, and says
 whether the source could not be reached or answered with an error. An analysis
 needs no network when the public figures it uses are kept on your machine.</p>
+<h3 id="record_runanalysis_id-input_mode-door"><code>record_run(analysis_id, input_mode, door)</code></h3>
+<p>Records that a run has given a person an answer, so that a host can count how
+often each analysis is used. It writes one record at <code>INFO</code> level to the
+<code>uk_open_data.runs</code> logger, and that is all it does: the package adds no handler
+and sends nothing anywhere. On a person's own machine nobody collects the
+records. A host that keeps its logs can count them.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">record_run</span>
+
+<span class="n">record_run</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">analysis_id</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">input_mode</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">)</span>
+<span class="c1"># run analysis=reach-deprivation mode=postcodes door=page</span>
+</code></pre></div>
+<p><code>run_analysis</code> never records a run by itself. Whatever gives the answer to a
+person calls <code>record_run</code> once, after the answer has been given: the command
+line does (<code>"cli"</code>), and a page (<code>"page"</code>) or a chat assistant (<code>"chat"</code>) built
+on these analyses should. A run that fails is not recorded.</p>
+<p>The record holds the three words and nothing else. Each must be on a fixed
+list (a registered analysis, one of its input modes, one of the three doors),
+so no word from a person's data can reach a log. A word that is not on its list
+raises <code>KeyError</code> (the analysis) or <code>ValueError</code> (the mode or the door), and the
+message does not repeat it. The same three words are on the record as
+<code>record.analysis_id</code>, <code>record.input_mode</code> and <code>record.door</code>.</p>
 <h2 id="drawing-the-map">Drawing the map</h2>
 <p>A result describes its map; <code>render_map</code> draws it as an SVG picture with a
 legend and the credits the data licences ask for.</p>
