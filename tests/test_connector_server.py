@@ -350,6 +350,22 @@ def test_the_command_keeps_the_count_whatever_the_log_level(
         runs.setLevel(before)
 
 
+@pytest.mark.parametrize(
+    ("prog", "shown"),
+    [
+        ({}, "usage: python -m uk_open_data.connector"),
+        ({"prog": "uk-open-data connector"}, "usage: uk-open-data connector"),
+    ],
+)
+def test_help_names_the_command_that_started_it(
+    prog: dict[str, str], shown: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit):
+        command.main(["--help"], **prog)
+
+    assert capsys.readouterr().out.startswith(shown)
+
+
 def test_command_defaults_to_stdio(monkeypatch: pytest.MonkeyPatch) -> None:
     ran: list[tuple[Any, ...]] = []
 

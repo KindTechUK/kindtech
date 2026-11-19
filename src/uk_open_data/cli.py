@@ -207,7 +207,7 @@ def _start_connector(arguments: Sequence[str]) -> int:
     from uk_open_data.connector.command import main as start
 
     try:
-        start(arguments)
+        start(arguments, prog="uk-open-data connector")
     except ImportError as error:
         return _fail(str(error))
     return EXIT_OK

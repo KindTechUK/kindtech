@@ -7,17 +7,21 @@ from collections.abc import Sequence
 
 from uk_open_data.analyses import RUNS_LOGGER
 
+# How the usage line names the command, unless the caller started it another way.
+PROG = "python -m uk_open_data.connector"
 STDIO = "stdio"
 STREAMABLE_HTTP = "streamable-http"
 
 
-def main(argv: Sequence[str] | None = None) -> None:
+def main(argv: Sequence[str] | None = None, prog: str = PROG) -> None:
     """Run the connector over stdio, or over Streamable HTTP when hosted.
 
     Args:
         argv: Command line arguments; defaults to ``sys.argv[1:]``.
+        prog: The command the person typed to start it, shown in the usage
+            line of ``--help`` and of an error about an option.
     """
-    args = _parser().parse_args(argv)
+    args = _parser(prog).parse_args(argv)
     # stdout carries the protocol over stdio, so logs must go to stderr.
     logging.basicConfig(level=args.log_level, stream=sys.stderr)
     # One line for each answer given, whatever the level chosen for the rest.
@@ -37,10 +41,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     )
 
 
-def _parser() -> argparse.ArgumentParser:
+def _parser(prog: str) -> argparse.ArgumentParser:
     """The command line options."""
     parser = argparse.ArgumentParser(
-        prog="python -m uk_open_data.connector",
+        prog=prog,
         description="Kindtech's read-only connector for chat assistants.",
     )
     parser.add_argument(
