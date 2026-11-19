@@ -95,6 +95,12 @@ FULL_POSTCODE = (
     "anywhere. Give the first half of the postcode, such as SE13, or the name "
     "of the council area."
 )
+ADDRESS = (
+    "That looks like a street address. Do not send an address to this tool: it "
+    "describes areas, not buildings, and an address can be a person's home. It "
+    "was not looked up or sent anywhere. Give the name of the council area, or "
+    "the first half of the postcode, such as SE13."
+)
 
 NO_DOMAINS = (
     "The copy of the deprivation index kept on this machine does not hold the "
@@ -105,6 +111,13 @@ _LSOA_CODE = re.compile(r"^E01\d{6}$")
 _AUTHORITY_CODE = re.compile(r"^E0[6-9]\d{6}$")
 _OTHER_NATION_CODE = re.compile(r"^[WSN]\d{8}$|^95[A-Z]{2}\d{2}(S\d)?$")
 _OUTCODE = re.compile(r"^[A-Z]{1,2}\d[A-Z\d]?$")
+_POSTCODE_INSIDE = re.compile(r"\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b")
+_BUILDING_NUMBER = re.compile(r"\b\d+[A-Z]?\b")
+_STREET_WORD = re.compile(
+    r"\b(?:STREET|ST|ROAD|RD|LANE|LN|AVENUE|AVE|CLOSE|DRIVE|WAY|COURT|CRESCENT"
+    r"|TERRACE|GARDENS|GROVE|SQUARE|PLACE|WALK|MEWS|ROW|HILL|FLAT|UNIT"
+    r"|APARTMENT|HOUSE)\b"
+)
 _NAME_NOISE = re.compile(
     r"\b(?:(?:london |royal |metropolitan )?borough(?: council)?(?: of)?"
     r"|(?:city|county|district) council|council|(?:city|county) of|the)\b"
@@ -129,16 +142,17 @@ def describe_place(place: str) -> dict[str, Any]:
     Args:
         place: A local authority name (``"Lewisham"``) or code
             (``"E09000023"``), a 2021 LSOA code (``"E01003189"``) or a
-            postcode district (``"SE13"``). Not a full postcode.
+            postcode district (``"SE13"``). Not a full postcode and not a
+            street address.
 
     Returns:
         A dict of plain JSON types. ``status`` is one of ``found``, ``choose``
         (several places match; ``matches`` lists them), ``not_found``,
-        ``not_covered`` (outside England), ``not_accepted`` (a full postcode,
-        which is never looked up or repeated) or ``unavailable`` (a data
-        source could not be reached). When found it carries ``place``,
-        ``figures``, ``tables``, ``caveats``, ``warnings``, ``sources`` and
-        ``privacy``, in the same shapes a lens result uses.
+        ``not_covered`` (outside England), ``not_accepted`` (a full postcode or
+        a street address, which is never looked up or repeated) or
+        ``unavailable`` (a data source could not be reached). When found it
+        carries ``place``, ``figures``, ``tables``, ``caveats``, ``warnings``,
+        ``sources`` and ``privacy``, in the same shapes a lens result uses.
     """
     text = " ".join(str(place).split()).upper()
     if not text:
@@ -147,6 +161,8 @@ def describe_place(place: str) -> dict[str, Any]:
         )
     if looks_like_postcode(text):
         return _status("not_accepted", FULL_POSTCODE)
+    if _looks_like_address(text):
+        return _status("not_accepted", ADDRESS)
     try:
         return ensure_totals_only(_describe(text))
     except _IndexCopyError:
@@ -172,6 +188,18 @@ def clear_cache() -> None:
 
 class _IndexCopyError(RuntimeError):
     """The copy of the index kept on this machine could not be read."""
+
+
+def _looks_like_address(text: str) -> bool:
+    """Whether upper-case ``text`` reads as the address of a building.
+
+    That is a postcode inside other words, or a number beside a word a street
+    or building name ends in. No council's name holds a number, so a place
+    this tool can describe is never taken for an address.
+    """
+    if _POSTCODE_INSIDE.search(text):
+        return True
+    return bool(_BUILDING_NUMBER.search(text) and _STREET_WORD.search(text))
 
 
 def _describe(text: str) -> dict[str, Any]:

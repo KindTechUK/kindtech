@@ -181,6 +181,50 @@ def test_a_full_postcode_is_not_accepted_or_looked_up(
     assert set(answer) == {"status", "message", "coverage"}
 
 
+@pytest.mark.parametrize(
+    "asked",
+    [
+        "12 High Street, Northbank",
+        "Flat 3, 10 Acacia Road",
+        "221b Baker St",
+        "unit 4 riverside way, lewisham",
+        "Community Hall, ZZ99 9KC",
+        "Lewisham zz999kc",
+    ],
+)
+def test_a_street_address_is_not_accepted_or_looked_up(
+    asked: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(places, "lookup_outcodes", _no_network)
+
+    answer = describe_place(asked)
+
+    # The message is fixed text, so nothing of the address can be in it.
+    assert answer == {
+        "status": "not_accepted",
+        "message": places.ADDRESS,
+        "coverage": "England",
+    }
+    assert "Do not send an address" in places.ADDRESS
+
+
+@pytest.mark.parametrize(
+    "asked",
+    [
+        "Lewisham",
+        "E09000023",
+        "E01000001",
+        "Newcastle upon Tyne",
+        "Lewisham 2021",
+        "St Helens",
+        "Kingston upon Hull, City of",
+        "Hill Road",
+    ],
+)
+def test_a_place_is_not_taken_for_an_address(asked: str) -> None:
+    assert describe_place(asked)["status"] != "not_accepted"
+
+
 def test_postcode_district_in_one_authority(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         places, "lookup_outcodes", lambda outcode: fakes.outcode_frame("Lewisham")
