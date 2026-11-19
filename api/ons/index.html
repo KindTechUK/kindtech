@@ -1304,11 +1304,11 @@
 
 
 <h1 id="ons-statistics">ONS Statistics</h1>
-<p>The <code>kindtech.ons</code> module provides access to UK statistics from the <a href="https://www.nomisweb.co.uk/api/v01/help">ONS NOMIS API</a>. Returns DataFrames in your preferred backend (pandas or polars) via <a href="https://narwhals-dev.github.io/narwhals/">narwhals</a>.</p>
+<p>The <code>uk_open_data.ons</code> module provides access to UK statistics from the <a href="https://www.nomisweb.co.uk/api/v01/help">ONS NOMIS API</a>. Returns DataFrames in your preferred backend (pandas or polars) via <a href="https://narwhals-dev.github.io/narwhals/">narwhals</a>.</p>
 <h2 id="functions">Functions</h2>
 <h3 id="load_ons"><code>load_ons()</code></h3>
 <p>Load statistical data from the NOMIS API.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
 
 <span class="c1"># Basic usage</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">load_ons</span><span class="p">(</span><span class="s2">&quot;NM_1_1&quot;</span><span class="p">)</span>
@@ -1396,7 +1396,7 @@
 <hr />
 <h3 id="list_tables"><code>list_tables()</code></h3>
 <p>Browse available NOMIS datasets.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">list_tables</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">list_tables</span>
 
 <span class="c1"># List all 1,615 datasets</span>
 <span class="n">all_tables</span> <span class="o">=</span> <span class="n">list_tables</span><span class="p">()</span>
@@ -1435,12 +1435,12 @@
 <h4 id="returns_1">Returns</h4>
 <p>DataFrame with columns: <code>id</code>, <code>name</code>, <code>sourceName</code>.</p>
 <h2 id="bring-your-own-dataframe">Bring Your Own DataFrame</h2>
-<p>The ONS module uses <a href="https://narwhals-dev.github.io/narwhals/">narwhals</a> for DataFrame interoperability. Install your preferred backend alongside kindtech:</p>
+<p>The ONS module uses <a href="https://narwhals-dev.github.io/narwhals/">narwhals</a> for DataFrame interoperability. Install your preferred backend alongside uk-open-data:</p>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>pandas<span class="w">   </span><span class="c1"># or polars</span>
 </code></pre></div>
 <p>The return type automatically matches your installed backend:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">load_ons</span><span class="p">(</span><span class="s2">&quot;NM_1_1&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>  <span class="c1"># polars preferred when both installed</span>

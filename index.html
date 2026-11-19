@@ -1216,17 +1216,17 @@
 </div>
 <h2 id="install">Install</h2>
 <p>Install <a href="https://pypi.org/project/kindtech/">KindTech from PyPI</a>:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>kindtech
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>uk-open-data
 </code></pre></div>
 <p>KindTech depends on requests, narwhals, and python-calamine. You bring your own
 DataFrame library (pandas or polars). The <a href="faq/">package FAQ</a> explains
 which subpackages are included and how they are released.</p>
 <h2 id="quick-start">Quick start</h2>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># or polars</span>
 
 <span class="c1"># Load LAD boundaries (GeoJSON) and extract properties</span>
-<span class="n">geojson</span> <span class="o">=</span> <span class="n">load_geodata</span><span class="p">(</span><span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LAD&quot;</span><span class="p">)</span>
+<span class="n">geojson</span> <span class="o">=</span> <span class="n">load_geodata</span><span class="p">(</span><span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s2">&quot;2024&quot;</span><span class="p">)</span>
 <span class="n">geo_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">geodata_to_properties</span><span class="p">(</span><span class="n">geojson</span><span class="p">,</span> <span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">))</span>
 
 <span class="c1"># Load ONS statistics — columns are normalised automatically</span>
@@ -1238,12 +1238,12 @@ which subpackages are included and how they are released.</p>
 <h2 id="bring-your-own-dataframe">Bring Your Own DataFrame</h2>
 <p>KindTech uses <a href="https://narwhals-dev.github.io/narwhals/">narwhals</a> for universal DataFrame support. The library itself has <strong>no pandas or polars dependency</strong> — it returns whatever backend you have installed.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># With pandas installed → returns pd.DataFrame</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">load_ons</span><span class="p">(</span><span class="s2">&quot;NM_1_1&quot;</span><span class="p">)</span>
 <span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>  <span class="c1"># &lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;</span>
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><span class="c1"># With polars installed → returns pl.DataFrame</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">load_ons</span><span class="p">(</span><span class="s2">&quot;NM_1_1&quot;</span><span class="p">)</span>
 <span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>  <span class="c1"># &lt;class &#39;polars.dataframe.frame.DataFrame&#39;&gt;</span>
 </code></pre></div>

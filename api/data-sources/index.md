@@ -1,7 +1,7 @@
 # Data Sources
 
 KindTech wraps two UK public data APIs that aren't prominently documented for
-developers. This page documents the APIs, their quirks, and how kindtech's
+developers. This page documents the APIs, their quirks, and how this package's
 ingestion scripts work.
 
 ---
@@ -141,11 +141,11 @@ All entries are kept in the catalog. No skip lists, no manual curation.
 
 ### Geo ingestion
 
-Parses ~3,700 ArcGIS services down to **615 boundary datasets** across **24
-geography types**, spanning 1921-2025. Stdlib-only (`csv`, `re`, `requests`).
+Parses ~2,500 ArcGIS services down to **654 boundary datasets** across **24
+geography types**, spanning 1921-2026. Stdlib-only (`csv`, `re`, `requests`).
 
 ```bash
-uv run python -m kindtech.geo._ingestion
+uv run python -m uk_open_data.geo._ingestion
 ```
 
 ---
@@ -235,7 +235,7 @@ and source annotations. Completes in ~6 seconds for 1,615 datasets.
 Stdlib-only (`csv`, `requests`).
 
 ```bash
-uv run python -m kindtech.ons._ingestion
+uv run python -m uk_open_data.ons._ingestion
 ```
 
 ### Community packages
@@ -383,7 +383,7 @@ Instead of remembering NOMIS dataset IDs like `NM_2002_1`, you can use
 friendly aliases:
 
 ```python
-from kindtech import load_ons
+from uk_open_data import load_ons
 
 # These are equivalent
 df = load_ons("population", geography_type="LAD", time="latest")
@@ -414,7 +414,7 @@ Raw `NM_*` IDs are passed through unchanged — aliases are just a convenience.
 To list aliases programmatically:
 
 ```python
-from kindtech import list_dataset_aliases
+from uk_open_data import list_dataset_aliases
 
 for a in list_dataset_aliases():
     print(f"{a['alias']:30s} → {a['dataset_id']}")
@@ -434,7 +434,7 @@ Instead of looking up NOMIS TYPE codes, pass the same geography type you
 use with `load_geodata()`:
 
 ```python
-from kindtech import load_geodata, load_ons
+from uk_open_data import load_geodata, load_ons
 
 # Same geography concept, different APIs
 boundaries = load_geodata(geography_type="LAD", year="2024")
@@ -476,7 +476,7 @@ Source: NOMIS geography dimension metadata. To list all mappings
 programmatically:
 
 ```python
-from kindtech import list_geography_mappings
+from uk_open_data import list_geography_mappings
 
 for m in list_geography_mappings():
     print(m)
@@ -499,10 +499,10 @@ column:
   `LAD24CD`) to `geography_code` and `geography_name`
 
 ```python
-from kindtech import load_geodata, load_ons, geodata_to_properties
+from uk_open_data import load_geodata, load_ons, geodata_to_properties
 import pandas as pd
 
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
 ons_df = load_ons("population", geography_type="LAD", time="latest")
 merged = geo_df.merge(ons_df, on="geography_code")
@@ -512,7 +512,7 @@ Under the hood, `geo_code_field()` and `geo_name_field()` derive the
 ArcGIS field names:
 
 ```python
-from kindtech._mapping import geo_code_field, geo_name_field
+from uk_open_data._mapping import geo_code_field, geo_name_field
 
 geo_code_field("LAD", 2024)  # "LAD24CD"
 geo_name_field("LAD", 2024)  # "LAD24NM"
@@ -555,11 +555,11 @@ boundaries (maps), the other provides statistical tables (numbers).
 │    codes                     │  (1,615 datasets)                     │
 │                              │                                      │
 │  Output:                     │  uv run python -m                     │
-│  geo/data/arcgis_services.csv│    kindtech.ons._ingestion            │
-│  (615 boundary datasets)     │                                      │
+│  geo/data/arcgis_services.csv│    uk_open_data.ons._ingestion            │
+│  (654 boundary datasets)     │                                      │
 │                              │                                      │
 │  uv run python -m            │                                      │
-│    kindtech.geo._ingestion   │                                      │
+│    uk_open_data.geo._ingestion   │                                      │
 │                              │                                      │
 ├──────────────────────────────┼──────────────────────────────────────┤
 │                              │                                      │
@@ -585,10 +585,10 @@ To refresh the catalogs when ONS publishes updates:
 
 ```bash
 # Geo boundaries — from ArcGIS
-uv run python -m kindtech.geo._ingestion
+uv run python -m uk_open_data.geo._ingestion
 
 # Statistics — from NOMIS
-uv run python -m kindtech.ons._ingestion
+uv run python -m uk_open_data.ons._ingestion
 ```
 
 Then commit the updated CSV files.

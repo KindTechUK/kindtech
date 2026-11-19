@@ -1293,7 +1293,7 @@ all joining on the 2021 LSOA <code>geography_code</code>:</p>
 <p><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/cal_vulnerable_client.py"><img alt="Open in marimo" src="https://marimo.io/molab-shield.svg" /></a>
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with <code>uv run marimo edit examples/cal_vulnerable_client.py</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span><span class="p">,</span> <span class="n">load_imd</span><span class="p">,</span> <span class="n">load_geodata</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span><span class="p">,</span> <span class="n">load_imd</span><span class="p">,</span> <span class="n">load_geodata</span>
 
 <span class="c1"># 1. Client postcodes -&gt; LSOA (the step real client data would use)</span>
 <span class="n">clients</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">(</span><span class="n">client_postcodes</span><span class="p">,</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>

@@ -1244,7 +1244,7 @@
 
 
 <h1 id="deprivation-imd">Deprivation (IMD)</h1>
-<p>The <code>kindtech.imd</code> module loads UK deprivation data, keyed on ONS geography
+<p>The <code>uk_open_data.imd</code> module loads UK deprivation data, keyed on ONS geography
 codes so it joins to <a href="../geo/">boundaries</a> and <a href="../ons/">statistics</a>.</p>
 <p><strong>A single nation returns that nation's <em>official</em> index. <code>"UK"</code> returns a
 composite — the only way to compare deprivation <em>across</em> nations.</strong></p>
@@ -1295,7 +1295,7 @@ UK-wide index, so KindTech uses the
 third-party harmonisation, <strong>not</strong> a National Statistic — use it for
 comparison, and a nation's official index for within-nation work.</p>
 <h2 id="load_imd"><code>load_imd()</code></h2>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_imd</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_imd</span>
 
 <span class="n">england</span> <span class="o">=</span> <span class="n">load_imd</span><span class="p">(</span><span class="n">nation</span><span class="o">=</span><span class="s2">&quot;England&quot;</span><span class="p">)</span>          <span class="c1"># official IoD 2025, 2021 LSOAs</span>
 <span class="n">england_19</span> <span class="o">=</span> <span class="n">load_imd</span><span class="p">(</span><span class="n">nation</span><span class="o">=</span><span class="s2">&quot;England&quot;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="mi">2019</span><span class="p">)</span>  <span class="c1"># official IoD 2019, 2011 LSOAs</span>
@@ -1404,7 +1404,7 @@ in <code>nation_decile</code>, or use the single-nation calls above).</p>
 first time a program asks for it. To run with no download, keep a copy in the
 data folder, the same one that holds the
 <a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table</a>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.imd</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_imd</span><span class="p">,</span> <span class="n">imd_path</span><span class="p">,</span> <span class="n">keep_imd</span><span class="p">,</span> <span class="n">load_imd</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.imd</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_imd</span><span class="p">,</span> <span class="n">imd_path</span><span class="p">,</span> <span class="n">keep_imd</span><span class="p">,</span> <span class="n">load_imd</span>
 
 <span class="n">download_imd</span><span class="p">()</span>            <span class="c1"># fetch the 2025 index once, when a server is built</span>
 <span class="n">imd_path</span><span class="p">()</span>                <span class="c1"># where the copy is, or None</span>
@@ -1422,7 +1422,7 @@ can be kept. A <code>url</code> given to <code>load_imd</code> is always downloa
 <p><code>geography_code</code> matches the rest of KindTech, so deprivation overlays onto a map
 or merges with population for per-capita work:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_imd</span><span class="p">,</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_imd</span><span class="p">,</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
 
 <span class="n">imd</span> <span class="o">=</span> <span class="n">load_imd</span><span class="p">(</span><span class="n">nation</span><span class="o">=</span><span class="s2">&quot;England&quot;</span><span class="p">)</span>  <span class="c1"># IoD 2025, on 2021 LSOAs</span>
 <span class="c1"># Default boundaries are 2021 LSOAs — a native join, no crosswalk</span>

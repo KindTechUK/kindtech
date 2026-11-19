@@ -88,7 +88,7 @@ private):
 data), or locally with `uv run marimo edit examples/smart_works_unemployment.py`.
 
 ```python
-from kindtech import geodata_to_properties, load_geodata, load_ons
+from uk_open_data import geodata_to_properties, load_geodata, load_ons
 
 # Female, unemployed, by age band, all LADs — Census 2021 table RM024
 unemp = load_ons(

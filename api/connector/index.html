@@ -1208,7 +1208,7 @@
 
 
 <h1 id="connector-for-chat-assistants">Connector for chat assistants</h1>
-<p>The <code>kindtech.connector</code> module offers the lenses and open data to a chat
+<p>The <code>uk_open_data.connector</code> module offers the lenses and open data to a chat
 assistant, such as Claude or ChatGPT, over the
 <a href="https://modelcontextprotocol.io/">Model Context Protocol</a>. A charity worker
 asks a question in their own words; the assistant calls a tool; figures come
@@ -1217,8 +1217,8 @@ back with their sources.</p>
 totals, never rows</strong>.</p>
 <h2 id="start-it">Start it</h2>
 <p>The server needs the <code>connector</code> extra:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;kindtech[connector]&quot;</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kindtech.connector
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;uk-open-data[connector]&quot;</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>uk_open_data.connector
 </code></pre></div>
 <p>That runs over stdio, which is how a desktop assistant starts a local
 connector. For Claude Desktop or Claude Code, add this to the MCP
@@ -1229,7 +1229,7 @@ configuration, with the path to your checkout:</p>
 <span class="w">      </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uv&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="s2">&quot;run&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--directory&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/path/to/kindtech&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--extra&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;connector&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">&quot;python&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;kindtech.connector&quot;</span>
+<span class="w">        </span><span class="s2">&quot;python&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;uk_open_data.connector&quot;</span>
 <span class="w">      </span><span class="p">]</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
@@ -1237,7 +1237,7 @@ configuration, with the path to your checkout:</p>
 </code></pre></div>
 <p>To host it, run the same server over Streamable HTTP. The address to give an
 assistant then ends in <code>/mcp</code>:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kindtech.connector<span class="w"> </span>--transport<span class="w"> </span>streamable-http<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>uk_open_data.connector<span class="w"> </span>--transport<span class="w"> </span>streamable-http<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
 </code></pre></div>
 <h2 id="tools">Tools</h2>
 <table>
@@ -1268,7 +1268,7 @@ The answer holds each lens description, best match first.</p>
 <h3 id="describe_place"><code>describe_place</code></h3>
 <p><code>place</code> is a local authority name or code, a 2021 LSOA code, a postcode
 district such as <code>SE13</code>, or the postcode of a venue or office.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">describe_place</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">describe_place</span>
 
 <span class="n">answer</span> <span class="o">=</span> <span class="n">describe_place</span><span class="p">(</span><span class="s2">&quot;Lewisham&quot;</span><span class="p">)</span>
 <span class="n">answer</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>            <span class="c1"># &quot;found&quot;</span>
@@ -1286,8 +1286,8 @@ with a message that says the place is in Wales and that the lenses which
 cover England and Wales still work for it.</p>
 <p>The deprivation index is read from a copy kept on this machine when there is
 one, and the source in the answer then says so. When you host the connector,
-keep it when the image is built (<code>kindtech.imd.download_imd</code>), so the first
-call does not wait on a download. A copy kept with <code>kindtech.imd.keep_imd</code>
+keep it when the image is built (<code>uk_open_data.imd.download_imd</code>), so the first
+call does not wait on a download. A copy kept with <code>uk_open_data.imd.keep_imd</code>
 that leaves out the types of deprivation gives the same answer without that
 table, and says so in <code>warnings</code>. A copy that cannot be read gives the status
 <code>unavailable</code>.</p>
@@ -1348,7 +1348,7 @@ such as one postcode per person, are refused, and so is one row per site.</p>
 that way. This applies to the roles a lens marks <code>amount</code> in its description
 and to no other. Any other text there is left for the lens, which says how
 many rows to correct.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_lens_on_counts</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_lens_on_counts</span>
 
 <span class="n">answer</span> <span class="o">=</span> <span class="n">run_lens_on_counts</span><span class="p">(</span>
     <span class="s2">&quot;need-reach&quot;</span><span class="p">,</span>
@@ -1366,10 +1366,10 @@ an option the lens needs), <code>unknown_lens</code> or <code>unavailable</code>
 lens needs could not be reached).</p>
 <p>When you host the connector, keep the public figures three of the lenses
 compare with on the server when the image is built, so a run does not wait on
-Nomis: <code>kindtech.lenses.need_reach.download_need_figures</code> for the need against
+Nomis: <code>uk_open_data.lenses.need_reach.download_need_figures</code> for the need against
 reach lens, the same function called with <code>"residents"</code> for the provision gap
 lens, which sets provision against everyone who lives in a place unless told
-otherwise, and <code>kindtech.lenses.who_we_miss.download_residents</code> for the who we
+otherwise, and <code>uk_open_data.lenses.who_we_miss.download_residents</code> for the who we
 are missing lens.</p>
 <h2 id="the-privacy-rule">The privacy rule</h2>
 <ul>

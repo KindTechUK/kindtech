@@ -39,7 +39,7 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
 
 ```bash
-uv add kindtech
+uv add uk-open-data
 ```
 
 KindTech depends on requests, narwhals, and python-calamine. You bring your own
@@ -49,11 +49,11 @@ which subpackages are included and how they are released.
 ## Quick start
 
 ```python
-from kindtech import load_geodata, load_ons, geodata_to_properties
+from uk_open_data import load_geodata, load_ons, geodata_to_properties
 import pandas as pd  # or polars
 
 # Load LAD boundaries (GeoJSON) and extract properties
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
 
 # Load ONS statistics — columns are normalised automatically
@@ -69,14 +69,14 @@ KindTech uses [narwhals](https://narwhals-dev.github.io/narwhals/) for universal
 
 ```python
 # With pandas installed → returns pd.DataFrame
-from kindtech.ons import load_ons
+from uk_open_data.ons import load_ons
 df = load_ons("NM_1_1")
 type(df)  # <class 'pandas.core.frame.DataFrame'>
 ```
 
 ```python
 # With polars installed → returns pl.DataFrame
-from kindtech.ons import load_ons
+from uk_open_data.ons import load_ons
 df = load_ons("NM_1_1")
 type(df)  # <class 'polars.dataframe.frame.DataFrame'>
 ```

@@ -711,45 +711,45 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#geographic-data-kindtechgeo" class="md-nav__link">
+  <a href="#geographic-data-uk_open_datageo" class="md-nav__link">
     <span class="md-ellipsis">
-      Geographic Data — kindtech.geo
+      Geographic Data — uk_open_data.geo
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#ons-statistics-kindtechons" class="md-nav__link">
+  <a href="#ons-statistics-uk_open_dataons" class="md-nav__link">
     <span class="md-ellipsis">
-      ONS Statistics — kindtech.ons
+      ONS Statistics — uk_open_data.ons
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#postcodes-kindtechpostcodes" class="md-nav__link">
+  <a href="#postcodes-uk_open_datapostcodes" class="md-nav__link">
     <span class="md-ellipsis">
-      Postcodes — kindtech.postcodes
+      Postcodes — uk_open_data.postcodes
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#deprivation-imd-kindtechimd" class="md-nav__link">
+  <a href="#deprivation-imd-uk_open_dataimd" class="md-nav__link">
     <span class="md-ellipsis">
-      Deprivation (IMD) — kindtech.imd
+      Deprivation (IMD) — uk_open_data.imd
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#lenses-kindtechlenses" class="md-nav__link">
+  <a href="#lenses-uk_open_datalenses" class="md-nav__link">
     <span class="md-ellipsis">
-      Lenses — kindtech.lenses
+      Lenses — uk_open_data.lenses
     </span>
   </a>
   
@@ -1148,45 +1148,45 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#geographic-data-kindtechgeo" class="md-nav__link">
+  <a href="#geographic-data-uk_open_datageo" class="md-nav__link">
     <span class="md-ellipsis">
-      Geographic Data — kindtech.geo
+      Geographic Data — uk_open_data.geo
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#ons-statistics-kindtechons" class="md-nav__link">
+  <a href="#ons-statistics-uk_open_dataons" class="md-nav__link">
     <span class="md-ellipsis">
-      ONS Statistics — kindtech.ons
+      ONS Statistics — uk_open_data.ons
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#postcodes-kindtechpostcodes" class="md-nav__link">
+  <a href="#postcodes-uk_open_datapostcodes" class="md-nav__link">
     <span class="md-ellipsis">
-      Postcodes — kindtech.postcodes
+      Postcodes — uk_open_data.postcodes
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#deprivation-imd-kindtechimd" class="md-nav__link">
+  <a href="#deprivation-imd-uk_open_dataimd" class="md-nav__link">
     <span class="md-ellipsis">
-      Deprivation (IMD) — kindtech.imd
+      Deprivation (IMD) — uk_open_data.imd
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#lenses-kindtechlenses" class="md-nav__link">
+  <a href="#lenses-uk_open_datalenses" class="md-nav__link">
     <span class="md-ellipsis">
-      Lenses — kindtech.lenses
+      Lenses — uk_open_data.lenses
     </span>
   </a>
   
@@ -1229,43 +1229,43 @@
 <p>KindTech provides four modules for accessing UK public data, and lenses that
 put them to work on your own data:</p>
 <h2 id="modules">Modules</h2>
-<h3 id="geographic-data-kindtechgeo"><a href="geo/">Geographic Data</a> — <code>kindtech.geo</code></h3>
+<h3 id="geographic-data-uk_open_datageo"><a href="geo/">Geographic Data</a> — <code>uk_open_data.geo</code></h3>
 <p>Load UK geographic boundary data from the ONS ArcGIS Geoportal. Returns GeoJSON.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span>
 
 <span class="c1"># Load Local Authority Districts</span>
 <span class="n">boundaries</span> <span class="o">=</span> <span class="n">load_geodata</span><span class="p">(</span><span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="n">coverage</span><span class="o">=</span><span class="s2">&quot;UK&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="ons-statistics-kindtechons"><a href="ons/">ONS Statistics</a> — <code>kindtech.ons</code></h3>
+<h3 id="ons-statistics-uk_open_dataons"><a href="ons/">ONS Statistics</a> — <code>uk_open_data.ons</code></h3>
 <p>Load statistical data from the ONS NOMIS API. Returns pandas or polars DataFrames.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
 
 <span class="c1"># Load Jobseeker&#39;s Allowance data</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">load_ons</span><span class="p">(</span><span class="s2">&quot;NM_1_1&quot;</span><span class="p">,</span> <span class="n">geography</span><span class="o">=</span><span class="s2">&quot;TYPE480&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="postcodes-kindtechpostcodes"><a href="postcodes/">Postcodes</a> — <code>kindtech.postcodes</code></h3>
+<h3 id="postcodes-uk_open_datapostcodes"><a href="postcodes/">Postcodes</a> — <code>uk_open_data.postcodes</code></h3>
 <p>Resolve UK postcodes (and outcodes) to ONS geography codes via postcodes.io, so
 address data joins to boundaries and statistics. Returns pandas or polars
 DataFrames.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.postcodes</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.postcodes</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span>
 
 <span class="c1"># Postcodes -&gt; LSOA, ready to join on `geography_code`</span>
 <span class="n">located</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">([</span><span class="s2">&quot;SE13 7HX&quot;</span><span class="p">,</span> <span class="s2">&quot;SE6 4RU&quot;</span><span class="p">],</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="deprivation-imd-kindtechimd"><a href="imd/">Deprivation (IMD)</a> — <code>kindtech.imd</code></h3>
+<h3 id="deprivation-imd-uk_open_dataimd"><a href="imd/">Deprivation (IMD)</a> — <code>uk_open_data.imd</code></h3>
 <p>Load UK Indices of Multiple Deprivation, keyed on geography codes. A single
 nation returns its <strong>official</strong> index (England IoD 2025/2019 with all domains,
 or WIMD/SIMD/NIMDM); <code>nation="UK"</code> returns the mySociety composite for
 cross-nation comparison. Returns pandas or polars DataFrames.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.imd</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_imd</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.imd</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_imd</span>
 
 <span class="n">imd</span> <span class="o">=</span> <span class="n">load_imd</span><span class="p">(</span><span class="n">nation</span><span class="o">=</span><span class="s2">&quot;England&quot;</span><span class="p">)</span>  <span class="c1"># official IoD 2025; join on `geography_code`</span>
 </code></pre></div>
-<h3 id="lenses-kindtechlenses"><a href="lenses/">Lenses</a> — <code>kindtech.lenses</code></h3>
+<h3 id="lenses-uk_open_datalenses"><a href="lenses/">Lenses</a> — <code>uk_open_data.lenses</code></h3>
 <p>Ask a question of your own data. A lens joins your table to open data and
 returns figures with their sources, the working, the choices made and the
 checks a person should do. Results hold totals only, never rows.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_lens</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_lens</span>
 
 <span class="n">result</span> <span class="o">=</span> <span class="n">run_lens</span><span class="p">(</span>
     <span class="s2">&quot;reach-deprivation&quot;</span><span class="p">,</span> <span class="n">clients</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;Client postcode&quot;</span><span class="p">}</span>

@@ -25,7 +25,7 @@ from your data is repeated back, not even in a warning or an error message.
 
 ```python
 import pandas as pd
-from kindtech.lenses import run_lens
+from uk_open_data.lenses import run_lens
 
 clients = pd.read_csv("clients.csv")
 
@@ -105,7 +105,7 @@ A result describes its map; `render_map` draws it as an SVG picture with a
 legend and the credits the data licences ask for.
 
 ```python
-from kindtech.lenses import render_map
+from uk_open_data.lenses import render_map
 
 svg = render_map(result)                  # the first layer: deprivation decile
 svg = render_map(result, layer="people")  # people reached, in bands
@@ -287,7 +287,7 @@ keep a copy on the machine, in the same data folder as the
 [postcode table](postcodes.md#looking-up-postcodes-on-this-machine):
 
 ```python
-from kindtech.lenses.need_reach import download_need_figures, keep_need_figures
+from uk_open_data.lenses.need_reach import download_need_figures, keep_need_figures
 
 download_need_figures("unemployed")   # fetch once, when a server is built
 
@@ -418,7 +418,7 @@ memory; `clear_residents_cache()` forgets them. To run with no request to
 Nomis, keep a copy on the machine, as for need figures:
 
 ```python
-from kindtech.lenses.who_we_miss import download_residents, keep_residents
+from uk_open_data.lenses.who_we_miss import download_residents, keep_residents
 
 download_residents("ethnic_group")   # fetch once, when a server is built
 
@@ -591,7 +591,7 @@ the countryside by up to a few kilometres; the result carries a caveat that
 says so. Keep the centres once, when a server is built:
 
 ```python
-from kindtech.lenses.access_distance import download_centres
+from uk_open_data.lenses.access_distance import download_centres
 
 download_centres("neighbourhood")   # about 35,700 centres, about 1 MB
 ```
@@ -632,7 +632,7 @@ kept copies. The default is `"residents"`. The centres can be kept on the
 machine too, so the lens runs with no request at all:
 
 ```python
-from kindtech.lenses.access_distance import download_centres, keep_centres
+from uk_open_data.lenses.access_distance import download_centres, keep_centres
 
 download_centres()   # fetch once, when a server is built
 

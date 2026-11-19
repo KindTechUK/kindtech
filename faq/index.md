@@ -1,23 +1,28 @@
 # Package FAQ
 
-## Is this `kindtech.geo`, and can we keep developing more subpackages?
+## Is this `uk_open_data.geo`, and can we keep developing more subpackages?
 
-**Short answer:** `kindtech` is the package installed from PyPI. It includes
-`kindtech.geo`, `kindtech.ons`, `kindtech.postcodes`, and `kindtech.imd`.
-Each subpackage has its own Python import path, but all share one package
-version and release.
+**Short answer:** `uk-open-data` is the package installed from PyPI, and
+`uk_open_data` is the name it is imported by. It includes `uk_open_data.geo`,
+`uk_open_data.ons`, `uk_open_data.postcodes`, and `uk_open_data.imd`. Each
+subpackage has its own Python import path, but all share one package version
+and release.
 
 ```bash
-uv add kindtech
+uv add uk-open-data
 ```
 
 ```python
-from kindtech.geo import load_geodata
-from kindtech.ons import load_ons
+from uk_open_data.geo import load_geodata
+from uk_open_data.ons import load_ons
 ```
 
-New modules can be added under `src/kindtech/<name>/` and included in future
-`kindtech` releases. Because they remain inside the same distribution, they do
+The package was called `kindtech` up to version 0.1. Code that imports
+`kindtech` still works and gives a deprecation warning: `kindtech.geo` is the
+same module as `uk_open_data.geo`.
+
+New modules can be added under `src/uk_open_data/<name>/` and included in future
+`uk-open-data` releases. Because they remain inside the same distribution, they do
 not need separate PyPI registrations. Add tests and API documentation alongside
 each new module, and include any bundled data in the package configuration.
 

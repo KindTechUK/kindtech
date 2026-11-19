@@ -1226,7 +1226,7 @@
 
 
 <h1 id="postcodes">Postcodes</h1>
-<p>The <code>kindtech.postcodes</code> module turns UK postcodes (and postcode outcodes) into
+<p>The <code>uk_open_data.postcodes</code> module turns UK postcodes (and postcode outcodes) into
 the ONS geography codes the rest of KindTech joins on. It wraps
 <a href="https://postcodes.io/">postcodes.io</a> — no API key required.</p>
 <p>It's the layer that connects point-level address data to the common geography
@@ -1236,7 +1236,7 @@ OA, LAD, ward, ICB or TTWA — that joins straight to boundaries
 <h2 id="functions">Functions</h2>
 <h3 id="postcodes_to_geography"><code>postcodes_to_geography()</code></h3>
 <p>Map postcodes to a single geography level, ready to join.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span>
 
 <span class="n">located</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">([</span><span class="s2">&quot;SE13 7HX&quot;</span><span class="p">,</span> <span class="s2">&quot;SE6 4RU&quot;</span><span class="p">],</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
 <span class="c1">#    postcode geography_code geography_name</span>
@@ -1247,7 +1247,7 @@ OA, LAD, ward, ICB or TTWA — that joins straight to boundaries
 <code>geography_code</code> aligns with <code>geodata_to_properties()</code> and <code>load_ons()</code>, so the
 result merges directly:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span><span class="p">,</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">postcodes_to_geography</span><span class="p">,</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
 
 <span class="c1"># 1. Postcodes -&gt; counts per LSOA</span>
 <span class="n">located</span> <span class="o">=</span> <span class="n">postcodes_to_geography</span><span class="p">(</span><span class="n">postcodes</span><span class="p">,</span> <span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
@@ -1266,7 +1266,7 @@ result merges directly:</p>
 <code>ValueError</code>.</p>
 <h3 id="lookup_postcodes"><code>lookup_postcodes()</code></h3>
 <p>The full lookup — one row per postcode with every geography level at once.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">lookup_postcodes</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">lookup_postcodes</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">lookup_postcodes</span><span class="p">([</span><span class="s2">&quot;SE13 7HX&quot;</span><span class="p">,</span> <span class="s2">&quot;M1 1AE&quot;</span><span class="p">,</span> <span class="s2">&quot;NOTAPC&quot;</span><span class="p">])</span>
 </code></pre></div>
@@ -1283,7 +1283,7 @@ the output always lines up with the input. Filter with
 <p>Look up postcode <strong>outcodes</strong> — the prefix before the space (e.g. <code>SE13</code>). An
 outcode spans many areas, so this returns the <em>list</em> of Local Authorities it
 touches plus the outcode's geometric centroid.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">lookup_outcodes</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">lookup_outcodes</span>
 
 <span class="n">lookup_outcodes</span><span class="p">([</span><span class="s2">&quot;SE13&quot;</span><span class="p">,</span> <span class="s2">&quot;M1&quot;</span><span class="p">])</span>
 <span class="c1">#   outcode  valid      admin_districts   latitude  longitude</span>
@@ -1293,7 +1293,7 @@ touches plus the outcode's geometric centroid.</p>
 <code>latitude</code>, <code>longitude</code>.</p>
 <h3 id="outcode_to_geography"><code>outcode_to_geography()</code></h3>
 <p>Approximate an outcode to a single geography via its centroid.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">outcode_to_geography</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">outcode_to_geography</span>
 
 <span class="n">outcode_to_geography</span><span class="p">([</span><span class="s2">&quot;SE13&quot;</span><span class="p">],</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LSOA&quot;</span><span class="p">)</span>
 <span class="c1">#   outcode geography_code geography_name</span>
@@ -1328,7 +1328,7 @@ the ONS lookup with <code>uk-open-data postcodes build</code>, host it, and pass
 same for everyone, so fetching it says nothing about your data, and it is
 checked against a SHA-256 before it is installed. After that, nothing below
 uses the network:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.postcodes</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.postcodes</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">district_to_local_authorities</span><span class="p">,</span>
     <span class="n">postcode_to_lsoa</span><span class="p">,</span>
     <span class="n">postcodes_to_local_authority</span><span class="p">,</span>
@@ -1378,8 +1378,9 @@ uses the network:</p>
 </tr>
 </tbody>
 </table>
-<p>The table lives in <code>~/.cache/kindtech</code>, or in the folder named by the
-<code>KINDTECH_DATA_DIR</code> environment variable. A server should fetch it when it is
+<p>The table lives in <code>~/.cache/uk-open-data</code>, or in the folder named by the
+<code>UK_OPEN_DATA_DIR</code> environment variable. The old names, <code>~/.cache/kindtech</code>
+and <code>KINDTECH_DATA_DIR</code>, still work. A server should fetch it when it is
 built, not when a request arrives.</p>
 <div class="admonition note">
 <p class="admonition-title">Coverage and credits</p>
@@ -1391,7 +1392,7 @@ source line, and the OS and Royal Mail copyright lines.</p>
 </div>
 <p><a href="../lenses/">Lenses</a> use the table on their own when one is installed.</p>
 <h2 id="design">Design</h2>
-<p><code>kindtech.postcodes</code> is a thin runtime wrapper — unlike the <code>geo</code> and <code>ons</code>
+<p><code>uk_open_data.postcodes</code> is a thin runtime wrapper — unlike the <code>geo</code> and <code>ons</code>
 modules it ships no catalog and has no ingestion step, because postcodes.io
 serves the lookup directly. Requests are batched (100 postcodes per call, the
 postcodes.io limit) and results preserve input order. DataFrames come back in

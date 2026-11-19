@@ -4,7 +4,7 @@ The package installs one command under two names, `uk-open-data` and
 `kindtech`. It runs [lenses](lenses.md) on a file without writing any Python.
 
 ```bash
-uv add kindtech pandas        # the command needs pandas or polars installed
+uv add uk-open-data pandas        # the command needs pandas or polars installed
 uv run uk-open-data lens list
 ```
 

@@ -1767,7 +1767,7 @@
 
 <h1 id="data-sources">Data Sources</h1>
 <p>KindTech wraps two UK public data APIs that aren't prominently documented for
-developers. This page documents the APIs, their quirks, and how kindtech's
+developers. This page documents the APIs, their quirks, and how this package's
 ingestion scripts work.</p>
 <hr />
 <h2 id="ons-open-geography-portal-arcgis">ONS Open Geography Portal (ArcGIS)</h2>
@@ -1982,9 +1982,9 @@ with the 1 December reference date used for electoral statistics since 2001.</p>
 </ol>
 <p>All entries are kept in the catalog. No skip lists, no manual curation.</p>
 <h3 id="geo-ingestion">Geo ingestion</h3>
-<p>Parses ~3,700 ArcGIS services down to <strong>615 boundary datasets</strong> across <strong>24
-geography types</strong>, spanning 1921-2025. Stdlib-only (<code>csv</code>, <code>re</code>, <code>requests</code>).</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kindtech.geo._ingestion
+<p>Parses ~2,500 ArcGIS services down to <strong>654 boundary datasets</strong> across <strong>24
+geography types</strong>, spanning 1921-2026. Stdlib-only (<code>csv</code>, <code>re</code>, <code>requests</code>).</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>uk_open_data.geo._ingestion
 </code></pre></div>
 <hr />
 <h2 id="nomis-api">NOMIS API</h2>
@@ -2093,7 +2093,7 @@ bulk listing. The remaining 43 genuinely lack source information.</p>
 <p>Makes <strong>one HTTP request</strong> to <code>dataset/def.sdmx.json</code>, extracts IDs, names,
 and source annotations. Completes in ~6 seconds for 1,615 datasets.
 Stdlib-only (<code>csv</code>, <code>requests</code>).</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kindtech.ons._ingestion
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>uk_open_data.ons._ingestion
 </code></pre></div>
 <h3 id="community-packages">Community packages</h3>
 <p>No official client libraries from NOMIS, ONS, or Durham University. All
@@ -2380,7 +2380,7 @@ are Open Government Licence v3.0; the composite code is MIT licensed.</p>
 <h2 id="dataset-aliases">Dataset Aliases</h2>
 <p>Instead of remembering NOMIS dataset IDs like <code>NM_2002_1</code>, you can use
 friendly aliases:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
 
 <span class="c1"># These are equivalent</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">load_ons</span><span class="p">(</span><span class="s2">&quot;population&quot;</span><span class="p">,</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
@@ -2470,7 +2470,7 @@ friendly aliases:</p>
 </tbody>
 </table>
 <p>To list aliases programmatically:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">list_dataset_aliases</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">list_dataset_aliases</span>
 
 <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">list_dataset_aliases</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">a</span><span class="p">[</span><span class="s1">&#39;alias&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">30s</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">a</span><span class="p">[</span><span class="s1">&#39;dataset_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -2483,7 +2483,7 @@ maps between them so you don't have to.</p>
 <h3 id="using-geography_type-in-load_ons">Using <code>geography_type</code> in <code>load_ons()</code></h3>
 <p>Instead of looking up NOMIS TYPE codes, pass the same geography type you
 use with <code>load_geodata()</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">load_ons</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">load_ons</span>
 
 <span class="c1"># Same geography concept, different APIs</span>
 <span class="n">boundaries</span> <span class="o">=</span> <span class="n">load_geodata</span><span class="p">(</span><span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s2">&quot;2024&quot;</span><span class="p">)</span>
@@ -2611,7 +2611,7 @@ points. KindTech resolves these automatically based on the <code>time</code> par
 </table>
 <p>Source: NOMIS geography dimension metadata. To list all mappings
 programmatically:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">list_geography_mappings</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">list_geography_mappings</span>
 
 <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">list_geography_mappings</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
@@ -2631,17 +2631,17 @@ column:</p>
 <li><code>geodata_to_properties()</code> maps year-stamped ArcGIS fields (e.g.
   <code>LAD24CD</code>) to <code>geography_code</code> and <code>geography_name</code></li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">geodata_to_properties</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">geojson</span> <span class="o">=</span> <span class="n">load_geodata</span><span class="p">(</span><span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LAD&quot;</span><span class="p">)</span>
+<span class="n">geojson</span> <span class="o">=</span> <span class="n">load_geodata</span><span class="p">(</span><span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s2">&quot;2024&quot;</span><span class="p">)</span>
 <span class="n">geo_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">geodata_to_properties</span><span class="p">(</span><span class="n">geojson</span><span class="p">,</span> <span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">))</span>
 <span class="n">ons_df</span> <span class="o">=</span> <span class="n">load_ons</span><span class="p">(</span><span class="s2">&quot;population&quot;</span><span class="p">,</span> <span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
 <span class="n">merged</span> <span class="o">=</span> <span class="n">geo_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">ons_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;geography_code&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Under the hood, <code>geo_code_field()</code> and <code>geo_name_field()</code> derive the
 ArcGIS field names:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech._mapping</span><span class="w"> </span><span class="kn">import</span> <span class="n">geo_code_field</span><span class="p">,</span> <span class="n">geo_name_field</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data._mapping</span><span class="w"> </span><span class="kn">import</span> <span class="n">geo_code_field</span><span class="p">,</span> <span class="n">geo_name_field</span>
 
 <span class="n">geo_code_field</span><span class="p">(</span><span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">)</span>  <span class="c1"># &quot;LAD24CD&quot;</span>
 <span class="n">geo_name_field</span><span class="p">(</span><span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">)</span>  <span class="c1"># &quot;LAD24NM&quot;</span>
@@ -2679,11 +2679,11 @@ boundaries (maps), the other provides statistical tables (numbers).</p>
 │    codes                     │  (1,615 datasets)                     │
 │                              │                                      │
 │  Output:                     │  uv run python -m                     │
-│  geo/data/arcgis_services.csv│    kindtech.ons._ingestion            │
-│  (615 boundary datasets)     │                                      │
+│  geo/data/arcgis_services.csv│    uk_open_data.ons._ingestion            │
+│  (654 boundary datasets)     │                                      │
 │                              │                                      │
 │  uv run python -m            │                                      │
-│    kindtech.geo._ingestion   │                                      │
+│    uk_open_data.geo._ingestion   │                                      │
 │                              │                                      │
 ├──────────────────────────────┼──────────────────────────────────────┤
 │                              │                                      │
@@ -2705,10 +2705,10 @@ they call <code>load_geodata()</code> or <code>load_ons()</code> and get data ba
 a DataFrame.</p>
 <p>To refresh the catalogs when ONS publishes updates:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Geo boundaries — from ArcGIS</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kindtech.geo._ingestion
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>uk_open_data.geo._ingestion
 
 <span class="c1"># Statistics — from NOMIS</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kindtech.ons._ingestion
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>uk_open_data.ons._ingestion
 </code></pre></div>
 <p>Then commit the updated CSV files.</p>
 <hr />

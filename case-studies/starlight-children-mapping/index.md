@@ -81,7 +81,7 @@ need over England's real NHS commissioning geography:
 data), or locally with `uv run marimo edit examples/starlight_play_provision.py`.
 
 ```python
-from kindtech import load_geodata, geodata_to_properties
+from uk_open_data import load_geodata, geodata_to_properties
 import pandas as pd
 
 # England's 42 Integrated Care Boards (the geography that replaced CCGs)

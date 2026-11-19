@@ -1191,10 +1191,10 @@
 </ul>
 <h2 id="getting-started">Getting Started</h2>
 <p>Install <a href="https://pypi.org/project/kindtech/">KindTech from PyPI</a>:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>kindtech
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>uk-open-data
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">list_tables</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span><span class="p">,</span> <span class="n">list_tables</span>
 
 <span class="c1"># Load Local Authority District boundaries (GeoJSON)</span>
 <span class="n">boundaries</span> <span class="o">=</span> <span class="n">load_geodata</span><span class="p">(</span><span class="n">geography_type</span><span class="o">=</span><span class="s2">&quot;LAD&quot;</span><span class="p">,</span> <span class="n">coverage</span><span class="o">=</span><span class="s2">&quot;UK&quot;</span><span class="p">)</span>

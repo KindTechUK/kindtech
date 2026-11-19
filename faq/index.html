@@ -908,13 +908,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#is-this-kindtechgeo-and-can-we-keep-developing-more-subpackages" class="md-nav__link">
+  <a href="#is-this-uk_open_datageo-and-can-we-keep-developing-more-subpackages" class="md-nav__link">
     <span class="md-ellipsis">
-      Is this kindtech.geo, and can we keep developing more subpackages?
+      Is this uk_open_data.geo, and can we keep developing more subpackages?
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Is this kindtech.geo, and can we keep developing more subpackages?">
+    <nav class="md-nav" aria-label="Is this uk_open_data.geo, and can we keep developing more subpackages?">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1117,13 +1117,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#is-this-kindtechgeo-and-can-we-keep-developing-more-subpackages" class="md-nav__link">
+  <a href="#is-this-uk_open_datageo-and-can-we-keep-developing-more-subpackages" class="md-nav__link">
     <span class="md-ellipsis">
-      Is this kindtech.geo, and can we keep developing more subpackages?
+      Is this uk_open_data.geo, and can we keep developing more subpackages?
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Is this kindtech.geo, and can we keep developing more subpackages?">
+    <nav class="md-nav" aria-label="Is this uk_open_data.geo, and can we keep developing more subpackages?">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1184,18 +1184,22 @@
 
 
 <h1 id="package-faq">Package FAQ</h1>
-<h2 id="is-this-kindtechgeo-and-can-we-keep-developing-more-subpackages">Is this <code>kindtech.geo</code>, and can we keep developing more subpackages?</h2>
-<p><strong>Short answer:</strong> <code>kindtech</code> is the package installed from PyPI. It includes
-<code>kindtech.geo</code>, <code>kindtech.ons</code>, <code>kindtech.postcodes</code>, and <code>kindtech.imd</code>.
-Each subpackage has its own Python import path, but all share one package
-version and release.</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>kindtech
+<h2 id="is-this-uk_open_datageo-and-can-we-keep-developing-more-subpackages">Is this <code>uk_open_data.geo</code>, and can we keep developing more subpackages?</h2>
+<p><strong>Short answer:</strong> <code>uk-open-data</code> is the package installed from PyPI, and
+<code>uk_open_data</code> is the name it is imported by. It includes <code>uk_open_data.geo</code>,
+<code>uk_open_data.ons</code>, <code>uk_open_data.postcodes</code>, and <code>uk_open_data.imd</code>. Each
+subpackage has its own Python import path, but all share one package version
+and release.</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>uk-open-data
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
 </code></pre></div>
-<p>New modules can be added under <code>src/kindtech/&lt;name&gt;/</code> and included in future
-<code>kindtech</code> releases. Because they remain inside the same distribution, they do
+<p>The package was called <code>kindtech</code> up to version 0.1. Code that imports
+<code>kindtech</code> still works and gives a deprecation warning: <code>kindtech.geo</code> is the
+same module as <code>uk_open_data.geo</code>.</p>
+<p>New modules can be added under <code>src/uk_open_data/&lt;name&gt;/</code> and included in future
+<code>uk-open-data</code> releases. Because they remain inside the same distribution, they do
 not need separate PyPI registrations. Add tests and API documentation alongside
 each new module, and include any bundled data in the package configuration.</p>
 <h3 id="sources">Sources</h3>

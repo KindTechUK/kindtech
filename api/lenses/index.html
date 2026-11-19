@@ -1403,7 +1403,7 @@ returns figures you can check and reuse.</p>
 from your data is repeated back, not even in a warning or an error message.</p>
 <h2 id="quick-start">Quick start</h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_lens</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_lens</span>
 
 <span class="n">clients</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clients.csv&quot;</span><span class="p">)</span>
 
@@ -1464,7 +1464,7 @@ needs no network when the public figures it uses are kept on your machine.</p>
 <h2 id="drawing-the-map">Drawing the map</h2>
 <p>A result describes its map; <code>render_map</code> draws it as an SVG picture with a
 legend and the credits the data licences ask for.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_map</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_map</span>
 
 <span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>                  <span class="c1"># the first layer: deprivation decile</span>
 <span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="s2">&quot;people&quot;</span><span class="p">)</span>  <span class="c1"># people reached, in bands</span>
@@ -1741,7 +1741,7 @@ and then kept in memory for as long as the program runs;
 <code>clear_need_cache()</code> forgets them. To run with no request to Nomis at all,
 keep a copy on the machine, in the same data folder as the
 <a href="../postcodes/#looking-up-postcodes-on-this-machine">postcode table</a>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses.need_reach</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_need_figures</span><span class="p">,</span> <span class="n">keep_need_figures</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses.need_reach</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_need_figures</span><span class="p">,</span> <span class="n">keep_need_figures</span>
 
 <span class="n">download_need_figures</span><span class="p">(</span><span class="s2">&quot;unemployed&quot;</span><span class="p">)</span>   <span class="c1"># fetch once, when a server is built</span>
 
@@ -1968,7 +1968,7 @@ work, so you must name the area with <code>catchment</code>.</p>
 They are public, are fetched once for each characteristic and are then kept in
 memory; <code>clear_residents_cache()</code> forgets them. To run with no request to
 Nomis, keep a copy on the machine, as for need figures:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses.who_we_miss</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_residents</span><span class="p">,</span> <span class="n">keep_residents</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses.who_we_miss</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_residents</span><span class="p">,</span> <span class="n">keep_residents</span>
 
 <span class="n">download_residents</span><span class="p">(</span><span class="s2">&quot;ethnic_group&quot;</span><span class="p">)</span>   <span class="c1"># fetch once, when a server is built</span>
 
@@ -2305,7 +2305,7 @@ at the centre of its neighbourhood, from a file of neighbourhood centres kept
 on your machine. In a town that moves a site by a few hundred metres, and in
 the countryside by up to a few kilometres; the result carries a caveat that
 says so. Keep the centres once, when a server is built:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span>
 
 <span class="n">download_centres</span><span class="p">(</span><span class="s2">&quot;neighbourhood&quot;</span><span class="p">)</span>   <span class="c1"># about 35,700 centres, about 1 MB</span>
 </code></pre></div>
@@ -2358,7 +2358,7 @@ rough for a large rural one.</p>
 <p>The <code>need</code> option takes the same values as in the second lens, and the same
 kept copies. The default is <code>"residents"</code>. The centres can be kept on the
 machine too, so the lens runs with no request at all:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech.lenses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span><span class="p">,</span> <span class="n">keep_centres</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.lenses.access_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_centres</span><span class="p">,</span> <span class="n">keep_centres</span>
 
 <span class="n">download_centres</span><span class="p">()</span>   <span class="c1"># fetch once, when a server is built</span>
 

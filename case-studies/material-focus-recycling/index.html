@@ -1281,7 +1281,7 @@ map from two KindTech connectors, joining on <code>geography_code</code>:</p>
 <p><a href="https://molab.marimo.io/github/KindTechUK/kindtech/blob/main/examples/material_focus_recycling.py"><img alt="Open in marimo" src="https://marimo.io/molab-shield.svg" /></a>
 &nbsp;— run it live in the browser (the molab cloud runtime fetches real ONS
 data), or locally with <code>uv run marimo edit examples/material_focus_recycling.py</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kindtech</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">geodata_to_properties</span><span class="p">,</span> <span class="n">load_ons</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span><span class="p">,</span> <span class="n">geodata_to_properties</span><span class="p">,</span> <span class="n">load_ons</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="c1"># LAD boundaries carry LAT/LONG centroids</span>
@@ -1304,7 +1304,7 @@ capped at 20 minutes. That reproduces the <em>pattern</em> and the headline
 statistic well, but it is not a true drive-time. A faithful road travel-time
 map needs a <strong>routing engine</strong> (e.g. <a href="https://project-osrm.org/">OSRM</a> or
 <a href="https://openrouteservice.org/">OpenRouteService</a>); KindTech does not wrap
-one yet. If more case studies need real travel time, a small <code>kindtech</code>
+one yet. If more case studies need real travel time, a small <code>uk_open_data</code>
 routing connector would be worth adding.</p>
 </div>
 <p><strong>Travel-time map</strong> — minutes to the nearest recycling point per LAD:</p>

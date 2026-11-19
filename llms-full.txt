@@ -45,7 +45,7 @@ Run a real notebook in your browser. Each one fetches live ONS data through the 
 Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
 
 ```bash
-uv add kindtech
+uv add uk-open-data
 ```
 
 KindTech depends on requests, narwhals, and python-calamine. You bring your own
@@ -55,11 +55,11 @@ which subpackages are included and how they are released.
 ## Quick start
 
 ```python
-from kindtech import load_geodata, load_ons, geodata_to_properties
+from uk_open_data import load_geodata, load_ons, geodata_to_properties
 import pandas as pd  # or polars
 
 # Load LAD boundaries (GeoJSON) and extract properties
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
 
 # Load ONS statistics — columns are normalised automatically
@@ -75,14 +75,14 @@ KindTech uses [narwhals](https://narwhals-dev.github.io/narwhals/) for universal
 
 ```python
 # With pandas installed → returns pd.DataFrame
-from kindtech.ons import load_ons
+from uk_open_data.ons import load_ons
 df = load_ons("NM_1_1")
 type(df)  # <class 'pandas.core.frame.DataFrame'>
 ```
 
 ```python
 # With polars installed → returns pl.DataFrame
-from kindtech.ons import load_ons
+from uk_open_data.ons import load_ons
 df = load_ons("NM_1_1")
 type(df)  # <class 'polars.dataframe.frame.DataFrame'>
 ```
@@ -265,7 +265,7 @@ all joining on the 2021 LSOA `geography_code`:
 data), or locally with `uv run marimo edit examples/cal_vulnerable_client.py`.
 
 ```python
-from kindtech import postcodes_to_geography, load_imd, load_geodata
+from uk_open_data import postcodes_to_geography, load_imd, load_geodata
 
 # 1. Client postcodes -> LSOA (the step real client data would use)
 clients = postcodes_to_geography(client_postcodes, geography_type="LSOA")
@@ -388,7 +388,7 @@ map from two KindTech connectors, joining on `geography_code`:
 data), or locally with `uv run marimo edit examples/material_focus_recycling.py`.
 
 ```python
-from kindtech import load_geodata, geodata_to_properties, load_ons
+from uk_open_data import load_geodata, geodata_to_properties, load_ons
 import pandas as pd
 
 # LAD boundaries carry LAT/LONG centroids
@@ -412,7 +412,7 @@ one.
     statistic well, but it is not a true drive-time. A faithful road travel-time
     map needs a **routing engine** (e.g. [OSRM](https://project-osrm.org/) or
     [OpenRouteService](https://openrouteservice.org/)); KindTech does not wrap
-    one yet. If more case studies need real travel time, a small `kindtech`
+    one yet. If more case studies need real travel time, a small `uk_open_data`
     routing connector would be worth adding.
 
 **Travel-time map** — minutes to the nearest recycling point per LAD:
@@ -544,7 +544,7 @@ private):
 data), or locally with `uv run marimo edit examples/smart_works_unemployment.py`.
 
 ```python
-from kindtech import geodata_to_properties, load_geodata, load_ons
+from uk_open_data import geodata_to_properties, load_geodata, load_ons
 
 # Female, unemployed, by age band, all LADs — Census 2021 table RM024
 unemp = load_ons(
@@ -675,7 +675,7 @@ all joining on the 2021 LSOA `geography_code`:
 data), or locally with `uv run marimo edit examples/sobus_bame_referrals.py`.
 
 ```python
-from kindtech import outcode_to_geography, load_ons, load_geodata
+from uk_open_data import outcode_to_geography, load_ons, load_geodata
 
 # 1. A referral's outcode -> LSOA (the step real referral data would use)
 outcode_to_geography(["W6", "W12", "W14"], geography_type="LSOA")
@@ -831,7 +831,7 @@ need over England's real NHS commissioning geography:
 data), or locally with `uv run marimo edit examples/starlight_play_provision.py`.
 
 ```python
-from kindtech import load_geodata, geodata_to_properties
+from uk_open_data import load_geodata, geodata_to_properties
 import pandas as pd
 
 # England's 42 Integrated Care Boards (the geography that replaced CCGs)
@@ -896,42 +896,42 @@ put them to work on your own data:
 
 ## Modules
 
-### [Geographic Data](geo.md) — `kindtech.geo`
+### [Geographic Data](geo.md) — `uk_open_data.geo`
 
 Load UK geographic boundary data from the ONS ArcGIS Geoportal. Returns GeoJSON.
 
 ```python
-from kindtech.geo import load_geodata
+from uk_open_data.geo import load_geodata
 
 # Load Local Authority Districts
 boundaries = load_geodata(geography_type="LAD", coverage="UK")
 ```
 
-### [ONS Statistics](ons.md) — `kindtech.ons`
+### [ONS Statistics](ons.md) — `uk_open_data.ons`
 
 Load statistical data from the ONS NOMIS API. Returns pandas or polars DataFrames.
 
 ```python
-from kindtech.ons import load_ons
+from uk_open_data.ons import load_ons
 
 # Load Jobseeker's Allowance data
 df = load_ons("NM_1_1", geography="TYPE480", time="latest")
 ```
 
-### [Postcodes](postcodes.md) — `kindtech.postcodes`
+### [Postcodes](postcodes.md) — `uk_open_data.postcodes`
 
 Resolve UK postcodes (and outcodes) to ONS geography codes via postcodes.io, so
 address data joins to boundaries and statistics. Returns pandas or polars
 DataFrames.
 
 ```python
-from kindtech.postcodes import postcodes_to_geography
+from uk_open_data.postcodes import postcodes_to_geography
 
 # Postcodes -> LSOA, ready to join on `geography_code`
 located = postcodes_to_geography(["SE13 7HX", "SE6 4RU"], geography_type="LSOA")
 ```
 
-### [Deprivation (IMD)](imd.md) — `kindtech.imd`
+### [Deprivation (IMD)](imd.md) — `uk_open_data.imd`
 
 Load UK Indices of Multiple Deprivation, keyed on geography codes. A single
 nation returns its **official** index (England IoD 2025/2019 with all domains,
@@ -939,19 +939,19 @@ or WIMD/SIMD/NIMDM); `nation="UK"` returns the mySociety composite for
 cross-nation comparison. Returns pandas or polars DataFrames.
 
 ```python
-from kindtech.imd import load_imd
+from uk_open_data.imd import load_imd
 
 imd = load_imd(nation="England")  # official IoD 2025; join on `geography_code`
 ```
 
-### [Lenses](lenses.md) — `kindtech.lenses`
+### [Lenses](lenses.md) — `uk_open_data.lenses`
 
 Ask a question of your own data. A lens joins your table to open data and
 returns figures with their sources, the working, the choices made and the
 checks a person should do. Results hold totals only, never rows.
 
 ```python
-from kindtech.lenses import run_lens
+from uk_open_data.lenses import run_lens
 
 result = run_lens(
     "reach-deprivation", clients, columns={"postcode": "Client postcode"}
@@ -975,7 +975,7 @@ The package installs one command under two names, `uk-open-data` and
 `kindtech`. It runs [lenses](lenses.md) on a file without writing any Python.
 
 ```bash
-uv add kindtech pandas        # the command needs pandas or polars installed
+uv add uk-open-data pandas        # the command needs pandas or polars installed
 uv run uk-open-data lens list
 ```
 
@@ -1073,7 +1073,7 @@ machine.
 
 # Connector for chat assistants
 
-The `kindtech.connector` module offers the lenses and open data to a chat
+The `uk_open_data.connector` module offers the lenses and open data to a chat
 assistant, such as Claude or ChatGPT, over the
 [Model Context Protocol](https://modelcontextprotocol.io/). A charity worker
 asks a question in their own words; the assistant calls a tool; figures come
@@ -1087,8 +1087,8 @@ totals, never rows**.
 The server needs the `connector` extra:
 
 ```bash
-uv add "kindtech[connector]"
-uv run python -m kindtech.connector
+uv add "uk-open-data[connector]"
+uv run python -m uk_open_data.connector
 ```
 
 That runs over stdio, which is how a desktop assistant starts a local
@@ -1102,7 +1102,7 @@ configuration, with the path to your checkout:
       "command": "uv",
       "args": [
         "run", "--directory", "/path/to/kindtech", "--extra", "connector",
-        "python", "-m", "kindtech.connector"
+        "python", "-m", "uk_open_data.connector"
       ]
     }
   }
@@ -1113,7 +1113,7 @@ To host it, run the same server over Streamable HTTP. The address to give an
 assistant then ends in `/mcp`:
 
 ```bash
-uv run python -m kindtech.connector --transport streamable-http --port 8000
+uv run python -m uk_open_data.connector --transport streamable-http --port 8000
 ```
 
 ## Tools
@@ -1135,7 +1135,7 @@ The answer holds each lens description, best match first.
 district such as `SE13`, or the postcode of a venue or office.
 
 ```python
-from kindtech.connector import describe_place
+from uk_open_data.connector import describe_place
 
 answer = describe_place("Lewisham")
 answer["status"]            # "found"
@@ -1156,8 +1156,8 @@ cover England and Wales still work for it.
 
 The deprivation index is read from a copy kept on this machine when there is
 one, and the source in the answer then says so. When you host the connector,
-keep it when the image is built (`kindtech.imd.download_imd`), so the first
-call does not wait on a download. A copy kept with `kindtech.imd.keep_imd`
+keep it when the image is built (`uk_open_data.imd.download_imd`), so the first
+call does not wait on a download. A copy kept with `uk_open_data.imd.keep_imd`
 that leaves out the types of deprivation gives the same answer without that
 table, and says so in `warnings`. A copy that cannot be read gives the status
 `unavailable`.
@@ -1202,7 +1202,7 @@ and to no other. Any other text there is left for the lens, which says how
 many rows to correct.
 
 ```python
-from kindtech.connector import run_lens_on_counts
+from uk_open_data.connector import run_lens_on_counts
 
 answer = run_lens_on_counts(
     "need-reach",
@@ -1222,10 +1222,10 @@ lens needs could not be reached).
 
 When you host the connector, keep the public figures three of the lenses
 compare with on the server when the image is built, so a run does not wait on
-Nomis: `kindtech.lenses.need_reach.download_need_figures` for the need against
+Nomis: `uk_open_data.lenses.need_reach.download_need_figures` for the need against
 reach lens, the same function called with `"residents"` for the provision gap
 lens, which sets provision against everyone who lives in a place unless told
-otherwise, and `kindtech.lenses.who_we_miss.download_residents` for the who we
+otherwise, and `uk_open_data.lenses.who_we_miss.download_residents` for the who we
 are missing lens.
 
 ## The privacy rule
@@ -1259,7 +1259,7 @@ are missing lens.
 # Data Sources
 
 KindTech wraps two UK public data APIs that aren't prominently documented for
-developers. This page documents the APIs, their quirks, and how kindtech's
+developers. This page documents the APIs, their quirks, and how this package's
 ingestion scripts work.
 
 ---
@@ -1399,11 +1399,11 @@ All entries are kept in the catalog. No skip lists, no manual curation.
 
 ### Geo ingestion
 
-Parses ~3,700 ArcGIS services down to **615 boundary datasets** across **24
-geography types**, spanning 1921-2025. Stdlib-only (`csv`, `re`, `requests`).
+Parses ~2,500 ArcGIS services down to **654 boundary datasets** across **24
+geography types**, spanning 1921-2026. Stdlib-only (`csv`, `re`, `requests`).
 
 ```bash
-uv run python -m kindtech.geo._ingestion
+uv run python -m uk_open_data.geo._ingestion
 ```
 
 ---
@@ -1493,7 +1493,7 @@ and source annotations. Completes in ~6 seconds for 1,615 datasets.
 Stdlib-only (`csv`, `requests`).
 
 ```bash
-uv run python -m kindtech.ons._ingestion
+uv run python -m uk_open_data.ons._ingestion
 ```
 
 ### Community packages
@@ -1641,7 +1641,7 @@ Instead of remembering NOMIS dataset IDs like `NM_2002_1`, you can use
 friendly aliases:
 
 ```python
-from kindtech import load_ons
+from uk_open_data import load_ons
 
 # These are equivalent
 df = load_ons("population", geography_type="LAD", time="latest")
@@ -1672,7 +1672,7 @@ Raw `NM_*` IDs are passed through unchanged — aliases are just a convenience.
 To list aliases programmatically:
 
 ```python
-from kindtech import list_dataset_aliases
+from uk_open_data import list_dataset_aliases
 
 for a in list_dataset_aliases():
     print(f"{a['alias']:30s} → {a['dataset_id']}")
@@ -1692,7 +1692,7 @@ Instead of looking up NOMIS TYPE codes, pass the same geography type you
 use with `load_geodata()`:
 
 ```python
-from kindtech import load_geodata, load_ons
+from uk_open_data import load_geodata, load_ons
 
 # Same geography concept, different APIs
 boundaries = load_geodata(geography_type="LAD", year="2024")
@@ -1734,7 +1734,7 @@ Source: NOMIS geography dimension metadata. To list all mappings
 programmatically:
 
 ```python
-from kindtech import list_geography_mappings
+from uk_open_data import list_geography_mappings
 
 for m in list_geography_mappings():
     print(m)
@@ -1757,10 +1757,10 @@ column:
   `LAD24CD`) to `geography_code` and `geography_name`
 
 ```python
-from kindtech import load_geodata, load_ons, geodata_to_properties
+from uk_open_data import load_geodata, load_ons, geodata_to_properties
 import pandas as pd
 
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
 ons_df = load_ons("population", geography_type="LAD", time="latest")
 merged = geo_df.merge(ons_df, on="geography_code")
@@ -1770,7 +1770,7 @@ Under the hood, `geo_code_field()` and `geo_name_field()` derive the
 ArcGIS field names:
 
 ```python
-from kindtech._mapping import geo_code_field, geo_name_field
+from uk_open_data._mapping import geo_code_field, geo_name_field
 
 geo_code_field("LAD", 2024)  # "LAD24CD"
 geo_name_field("LAD", 2024)  # "LAD24NM"
@@ -1813,11 +1813,11 @@ boundaries (maps), the other provides statistical tables (numbers).
 │    codes                     │  (1,615 datasets)                     │
 │                              │                                      │
 │  Output:                     │  uv run python -m                     │
-│  geo/data/arcgis_services.csv│    kindtech.ons._ingestion            │
-│  (615 boundary datasets)     │                                      │
+│  geo/data/arcgis_services.csv│    uk_open_data.ons._ingestion            │
+│  (654 boundary datasets)     │                                      │
 │                              │                                      │
 │  uv run python -m            │                                      │
-│    kindtech.geo._ingestion   │                                      │
+│    uk_open_data.geo._ingestion   │                                      │
 │                              │                                      │
 ├──────────────────────────────┼──────────────────────────────────────┤
 │                              │                                      │
@@ -1843,10 +1843,10 @@ To refresh the catalogs when ONS publishes updates:
 
 ```bash
 # Geo boundaries — from ArcGIS
-uv run python -m kindtech.geo._ingestion
+uv run python -m uk_open_data.geo._ingestion
 
 # Statistics — from NOMIS
-uv run python -m kindtech.ons._ingestion
+uv run python -m uk_open_data.ons._ingestion
 ```
 
 Then commit the updated CSV files.
@@ -1892,7 +1892,7 @@ Then commit the updated CSV files.
 
 # Geographic Data
 
-The `kindtech.geo` module provides access to UK geographic boundary data from the [ONS ArcGIS Geoportal](https://geoportal.statistics.gov.uk/).
+The `uk_open_data.geo` module provides access to UK geographic boundary data from the [ONS ArcGIS Geoportal](https://geoportal.statistics.gov.uk/).
 
 ## Functions
 
@@ -1901,7 +1901,7 @@ The `kindtech.geo` module provides access to UK geographic boundary data from th
 Load geographic boundary data as GeoJSON.
 
 ```python
-from kindtech.geo import load_geodata, GeographyType, CoverageArea, BoundaryType
+from uk_open_data.geo import load_geodata, GeographyType, CoverageArea, BoundaryType
 
 # Using strings
 data = load_geodata(geography_type="LAD", coverage="UK", boundary_type="BGC")
@@ -1955,7 +1955,7 @@ The ONS boundary service gives a few thousand features in one answer. A larger l
 Get available fields for filtering a dataset.
 
 ```python
-from kindtech.geo import get_field_info
+from uk_open_data.geo import get_field_info
 
 fields = get_field_info(geography_type="LAD")
 # [{"name": "LAD21CD", "type": "esriFieldTypeString", "alias": "LAD Code"}, ...]
@@ -1981,7 +1981,7 @@ fields = get_field_info(geography_type="LAD")
 List all supported geography types.
 
 ```python
-from kindtech.geo import get_available_geography_types
+from uk_open_data.geo import get_available_geography_types
 
 types = get_available_geography_types()
 # [{"code": "LAD", "description": "Local Authority Districts"}, ...]
@@ -2017,10 +2017,10 @@ All enums accept both string codes and enum values. They have `.code` and `.desc
 Extract feature properties from GeoJSON with normalised column names for easy joins with ONS data.
 
 ```python
-from kindtech import load_geodata, geodata_to_properties
+from uk_open_data import load_geodata, geodata_to_properties
 import pandas as pd
 
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 rows = geodata_to_properties(geojson, "LAD", 2024)
 geo_df = pd.DataFrame(rows)
 # geo_df has 'geography_code' and 'geography_name' columns
@@ -2046,10 +2046,10 @@ geo_df = pd.DataFrame(rows)
 The normalised `geography_code` column matches the column produced by `load_ons(normalize=True)`, enabling trivial joins:
 
 ```python
-from kindtech import load_geodata, load_ons, geodata_to_properties
+from uk_open_data import load_geodata, load_ons, geodata_to_properties
 import pandas as pd
 
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
 ons_df = load_ons("population", geography_type="LAD", time="latest")
 merged = geo_df.merge(ons_df, on="geography_code")
@@ -2057,7 +2057,7 @@ merged = geo_df.merge(ons_df, on="geography_code")
 
 ## How it works
 
-1. The bundled CSV catalog (`geo/data/arcgis_services.csv`, 615 services across 24 geography types) maps geography type + year + coverage + boundary to an ArcGIS service ID
+1. The bundled CSV catalog (`geo/data/arcgis_services.csv`, 654 services across 24 geography types) maps geography type + year + coverage + boundary to an ArcGIS service ID
 2. `load_geodata()` finds the best matching service (most recent year if not specified)
 3. Queries the ArcGIS FeatureServer REST API for GeoJSON
 4. Returns the raw GeoJSON FeatureCollection
@@ -2068,7 +2068,7 @@ merged = geo_df.merge(ons_df, on="geography_code")
 
 # Deprivation (IMD)
 
-The `kindtech.imd` module loads UK deprivation data, keyed on ONS geography
+The `uk_open_data.imd` module loads UK deprivation data, keyed on ONS geography
 codes so it joins to [boundaries](geo.md) and [statistics](ons.md).
 
 **A single nation returns that nation's _official_ index. `"UK"` returns a
@@ -2097,7 +2097,7 @@ comparison, and a nation's official index for within-nation work.
 ## `load_imd()`
 
 ```python
-from kindtech import load_imd
+from uk_open_data import load_imd
 
 england = load_imd(nation="England")          # official IoD 2025, 2021 LSOAs
 england_19 = load_imd(nation="England", year=2019)  # official IoD 2019, 2011 LSOAs
@@ -2171,7 +2171,7 @@ data folder, the same one that holds the
 [postcode table](postcodes.md#looking-up-postcodes-on-this-machine):
 
 ```python
-from kindtech.imd import download_imd, imd_path, keep_imd, load_imd
+from uk_open_data.imd import download_imd, imd_path, keep_imd, load_imd
 
 download_imd()            # fetch the 2025 index once, when a server is built
 imd_path()                # where the copy is, or None
@@ -2195,7 +2195,7 @@ or merges with population for per-capita work:
 
 ```python
 import pandas as pd
-from kindtech import load_imd, load_geodata, geodata_to_properties
+from uk_open_data import load_imd, load_geodata, geodata_to_properties
 
 imd = load_imd(nation="England")  # IoD 2025, on 2021 LSOAs
 # Default boundaries are 2021 LSOAs — a native join, no crosswalk
@@ -2251,7 +2251,7 @@ from your data is repeated back, not even in a warning or an error message.
 
 ```python
 import pandas as pd
-from kindtech.lenses import run_lens
+from uk_open_data.lenses import run_lens
 
 clients = pd.read_csv("clients.csv")
 
@@ -2331,7 +2331,7 @@ A result describes its map; `render_map` draws it as an SVG picture with a
 legend and the credits the data licences ask for.
 
 ```python
-from kindtech.lenses import render_map
+from uk_open_data.lenses import render_map
 
 svg = render_map(result)                  # the first layer: deprivation decile
 svg = render_map(result, layer="people")  # people reached, in bands
@@ -2513,7 +2513,7 @@ keep a copy on the machine, in the same data folder as the
 [postcode table](postcodes.md#looking-up-postcodes-on-this-machine):
 
 ```python
-from kindtech.lenses.need_reach import download_need_figures, keep_need_figures
+from uk_open_data.lenses.need_reach import download_need_figures, keep_need_figures
 
 download_need_figures("unemployed")   # fetch once, when a server is built
 
@@ -2644,7 +2644,7 @@ memory; `clear_residents_cache()` forgets them. To run with no request to
 Nomis, keep a copy on the machine, as for need figures:
 
 ```python
-from kindtech.lenses.who_we_miss import download_residents, keep_residents
+from uk_open_data.lenses.who_we_miss import download_residents, keep_residents
 
 download_residents("ethnic_group")   # fetch once, when a server is built
 
@@ -2817,7 +2817,7 @@ the countryside by up to a few kilometres; the result carries a caveat that
 says so. Keep the centres once, when a server is built:
 
 ```python
-from kindtech.lenses.access_distance import download_centres
+from uk_open_data.lenses.access_distance import download_centres
 
 download_centres("neighbourhood")   # about 35,700 centres, about 1 MB
 ```
@@ -2858,7 +2858,7 @@ kept copies. The default is `"residents"`. The centres can be kept on the
 machine too, so the lens runs with no request at all:
 
 ```python
-from kindtech.lenses.access_distance import download_centres, keep_centres
+from uk_open_data.lenses.access_distance import download_centres, keep_centres
 
 download_centres()   # fetch once, when a server is built
 
@@ -2949,7 +2949,7 @@ A lens is a `LensInfo` and a function that takes a `LensInput` and returns a
 
 # ONS Statistics
 
-The `kindtech.ons` module provides access to UK statistics from the [ONS NOMIS API](https://www.nomisweb.co.uk/api/v01/help). Returns DataFrames in your preferred backend (pandas or polars) via [narwhals](https://narwhals-dev.github.io/narwhals/).
+The `uk_open_data.ons` module provides access to UK statistics from the [ONS NOMIS API](https://www.nomisweb.co.uk/api/v01/help). Returns DataFrames in your preferred backend (pandas or polars) via [narwhals](https://narwhals-dev.github.io/narwhals/).
 
 ## Functions
 
@@ -2958,7 +2958,7 @@ The `kindtech.ons` module provides access to UK statistics from the [ONS NOMIS A
 Load statistical data from the NOMIS API.
 
 ```python
-from kindtech.ons import load_ons
+from uk_open_data.ons import load_ons
 
 # Basic usage
 df = load_ons("NM_1_1")
@@ -3020,7 +3020,7 @@ DataFrame (pandas or polars, depending on what's installed). If both are availab
 Browse available NOMIS datasets.
 
 ```python
-from kindtech.ons import list_tables
+from uk_open_data.ons import list_tables
 
 # List all 1,615 datasets
 all_tables = list_tables()
@@ -3045,7 +3045,7 @@ DataFrame with columns: `id`, `name`, `sourceName`.
 
 ## Bring Your Own DataFrame
 
-The ONS module uses [narwhals](https://narwhals-dev.github.io/narwhals/) for DataFrame interoperability. Install your preferred backend alongside kindtech:
+The ONS module uses [narwhals](https://narwhals-dev.github.io/narwhals/) for DataFrame interoperability. Install your preferred backend alongside uk-open-data:
 
 ```bash
 uv add pandas   # or polars
@@ -3055,7 +3055,7 @@ The return type automatically matches your installed backend:
 
 ```python
 import polars as pl
-from kindtech.ons import load_ons
+from uk_open_data.ons import load_ons
 
 df = load_ons("NM_1_1", time="latest")
 assert isinstance(df, pl.DataFrame)  # polars preferred when both installed
@@ -3077,7 +3077,7 @@ assert isinstance(df, pl.DataFrame)  # polars preferred when both installed
 
 # Postcodes
 
-The `kindtech.postcodes` module turns UK postcodes (and postcode outcodes) into
+The `uk_open_data.postcodes` module turns UK postcodes (and postcode outcodes) into
 the ONS geography codes the rest of KindTech joins on. It wraps
 [postcodes.io](https://postcodes.io/) — no API key required.
 
@@ -3093,7 +3093,7 @@ OA, LAD, ward, ICB or TTWA — that joins straight to boundaries
 Map postcodes to a single geography level, ready to join.
 
 ```python
-from kindtech import postcodes_to_geography
+from uk_open_data import postcodes_to_geography
 
 located = postcodes_to_geography(["SE13 7HX", "SE6 4RU"], geography_type="LSOA")
 #    postcode geography_code geography_name
@@ -3107,7 +3107,7 @@ result merges directly:
 
 ```python
 import pandas as pd
-from kindtech import postcodes_to_geography, load_geodata, load_ons, geodata_to_properties
+from uk_open_data import postcodes_to_geography, load_geodata, load_ons, geodata_to_properties
 
 # 1. Postcodes -> counts per LSOA
 located = postcodes_to_geography(postcodes, "LSOA")
@@ -3131,7 +3131,7 @@ Supported `geography_type` values: `LSOA`, `MSOA`, `OA`, `LAD`, `WD`, `ICB`,
 The full lookup — one row per postcode with every geography level at once.
 
 ```python
-from kindtech import lookup_postcodes
+from uk_open_data import lookup_postcodes
 
 df = lookup_postcodes(["SE13 7HX", "M1 1AE", "NOTAPC"])
 ```
@@ -3152,7 +3152,7 @@ outcode spans many areas, so this returns the *list* of Local Authorities it
 touches plus the outcode's geometric centroid.
 
 ```python
-from kindtech import lookup_outcodes
+from uk_open_data import lookup_outcodes
 
 lookup_outcodes(["SE13", "M1"])
 #   outcode  valid      admin_districts   latitude  longitude
@@ -3167,7 +3167,7 @@ Columns: `outcode`, `valid`, `admin_districts` (comma-separated LAD names),
 Approximate an outcode to a single geography via its centroid.
 
 ```python
-from kindtech import outcode_to_geography
+from uk_open_data import outcode_to_geography
 
 outcode_to_geography(["SE13"], geography_type="LSOA")
 #   outcode geography_code geography_name
@@ -3208,7 +3208,7 @@ checked against a SHA-256 before it is installed. After that, nothing below
 uses the network:
 
 ```python
-from kindtech.postcodes import (
+from uk_open_data.postcodes import (
     district_to_local_authorities,
     postcode_to_lsoa,
     postcodes_to_local_authority,
@@ -3231,8 +3231,9 @@ district_to_local_authorities("SE13")       # local authority codes, sorted
 | `district_to_local_authorities()` | The local authorities a postcode district reaches into |
 | `build_postcode_table()` | Builds a table from the ONS lookup file. Used to publish a new edition |
 
-The table lives in `~/.cache/kindtech`, or in the folder named by the
-`KINDTECH_DATA_DIR` environment variable. A server should fetch it when it is
+The table lives in `~/.cache/uk-open-data`, or in the folder named by the
+`UK_OPEN_DATA_DIR` environment variable. The old names, `~/.cache/kindtech`
+and `KINDTECH_DATA_DIR`, still work. A server should fetch it when it is
 built, not when a request arrives.
 
 !!! note "Coverage and credits"
@@ -3246,7 +3247,7 @@ built, not when a request arrives.
 
 ## Design
 
-`kindtech.postcodes` is a thin runtime wrapper — unlike the `geo` and `ons`
+`uk_open_data.postcodes` is a thin runtime wrapper — unlike the `geo` and `ons`
 modules it ships no catalog and has no ingestion step, because postcodes.io
 serves the lookup directly. Requests are batched (100 postcodes per call, the
 postcodes.io limit) and results preserve input order. DataFrames come back in
@@ -3261,24 +3262,29 @@ licensing, and limits.
 
 # Package FAQ
 
-## Is this `kindtech.geo`, and can we keep developing more subpackages?
+## Is this `uk_open_data.geo`, and can we keep developing more subpackages?
 
-**Short answer:** `kindtech` is the package installed from PyPI. It includes
-`kindtech.geo`, `kindtech.ons`, `kindtech.postcodes`, and `kindtech.imd`.
-Each subpackage has its own Python import path, but all share one package
-version and release.
+**Short answer:** `uk-open-data` is the package installed from PyPI, and
+`uk_open_data` is the name it is imported by. It includes `uk_open_data.geo`,
+`uk_open_data.ons`, `uk_open_data.postcodes`, and `uk_open_data.imd`. Each
+subpackage has its own Python import path, but all share one package version
+and release.
 
 ```bash
-uv add kindtech
+uv add uk-open-data
 ```
 
 ```python
-from kindtech.geo import load_geodata
-from kindtech.ons import load_ons
+from uk_open_data.geo import load_geodata
+from uk_open_data.ons import load_ons
 ```
 
-New modules can be added under `src/kindtech/<name>/` and included in future
-`kindtech` releases. Because they remain inside the same distribution, they do
+The package was called `kindtech` up to version 0.1. Code that imports
+`kindtech` still works and gives a deprecation warning: `kindtech.geo` is the
+same module as `uk_open_data.geo`.
+
+New modules can be added under `src/uk_open_data/<name>/` and included in future
+`uk-open-data` releases. Because they remain inside the same distribution, they do
 not need separate PyPI registrations. Add tests and API documentation alongside
 each new module, and include any bundled data in the package configuration.
 
@@ -3420,12 +3426,12 @@ KindTech is a lightweight Python library for accessing UK public data. It wraps 
 Install [KindTech from PyPI](https://pypi.org/project/kindtech/):
 
 ```bash
-uv add kindtech
+uv add uk-open-data
 ```
 
 ```python
-from kindtech.geo import load_geodata
-from kindtech.ons import load_ons, list_tables
+from uk_open_data.geo import load_geodata
+from uk_open_data.ons import load_ons, list_tables
 
 # Load Local Authority District boundaries (GeoJSON)
 boundaries = load_geodata(geography_type="LAD", coverage="UK")
