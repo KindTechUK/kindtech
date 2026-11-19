@@ -33,6 +33,15 @@ UNAVAILABLE = (
     "A data source this lens needs could not be reached just now. Try again in "
     "a minute."
 )
+ROWS_LEFT_OUT = (
+    "These tables are not empty. Each holds a row for every area, for a map or "
+    "a download, so their rows are left out of an answer in a chat. The lens "
+    "page and the command line tool show them."
+)
+MAP_NEEDS_ROWS = (
+    "The map in the result is drawn from one of them, so it cannot be drawn from "
+    "this answer."
+)
 SHOW_WITH_FIGURES = (
     "Show the checks and caveats next to the figures. The checks are for the "
     "person to answer, not for an assistant."
@@ -124,7 +133,8 @@ def run_lens_on_counts(
         ``status`` is ``ok``, ``input_problem`` (``problems`` lists what to
         fix), ``unknown_lens`` or ``unavailable`` (a data source the lens
         needs could not be reached). When ok, ``result`` is the lens result as
-        plain JSON types without the rows of detail tables. It never repeats a
+        plain JSON types without the rows of detail tables, and
+        ``rows_left_out`` names those tables and says why. It never repeats a
         value that was passed in, except in a role the lens marks
         ``reported``: the name or code of a public place, such as a local
         authority, or one of the group names the role lists.
@@ -152,11 +162,30 @@ def run_lens_on_counts(
         logger.warning("A data source could not be reached: %s", type(error).__name__)
         return {"status": "unavailable", "message": UNAVAILABLE}
     payload = result.to_dict(include_detail=False)
-    return {
+    answer = {
         "status": "ok",
         "result": ensure_totals_only(payload, guarded),
         "show_with_figures": SHOW_WITH_FIGURES,
     }
+    left_out = _rows_left_out(payload)
+    if left_out:
+        answer["rows_left_out"] = left_out
+    return answer
+
+
+def _rows_left_out(payload: dict[str, Any]) -> dict[str, Any]:
+    """Which tables came back without their rows, and why, or nothing.
+
+    A detail table holds a row for every area. It comes back with its columns
+    and no rows, which reads like "nothing found" unless the answer says so.
+    """
+    tables = [table["id"] for table in payload.get("tables", []) if table.get("detail")]
+    if not tables:
+        return {}
+    note = ROWS_LEFT_OUT
+    if (payload.get("map") or {}).get("table") in tables:
+        note = f"{note} {MAP_NEEDS_ROWS}"
+    return {"tables": tables, "note": note}
 
 
 def _count_problems(info: dict[str, Any], counts: object) -> list[str]:

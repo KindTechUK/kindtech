@@ -115,7 +115,11 @@ or hours. The provision gap lens hides no small figure, because a volume is
 not a count of people, and its result says so.
 
 The answer holds the lens result without the rows of its detail tables, so an
-assistant is not handed a row per neighbourhood. Rows about individual people,
+assistant is not handed a row per neighbourhood. Such a table comes back with
+its columns and no rows, and `rows_left_out` in the answer names those tables
+and says they are not empty, so that an assistant does not report "nothing
+found". Where the result's map is drawn from one of them, the note says the
+map cannot be drawn from the answer. Rows about individual people,
 such as one postcode per person, are refused, and so is one row per site.
 
 A count or volume given as text that is nothing but a number, such as

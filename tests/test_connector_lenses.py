@@ -72,6 +72,15 @@ class TestRunLensOnCounts:
         assert answer["result"]["tables"][0]["rows"] == []
         assert "checks" in answer["show_with_figures"]
 
+    def test_says_which_tables_have_their_rows_left_out(self) -> None:
+        answer = run_lens_on_counts("reach-deprivation", COUNTS)
+
+        left_out = answer["rows_left_out"]
+        assert left_out["tables"] == ["by_neighbourhood"]
+        assert "not empty" in left_out["note"]
+        # The stand-in result has no map, so the note does not speak of drawing one.
+        assert "cannot be drawn" not in left_out["note"]
+
     def test_options_reach_the_lens(self) -> None:
         answer = run_lens_on_counts(
             "reach-deprivation", COUNTS, options={"suppress_below": 10}
@@ -346,6 +355,14 @@ class TestWithTheSecondLens:
         assert result["privacy"]["sent_to_third_parties"] == []
         assert result["checks"]
 
+    def test_says_the_map_cannot_be_drawn_without_the_rows_left_out(self) -> None:
+        answer = run_lens_on_counts("need-reach", COUNCIL_COUNTS)
+
+        left_out = answer["rows_left_out"]
+        assert left_out["tables"] == ["by_local_authority"]
+        assert answer["result"]["map"]["table"] == "by_local_authority"
+        assert "cannot be drawn from this answer" in left_out["note"]
+
     def test_the_places_passed_in_are_listed_in_the_result(self) -> None:
         answer = run_lens_on_counts(
             "need-reach", COUNCIL_COUNTS, options={"catchment": "England"}
@@ -420,6 +437,12 @@ class TestWithTheThirdLens:
         # 40 of 290 people against a quarter of residents.
         assert rows["Black"]["people"] == 40
         assert rows["Black"]["under_represented"] is True
+
+    def test_says_nothing_of_rows_left_out_when_none_are(self) -> None:
+        answer = run_lens_on_counts("who-we-miss", GROUP_COUNTS, options=CATCHMENT)
+
+        assert answer["result"]["tables"][0]["rows"]
+        assert "rows_left_out" not in answer
 
     def test_names_census_groups_and_not_the_labels_passed_in(self) -> None:
         answer = run_lens_on_counts("who-we-miss", GROUP_COUNTS, options=CATCHMENT)
