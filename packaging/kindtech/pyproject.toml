@@ -7,19 +7,19 @@ build-backend = "setuptools.build_meta"
 # repository: tests/test_old_name_package.py checks it.
 [project]
 name = "kindtech"
-version = "0.1.0"
+version = "0.2.0a1"
 description = "The old name of uk-open-data: installs it and keeps `import kindtech` working"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.10"
 dependencies = [
-    "uk-open-data==0.1.0",
+    "uk-open-data==0.2.0a1",
 ]
 
 [project.optional-dependencies]
 connector = [
-    "uk-open-data[connector]==0.1.0",
+    "uk-open-data[connector]==0.2.0a1",
 ]
 
 [project.urls]

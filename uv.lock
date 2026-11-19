@@ -645,7 +645,7 @@ wheels = [
 
 [[package]]
 name = "kindtech"
-version = "0.1.0"
+version = "0.2.0a1"
 source = { editable = "packaging/kindtech" }
 dependencies = [
     { name = "uk-open-data" },
@@ -2276,7 +2276,7 @@ wheels = [
 
 [[package]]
 name = "uk-open-data"
-version = "0.1.0"
+version = "0.2.0a1"
 source = { editable = "." }
 dependencies = [
     { name = "narwhals" },
