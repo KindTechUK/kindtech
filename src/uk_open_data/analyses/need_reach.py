@@ -53,6 +53,7 @@ from uk_open_data.analyses._model import (
 from uk_open_data.analyses._need import (
     DEFAULT_TOP,
     FEW_AREAS,
+    FEW_PLACES,
     MAX_TOP,
     MEASURES,
     NEED_BANDS,
@@ -121,7 +122,7 @@ LOWEST = "your lowest reach"
 NEED_BY_RATE = (
     "People in need for each 1,000 residents",
     "Local authorities in five equal groups by people in need for each 1,000 "
-    "residents, so a large place is not darker for its size alone.",
+    "residents, so a large place is not darker for its size alone." + FEW_PLACES,
 )
 LARGE_PLACE_DARKER = (
     " A large place is likely to be darker than a small one with the same rate."
@@ -736,7 +737,7 @@ def _authority_table(rows: list[_Row], words: NeedWords) -> Table:
 
 def _by_count(words: NeedWords) -> tuple[str, str]:
     """The label and the note of the need layer when it is shaded by count."""
-    note = f"Local authorities in five equal groups by {words.noun}."
+    note = f"Local authorities in five equal groups by {words.noun}.{FEW_PLACES}"
     if words is IN_NEED:
         note += LARGE_PLACE_DARKER
     return sentence_case(words.noun), note
@@ -777,7 +778,7 @@ def _map_spec(by_rate: bool, words: NeedWords) -> MapSpec:
                 note=(
                     "Local authorities with a count that can be shown are in "
                     "three equal groups. The lowest band holds places with "
-                    "nobody and places with a hidden count."
+                    "nobody and places with a hidden count." + FEW_PLACES
                 ),
                 categories=REACH_BANDS,
             ),
