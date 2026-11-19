@@ -41,6 +41,18 @@ def main(argv: Sequence[str] | None = None, prog: str = PROG) -> None:
     )
 
 
+def start() -> None:
+    """Run :func:`main` for ``python -m uk_open_data.connector``.
+
+    A missing ``connector`` extra ends the command with the one sentence that
+    says how to install it, where a traceback would bury it.
+    """
+    try:
+        main()
+    except ImportError as error:
+        raise SystemExit(str(error)) from None
+
+
 def _parser(prog: str) -> argparse.ArgumentParser:
     """The command line options."""
     parser = argparse.ArgumentParser(
