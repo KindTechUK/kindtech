@@ -142,7 +142,7 @@ def test_a_welsh_council_is_not_covered_and_the_answer_says_why(name: str) -> No
 
     assert answer["status"] == "not_covered"
     assert "in Wales" in answer["message"]
-    assert "lenses that cover England and Wales" in answer["message"]
+    assert "analyses that cover England and Wales" in answer["message"]
 
 
 @pytest.mark.parametrize("code", ["W06000015", "W01000001"])

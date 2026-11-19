@@ -1,4 +1,4 @@
-"""The Kindtech connector: an MCP server over the lenses and open data.
+"""The Kindtech connector: an MCP server over the analyses and open data.
 
 The same server runs locally over stdio and hosted over Streamable HTTP. Every
 tool is read-only and returns totals, never rows.
@@ -20,7 +20,7 @@ from mcp.types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import Field, ValidationError
 
 import uk_open_data
-from uk_open_data.connector.lenses import find_lens, run_and_keep_result
+from uk_open_data.connector.analyses import find_analysis, run_and_keep_result
 from uk_open_data.connector.maps import (
     MAP_META_KEY,
     MAP_VIEW,
@@ -34,13 +34,13 @@ from uk_open_data.connector.privacy import PrivacyError
 logger = logging.getLogger(__name__)
 
 SERVER_NAME = "kindtech"
-SERVER_TITLE = "Kindtech open data for charities"
+SERVER_TITLE = "Kindtech Evidence: open data for charities"
 WEBSITE_URL = "https://github.com/KindTechUK/uk-open-data"
 
 INSTRUCTIONS = """\
-Kindtech answers questions a UK charity asks of its own figures and of open \
-data, using lenses: fixed, documented analyses that return totals with their \
-sources.
+Kindtech Evidence answers questions a UK charity asks of its own figures and \
+of open data. Each analysis is fixed and documented, and returns totals with \
+their sources.
 
 Rules for using these tools:
 - Totals, never rows. Do not pass rows about individual people (one postcode, \
@@ -119,16 +119,16 @@ def build_server(map_boundaries: Boundaries | None = None) -> MCPServer:
     apps.add_html_resource(
         MAP_VIEW_URI,
         MAP_VIEW,
-        name="lens-map",
-        title="Map of a lens result",
-        description="Shows the map drawn for a lens result.",
+        name="analysis-map",
+        title="Map of an analysis result",
+        description="Shows the map drawn for an analysis result.",
     )
     apps.tool(
         resource_uri=MAP_VIEW_URI,
-        name="run_lens_on_counts",
-        title="Run a lens on counts",
+        name="run_analysis_on_counts",
+        title="Run an analysis on counts",
         annotations=READ_ONLY_OPEN_DATA,
-    )(run_lens_handler(map_boundaries))
+    )(run_analysis_handler(map_boundaries))
     server = TotalsOnlyServer(
         name=SERVER_NAME,
         title=SERVER_TITLE,
@@ -137,9 +137,9 @@ def build_server(map_boundaries: Boundaries | None = None) -> MCPServer:
         version=uk_open_data.__version__,
         extensions=[apps],
     )
-    server.tool(name="find_lens", title="Find a lens", annotations=READ_ONLY_LOCAL)(
-        handle_find_lens
-    )
+    server.tool(
+        name="find_analysis", title="Find an analysis", annotations=READ_ONLY_LOCAL
+    )(handle_find_analysis)
     server.tool(
         name="describe_place",
         title="Describe a place",
@@ -148,24 +148,25 @@ def build_server(map_boundaries: Boundaries | None = None) -> MCPServer:
     return server
 
 
-def handle_find_lens(
+def handle_find_analysis(
     query: Annotated[
         str | None,
         Field(
             description="The question in the person's own words, or a few key "
-            "words. Leave out to list every lens."
+            "words. Leave out to list every analysis."
         ),
     ] = None,
 ) -> dict[str, Any]:
-    """Find the lens that answers a charity's question.
+    """Find the analysis that answers a charity's question.
 
-    A lens is a fixed analysis, such as "are we reaching people in the most
-    deprived neighbourhoods?". Use this first to see which lenses exist, what
-    data each one needs and which options can be changed. A lens named under
-    'needs_rows' takes no totals, so it cannot run in a chat: tell the person
-    where it can run. Returns lens descriptions only; it reads no data.
+    An analysis answers one fixed question, such as "are we reaching people in
+    the most deprived neighbourhoods?". Use this first to see which analyses
+    exist, what data each one needs and which options can be changed. An
+    analysis named under 'needs_rows' takes no totals, so it cannot run in a
+    chat: tell the person where it can run. Returns analysis descriptions
+    only; it reads no data.
     """
-    return find_lens(query)
+    return find_analysis(query)
 
 
 def handle_describe_place(
@@ -194,21 +195,24 @@ def handle_describe_place(
     return describe_place(place)
 
 
-def run_lens_handler(
+def run_analysis_handler(
     map_boundaries: Boundaries | None = None,
 ) -> Callable[..., CallToolResult]:
-    """Make the handler for running a lens, which draws maps with these outlines."""
+    """Make the handler that runs an analysis and draws maps with these outlines."""
 
-    def handle_run_lens_on_counts(
-        lens_id: Annotated[
+    def handle_run_analysis_on_counts(
+        analysis_id: Annotated[
             str,
-            Field(description="The lens id from find_lens, e.g. 'reach-deprivation'."),
+            Field(
+                description="The analysis id from find_analysis, for example "
+                "'reach-deprivation'."
+            ),
         ],
         counts: Annotated[
             list[dict[str, Any]],
             Field(
                 description="One object per area or group, keyed by the role names "
-                "of an input mode marked 'aggregated' in find_lens, for example "
+                "of an input mode marked 'aggregated' in find_analysis, for example "
                 "{'lsoa_code': 'E01003189', 'count': 12}, {'local_authority': "
                 "'Lewisham', 'count': 120}, {'group': 'Black Caribbean', 'count': "
                 "40} or {'local_authority': 'Lewisham', 'volume': 1200}. Totals "
@@ -218,8 +222,9 @@ def run_lens_handler(
         options: Annotated[
             dict[str, Any] | None,
             Field(
-                description="Lens options to change, as listed by find_lens. Leave "
-                "out to use the defaults. Where a lens needs one, such as "
+                description="Analysis options to change, as listed by "
+                "find_analysis. Leave out to use the defaults. Where an "
+                "analysis needs one, such as "
                 "'catchment' (the area the charity serves), ask the person for it."
             ),
         ] = None,
@@ -233,10 +238,10 @@ def run_lens_handler(
             ),
         ] = "ask",
     ) -> Annotated[CallToolResult, dict[str, Any]]:
-        """Run a lens on counts that are already totalled by area or by group.
+        """Run an analysis on counts that are already totalled by area or by group.
 
         Returns headline figures, summary tables, the working, the choices the
-        lens made, checks for the person to confirm, caveats and sources. Show the
+        analysis made, checks for the person to confirm, caveats and sources. Show the
         checks and caveats with the figures and do not answer the checks for the
         person. Rows about individuals are refused. Small counts are hidden, and
         a second count with them. If the status is 'would_hide_counts', nothing
@@ -250,7 +255,7 @@ def run_lens_handler(
         again later.
         """
         answer, result, guarded = run_and_keep_result(
-            lens_id, counts, options, hidden_counts
+            analysis_id, counts, options, hidden_counts
         )
         picture = None
         if result is not None:
@@ -259,7 +264,7 @@ def run_lens_handler(
                 answer["map"] = {"drawn": picture is not None, "note": note}
         return _tool_result(answer, {MAP_META_KEY: picture} if picture else None)
 
-    return handle_run_lens_on_counts
+    return handle_run_analysis_on_counts
 
 
 def _tool_result(answer: dict[str, Any], meta: dict[str, Any] | None) -> CallToolResult:

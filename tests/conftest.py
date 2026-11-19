@@ -8,7 +8,7 @@ from uk_open_data.analyses import reach_deprivation
 from uk_open_data.analyses.access_distance import clear_centres_cache
 from uk_open_data.analyses.need_reach import clear_need_cache
 from uk_open_data.analyses.who_we_miss import clear_residents_cache
-from uk_open_data.connector import lenses, maps, places
+from uk_open_data.connector import analyses, maps, places
 from uk_open_data.postcodes import build_postcode_table, install_postcode_table, offline
 
 
@@ -43,15 +43,15 @@ def england(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture
-def lens_engine(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Swap the lens engine for a fake with two lenses, one without counts."""
-    monkeypatch.setattr(lenses, "engine", fakes.fake_engine())
+def analysis_engine(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Swap the analysis engine for a fake with two analyses, one without counts."""
+    monkeypatch.setattr(analyses, "engine", fakes.fake_engine())
 
 
 @pytest.fixture
-def leaky_lens_engine(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Install a fake lens engine that repeats an input value in its result."""
-    monkeypatch.setattr(lenses, "engine", fakes.fake_engine(leak=True))
+def leaky_analysis_engine(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Install a fake analysis engine that repeats an input value in its result."""
+    monkeypatch.setattr(analyses, "engine", fakes.fake_engine(leak=True))
 
 
 @pytest.fixture

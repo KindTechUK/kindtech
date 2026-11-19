@@ -34,7 +34,7 @@ OWN_LABEL = "Black Caribbean"
 
 # tool name -> cases of (arguments, values that must not come back)
 CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
-    "find_lens": [
+    "find_analysis": [
         ({"query": f"deprived areas for {PERSON} at {POSTCODE}"}, [PERSON, POSTCODE]),
         ({"query": [POSTCODE]}, [POSTCODE]),
     ],
@@ -45,18 +45,18 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
         ({"place": PERSON}, [PERSON]),
         ({}, []),
     ],
-    "run_lens_on_counts": [
+    "run_analysis_on_counts": [
         (
             {
-                "lens_id": "reach-deprivation",
+                "analysis_id": "reach-deprivation",
                 "counts": [{"lsoa_code": AREA, "count": 12}],
             },
             [AREA],
         ),
         (
-            # Too few people for the lens to give figures at all.
+            # Too few people for the analysis to give figures at all.
             {
-                "lens_id": "reach-deprivation",
+                "analysis_id": "reach-deprivation",
                 "counts": [{"lsoa_code": AREA, "count": 3}],
             },
             [AREA],
@@ -64,7 +64,7 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
         (
             # A result that would hide counts is held back with a plain answer.
             {
-                "lens_id": "reach-deprivation",
+                "analysis_id": "reach-deprivation",
                 "counts": [
                     {"lsoa_code": AREA, "count": 3},
                     {"lsoa_code": "E01000002", "count": 30},
@@ -73,31 +73,31 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
             [AREA, "E01000002"],
         ),
         (
-            {"lens_id": "reach-deprivation", "counts": [{"postcode": POSTCODE}]},
+            {"analysis_id": "reach-deprivation", "counts": [{"postcode": POSTCODE}]},
             [POSTCODE],
         ),
         (
             {
-                "lens_id": "reach-deprivation",
+                "analysis_id": "reach-deprivation",
                 "counts": [{"lsoa_code": AREA, "count": 3, "name": PERSON}],
             },
             [AREA, PERSON],
         ),
-        ({"lens_id": "reach-deprivation", "counts": POSTCODE}, [POSTCODE]),
+        ({"analysis_id": "reach-deprivation", "counts": POSTCODE}, [POSTCODE]),
         ({"counts": [{"postcode": POSTCODE, "name": PERSON}]}, [POSTCODE, PERSON]),
         (
             {
-                "lens_id": PERSON,
+                "analysis_id": PERSON,
                 "counts": [{"lsoa_code": AREA, "count": 3}],
                 "options": PERSON,
             },
             [AREA, PERSON],
         ),
-        ({"lens_id": "need-reach", "counts": [{"postcode": POSTCODE}]}, [POSTCODE]),
+        ({"analysis_id": "need-reach", "counts": [{"postcode": POSTCODE}]}, [POSTCODE]),
         (
             # A postcode or a name where a local authority should be.
             {
-                "lens_id": "need-reach",
+                "analysis_id": "need-reach",
                 "counts": [
                     {"local_authority": COUNCIL, "count": 30},
                     {"local_authority": POSTCODE, "count": 12},
@@ -108,14 +108,14 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
         ),
         (
             {
-                "lens_id": "need-reach",
+                "analysis_id": "need-reach",
                 "counts": [{"local_authority": POSTCODE, "count": 1}],
             },
             [POSTCODE],
         ),
         (
             {
-                "lens_id": "who-we-miss",
+                "analysis_id": "who-we-miss",
                 "counts": [{"group": "White", "postcode": POSTCODE}],
                 "options": {"catchment": [COUNCIL]},
             },
@@ -124,7 +124,7 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
         (
             # A postcode, a name or a charity's own label where a group should be.
             {
-                "lens_id": "who-we-miss",
+                "analysis_id": "who-we-miss",
                 "counts": [
                     {"group": "White", "count": 220},
                     {"group": OWN_LABEL, "count": 40},
@@ -136,14 +136,14 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
             [POSTCODE, PERSON, OWN_LABEL],
         ),
         (
-            # No catchment, so the lens gives no figures at all.
-            {"lens_id": "who-we-miss", "counts": [{"group": PERSON, "count": 9}]},
+            # No catchment, so the analysis gives no figures at all.
+            {"analysis_id": "who-we-miss", "counts": [{"group": PERSON, "count": 9}]},
             [PERSON],
         ),
         (
             # One row per site, which is not a total.
             {
-                "lens_id": "provision-gap",
+                "analysis_id": "provision-gap",
                 "counts": [{"postcode": POSTCODE, "volume": 30}],
             },
             [POSTCODE],
@@ -151,7 +151,7 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
         (
             # A postcode or a name where a local authority should be.
             {
-                "lens_id": "provision-gap",
+                "analysis_id": "provision-gap",
                 "counts": [
                     {"local_authority": COUNCIL, "volume": 1200},
                     {"local_authority": POSTCODE, "volume": 12},
@@ -163,7 +163,7 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
         (
             # A name or a postcode where a volume should be.
             {
-                "lens_id": "provision-gap",
+                "analysis_id": "provision-gap",
                 "counts": [
                     {"local_authority": COUNCIL, "volume": PERSON},
                     {"local_authority": COUNCIL, "volume": POSTCODE},
@@ -177,7 +177,7 @@ CASES: dict[str, list[tuple[dict[str, Any], list[str]]]] = {
 
 @pytest.fixture(autouse=True)
 def _stand_ins(england: None) -> None:
-    """Every case runs the real lenses against the small England."""
+    """Every case runs the real analyses against the small England."""
     keep_need_figures("unemployed", fakes.NEED, "invented for a test.")
     keep_need_figures("residents", fakes.NEED, "invented for a test.")
     keep_residents("ethnic_group", fakes.RESIDENTS, "invented for a test.")
@@ -226,18 +226,18 @@ def test_good_calls_still_answer() -> None:
     refused = json.loads(_call("describe_place", {"place": POSTCODE}))
     run = json.loads(
         _call(
-            "run_lens_on_counts",
+            "run_analysis_on_counts",
             {
-                "lens_id": "reach-deprivation",
+                "analysis_id": "reach-deprivation",
                 "counts": [{"lsoa_code": AREA, "count": 12}],
             },
         )
     )
     second = json.loads(
         _call(
-            "run_lens_on_counts",
+            "run_analysis_on_counts",
             {
-                "lens_id": "need-reach",
+                "analysis_id": "need-reach",
                 "counts": [
                     {"local_authority": COUNCIL, "count": 30},
                     {"local_authority": POSTCODE, "count": 12},
@@ -248,9 +248,9 @@ def test_good_calls_still_answer() -> None:
     )
     third = json.loads(
         _call(
-            "run_lens_on_counts",
+            "run_analysis_on_counts",
             {
-                "lens_id": "who-we-miss",
+                "analysis_id": "who-we-miss",
                 "counts": [
                     {"group": "White", "count": 220},
                     {"group": OWN_LABEL, "count": 40},
@@ -261,9 +261,9 @@ def test_good_calls_still_answer() -> None:
     )
     fourth = json.loads(
         _call(
-            "run_lens_on_counts",
+            "run_analysis_on_counts",
             {
-                "lens_id": "provision-gap",
+                "analysis_id": "provision-gap",
                 "counts": [
                     {"local_authority": COUNCIL, "volume": "1,200"},
                     {"local_authority": POSTCODE, "volume": 12},
@@ -281,11 +281,11 @@ def test_good_calls_still_answer() -> None:
     assert run["structuredContent"]["status"] == "ok"
     assert second["isError"] is False
     assert second["structuredContent"]["status"] == "ok"
-    # A local authority is a public place, so the second lens may name it.
+    # A local authority is a public place, so the second analysis may name it.
     assert COUNCIL in json.dumps(second["structuredContent"]["result"]["tables"])
     assert third["isError"] is False
     assert third["structuredContent"]["status"] == "ok"
-    # A census group is public, so the third lens names it, and not the label.
+    # A census group is public, so the third analysis names it, and not the label.
     by_group = json.dumps(third["structuredContent"]["result"]["tables"])
     assert "Black" in by_group
     assert OWN_LABEL not in by_group
@@ -305,14 +305,14 @@ def test_no_postcode_comes_back_when_placed_on_this_machine(place: str) -> None:
     assert json.loads(reply)["isError"] is False
 
 
-@pytest.mark.usefixtures("leaky_lens_engine")
-def test_a_lens_that_repeats_input_is_stopped_at_the_connector() -> None:
+@pytest.mark.usefixtures("leaky_analysis_engine")
+def test_an_analysis_that_repeats_input_is_stopped_at_the_connector() -> None:
     arguments = {
-        "lens_id": "reach-deprivation",
+        "analysis_id": "reach-deprivation",
         "counts": [{"lsoa_code": AREA, "count": 3}],
     }
 
-    reply = json.loads(_call("run_lens_on_counts", arguments))
+    reply = json.loads(_call("run_analysis_on_counts", arguments))
 
     assert reply["isError"] is True
     assert AREA not in json.dumps(reply)

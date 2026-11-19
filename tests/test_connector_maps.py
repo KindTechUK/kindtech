@@ -1,7 +1,7 @@
-"""Tests for the map a chat can show with a lens result.
+"""Tests for the map a chat can show with an analysis result.
 
 The outlines are invented squares, so nothing is fetched. The map is drawn by
-the real first lens on the small England.
+the real first analysis on the small England.
 """
 
 import asyncio
@@ -31,16 +31,16 @@ COUNTS = [
     {"lsoa_code": "E01000001", "count": 12},
     {"lsoa_code": "E01000002", "count": 30},
 ]
-RUN = {"lens_id": "reach-deprivation", "counts": COUNTS}
+RUN = {"analysis_id": "reach-deprivation", "counts": COUNTS}
 APP_MIME_TYPE = "text/html;profile=mcp-app"
 
 
 def _call(arguments: dict[str, Any], **server: Any) -> dict[str, Any]:
-    """Run a lens through the server as an app would, and return the whole reply."""
+    """Run an analysis through the server as an app would; return the whole reply."""
 
     async def call() -> dict[str, Any]:
         async with Client(build_server(**server)) as client:
-            reply = await client.call_tool("run_lens_on_counts", arguments)
+            reply = await client.call_tool("run_analysis_on_counts", arguments)
         return reply.model_dump(mode="json", by_alias=True)
 
     return asyncio.run(call())
@@ -66,7 +66,7 @@ class TestThePicture:
         assert "was drawn for the person" in note
         assert "do not describe what it shows" in note
 
-    def test_a_lens_without_a_map_has_no_picture_and_no_note(self) -> None:
+    def test_an_analysis_without_a_map_has_no_picture_and_no_note(self) -> None:
         result = run_analysis(
             "reach-deprivation", COUNTS, options={"catchment": "England"}
         )
@@ -132,10 +132,12 @@ class TestThroughTheServer:
 
         tools = asyncio.run(listed())
 
-        assert tools["run_lens_on_counts"]["_meta"]["ui"] == {
+        assert tools["run_analysis_on_counts"]["_meta"]["ui"] == {
             "resourceUri": MAP_VIEW_URI
         }
-        assert "_meta" not in tools["find_lens"] or not tools["find_lens"]["_meta"]
+        assert (
+            "_meta" not in tools["find_analysis"] or not tools["find_analysis"]["_meta"]
+        )
 
     def test_the_map_view_is_served_as_an_app_page(self) -> None:
         async def read() -> dict[str, Any]:
@@ -198,7 +200,7 @@ class TestThroughTheServer:
         assert "map" not in reply["structuredContent"]
         assert MAP_META_KEY not in (reply.get("_meta") or {})
 
-    def test_a_lens_without_a_map_says_nothing_of_one(self) -> None:
+    def test_an_analysis_without_a_map_says_nothing_of_one(self) -> None:
         need_reach.keep_need_figures("residents", fakes.NEED, "invented for a test.")
         whole_country = {**RUN, "options": {"catchment": "England"}}
 

@@ -1,11 +1,11 @@
-"""Find a lens and run one on counts, as totals only.
+"""Find an analysis and run one on counts, as totals only.
 
 These are thin wrappers over :mod:`uk_open_data.analyses`. They add what a chat
-assistant needs: a search over the lens descriptions, a check that only
+assistant needs: a search over the analysis descriptions, a check that only
 already-totalled input is accepted, and the privacy guard on what comes back.
 
-    >>> from uk_open_data.connector import find_lens, run_lens_on_counts
-    >>> find_lens("deprived neighbourhoods")["lenses"][0]["id"]
+    >>> from uk_open_data.connector import find_analysis, run_analysis_on_counts
+    >>> find_analysis("deprived neighbourhoods")["analyses"][0]["id"]
     'reach-deprivation'
 """
 
@@ -25,25 +25,25 @@ MAX_COUNT_ROWS = 50_000
 STEM_LENGTH = 6
 
 HOW_TO_RUN = (
-    "Run a lens with run_lens_on_counts, passing rows that are already totals "
+    "Run an analysis with run_analysis_on_counts, passing rows that are already totals "
     "for areas or for groups (the roles of an input mode marked 'aggregated'). "
     "Never pass rows about individual people."
 )
 NEEDS_ROWS = (
-    "This lens does not run on totals, so it cannot run in a chat. It needs a "
-    "row for each thing it measures, such as one row per site that says where "
-    "the site is, and this tool takes totals only. Run it on the lens page or "
-    "with the command line tool, where those rows are not passed through an "
-    "assistant. Do not try other rows or another lens in its place without "
-    "saying so."
+    "This analysis does not run on totals, so it cannot run in a chat. It needs "
+    "a row for each thing it measures, such as one row per site that says "
+    "where the site is, and this tool takes totals only. Run it on the "
+    "Kindtech Evidence page or with the command line tool, where those rows "
+    "are not passed through an assistant. Do not try other rows or another "
+    "analysis in its place without saying so."
 )
 UNAVAILABLE = (
-    "A data source this lens needs could not be reached just now. Try again in "
+    "A data source this analysis needs could not be reached just now. Try again in "
     "a minute."
 )
 ROWS_LEFT_OUT = (
     "These tables are not empty. Each holds a row for every area, for a map or "
-    "a download, so their rows are left out of an answer in a chat. The lens "
+    "a download, so their rows are left out of an answer in a chat. The analysis "
     "page and the command line tool show them."
 )
 MAP_NEEDS_ROWS = (
@@ -52,7 +52,7 @@ MAP_NEEDS_ROWS = (
 )
 WOULD_HIDE = (
     "Nothing has been shown yet. With these rows, {hidden} of the figures and "
-    "table rows in the answer would come back hidden. This lens hides a count "
+    "table rows in the answer would come back hidden. This analysis hides a count "
     "from 1 to {highest}, to protect the people behind it. Where it hides one "
     "count in a table it hides a second, so the first cannot be worked out "
     "from the total, and that second count can be a larger number the person "
@@ -104,54 +104,57 @@ _STOP_WORDS = frozenset(
 )
 
 
-def find_lens(query: str | None = None) -> dict[str, Any]:
-    """Find the lenses that answer a question.
+def find_analysis(query: str | None = None) -> dict[str, Any]:
+    """Find the analyses that answer a question.
 
     Args:
         query: The question in the person's own words, or a few key words.
-            Leave out to list every lens.
+            Leave out to list every analysis.
 
     Returns:
-        ``lenses`` holds each lens description (see ``AnalysisInfo`` in the lens
-        contract), best match first. ``matched`` says how many matched the
-        query; when none did, every lens is listed and ``note`` says so.
-        ``needs_rows`` names the listed lenses that cannot run on totals, and
+        ``analyses`` holds each analysis description (see ``AnalysisInfo`` in
+        the analysis contract), best match first. ``matched`` says how many
+        matched the
+        query; when none did, every analysis is listed and ``note`` says so.
+        ``needs_rows`` names the listed analyses that cannot run on totals, and
         so not in a chat, and says where they can run.
     """
-    lenses = [info.to_dict() for info in engine.list_analyses()]
+    analyses = [info.to_dict() for info in engine.list_analyses()]
     words = _words(query or "")
     scored = sorted(
-        ((_score(lens, words), lens) for lens in lenses),
+        ((_score(analysis, words), analysis) for analysis in analyses),
         key=lambda pair: pair[0],
         reverse=True,
     )
-    matched = [lens for score, lens in scored if score > 0]
+    matched = [analysis for score, analysis in scored if score > 0]
     answer: dict[str, Any] = {
-        "lenses": matched or lenses,
+        "analyses": matched or analyses,
         "matched": len(matched),
-        "available": len(lenses),
+        "available": len(analyses),
         "how_to_run": HOW_TO_RUN,
     }
-    needs_rows = [lens["id"] for lens in answer["lenses"] if not _count_modes(lens)]
+    needs_rows = [
+        analysis["id"] for analysis in answer["analyses"] if not _count_modes(analysis)
+    ]
     if needs_rows:
-        answer["needs_rows"] = {"lenses": needs_rows, "note": NEEDS_ROWS}
-    if not lenses:
-        answer["note"] = "No lenses are installed."
+        answer["needs_rows"] = {"analyses": needs_rows, "note": NEEDS_ROWS}
+    if not analyses:
+        answer["note"] = "No analyses are installed."
     elif words and not matched:
-        answer["note"] = "No lens matched those words, so every lens is listed."
+        answer["note"] = "No analysis matched those words, so every analysis is listed."
     return answer
 
 
-def run_lens_on_counts(
-    lens_id: str,
+def run_analysis_on_counts(
+    analysis_id: str,
     counts: list[dict[str, Any]],
     options: dict[str, Any] | None = None,
     hidden_counts: Literal["ask", "accept"] = "ask",
 ) -> dict[str, Any]:
-    """Run a lens on data that is already totalled by area or by group.
+    """Run an analysis on data that is already totalled by area or by group.
 
     Args:
-        lens_id: The lens to run, for example ``"reach-deprivation"``.
+        analysis_id: The analysis to run, for example ``"reach-deprivation"``.
         counts: One dict per area or group, keyed by the role names of an
             input mode marked ``aggregated``, for example
             ``{"lsoa_code": "E01003189", "count": 12}``,
@@ -159,7 +162,7 @@ def run_lens_on_counts(
             ``{"local_authority": "Lewisham", "volume": 1200}``. Rows about
             individual people, or one row per site, are refused. A count
             given as text, such as ``"1,200"``, is read as a number.
-        options: Lens options to change. Most have a default; where a lens
+        options: Analysis options to change. Most have a default; where an analysis
             needs one, such as the catchment, the answer says so.
         hidden_counts: What to do when the answer would hide counts.
             ``"ask"`` holds the answer back and says so, so the person can
@@ -169,41 +172,41 @@ def run_lens_on_counts(
     Returns:
         ``status`` is ``ok``, ``would_hide_counts`` (``would_hide`` says how
         many and ``choices`` what the person can do), ``input_problem``
-        (``problems`` lists what to fix), ``needs_rows`` (the lens takes no
-        totals, so it cannot run here), ``unknown_lens`` or ``unavailable``
-        (a data source the lens needs could not be reached). When ok,
-        ``result`` is the lens result as plain JSON types without the rows of
+        (``problems`` lists what to fix), ``needs_rows`` (the analysis takes no
+        totals, so it cannot run here), ``unknown_analysis`` or ``unavailable``
+        (a data source the analysis needs could not be reached). When ok,
+        ``result`` is the analysis result as plain JSON types without the rows of
         detail tables, and ``rows_left_out`` names those tables and says why.
         It never repeats a
-        value that was passed in, except in a role the lens marks
+        value that was passed in, except in a role the analysis marks
         ``reported``: the name or code of a public place, such as a local
         authority, or one of the group names the role lists.
     """
-    return run_and_keep_result(lens_id, counts, options, hidden_counts)[0]
+    return run_and_keep_result(analysis_id, counts, options, hidden_counts)[0]
 
 
 def run_and_keep_result(
-    lens_id: str,
+    analysis_id: str,
     counts: list[dict[str, Any]],
     options: dict[str, Any] | None = None,
     hidden_counts: Literal["ask", "accept"] = "ask",
 ) -> tuple[dict[str, Any], engine.AnalysisResult | None, list[str]]:
-    """Run a lens as :func:`run_lens_on_counts` does, and keep what it made.
+    """Run an analysis as :func:`run_analysis_on_counts` does, and keep what it made.
 
     Returns:
-        The answer, then the lens result when the status is ``ok`` (``None``
+        The answer, then the analysis result when the status is ``ok`` (``None``
         otherwise), then the input values the answer must not repeat. The
         server draws the map from the result, which holds the rows the answer
         leaves out, so the result itself must never be sent to an assistant.
     """
     try:
-        info = engine.describe_analysis(lens_id).to_dict()
+        info = engine.describe_analysis(analysis_id).to_dict()
     except KeyError:
-        known = [lens.id for lens in engine.list_analyses()]
+        known = [analysis.id for analysis in engine.list_analyses()]
         unknown = {
-            "status": "unknown_lens",
-            "message": "There is no lens with that id.",
-            "known_lenses": known,
+            "status": "unknown_analysis",
+            "message": "There is no analysis with that id.",
+            "known_analyses": known,
         }
         return unknown, None, []
     if not _count_modes(info):
@@ -214,7 +217,7 @@ def run_and_keep_result(
     counts = _with_amounts_as_numbers(info, counts)
     guarded = _guarded_values(info, counts)
     try:
-        result = engine.run_analysis(lens_id, counts, options=options or {})
+        result = engine.run_analysis(analysis_id, counts, options=options or {})
     except engine.AnalysisInputError as error:
         refused = ensure_totals_only(_input_problem(error.problems), guarded)
         return refused, None, []
@@ -278,7 +281,7 @@ def _rows_left_out(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _count_problems(info: dict[str, Any], counts: object) -> list[str]:
-    """What is wrong with ``counts`` for this lens, without repeating values."""
+    """What is wrong with ``counts`` for this analysis, without repeating values."""
     modes = _count_modes(info)
     if not isinstance(counts, list) or not counts:
         return ["Pass at least one row of counts."]
@@ -298,7 +301,7 @@ def _count_problems(info: dict[str, Any], counts: object) -> list[str]:
 
 
 def _count_modes(info: dict[str, Any]) -> list[dict[str, Any]]:
-    """The input modes of a lens that take already-totalled data."""
+    """The input modes of an analysis that take already-totalled data."""
     return [mode for mode in info.get("input_modes", []) if mode.get("aggregated")]
 
 
@@ -325,7 +328,7 @@ def _with_amounts_as_numbers(
 
 
 def _amount_roles(info: dict[str, Any]) -> set[str]:
-    """The roles the lens marks as holding an amount, such as a count."""
+    """The roles the analysis marks as holding an amount, such as a count."""
     return {role["name"] for role in info.get("roles", []) if role.get("amount")}
 
 
@@ -352,7 +355,7 @@ def _guarded_values(info: dict[str, Any], counts: list[dict[str, Any]]) -> list[
 def _may_come_back(role: dict[str, Any], value: str) -> bool:
     """Whether a result may repeat ``value``, given in a column with this role.
 
-    Only a role the lens marks ``reported`` holds names the result uses too.
+    Only a role the analysis marks ``reported`` holds names the result uses too.
     When the role lists ``reported_values``, such as the census ethnic groups,
     only those values may come back and a charity's own label is still
     guarded. When it lists none, such as for local authorities, every value
@@ -369,10 +372,10 @@ def _input_problem(problems: list[str]) -> dict[str, Any]:
     return {"status": "input_problem", "problems": problems}
 
 
-def _score(lens: dict[str, Any], words: set[str]) -> int:
-    """How many of ``words`` appear in a lens description."""
+def _score(analysis: dict[str, Any], words: set[str]) -> int:
+    """How many of ``words`` appear in an analysis description."""
     text = " ".join(
-        str(lens.get(field, ""))
+        str(analysis.get(field, ""))
         for field in ("id", "title", "question", "summary", "coverage")
     )
     return len(words & _words(text))

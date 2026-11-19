@@ -12,7 +12,7 @@ from mcp import Client  # noqa: E402
 
 from uk_open_data.connector import PrivacyError, build_server, command  # noqa: E402
 
-TOOLS = {"find_lens", "describe_place", "run_lens_on_counts"}
+TOOLS = {"find_analysis", "describe_place", "run_analysis_on_counts"}
 
 
 def _tools() -> dict[str, dict[str, Any]]:
@@ -56,9 +56,9 @@ def test_every_tool_is_marked_read_only() -> None:
 def test_only_tools_that_read_open_data_are_open_world() -> None:
     tools = _tools()
 
-    assert tools["find_lens"]["annotations"]["openWorldHint"] is False
+    assert tools["find_analysis"]["annotations"]["openWorldHint"] is False
     assert tools["describe_place"]["annotations"]["openWorldHint"] is True
-    assert tools["run_lens_on_counts"]["annotations"]["openWorldHint"] is True
+    assert tools["run_analysis_on_counts"]["annotations"]["openWorldHint"] is True
 
 
 def test_every_argument_is_described() -> None:
@@ -68,7 +68,7 @@ def test_every_argument_is_described() -> None:
 
 
 def test_the_run_tool_asks_before_hiding_counts_unless_told_to_accept() -> None:
-    hidden_counts = _tools()["run_lens_on_counts"]["inputSchema"]["properties"][
+    hidden_counts = _tools()["run_analysis_on_counts"]["inputSchema"]["properties"][
         "hidden_counts"
     ]
 
@@ -82,10 +82,10 @@ def test_a_run_that_would_hide_counts_is_held_back_through_the_server() -> None:
         {"lsoa_code": "E01000001", "count": 3},
         {"lsoa_code": "E01000002", "count": 30},
     ]
-    arguments = {"lens_id": "reach-deprivation", "counts": counts}
+    arguments = {"analysis_id": "reach-deprivation", "counts": counts}
 
-    asked = _call("run_lens_on_counts", arguments)
-    accepted = _call("run_lens_on_counts", {**arguments, "hidden_counts": "accept"})
+    asked = _call("run_analysis_on_counts", arguments)
+    accepted = _call("run_analysis_on_counts", {**arguments, "hidden_counts": "accept"})
 
     assert asked["isError"] is False
     assert asked["structuredContent"]["status"] == "would_hide_counts"
@@ -102,10 +102,10 @@ def test_describe_place_through_the_server() -> None:
     assert json.loads(reply["content"][0]["text"]) == reply["structuredContent"]
 
 
-def test_find_lens_through_the_server() -> None:
-    reply = _call("find_lens", {"query": "deprived neighbourhoods"})
+def test_find_analysis_through_the_server() -> None:
+    reply = _call("find_analysis", {"query": "deprived neighbourhoods"})
 
-    assert reply["structuredContent"]["lenses"][0]["id"] == "reach-deprivation"
+    assert reply["structuredContent"]["analyses"][0]["id"] == "reach-deprivation"
 
 
 def test_argument_errors_name_the_argument_only() -> None:
@@ -118,14 +118,14 @@ def test_argument_errors_name_the_argument_only() -> None:
 
 
 def test_missing_argument_is_named() -> None:
-    reply = _call("run_lens_on_counts", {"counts": [{"lsoa_code": "E01000001"}]})
+    reply = _call("run_analysis_on_counts", {"counts": [{"lsoa_code": "E01000001"}]})
 
     assert reply["content"][0]["text"] == (
-        "The arguments for run_lens_on_counts did not fit: lens_id: missing."
+        "The arguments for run_analysis_on_counts did not fit: analysis_id: missing."
     )
 
 
-# An error text of the kind a lens or a download can raise: it quotes a web
+# An error text of the kind an analysis or a download can raise: it quotes a web
 # address and a value from the rows.
 CRASH_TEXT = "could not read https://example.invalid/?geography=ZZ999KC for 'Zebedee'"
 
@@ -134,8 +134,11 @@ CRASH_TEXT = "could not read https://example.invalid/?geography=ZZ999KC for 'Zeb
     ("tool", "arguments", "target"),
     [
         (
-            "run_lens_on_counts",
-            {"lens_id": "reach-deprivation", "counts": [{"lsoa_code": "E01000001"}]},
+            "run_analysis_on_counts",
+            {
+                "analysis_id": "reach-deprivation",
+                "counts": [{"lsoa_code": "E01000001"}],
+            },
             "uk_open_data.connector.server.run_and_keep_result",
         ),
         (
@@ -197,9 +200,9 @@ def test_the_guards_own_message_is_kept_in_the_log(
 
     monkeypatch.setattr("uk_open_data.connector.server.run_and_keep_result", withheld)
 
-    reply = _call("run_lens_on_counts", {"lens_id": "x", "counts": [{"a": 1}]})
+    reply = _call("run_analysis_on_counts", {"analysis_id": "x", "counts": [{"a": 1}]})
 
-    assert reply["content"][0]["text"] == "Error executing tool run_lens_on_counts"
+    assert reply["content"][0]["text"] == "Error executing tool run_analysis_on_counts"
     assert "stopped with PrivacyError: A value from the input rows" in caplog.text
 
 
