@@ -905,6 +905,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="run_lens_on_counts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-counts-would-be-hidden" class="md-nav__link">
+    <span class="md-ellipsis">
+      When counts would be hidden
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
       </ul>
@@ -1172,6 +1187,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="run_lens_on_counts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-counts-would-be-hidden" class="md-nav__link">
+    <span class="md-ellipsis">
+      When counts would be hidden
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
       </ul>
@@ -1265,6 +1295,10 @@ assistant then ends in <code>/mcp</code>:</p>
 <h3 id="find_lens"><code>find_lens</code></h3>
 <p><code>query</code> is the question in the person's words, or left out to list every lens.
 The answer holds each lens description, best match first.</p>
+<p>A lens that takes no totals cannot run in a chat. <code>needs_rows</code> in the answer
+names the listed lenses of that kind and says where they can run. The access
+and distance lens is one: it needs a row per site that says where the site
+is.</p>
 <h3 id="describe_place"><code>describe_place</code></h3>
 <p><code>place</code> is a local authority name or code, a 2021 LSOA code or a postcode
 district such as <code>SE13</code>.</p>
@@ -1369,9 +1403,38 @@ many rows to correct.</p>
 <span class="n">answer</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;figures&quot;</span><span class="p">]</span>   <span class="c1"># headline figures, small counts hidden</span>
 <span class="n">answer</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;tables&quot;</span><span class="p">]</span>    <span class="c1"># the places to look at first</span>
 </code></pre></div>
-<p><code>status</code> is <code>ok</code>, <code>input_problem</code> (<code>problems</code> lists what to fix, for example
-an option the lens needs), <code>unknown_lens</code> or <code>unavailable</code> (a data source the
-lens needs could not be reached).</p>
+<p><code>status</code> is <code>ok</code>, <code>would_hide_counts</code>, <code>input_problem</code> (<code>problems</code> lists what
+to fix, for example an option the lens needs), <code>needs_rows</code>, <code>unknown_lens</code> or
+<code>unavailable</code> (a data source the lens needs could not be reached).</p>
+<p><code>needs_rows</code> is the answer for a lens that takes no totals, such as the access
+and distance lens, whatever rows are passed. Its message says the lens cannot
+run in a chat, because it needs a row for each site and this tool takes totals
+only, and that it runs on the lens page or with the command line tool.</p>
+<h4 id="when-counts-would-be-hidden">When counts would be hidden</h4>
+<p>A lens hides a count from 1 to 4, and where it hides one count in a table it
+hides a second, so the first cannot be worked out from the total. In a chat
+that second count can be a number the person has just typed, which reads as a
+fault. So when the answer would hide any figure or table row, the first call
+holds it back and says so:</p>
+<div class="highlight"><pre><span></span><code><span class="n">answer</span> <span class="o">=</span> <span class="n">run_lens_on_counts</span><span class="p">(</span>
+    <span class="s2">&quot;reach-deprivation&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;lsoa_code&quot;</span><span class="p">:</span> <span class="s2">&quot;E01003189&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;lsoa_code&quot;</span><span class="p">:</span> <span class="s2">&quot;E01003190&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">answer</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>       <span class="c1"># &quot;would_hide_counts&quot;</span>
+<span class="n">answer</span><span class="p">[</span><span class="s2">&quot;would_hide&quot;</span><span class="p">]</span>   <span class="c1"># {&quot;figures_and_rows&quot;: 3, &quot;counts_below&quot;: 5}</span>
+<span class="n">answer</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">]</span>      <span class="c1"># combine the small counts first, or run as it is</span>
+</code></pre></div>
+<p>The answer holds no figure from the run and nothing from the rows. The person
+then chooses. They can add each small count to a neighbouring area's count, or
+to a broader group's, and send the rows again, saying with the figures which
+rows were combined. Or they can take the result with those counts hidden:</p>
+<div class="highlight"><pre><span></span><code><span class="n">answer</span> <span class="o">=</span> <span class="n">run_lens_on_counts</span><span class="p">(</span><span class="n">lens_id</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">hidden_counts</span><span class="o">=</span><span class="s2">&quot;accept&quot;</span><span class="p">)</span>
+<span class="n">answer</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>       <span class="c1"># &quot;ok&quot;</span>
+</code></pre></div>
+<p>A lens that hides nothing, such as the provision gap lens, never asks.</p>
 <p>When you host the connector, keep the public figures three of the lenses
 compare with on the server when the image is built, so a run does not wait on
 Nomis: <code>uk_open_data.analyses.need_reach.download_need_figures</code> for the need against
