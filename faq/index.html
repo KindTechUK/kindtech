@@ -932,13 +932,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#does-kindtech-still-need-to-be-registered-on-pypi" class="md-nav__link">
+  <a href="#which-projects-on-pypi-does-a-release-publish" class="md-nav__link">
     <span class="md-ellipsis">
-      Does KindTech still need to be registered on PyPI?
+      Which projects on PyPI does a release publish?
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Does KindTech still need to be registered on PyPI?">
+    <nav class="md-nav" aria-label="Which projects on PyPI does a release publish?">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1141,13 +1141,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#does-kindtech-still-need-to-be-registered-on-pypi" class="md-nav__link">
+  <a href="#which-projects-on-pypi-does-a-release-publish" class="md-nav__link">
     <span class="md-ellipsis">
-      Does KindTech still need to be registered on PyPI?
+      Which projects on PyPI does a release publish?
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Does KindTech still need to be registered on PyPI?">
+    <nav class="md-nav" aria-label="Which projects on PyPI does a release publish?">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1195,9 +1195,12 @@ and release.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_geodata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.ons</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_ons</span>
 </code></pre></div>
-<p>The package was called <code>kindtech</code> up to version 0.1. Code that imports
-<code>kindtech</code> still works and gives a deprecation warning: <code>kindtech.geo</code> is the
-same module as <code>uk_open_data.geo</code>.</p>
+<p>The package was called <code>kindtech</code> up to version 0.1. The <code>kindtech</code> project on
+PyPI is kept for that name: installing or upgrading it installs the same
+version of <code>uk-open-data</code>, and code that imports <code>kindtech</code> still works and
+gives a deprecation warning. <code>kindtech.geo</code> is the same module as
+<code>uk_open_data.geo</code>. Installing <code>uk-open-data</code> alone does not add the old import
+name.</p>
 <p>New modules can be added under <code>src/uk_open_data/&lt;name&gt;/</code> and included in future
 <code>uk-open-data</code> releases. Because they remain inside the same distribution, they do
 not need separate PyPI registrations. Add tests and API documentation alongside
@@ -1211,20 +1214,30 @@ each new module, and include any bundled data in the package configuration.</p>
 <p>Check the package configuration and tagged source tree when the package layout
 changes or a new release adds modules.</p>
 <p><em>Created: 2026-09-20 · Updated: 2026-09-20 · Verified: 2026-09-20 · Scope/version: 0.1.0</em></p>
-<h2 id="does-kindtech-still-need-to-be-registered-on-pypi">Does KindTech still need to be registered on PyPI?</h2>
-<p><strong>Short answer:</strong> No. <a href="https://pypi.org/project/kindtech/0.1.0/">KindTech 0.1.0 is published on PyPI</a>.
-Its first successful Trusted Publishing run created the project.</p>
-<p>Future releases use the existing GitHub workflow and PyPI publisher. Update the
-package version, complete the release checks, and push the corresponding <code>v*</code>
-tag when the release is approved. The workflow checks that the tag and package
-version match before publishing the wheel and source distribution.</p>
+<h2 id="which-projects-on-pypi-does-a-release-publish">Which projects on PyPI does a release publish?</h2>
+<p><strong>Short answer:</strong> Two, from one tag. <code>uk-open-data</code> is the package.
+<a href="https://pypi.org/project/kindtech/"><code>kindtech</code></a> is its old name: a small
+distribution that depends on the same version of <code>uk-open-data</code> and holds the
+<code>kindtech</code> import name.</p>
+<p>Both use Trusted Publishing from the release workflow, so each project on PyPI
+needs its own trusted publisher that names this repository, the workflow file
+<code>release.yml</code> and the environment <code>pypi</code>. For <code>uk-open-data</code>, a pending
+publisher creates the project on the first release. <code>kindtech</code> was created by
+the 0.1.0 release and needs a publisher that names the repository as it is
+called now.</p>
+<p>To release, set the same version in <code>pyproject.toml</code> and in
+<code>packaging/kindtech/pyproject.toml</code> (twice there: its own version and the
+version of <code>uk-open-data</code> it depends on), complete the release checks, and push
+the matching <code>v*</code> tag when the release is approved. The workflow checks that
+the tag and both versions match, publishes <code>uk-open-data</code>, then <code>kindtech</code>.</p>
 <h3 id="sources_1">Sources</h3>
 <ul>
-<li><a href="https://github.com/KindTechUK/uk-open-data/actions/runs/35527839991">Successful first release</a>: the build and Trusted Publishing run.</li>
-<li><a href="https://github.com/KindTechUK/uk-open-data/blob/v0.1.0/.github/workflows/release.yml">Release workflow</a>: tag/version checks and publication steps.</li>
+<li><a href="https://github.com/KindTechUK/uk-open-data/blob/main/.github/workflows/release.yml">Release workflow</a>: the checks and the two publishing jobs.</li>
+<li><a href="https://github.com/KindTechUK/uk-open-data/tree/main/packaging/kindtech">The old name's package</a>: what the <code>kindtech</code> distribution holds.</li>
+<li><a href="https://pypi.org/project/kindtech/0.1.0/">First release, 0.1.0</a>: published as <code>kindtech</code>.</li>
 </ul>
-<p>Recheck the PyPI project and workflow configuration before a future release.</p>
-<p><em>Created: 2026-09-20 · Updated: 2026-09-20 · Verified: 2026-09-20 · Scope/version: 0.1.0</em></p>
+<p>Recheck the two PyPI projects and their publishers before a release.</p>
+<p><em>Created: 2026-09-20 · Updated: 2026-11-19 · Verified: 2026-11-19 (builds and installs; no release has run yet) · Scope/version: 0.2</em></p>
         <div id="llms-copy-button" style="position: fixed; z-index: 1100; top: 80px; right: 20px;">
             <button onclick="copyMarkdownToClipboard()" style="cursor: pointer; background: #007acc; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Copy Markdown</button>
         </div>
