@@ -141,8 +141,8 @@ All entries are kept in the catalog. No skip lists, no manual curation.
 
 ### Geo ingestion
 
-Parses ~3,700 ArcGIS services down to **615 boundary datasets** across **24
-geography types**, spanning 1921-2025. Stdlib-only (`csv`, `re`, `requests`).
+Parses ~2,500 ArcGIS services down to **654 boundary datasets** across **24
+geography types**, spanning 1921-2026. Stdlib-only (`csv`, `re`, `requests`).
 
 ```bash
 uv run python -m kindtech.geo._ingestion
@@ -502,7 +502,7 @@ column:
 from kindtech import load_geodata, load_ons, geodata_to_properties
 import pandas as pd
 
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
 ons_df = load_ons("population", geography_type="LAD", time="latest")
 merged = geo_df.merge(ons_df, on="geography_code")
@@ -556,7 +556,7 @@ boundaries (maps), the other provides statistical tables (numbers).
 │                              │                                      │
 │  Output:                     │  uv run python -m                     │
 │  geo/data/arcgis_services.csv│    kindtech.ons._ingestion            │
-│  (615 boundary datasets)     │                                      │
+│  (654 boundary datasets)     │                                      │
 │                              │                                      │
 │  uv run python -m            │                                      │
 │    kindtech.geo._ingestion   │                                      │

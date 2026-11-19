@@ -128,7 +128,7 @@ Extract feature properties from GeoJSON with normalised column names for easy jo
 from kindtech import load_geodata, geodata_to_properties
 import pandas as pd
 
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 rows = geodata_to_properties(geojson, "LAD", 2024)
 geo_df = pd.DataFrame(rows)
 # geo_df has 'geography_code' and 'geography_name' columns
@@ -157,7 +157,7 @@ The normalised `geography_code` column matches the column produced by `load_ons(
 from kindtech import load_geodata, load_ons, geodata_to_properties
 import pandas as pd
 
-geojson = load_geodata(geography_type="LAD")
+geojson = load_geodata(geography_type="LAD", year="2024")
 geo_df = pd.DataFrame(geodata_to_properties(geojson, "LAD", 2024))
 ons_df = load_ons("population", geography_type="LAD", time="latest")
 merged = geo_df.merge(ons_df, on="geography_code")
@@ -165,7 +165,7 @@ merged = geo_df.merge(ons_df, on="geography_code")
 
 ## How it works
 
-1. The bundled CSV catalog (`geo/data/arcgis_services.csv`, 615 services across 24 geography types) maps geography type + year + coverage + boundary to an ArcGIS service ID
+1. The bundled CSV catalog (`geo/data/arcgis_services.csv`, 654 services across 24 geography types) maps geography type + year + coverage + boundary to an ArcGIS service ID
 2. `load_geodata()` finds the best matching service (most recent year if not specified)
 3. Queries the ArcGIS FeatureServer REST API for GeoJSON
 4. Returns the raw GeoJSON FeatureCollection
