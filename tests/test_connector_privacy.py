@@ -341,6 +341,7 @@ class TestGuard:
         "payload",
         [
             {"warnings": ["Postcode se137vc was not found"]},
+            {"answer": "Most of your people live near SE13 7VC."},
             {"tables": [{"rows": [{"area": "SE13 7VC", "people": 1}]}]},
             {"figures": {"SE13 7VC": 1}},
         ],

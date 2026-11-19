@@ -46,6 +46,9 @@ Rules for using these tools:
 - Totals, never rows. Do not pass rows about individual people (one postcode, \
 name or case per row) to any tool, and do not ask the person to paste them \
 into the chat. Ask for counts that are already totalled by area or by group.
+- Open with the answer. A result holds an answer sentence written by the \
+analysis. Begin your reply with it in its exact words, then give the key \
+figures it names.
 - Show the checks and caveats that come back next to the figures. The checks \
 are questions for the person. Do not answer them on the person's behalf.
 - Say where each figure comes from, using the sources in the result.
@@ -240,8 +243,10 @@ def run_analysis_handler(
     ) -> Annotated[CallToolResult, dict[str, Any]]:
         """Run an analysis on counts that are already totalled by area or by group.
 
-        Returns headline figures, summary tables, the working, the choices the
-        analysis made, checks for the person to confirm, caveats and sources. Show the
+        Returns an answer sentence, headline figures, summary tables, the
+        working, the choices the analysis made, checks for the person to
+        confirm, caveats and sources. Open your reply with result.answer in its
+        exact words, then the figures named in result.key_figures. Show the
         checks and caveats with the figures and do not answer the checks for the
         person. Rows about individuals are refused. Small counts are hidden, and
         a second count with them. If the status is 'would_hide_counts', nothing
