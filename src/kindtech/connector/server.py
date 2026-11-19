@@ -190,7 +190,9 @@ def handle_run_lens_on_counts(
     Returns headline figures, summary tables, the working, the choices the
     lens made, checks for the person to confirm, caveats and sources. Small
     counts are hidden. Show the checks and caveats with the figures and do not
-    answer the checks for the person. Rows about individuals are refused. If
+    answer the checks for the person. Rows about individuals are refused. A
+    table named under 'rows_left_out' is not empty: its rows are for a map or
+    a download and are left out of the answer. If
     the status is 'unavailable', a data source could not be reached: say so
     and try again later.
     """
