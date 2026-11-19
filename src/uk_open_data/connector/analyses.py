@@ -227,8 +227,8 @@ def run_and_keep_result(
     try:
         result = engine.run_analysis(analysis_id, counts, options=options or {})
     except engine.AnalysisInputError as error:
-        refused = ensure_totals_only(_input_problem(error.problems), guarded)
-        return refused, None, []
+        problem = _input_problem(error.problems, error.option, error.role)
+        return ensure_totals_only(problem, guarded), None, []
     except requests.RequestException as error:
         # The error text can hold a web address, so only its kind is logged.
         logger.warning("A data source could not be reached: %s", type(error).__name__)
@@ -393,9 +393,21 @@ def _may_come_back(role: dict[str, Any], value: str) -> bool:
     return not listed or value.strip().casefold() in listed
 
 
-def _input_problem(problems: list[str]) -> dict[str, Any]:
-    """An answer that tells the person what to fix."""
-    return {"status": "input_problem", "problems": problems}
+def _input_problem(
+    problems: list[str], option: str | None = None, role: str | None = None
+) -> dict[str, Any]:
+    """An answer that tells the person what to fix.
+
+    The sentences name an option by the label a person reads. ``option`` and
+    ``role`` are the code names an assistant passes, given when the analysis
+    says which one the problem is about, so it need not match words.
+    """
+    answer: dict[str, Any] = {"status": "input_problem", "problems": problems}
+    if option:
+        answer["option"] = option
+    if role:
+        answer["role"] = role
+    return answer
 
 
 def _score(analysis: dict[str, Any], words: set[str]) -> int:

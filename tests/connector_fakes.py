@@ -184,9 +184,17 @@ def outcode_frame(admin_districts: str | None) -> pd.DataFrame:
 class AnalysisInputError(ValueError):
     """The fake engine's input error, with ``problems`` like the real one."""
 
-    def __init__(self, problems: list[str]) -> None:
+    def __init__(
+        self,
+        problems: list[str],
+        *,
+        option: str | None = None,
+        role: str | None = None,
+    ) -> None:
         super().__init__(" ".join(problems))
         self.problems = problems
+        self.option = option
+        self.role = role
 
 
 REACH = {
@@ -340,7 +348,9 @@ def fake_engine(*, leak: bool = False) -> SimpleNamespace:
         options: dict[str, Any] | None = None,
     ) -> SimpleNamespace:
         if any(not isinstance(row["count"], int) for row in data):
-            raise AnalysisInputError(["Some counts are not whole numbers."])
+            raise AnalysisInputError(
+                ["Some counts are not whole numbers."], role="count"
+            )
         total = sum(row["count"] for row in data)
         area = next(value for value in data[0].values() if isinstance(value, str))
         warnings = [f"{area} looks unusual"] if leak else []

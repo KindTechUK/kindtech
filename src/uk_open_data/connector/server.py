@@ -229,10 +229,12 @@ def run_analysis_handler(
         options: Annotated[
             dict[str, Any] | None,
             Field(
-                description="Analysis options to change, as listed by "
-                "find_analysis. Leave out to use the defaults. Where an "
-                "analysis needs one, such as "
-                "'catchment' (the area the charity serves), ask the person for it."
+                description="Analysis options to change, keyed by the option "
+                "names find_analysis lists. Leave out to use the defaults. "
+                "Where an analysis needs one, such as 'catchment' (the area "
+                "you serve), ask the person for it. A message names an option "
+                "by its label in quotes, such as 'Area you serve'; "
+                "find_analysis gives the label beside each name."
             ),
         ] = None,
         hidden_counts: Annotated[
@@ -260,8 +262,10 @@ def run_analysis_handler(
         are left out of the answer. Where the answer has 'map', a picture of
         the result's map was drawn for the person or its note says why not;
         you are not given the picture, so do not describe it. If the status is
-        'unavailable', a data source could not be reached: say so and try
-        again later.
+        'input_problem', show the person the problems as they are; 'option'
+        or 'role', when given, is the name of the option or the column to
+        change. If the status is 'unavailable', a data source could not be
+        reached: say so and try again later.
         """
         answer, result, guarded = run_and_keep_result(
             analysis_id, counts, options, hidden_counts
