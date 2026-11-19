@@ -21,7 +21,15 @@ from uk_open_data._kept import kept_file, read_kept, write_kept
 from uk_open_data.analyses._inputs import is_blank
 from uk_open_data.analyses._labels import said
 from uk_open_data.analyses._model import AnalysisInputError, Source, Step
-from uk_open_data.analyses._steps import COUNTRIES, EVERYWHERE, Trail, named_areas
+from uk_open_data.analyses._steps import (
+    COUNTRIES,
+    EVERYWHERE,
+    HOW_TO_NAME_A_PLACE,
+    Trail,
+    named_areas,
+    plural,
+    where_rows,
+)
 from uk_open_data.analyses.sources import nomis_table
 from uk_open_data.ons import load_ons
 
@@ -200,6 +208,15 @@ def _custom_measure(wanted: Mapping[str, Any]) -> Measure:
             "The need figures are the latest that Nomis holds for the table "
             "you chose. Check that their date suits your data."
         ),
+    )
+
+
+def not_listed_rows(positions: list[int]) -> str:
+    """Say which rows name a local authority that the need figures do not list."""
+    return (
+        f"{plural(len(positions), 'row')} named a local authority that the "
+        f"need figures do not list: {where_rows(positions)}. "
+        f"{HOW_TO_NAME_A_PLACE}"
     )
 
 

@@ -519,15 +519,39 @@ def test_rows_that_cannot_be_placed_are_counted_not_named(nomis):
     assert result.figure("people_supplied").value == 69
     assert result.figure("people_located").value == 60
     assert "2 rows had no local authority." in result.warnings
-    assert any(w.startswith("1 rows named a local authority") for w in result.warnings)
+    flag = (
+        "1 row named a local authority that the need figures do not list: "
+        "row 2, counting from the first row of data. Write each council's name"
+    )
+    assert any(w.startswith(flag) for w in result.warnings)
     assert any(w.startswith("9 people were placed outside") for w in result.warnings)
     assert "Atlantis" not in json.dumps(result.to_dict())
 
 
 def test_bad_counts_are_an_input_error(nomis):
     rows = [*_counts(Lewisham=60), {"Area": "Adur", "Clients": "a few"}]
-    with pytest.raises(AnalysisInputError, match="1 rows have a count"):
+    with pytest.raises(AnalysisInputError) as raised:
         _run(rows)
+    assert str(raised.value) == (
+        "1 row had a count that is not a whole number of zero or more: row 2, "
+        "counting from the first row of data. Correct them and run the "
+        "analysis again."
+    )
+    assert raised.value.role == "count"
+
+
+def test_many_rows_that_name_no_place_are_counted_after_the_first_five(nomis):
+    rows = [
+        *_counts(Lewisham=60),
+        *({"Area": f"Nowhere {n}", "Clients": 1} for n in range(8)),
+    ]
+    result = _run(rows)
+    flag = (
+        "8 rows named a local authority that the need figures do not list: "
+        "rows 2, 3, 4, 5, 6 and 3 more, counting from the first row of data."
+    )
+    assert any(w.startswith(flag) for w in result.warnings)
+    assert "Nowhere" not in json.dumps(result.to_dict())
 
 
 def test_too_few_people_is_an_input_error(nomis):
@@ -544,7 +568,8 @@ def test_a_place_that_is_not_listed_is_the_reason_given_not_too_few_people(nomis
         "200 people are in a place the need figures do not list, or outside "
         "England and Wales, so too few are left to give figures."
     )
-    assert "named as Nomis names it, or given by its code" in message
+    assert "for example Lewisham, or give its code, for example E09000023" in message
+    assert "Nomis" not in message
     assert "Fewer than" not in message
     assert "Lewsham" not in message  # the place as typed is not repeated
 

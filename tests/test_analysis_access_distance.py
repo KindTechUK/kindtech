@@ -429,10 +429,10 @@ def test_site_postcodes_are_placed_online_and_the_result_says_so(kept):
     assert choice.option == "postcode_lookup"
     assert "No postcode table is installed" in choice.reason
     assert not any("centre of its neighbourhood" in c for c in result.caveats)
-    assert any(w.startswith("1 rows had no postcode") for w in result.warnings)
-    assert any(w.startswith("1 rows held something") for w in result.warnings)
+    assert any(w.startswith("1 row had no postcode") for w in result.warnings)
+    assert any(w.startswith("1 row held something") for w in result.warnings)
     assert any(
-        w.startswith("1 rows had a postcode that was not") for w in result.warnings
+        w.startswith("1 row had a postcode that was not") for w in result.warnings
     )
 
 
@@ -551,7 +551,7 @@ def test_site_postcodes_stay_on_this_machine(kept, table, neighbourhoods, how):
     assert (step.rows_in, step.rows_out) == (4, 3)
     assert any("centre of its neighbourhood" in c for c in result.caveats)
     assert any(
-        w.startswith("1 rows had a postcode that was not found")
+        w.startswith("1 row had a postcode that was not found")
         and "outside England and Wales" in w
         for w in result.warnings
     )
@@ -571,8 +571,7 @@ def test_a_neighbourhood_without_a_centre_is_counted_as_not_found(
     assert result.figure("sites_supplied").value == 2
     assert result.figure("sites_located").value == 1
     assert any(
-        w.startswith("1 rows had a postcode that was not found")
-        for w in result.warnings
+        w.startswith("1 row had a postcode that was not found") for w in result.warnings
     )
 
 

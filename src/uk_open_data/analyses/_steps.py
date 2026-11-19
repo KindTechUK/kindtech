@@ -45,11 +45,16 @@ COUNTRIES = {"england": "E", "wales": "W"}
 # A latitude and a longitude, in degrees.
 Position = tuple[float, float]
 
+NOT_A_COUNT = "a count that is not a whole number of zero or more"
+
 # How to write a local authority so that it is found.
 HOW_TO_NAME_A_PLACE = (
     "Write each council's name as the Office for National Statistics does, for "
     "example Lewisham, or give its code, for example E09000023."
 )
+
+# How many rows a message points at before it counts the rest.
+ROWS_NAMED = 5
 
 SUPPRESS_BELOW = Option(
     name="suppress_below",
@@ -109,6 +114,39 @@ class Trail:
     sources: list[Source] = field(default_factory=list)
     choices: list[Choice] = field(default_factory=list)
     hidden: int = 0
+
+
+# --- words for counts and rows ---------------------------------------------
+
+
+def plural(count: int, one: str) -> str:
+    """Say a count with its noun: "1 row", "3 rows"."""
+    return f"{count} {one}" if count == 1 else f"{count} {one}s"
+
+
+def where_rows(positions: list[int]) -> str:
+    """Say which rows of the data are meant, so a person can find them.
+
+    A position says where a row is and nothing about what it holds. The first
+    row of data is row 1, whatever headings sit above it.
+    """
+    shown = [str(position) for position in positions[:ROWS_NAMED]]
+    more = len(positions) - len(shown)
+    if more:
+        listed = f"rows {', '.join(shown)} and {more} more"
+    elif len(shown) == 1:
+        listed = f"row {shown[0]}"
+    else:
+        listed = f"rows {', '.join(shown[:-1])} and {shown[-1]}"
+    return f"{listed}, counting from the first row of data"
+
+
+def bad_counts(positions: list[int], what: str) -> str:
+    """Say which rows hold a count or volume that cannot be added up."""
+    return (
+        f"{plural(len(positions), 'row')} had {what}: {where_rows(positions)}. "
+        "Correct them and run the analysis again."
+    )
 
 
 # --- options ---------------------------------------------------------------
@@ -459,20 +497,21 @@ def warn_left_out(
 ) -> None:
     """Add a warning for each kind of row that could not be used."""
     if blank:
-        trail.warnings.append(f"{blank} rows had no postcode.")
+        trail.warnings.append(f"{plural(blank, 'row')} had no postcode.")
     if malformed:
         trail.warnings.append(
-            f"{malformed} rows held something that is not shaped like a UK postcode."
+            f"{plural(malformed, 'row')} held something that is not shaped "
+            "like a UK postcode."
         )
     if not_found and use_table:
         trail.warnings.append(
-            f"{not_found} rows had a postcode that was not found. It may be "
-            "mistyped, or outside England and Wales."
+            f"{plural(not_found, 'row')} had a postcode that was not found. "
+            "It may be mistyped, or outside England and Wales."
         )
     elif not_found:
         trail.warnings.append(
-            f"{not_found} rows had a postcode that was not found. It may be "
-            "mistyped or no longer in use."
+            f"{plural(not_found, 'row')} had a postcode that was not found. "
+            "It may be mistyped or no longer in use."
         )
 
 
@@ -486,23 +525,19 @@ def count_by_neighbourhood(
     """
     totals: Counter[str] = Counter()
     blank = 0
-    bad = 0
-    for code, raw in zip(codes, counts, strict=True):
+    bad: list[int] = []
+    for row, (code, raw) in enumerate(zip(codes, counts, strict=True), start=1):
         count = to_count(raw)
         if is_blank(code):
             blank += 1
         elif count is None:
-            bad += 1
+            bad.append(row)
         else:
             totals[str(code).strip().upper()] += count
     if bad:
-        msg = (
-            f"{bad} rows have a count that is not a whole number of zero or "
-            "more. Correct those rows and run the analysis again."
-        )
-        raise AnalysisInputError(msg, role="count")
+        raise AnalysisInputError(bad_counts(bad, NOT_A_COUNT), role="count")
     if blank:
-        trail.warnings.append(f"{blank} rows had no neighbourhood code.")
+        trail.warnings.append(f"{plural(blank, 'row')} had no neighbourhood code.")
     supplied = sum(totals.values())
     trail.working.append(
         Step(

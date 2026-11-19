@@ -48,9 +48,11 @@ from uk_open_data.analyses._steps import (
     COUNTRIES,
     EVERYWHERE,
     LOCAL_AUTHORITY,
+    NOT_A_COUNT,
     POSTCODE_LOOKUP,
     SUPPRESS_BELOW,
     Trail,
+    bad_counts,
     named_areas,
     percent,
     place_postcodes,
@@ -680,13 +682,9 @@ def _known(characteristic: str) -> _Characteristic:
 def _weights(counts: list[Any]) -> list[int]:
     """Read the count column, so each row stands for that many people."""
     weights = [to_count(raw) for raw in counts]
-    bad = sum(1 for weight in weights if weight is None)
+    bad = [row for row, weight in enumerate(weights, start=1) if weight is None]
     if bad:
-        msg = (
-            f"{bad} rows have a count that is not a whole number of zero or "
-            "more. Correct those rows and run the analysis again."
-        )
-        raise AnalysisInputError(msg, role="count")
+        raise AnalysisInputError(bad_counts(bad, NOT_A_COUNT), role="count")
     return [weight or 0 for weight in weights]
 
 

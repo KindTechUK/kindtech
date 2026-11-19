@@ -64,6 +64,7 @@ from uk_open_data.analyses._need import (
     load_need,
     load_residents,
     need_per_1000,
+    not_listed_rows,
     read_measure,
     read_top,
 )
@@ -78,12 +79,16 @@ from uk_open_data.analyses._privacy import (
 )
 from uk_open_data.analyses._steps import (
     EVERYWHERE,
+    HOW_TO_NAME_A_PLACE,
     LOCAL_AUTHORITY,
+    NOT_A_COUNT,
     POSTCODE_LOOKUP,
     SUPPRESS_BELOW,
     Trail,
+    bad_counts,
     count_by_postcode,
     percent,
+    plural,
     read_min_share,
     read_threshold,
     use_postcode_table,
@@ -361,31 +366,28 @@ def _count_by_authority(
     by_key = {code.casefold(): code for code in authorities}
     by_key.update({area.name.casefold(): code for code, area in authorities.items()})
     totals: Counter[str] = Counter()
-    blank = bad = unknown = supplied = 0
-    for place, raw in zip(places, counts, strict=True):
+    blank = supplied = 0
+    bad: list[int] = []
+    not_listed: list[int] = []
+    for row, (place, raw) in enumerate(zip(places, counts, strict=True), start=1):
         count = to_count(raw)
         if is_blank(place):
             blank += 1
         elif count is None:
-            bad += 1
+            bad.append(row)
         else:
             supplied += count
             code = by_key.get(str(place).strip().casefold())
-            unknown += code is None
+            if code is None:
+                not_listed.append(row)
             totals[code or UNLISTED] += count
+    unknown = len(not_listed)
     if bad:
-        msg = (
-            f"{bad} rows have a count that is not a whole number of zero or "
-            "more. Correct those rows and run the analysis again."
-        )
-        raise AnalysisInputError(msg, role="count")
+        raise AnalysisInputError(bad_counts(bad, NOT_A_COUNT), role="count")
     if blank:
-        trail.warnings.append(f"{blank} rows had no local authority.")
+        trail.warnings.append(f"{plural(blank, 'row')} had no local authority.")
     if unknown:
-        trail.warnings.append(
-            f"{unknown} rows named a local authority that the need figures do "
-            "not list. Use the names or codes that Nomis uses."
-        )
+        trail.warnings.append(not_listed_rows(not_listed))
     trail.working.append(
         Step(
             title="Read the local authority counts",
@@ -446,8 +448,7 @@ def _too_few_placed(outside: int, threshold: int) -> str:
     return (
         f"{outside} people are in a place the need figures do not list, or "
         "outside England and Wales, so too few are left to give figures. "
-        "Check the places in your data: a local authority must be named as "
-        "Nomis names it, or given by its code."
+        f"Check the places in your data. {HOW_TO_NAME_A_PLACE}"
     )
 
 
