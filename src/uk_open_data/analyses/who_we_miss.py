@@ -21,6 +21,7 @@ import narwhals as nw
 
 import uk_open_data
 from uk_open_data._kept import kept_file, read_kept, write_kept
+from uk_open_data.analyses._answers import AREA, names
 from uk_open_data.analyses._inputs import is_blank, to_count
 from uk_open_data.analyses._model import (
     Analysis,
@@ -60,6 +61,7 @@ from uk_open_data.ons import load_ons
 
 ANALYSIS_ID = "who-we-miss"
 ANALYSIS_VERSION = "0.1"
+KEY_FIGURES = ("groups_under_represented", "people_matched", "residents")
 RESIDENTS_FOLDER = "residents"
 RESIDENTS_FILE_FORMAT = "kindtech-residents-1"
 # Nomis code for a count of people, as opposed to a percentage.
@@ -373,6 +375,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         sources=tuple(trail.sources),
         privacy=_privacy(threshold, trail),
         charts=(CHART,),
+        answer=_answer(rows),
+        key_figures=KEY_FIGURES,
     )
 
 
@@ -995,6 +999,36 @@ def _figures(
 
 
 # --- what the person needs to know -----------------------------------------
+
+
+def _answer(rows: list[dict[str, Any]]) -> str:
+    """Name the groups reached less than their share of residents."""
+    judged = [row for row in rows if row["under_represented"] is not None]
+    under = sorted(
+        (row for row in judged if row["under_represented"]),
+        key=lambda row: row["representation"],
+    )
+    against = f"Set against the people who live in {AREA}, you reach"
+    hidden = sum(1 for row in rows if row["suppressed"])
+    if not judged:
+        return (
+            f"No group can be set against the people who live in {AREA}: every "
+            "count is hidden."
+        )
+    if not under:
+        answer = f"{against} none of the {len(judged)} groups less than its share."
+    elif len(under) == 1:
+        answer = f"{against} one group less than its share: {under[0]['group']}."
+    else:
+        answer = (
+            f"{against} {len(under)} of the {len(judged)} groups less than their "
+            f"share: {names([row['group'] for row in under])}."
+        )
+    if hidden == 1:
+        answer += " One more group has a hidden count and is not judged."
+    elif hidden:
+        answer += f" {hidden} more groups have a hidden count and are not judged."
+    return answer
 
 
 def _choices(

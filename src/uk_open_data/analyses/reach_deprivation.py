@@ -15,6 +15,7 @@ from typing import Any
 import narwhals as nw
 
 import uk_open_data
+from uk_open_data.analyses._answers import AREA, HIDDEN, number, values
 from uk_open_data.analyses._inputs import is_blank
 from uk_open_data.analyses._model import (
     Analysis,
@@ -58,6 +59,11 @@ from uk_open_data.imd import imd_path, kept_imd_note, load_imd
 
 ANALYSIS_ID = "reach-deprivation"
 ANALYSIS_VERSION = "0.1"
+KEY_FIGURES = (
+    "share_most_deprived_20",
+    "catchment_share_most_deprived_20",
+    "reach_per_1000_most_deprived_20",
+)
 DECILES = tuple(range(1, 11))
 MOST_DEPRIVED = (0, 1)  # positions of deciles 1 and 2
 ELSEWHERE = tuple(range(2, 10))  # positions of deciles 3 to 10
@@ -252,6 +258,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         sources=tuple(trail.sources),
         privacy=_privacy(threshold, trail),
         charts=(DECILE_CHART,),
+        answer=_answer(figures),
+        key_figures=KEY_FIGURES,
     )
 
 
@@ -846,6 +854,33 @@ def _reach_figure(
 
 
 # --- what the person needs to know -----------------------------------------
+
+
+def _answer(figures: list[Figure]) -> str:
+    """Say whether the charity reaches the most deprived neighbourhoods."""
+    shown = values(figures)
+    ours = shown["share_most_deprived_20"]
+    theirs = shown["catchment_share_most_deprived_20"]
+    if not theirs:
+        return (
+            f"No neighbourhood in {AREA} is among the 20% most deprived in "
+            "England, so none of your people there live in one."
+        )
+    if ours is None:
+        return (
+            f"Of everyone who lives in {AREA}, {number(theirs)}% live in the 20% "
+            "most deprived neighbourhoods in England. The share of your people "
+            f"who do is {HIDDEN}."
+        )
+    verdict = "in line with"
+    if ours != theirs:
+        verdict = "more than" if ours > theirs else "less than"
+    return (
+        f"Of your people in {AREA}, {number(ours)}% live in the 20% most "
+        "deprived neighbourhoods in England. Of everyone who lives in that "
+        f"area, {number(theirs)}% do, so you reach those neighbourhoods "
+        f"{verdict} their share."
+    )
 
 
 def _choices(catchment: _Catchment, threshold: int) -> tuple[Choice, ...]:

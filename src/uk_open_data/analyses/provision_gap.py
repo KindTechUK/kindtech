@@ -18,6 +18,12 @@ from statistics import median
 from typing import Any
 
 import uk_open_data
+from uk_open_data.analyses._answers import (
+    high_need_places,
+    look_first,
+    number,
+    values,
+)
 from uk_open_data.analyses._inputs import is_blank
 from uk_open_data.analyses._model import (
     Analysis,
@@ -69,6 +75,12 @@ from uk_open_data.analyses._steps import (
 
 ANALYSIS_ID = "provision-gap"
 ANALYSIS_VERSION = "0.1"
+KEY_FIGURES = (
+    "share_of_provision_in_high_need_areas",
+    "share_of_need_in_high_need_areas",
+    "high_need_areas_without_provision",
+)
+LOWEST = "the thinnest provision"
 NO_PROVISION = "None"
 PROVISION_BANDS = (
     NO_PROVISION,
@@ -242,14 +254,16 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
     located = _keep_listed(volumes, authorities, trail)
     compared = choose_compared(options.get("catchment"), authorities)
     rows = _rows(located, authorities, compared, trail)
+    figures = _figures(supplied, sum(located.values()), rows, measure)
+    tables = (_priority_table(rows, top, trail), _authority_table(rows))
     return AnalysisResult(
         analysis_id=ANALYSIS_ID,
         analysis_version=ANALYSIS_VERSION,
         package_version=uk_open_data.__version__,
         run_on=date.today().isoformat(),
         input_mode=mode,
-        figures=tuple(_figures(supplied, sum(located.values()), rows, measure)),
-        tables=(_priority_table(rows, top, trail), _authority_table(rows)),
+        figures=tuple(figures),
+        tables=tables,
         map=_map_spec(),
         working=tuple(trail.working),
         choices=(*trail.choices, *_choices(measure, compared, top)),
@@ -273,6 +287,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
             ),
         ),
         charts=CHARTS,
+        answer=_answer(figures, tables[0]),
+        key_figures=KEY_FIGURES,
     )
 
 
@@ -699,6 +715,18 @@ def _figures(
 
 
 # --- what the person needs to know -----------------------------------------
+
+
+def _answer(figures: list[Figure], priority: Table) -> str:
+    """Say where need is high and how much of the provision is there."""
+    shown = values(figures)
+    places = high_need_places(shown["high_need_areas"])
+    return (
+        f"{number(shown['share_of_need_in_high_need_areas'])}% of the people in "
+        f"need live in {places}, and "
+        f"{number(shown['share_of_provision_in_high_need_areas'])}% of your "
+        f"provision is there.{look_first(priority, LOWEST)}"
+    )
 
 
 def _choices(measure: Measure, compared: Compared, top: int) -> tuple[Choice, ...]:

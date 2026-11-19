@@ -16,6 +16,7 @@ from uk_open_data.analyses import (
     describe_analysis,
     render_map,
     run_analysis,
+    who_we_miss,
 )
 from uk_open_data.analyses.who_we_miss import (
     clear_residents_cache,
@@ -286,6 +287,67 @@ def test_chart_can_be_drawn_from_the_table(nomis):
 def test_there_is_no_map_to_draw(nomis):
     with pytest.raises(ValueError, match="no map"):
         render_map(_run(CLIENTS))
+
+
+# --- the answer ------------------------------------------------------------
+
+AGAINST = "Set against the people who live in the area you serve, you reach "
+
+
+def _group(name: str, representation: float | None, cut: float = 0.8) -> dict:
+    """One row of the table by group; no representation means a hidden count."""
+    return {
+        "group": name,
+        "representation": representation,
+        "under_represented": None if representation is None else representation < cut,
+        "suppressed": representation is None,
+    }
+
+
+def test_answer_names_the_groups_reached_less_than_their_share(nomis):
+    result = _run(CLIENTS)
+    assert result.answer == (
+        AGAINST + "2 of the 5 groups less than their share: Other and Black."
+    )
+    assert result.key_figures == (
+        "groups_under_represented",
+        "people_matched",
+        "residents",
+    )
+    assert {figure.id for figure in result.figures} >= set(result.key_figures)
+    assert result.to_dict()["answer"] == result.answer
+
+
+def test_answer_says_how_many_groups_are_not_judged(nomis):
+    rows = _counts(White_British=1200, Black_African=300, Indian=3, Arab=4)
+    assert _run(rows).answer == (
+        AGAINST + "one group less than its share: Mixed. 2 more groups have a "
+        "hidden count and are not judged."
+    )
+
+
+def test_answer_names_the_least_reached_first_and_counts_the_rest():
+    ratios = {"A": 0.5, "B": 0.1, "C": 0.7, "D": 0.3, "E": 2}
+    rows = [_group(name, ratio) for name, ratio in ratios.items()]
+    assert who_we_miss._answer(rows) == (
+        AGAINST + "4 of the 5 groups less than their share: B, D, A and 1 more."
+    )
+
+
+def test_answer_when_no_group_is_reached_less_than_its_share():
+    rows = [_group("A", 0.9), _group("B", 1.2), _group("C", None)]
+    assert who_we_miss._answer(rows) == (
+        AGAINST + "none of the 2 groups less than its share. One more group has "
+        "a hidden count and is not judged."
+    )
+
+
+def test_answer_when_every_count_is_hidden():
+    rows = [_group("A", None), _group("B", None)]
+    assert who_we_miss._answer(rows) == (
+        "No group can be set against the people who live in the area you "
+        "serve: every count is hidden."
+    )
 
 
 # --- the census figures ----------------------------------------------------

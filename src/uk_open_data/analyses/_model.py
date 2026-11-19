@@ -289,7 +289,13 @@ class Privacy:
 
 @dataclass(frozen=True)
 class AnalysisResult:
-    """Everything an analysis returns."""
+    """Everything an analysis returns.
+
+    ``answer`` is one or two sentences that answer the question the analysis
+    asks, made only from figures and names the result already shows, so every
+    place that shows a result can open with the same words. ``key_figures``
+    names up to three figures to show first, by their ids.
+    """
 
     analysis_id: str
     analysis_version: str
@@ -307,6 +313,8 @@ class AnalysisResult:
     sources: tuple[Source, ...]
     privacy: Privacy
     charts: tuple[Chart, ...] = ()
+    answer: str = ""
+    key_figures: tuple[str, ...] = ()
 
     def figure(self, figure_id: str) -> Figure:
         """Return the figure with this id.

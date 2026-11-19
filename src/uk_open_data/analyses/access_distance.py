@@ -20,6 +20,7 @@ from datetime import date
 from typing import Any
 
 import uk_open_data
+from uk_open_data.analyses._answers import column, number, values
 from uk_open_data.analyses._centres import centres_path as centres_path
 from uk_open_data.analyses._centres import clear_centres_cache as clear_centres_cache
 from uk_open_data.analyses._centres import (
@@ -78,6 +79,11 @@ from uk_open_data.analyses._steps import (
 
 ANALYSIS_ID = "access-distance"
 ANALYSIS_VERSION = "0.1"
+KEY_FIGURES = (
+    "average_distance_km",
+    "share_of_people_within_reach",
+    "people_beyond_reach",
+)
 DEFAULT_WITHIN_KM = 10
 MAX_WITHIN_KM = 500
 # A position outside this box is not in the United Kingdom. A latitude and a
@@ -256,14 +262,16 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         supplied = len(postcodes)
     compared = choose_compared(options.get("catchment"), authorities)
     rows = _rows(sites, authorities, centres, compared, within, trail)
+    figures = _figures(supplied, len(sites), rows, measure, within)
+    tables = (_priority_table(rows, top, within, trail), _authority_table(rows))
     return AnalysisResult(
         analysis_id=ANALYSIS_ID,
         analysis_version=ANALYSIS_VERSION,
         package_version=uk_open_data.__version__,
         run_on=date.today().isoformat(),
         input_mode=mode,
-        figures=tuple(_figures(supplied, len(sites), rows, measure, within)),
-        tables=(_priority_table(rows, top, within, trail), _authority_table(rows)),
+        figures=tuple(figures),
+        tables=tables,
         map=_map_spec(),
         working=tuple(trail.working),
         choices=(*trail.choices, *_choices(measure, compared, within, top)),
@@ -289,6 +297,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
             ),
         ),
         charts=CHARTS,
+        answer=_answer(figures, tables[0], within, measure),
+        key_figures=KEY_FIGURES,
     )
 
 
@@ -617,6 +627,27 @@ def _figures(
 
 
 # --- what the person needs to know -----------------------------------------
+
+
+def _answer(
+    figures: list[Figure], priority: Table, within: float, measure: Measure
+) -> str:
+    """Say how far people are from a site and where a new one would help most."""
+    shown = values(figures)
+    who = "people" if measure.id == RESIDENTS.id else "people in need"
+    first = (
+        f"Counting each person at the centre of their local authority, {who} "
+        f"are {number(shown['average_distance_km'])} km from your nearest site "
+        f"on average, and {number(shown['share_of_people_within_reach'])}% are "
+        f"within {within:g} km of one."
+    )
+    places = column(priority, "geography_name")
+    if not places:
+        return f"{first} No local authority compared is farther away than that."
+    return (
+        f"{first} Of the places farther away, a new site would reach most "
+        f"{who} in {places[0]}."
+    )
 
 
 def _choices(

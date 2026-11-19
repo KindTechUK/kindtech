@@ -169,6 +169,44 @@ def test_need_figures_are_fetched_once_and_kept(nomis):
     assert len(nomis.asked) == 3
 
 
+# --- the answer ------------------------------------------------------------
+
+
+def test_answer_says_where_need_is_high_and_reach_is_low(nomis):
+    result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    assert result.answer == (
+        "86.8% of the people in need live in the 4 local authorities with high "
+        "need, and 60.0% of your people do. The places to look at first, with "
+        "high need and your lowest reach, are Birmingham, Manchester and Cardiff."
+    )
+    assert result.key_figures == (
+        "share_of_people_in_high_need_areas",
+        "share_of_need_in_high_need_areas",
+        "high_need_areas_without_people",
+    )
+    assert {figure.id for figure in result.figures} >= set(result.key_figures)
+    assert result.to_dict()["answer"] == result.answer
+
+
+def test_answer_names_the_first_places_of_the_list_and_no_others(nomis):
+    result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10), options={"top": 1})
+    assert result.answer.endswith(
+        "The place to look at first, with high need and your lowest reach, is "
+        "Birmingham."
+    )
+
+
+def test_answer_does_not_give_away_a_hidden_share(nomis):
+    # Birmingham is the only high-need place with people, so the share of
+    # people in high-need places would be its count.
+    result = _run(_counts(Birmingham=3, Greenwich=30, Adur=20))
+    assert result.answer.startswith(
+        "86.8% of the people in need live in the 4 local authorities with high "
+        "need, and the share of your people who do is hidden to protect a small "
+        "count."
+    )
+
+
 # --- need figures kept on this machine -------------------------------------
 
 INVENTED = [(code, name, need * 2) for code, name, need in NEED]
