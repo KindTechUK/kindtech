@@ -129,6 +129,10 @@ _SCALE_LENGTHS = (0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500)
 _MAX_SCALE_WIDTH = 110
 # Larger areas are named one by one when there are no more than this many.
 _MAX_NAMES = 12
+# A name covers a place that is narrower than the name and no taller than
+# this. It is then written this far to one side of the place.
+_NAME_COVERS = 20
+_NAME_GAP = 5
 # A name is tried on lines this far apart, in letters about this wide.
 _NAME_STEP = 10
 _NAME_LETTER = 6.2
@@ -468,7 +472,7 @@ def render_map(
     shore = [ring for rings in land for ring in view.rings(rings)]
     scope = _scope(chosen)
     inside = f' clip-path="url(#{scope}-shore)"' if shore else ""
-    names = _place_names(areas, around, shore)
+    names = _place_names(areas, around, view, shore)
     key_top = round(view.top + view.height) + 16
     key, note_top = _key(chosen, key_top, width)
     note = _wrap(chosen.note, _letters(width, _NOTE_SIZE))
@@ -960,6 +964,7 @@ def _name_text(name: _Name) -> str:
 def _place_names(
     areas: dict[str, tuple[dict[str, Any], list[_Ring]]],
     around: list[_Place],
+    view: _View,
     shore: list[_Ring] | None = None,
 ) -> list[_Name]:
     """Name the shaded places.
@@ -967,7 +972,8 @@ def _place_names(
     Neighbourhoods get one name for each local authority, at the middle of
     its neighbourhoods. With places drawn around them even a single authority
     is named, so the picture says where it is. Larger areas are named one by
-    one when there are few enough to read.
+    one when there are few enough to read. A place the name would cover is
+    named beside it, so its colour can still be seen.
 
     When the areas are drawn inside a shore, the middle is of the part that
     is drawn, so a name is not put out on the water.
@@ -995,8 +1001,24 @@ def _place_names(
             continue
         wide = len(name) * _NAME_LETTER * (1.25 if grouped else 1.1)
         spot = ((box[0] + box[2]) / 2, (box[1] + box[3]) / 2)
+        covered = box[2] - box[0] < wide and box[3] - box[1] < _NAME_COVERS
+        if covered and not grouped:
+            spot = _beside(box, wide, view)
         names.append(_Name(name, *spot, wide, "held" if grouped else "name"))
     return names
+
+
+def _beside(box: _Box, wide: float, view: _View) -> tuple[float, float]:
+    """Find the spot for a name next to a place that is too small to hold it.
+
+    It is to the right of the place, or to the left when the frame ends
+    first.
+    """
+    y = (box[1] + box[3]) / 2
+    right = box[2] + _NAME_GAP + wide / 2
+    if right + wide / 2 <= view.left + view.width - 4:
+        return right, y
+    return box[0] - _NAME_GAP - wide / 2, y
 
 
 def _span(points: list[tuple[float, float]]) -> _Box | None:
