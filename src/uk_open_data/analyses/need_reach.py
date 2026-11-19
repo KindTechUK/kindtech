@@ -424,13 +424,24 @@ def _keep_listed(
             "whose boundary has changed). They are left out."
         )
     if n_located < threshold:
-        msg = (
+        raise AnalysisInputError(_too_few_placed(outside, threshold))
+    return located
+
+
+def _too_few_placed(outside: int, threshold: int) -> str:
+    """Say why too few people could be placed: few were given, or few fitted."""
+    if outside < threshold:
+        return (
             f"Fewer than {threshold} people could be placed in a local "
             "authority in England or Wales, which is too few to give figures "
             "that do not point at individuals."
         )
-        raise AnalysisInputError(msg)
-    return located
+    return (
+        f"{outside} people are in a place the need figures do not list, or "
+        "outside England and Wales, so too few are left to give figures. "
+        "Check the places in your data: a local authority must be named as "
+        "Nomis names it, or given by its code."
+    )
 
 
 def _choose_area(

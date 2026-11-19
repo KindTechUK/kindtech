@@ -766,19 +766,30 @@ def _count_groups(
             "option to say which group a label belongs to."
         )
     if matched < threshold:
-        msg = (
-            f"Fewer than {threshold} people could be matched to a census "
-            "group, which is too few to give figures that do not point at "
-            "individuals. Check the 'group' column, the 'characteristic' "
-            "option and the 'groups' option."
-        )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(_too_few_matched(not_matched, threshold))
     if matched < FEW_PEOPLE:
         trail.warnings.append(
             f"Fewer than {FEW_PEOPLE} people were matched to a group. With so "
             "few, a gap between two shares can be chance."
         )
     return [counts[key] for key in characteristic.keys], not_matched
+
+
+def _too_few_matched(not_matched: int, threshold: int) -> str:
+    """Say why too few people were matched: few were given, or few fitted."""
+    check = (
+        "Check the 'group' column, the 'characteristic' option and the 'groups' option."
+    )
+    if not_matched < threshold:
+        return (
+            f"Fewer than {threshold} people could be matched to a census "
+            "group, which is too few to give figures that do not point at "
+            f"individuals. {check}"
+        )
+    return (
+        f"{not_matched} people have no label, or a label that matched no "
+        f"census group, so too few are left to give figures. {check}"
+    )
 
 
 # --- the catchment ---------------------------------------------------------

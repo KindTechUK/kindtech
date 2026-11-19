@@ -534,6 +534,20 @@ def test_too_few_people_is_an_input_error(nomis):
         _run(_counts(Lewisham=4))
 
 
+def test_a_place_that_is_not_listed_is_the_reason_given_not_too_few_people(nomis):
+    # 200 people in a place whose name is mistyped are not "fewer than 5".
+    with pytest.raises(AnalysisInputError) as raised:
+        _run(_counts(Lewsham=200, Lewisham=3))
+    message = str(raised.value)
+    assert message.startswith(
+        "200 people are in a place the need figures do not list, or outside "
+        "England and Wales, so too few are left to give figures."
+    )
+    assert "named as Nomis names it, or given by its code" in message
+    assert "Fewer than" not in message
+    assert "Lewsham" not in message  # the place as typed is not repeated
+
+
 # --- the list of places ----------------------------------------------------
 
 

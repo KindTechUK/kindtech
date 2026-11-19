@@ -497,6 +497,22 @@ def test_too_few_people_is_an_error():
         world.run()
 
 
+def test_codes_the_index_does_not_list_are_the_reason_given_not_too_few_people(
+    world,
+):
+    # 2011 codes, or codes for Wales, are not "fewer than 5 people".
+    rows = [{"lsoa_code": "W01000001", "count": 120}]
+    with pytest.raises(AnalysisInputError) as raised:
+        world.run(rows, columns={"lsoa_code": "lsoa_code", "count": "count"})
+    message = str(raised.value)
+    assert message.startswith(
+        "120 people are outside England, or in a neighbourhood the 2025 index "
+        "does not list, so too few are left to give figures."
+    )
+    assert "Fewer than" not in message
+    assert "W01000001" not in message  # the code as typed is not repeated
+
+
 def test_too_few_people_in_a_named_catchment_is_an_error(world):
     world.add(2, 1, 3)
     with pytest.raises(AnalysisInputError, match="Hartlepool"):

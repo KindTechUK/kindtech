@@ -359,13 +359,24 @@ def _keep_english(
             "2011 code). This analysis covers England only, so they are left out."
         )
     if n_located < threshold:
-        msg = (
+        raise AnalysisInputError(_too_few_placed(outside, threshold))
+    return located
+
+
+def _too_few_placed(outside: int, threshold: int) -> str:
+    """Say why too few people could be placed: few were given, or few fitted."""
+    if outside < threshold:
+        return (
             f"Fewer than {threshold} people could be placed in an English "
             "neighbourhood, which is too few to give figures that do not "
             "point at individuals."
         )
-        raise AnalysisInputError(msg)
-    return located
+    return (
+        f"{outside} people are outside England, or in a neighbourhood the 2025 "
+        "index does not list, so too few are left to give figures. Check the "
+        "places in your data: a neighbourhood must be given by its 2021 code, "
+        "which starts with E01."
+    )
 
 
 def _choose_catchment(
