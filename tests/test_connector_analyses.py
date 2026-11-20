@@ -154,6 +154,7 @@ class TestRunAnalysisOnCounts:
         assert answer == {
             "status": "input_problem",
             "problems": ["Some counts are not whole numbers."],
+            "role": "count",
         }
 
 
@@ -179,6 +180,7 @@ class TestCountsGivenAsText:
         assert answer == {
             "status": "input_problem",
             "problems": ["Some counts are not whole numbers."],
+            "role": "count",
         }
 
     @pytest.mark.parametrize("marker", [{"amount": False}, {}])
@@ -204,6 +206,7 @@ class TestCountsGivenAsText:
         assert answer == {
             "status": "input_problem",
             "problems": ["Some counts are not whole numbers."],
+            "role": "count",
         }
 
     def test_the_rows_passed_in_are_not_changed(self) -> None:
@@ -564,6 +567,9 @@ class TestWithTheThirdAnalysis:
 
         assert answer["status"] == "input_problem"
         assert "'Area you serve'" in answer["problems"][0]
+        # The sentence gives the label a person reads; this is the name to pass.
+        assert answer["option"] == "catchment"
+        assert "role" not in answer
 
     def test_rows_about_people_are_refused(self) -> None:
         rows = [{"group": "White", "postcode": "ZZ99 9KC"}]

@@ -123,7 +123,7 @@ changes the analysis options.
 | --- | --- | --- |
 | `reach-deprivation` | `{"lsoa_code": "E01003189", "count": 12}` | none |
 | `need-reach` | `{"local_authority": "Lewisham", "count": 120}` | none |
-| `who-we-miss` | `{"group": "Black Caribbean", "count": 40}` | `catchment`, the area the charity serves |
+| `who-we-miss` | `{"group": "Black Caribbean", "count": 40}` | `catchment`, the area you serve |
 | `provision-gap` | `{"local_authority": "Lewisham", "volume": 1200}` | none |
 
 A `volume` is what the charity provides in that place, such as sessions, places
@@ -169,16 +169,24 @@ answer["result"]["figures"]   # headline figures, small counts hidden
 answer["result"]["tables"]    # the places to look at first
 ```
 
-`catchment` names the places the charity could serve. Without it, need against
-reach compares only the local authorities that hold at least 5% of the people
-in the rows, so it cannot show a place the charity does not reach yet, and its
-result says so in a warning. With one place there is nothing to compare, and
-the answer says that too. An assistant should ask the person which area they
-could serve when the question is about where they are missing.
+`catchment` is the area you serve: every place the charity serves, whether or
+not it reaches anyone there yet. Without it, need against reach compares only
+the local authorities that hold at least 5% of the people in the rows, so it
+cannot show a place the charity does not reach yet, and its result says so in
+a warning. With one place there is nothing to compare, and the answer says
+that too. An assistant should ask the person for the area they serve when the
+question is about where they are missing.
 
 `status` is `ok`, `would_hide_counts`, `input_problem` (`problems` lists what
 to fix, for example an option the analysis needs), `needs_rows`, `unknown_analysis` or
 `unavailable` (a data source the analysis needs could not be reached).
+
+A problem sentence is written for the person and names an option by the label
+they read, in quotes: "Change 'Area you serve' to include them." An assistant
+passes options by their code names, so when the analysis says which one a
+problem is about, the answer also has `option` (for example `catchment`) or
+`role` (the column, for example `count`). `find_analysis` lists each option's
+label beside its name.
 
 `needs_rows` is the answer for an analysis that takes no totals, such as the access
 and distance analysis, whatever rows are passed. Its message says the analysis cannot
