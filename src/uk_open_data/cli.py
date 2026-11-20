@@ -63,7 +63,7 @@ MAP_NOT_DRAWN = (
 # Said before the outlines are asked for, so a wait is not a blank screen.
 MAP_BEING_FETCHED = (
     "Fetching the outlines for the map from the ONS Open Geography Portal. "
-    "The first time an area is asked for, this can take a minute or two."
+    "This usually takes a few seconds. At times it takes a minute or two."
 )
 OUTLINES_LOGGER = "uk_open_data.geo"
 # Said when no postcode table is installed, before how to get one, because

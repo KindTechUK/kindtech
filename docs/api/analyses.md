@@ -271,9 +271,9 @@ life of the process, so a second map does not ask again;
 `uk_open_data.analyses.maps.clear_outline_cache()` forgets it. When the places around cannot be fetched, the map is drawn without
 them and nothing is said.
 
-The fine outlines can be slow. The first time they are asked for an area the
-service can take from a quarter of a minute to a minute or two. A second
-request for the same area takes a few seconds. A program that cannot wait,
+The fine outlines usually come in a few seconds. At times the service has
+taken from a quarter of a minute to a minute or two for one map, and it is
+not known why. A program that cannot wait,
 such as one answering in a chat, calls `load_map_boundaries(result,
 fine=False)`. It then gets the 200 metre outlines of every area, and the
 places around from the answer kept in memory, in a second or two.

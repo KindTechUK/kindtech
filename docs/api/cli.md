@@ -72,10 +72,10 @@ A message names an option by its plain name, as a page shows it, such as
 says what to type here: "On the command line this is --option
 catchment=VALUE." `analysis describe` lists every option with both names.
 
-The outlines for `--map` come from the ONS Open Geography Portal. The first
-time an area is asked for, the service can take a minute or two to answer, so
-the command first writes "Fetching the outlines for the map ..." to standard
-error. The report on standard output is not changed by it. When the outlines
+The outlines for `--map` come from the ONS Open Geography Portal. They
+usually come in a few seconds, but at times the service takes a minute or two
+to answer, so the command first writes "Fetching the outlines for the map
+..." to standard error. The report on standard output is not changed by it. When the outlines
 cannot be fetched, the report is still printed or written, no map file is made,
 and the command says so in one sentence and exits with status 3. Status 3 means
 the report is whole and only the map is missing, so a script can keep the

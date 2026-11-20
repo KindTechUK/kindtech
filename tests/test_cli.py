@@ -409,7 +409,7 @@ def test_map_error_from_the_service_is_not_shown(index, counts_file, tmp_path, c
 def test_the_command_says_first_that_the_map_is_being_fetched(
     index, counts_file, tmp_path, capsys
 ):
-    # The first fetch of an area's outlines can take a minute or two. The
+    # At times the outlines take a minute or two to come. The
     # line is on standard error, so the report on standard output is as it was.
     asked: list[str] = []
 
