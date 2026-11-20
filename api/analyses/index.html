@@ -1531,6 +1531,14 @@ the screen. An option has the same label in every analysis that has it:</p>
 </table>
 <p>The area an analysis looks across has one name wherever a person reads it:
 "the area you serve". <code>catchment</code> is only its code name.</p>
+<p>A table's columns have plain names too. <code>table.columns</code> holds the ids, which a
+program reads, and <code>table.headings</code> maps each id to the heading to show, such
+as "Your people per 100 in need" for <code>people_per_100_in_need</code>. <code>table.units</code>
+gives the unit of each column that has one, named as the units of figures
+are: <code>"percent"</code> or <code>"km"</code>. Show a table with its headings and units and it
+reads the same on a page, in a chat and on the command line. A place is a
+"Local authority" in most tables and a "Neighbourhood" in the one behind the
+first analysis's map.</p>
 <p>An option that takes one of a fixed list of values lists them as <code>choices</code>,
 each with a <code>value</code> and a <code>label</code> a person can read, so a page can show a list
 to pick from. <code>choices</code> is empty when the option is free, such as a number or
@@ -2703,7 +2711,8 @@ analysis keeps:</p>
 <li>Give every figure a source.</li>
 <li>State every choice and name the option that changes it. Give each option
    a <code>label</code>, use the label in quotes whenever a sentence points at the
-   option, and pass <code>option=</code> or <code>role=</code> when you raise <code>AnalysisInputError</code>.</li>
+   option, and pass <code>option=</code> or <code>role=</code> when you raise <code>AnalysisInputError</code>.
+   Give a table <code>headings</code> for any column the package has no heading for.</li>
 <li>Leave checks for a person to answer.</li>
 <li>List anything sent off the machine in <code>privacy.sent_to_third_parties</code>.</li>
 <li>Answer the question in <code>answer</code>, from figures the result shows and nothing

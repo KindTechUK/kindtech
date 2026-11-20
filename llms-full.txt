@@ -1061,6 +1061,15 @@ the screen. An option has the same label in every analysis that has it:
 The area an analysis looks across has one name wherever a person reads it:
 "the area you serve". `catchment` is only its code name.
 
+A table's columns have plain names too. `table.columns` holds the ids, which a
+program reads, and `table.headings` maps each id to the heading to show, such
+as "Your people per 100 in need" for `people_per_100_in_need`. `table.units`
+gives the unit of each column that has one, named as the units of figures
+are: `"percent"` or `"km"`. Show a table with its headings and units and it
+reads the same on a page, in a chat and on the command line. A place is a
+"Local authority" in most tables and a "Neighbourhood" in the one behind the
+first analysis's map.
+
 An option that takes one of a fixed list of values lists them as `choices`,
 each with a `value` and a `label` a person can read, so a page can show a list
 to pick from. `choices` is empty when the option is free, such as a number or
@@ -1824,6 +1833,7 @@ analysis keeps:
 4. State every choice and name the option that changes it. Give each option
    a `label`, use the label in quotes whenever a sentence points at the
    option, and pass `option=` or `role=` when you raise `AnalysisInputError`.
+   Give a table `headings` for any column the package has no heading for.
 5. Leave checks for a person to answer.
 6. List anything sent off the machine in `privacy.sent_to_third_parties`.
 7. Answer the question in `answer`, from figures the result shows and nothing
@@ -2096,7 +2106,7 @@ changes the analysis options.
 | --- | --- | --- |
 | `reach-deprivation` | `{"lsoa_code": "E01003189", "count": 12}` | none |
 | `need-reach` | `{"local_authority": "Lewisham", "count": 120}` | none |
-| `who-we-miss` | `{"group": "Black Caribbean", "count": 40}` | `catchment`, the area the charity serves |
+| `who-we-miss` | `{"group": "Black Caribbean", "count": 40}` | `catchment`, the area you serve |
 | `provision-gap` | `{"local_authority": "Lewisham", "volume": 1200}` | none |
 
 A `volume` is what the charity provides in that place, such as sessions, places
@@ -2142,16 +2152,24 @@ answer["result"]["figures"]   # headline figures, small counts hidden
 answer["result"]["tables"]    # the places to look at first
 ```
 
-`catchment` names the places the charity could serve. Without it, need against
-reach compares only the local authorities that hold at least 5% of the people
-in the rows, so it cannot show a place the charity does not reach yet, and its
-result says so in a warning. With one place there is nothing to compare, and
-the answer says that too. An assistant should ask the person which area they
-could serve when the question is about where they are missing.
+`catchment` is the area you serve: every place the charity serves, whether or
+not it reaches anyone there yet. Without it, need against reach compares only
+the local authorities that hold at least 5% of the people in the rows, so it
+cannot show a place the charity does not reach yet, and its result says so in
+a warning. With one place there is nothing to compare, and the answer says
+that too. An assistant should ask the person for the area they serve when the
+question is about where they are missing.
 
 `status` is `ok`, `would_hide_counts`, `input_problem` (`problems` lists what
 to fix, for example an option the analysis needs), `needs_rows`, `unknown_analysis` or
 `unavailable` (a data source the analysis needs could not be reached).
+
+A problem sentence is written for the person and names an option by the label
+they read, in quotes: "Change 'Area you serve' to include them." An assistant
+passes options by their code names, so when the analysis says which one a
+problem is about, the answer also has `option` (for example `catchment`) or
+`role` (the column, for example `count`). `find_analysis` lists each option's
+label beside its name.
 
 `needs_rows` is the answer for an analysis that takes no totals, such as the access
 and distance analysis, whatever rows are passed. Its message says the analysis cannot
