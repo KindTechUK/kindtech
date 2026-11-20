@@ -341,8 +341,17 @@ def test_connector_command_passes_its_options_on(capsys):
     with mock.patch("uk_open_data.connector.command.main") as start:
         status = main(["connector", "--transport", "streamable-http", "--port", "9"])
     assert status == EXIT_OK
-    start.assert_called_once_with(["--transport", "streamable-http", "--port", "9"])
+    start.assert_called_once_with(
+        ["--transport", "streamable-http", "--port", "9"],
+        prog="uk-open-data connector",
+    )
     assert capsys.readouterr().out == ""
+
+
+def test_connector_command_help_names_the_command_typed(capsys):
+    with pytest.raises(SystemExit):
+        main(["connector", "--help"])
+    assert capsys.readouterr().out.startswith("usage: uk-open-data connector")
 
 
 def test_connector_command_starts_the_server_over_stdio():

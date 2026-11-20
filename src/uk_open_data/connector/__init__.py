@@ -5,7 +5,7 @@ offers them to an assistant over the Model Context Protocol needs the
 ``connector`` extra::
 
     uv add "uk-open-data[connector]"
-    uv run python -m uk_open_data.connector
+    uv run uk-open-data connector
 
 Every tool is read-only and returns totals, never rows.
 """
