@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 
 import pandas as pd
 import pytest
-from working_checks import check_working
+from working_checks import check_working, worked_out
 
 from uk_open_data.analyses import (
     AnalysisInputError,
@@ -759,6 +759,29 @@ def test_share_is_hidden_when_it_would_give_a_count_away(nomis):
     rows = {r["geography_name"]: r for r in result.table("by_local_authority").rows}
     assert rows["Birmingham"]["suppressed"] is True
     assert result.privacy.cells_suppressed == 3
+
+
+@pytest.mark.parametrize(
+    "people",
+    [
+        {"Birmingham": 3, "Greenwich": 30, "Adur": 20},
+        {"Birmingham": 40, "Manchester": 3, "Greenwich": 30, "Adur": 20},
+        {"Birmingham": 4000, "Manchester": 2500, "Greenwich": 3, "Adur": 900},
+        {"Birmingham": 3, "Manchester": 2, "Greenwich": 30, "Adur": 20},
+    ],
+)
+def test_an_exact_share_gives_no_hidden_count_away(nomis, people):
+    # The share of people in high-need places, before rounding, times the
+    # people in the area, is the exact number of people in those places.
+    result = _run_wide(_counts(**people))
+    rows = result.table("by_local_authority").rows
+    hidden = {position for position, row in enumerate(rows) if row["suppressed"]}
+    assert hidden
+    sums = [set(range(len(rows)))]  # the people in the area are a figure
+    if result.figure("share_of_people_in_high_need_areas").exact is not None:
+        sums.append({i for i, row in enumerate(rows) if row["high_need"]})
+    assert worked_out(hidden, sums) == []
+    check_working(result)
 
 
 def test_suppress_below_can_be_raised_but_not_dropped(nomis):

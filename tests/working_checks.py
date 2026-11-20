@@ -8,6 +8,8 @@ on a result of their own.
 import ast
 from typing import Any
 
+import numpy as np
+
 from uk_open_data.analyses import AnalysisResult, describe_analysis
 
 RATES = ("percent", "per_100", "per_1000")
@@ -41,3 +43,27 @@ def _options_in(result: AnalysisResult) -> dict[str, Any]:
     assert given["columns"] == dict.fromkeys(mode.roles, "")
     assert set(given["options"]) <= {option.name for option in info.options}
     return given["options"]
+
+
+def worked_out(hidden: set[int], sums: list[set[int]]) -> list[int]:
+    """List the hidden cells a reader could work out from sums given exactly.
+
+    A reader knows every cell that is shown, so a sum of cells gives them the
+    sum of the hidden cells among them. That is one equation for each sum. A
+    hidden cell is worked out when the equations fix its value, which is when
+    adding "this cell alone" to them does not add anything new.
+
+    Args:
+        hidden: The positions of the cells a table hides.
+        sums: The positions each exactly known sum covers.
+    """
+    cells = sorted(hidden)
+    known = [[float(cell in covered) for cell in cells] for covered in sums]
+    known = [row for row in known if any(row)]
+    rank = np.linalg.matrix_rank(np.array(known)) if known else 0
+    found = []
+    for index, cell in enumerate(cells):
+        alone = [float(position == index) for position in range(len(cells))]
+        if np.linalg.matrix_rank(np.array([*known, alone])) == rank:
+            found.append(cell)
+    return found
