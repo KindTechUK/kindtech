@@ -1479,11 +1479,19 @@ picture was drawn for the person and the assistant is not given it, or why
 none was drawn. An analysis with no map has no <code>map</code> in its answer, and neither has
 a result that was held back. The plain Python function <code>run_analysis_on_counts</code>
 draws nothing; only the server does.</p>
-<p>The outlines of the areas are fetched from the ONS Open Geography Portal by
-public area code each time a map is drawn. When they cannot be fetched the
-figures come back as usual and the note says no map was drawn. When you host
-the connector, keep the outlines on your server and pass a function that
-reads them, so that no run waits on another service:</p>
+<p>The outlines are fetched from the ONS Open Geography Portal each time a map is
+drawn. What is sent is public area codes only: those of the areas on the map
+and of the local authorities near it, which are drawn pale around it. When
+the outlines cannot be fetched the figures come back as usual and the note
+says no map was drawn.</p>
+<p>The figures do not wait long for a picture. The first time an area is asked
+for, the boundary service can take a minute or more, so the server waits 15
+seconds for the outlines and then sends the answer without a map, with a note
+that says so. The fetch is left to finish, and a second run a minute later is
+often quick. The outlines of every local authority are kept in memory once
+fetched, for as long as the server runs.</p>
+<p>When you host the connector, keep the outlines on your server and pass a
+function that reads them, so that no run waits on another service:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_server</span>
 
 <span class="n">server</span> <span class="o">=</span> <span class="n">build_server</span><span class="p">(</span><span class="n">map_boundaries</span><span class="o">=</span><span class="n">outlines_kept_here</span><span class="p">)</span>  <span class="c1"># takes an analysis result</span>
