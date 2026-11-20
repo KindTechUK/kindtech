@@ -10,6 +10,7 @@ import re
 import threading
 import unittest.mock as mock
 import xml.etree.ElementTree as ET
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
@@ -680,6 +681,28 @@ def test_cutting_a_ring_keeps_one_closed_shape():
     assert {x for x, _ in half} == {5.0, 10.0}
     # Outside: nothing is left.
     assert maps._cut(square, (20, 20, 30, 30)) == []
+
+
+def _block(left: float, top: float, right: float, bottom: float) -> list:
+    """The outline of a shaded place on the picture, as one ring."""
+    return [[(left, top), (right, top), (right, bottom), (left, bottom), (left, top)]]
+
+
+def test_a_name_goes_beside_a_small_place_where_there_is_room():
+    view = SimpleNamespace(left=16, width=688)
+    box = (100.0, 100.0, 110.0, 110.0)
+    # To the right, clear of the place.
+    assert maps._beside(box, 40, view, []) == (135.0, 105.0)
+    # Another shaded place is on the right: the name goes to the left.
+    on_the_right = _block(112, 90, 200, 120)
+    assert maps._beside(box, 40, view, [on_the_right]) == (75.0, 105.0)
+    # Shaded places on both sides: there is no spot, and the caller keeps
+    # the name on the place.
+    on_the_left = _block(20, 90, 98, 120)
+    assert maps._beside(box, 40, view, [on_the_right, on_the_left]) is None
+    # The frame ends on the right: the name goes to the left.
+    at_the_edge = (680.0, 100.0, 690.0, 110.0)
+    assert maps._beside(at_the_edge, 40, view, []) == (655.0, 105.0)
 
 
 def test_points_closer_than_a_dot_are_left_out():
