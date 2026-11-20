@@ -605,6 +605,22 @@ class _View:
             for ring in rings
         ]
 
+    def cut(self, rings: list[_Ring]) -> list[_Ring]:
+        """Return the part of an outline that is in the frame, or just outside.
+
+        A place beside the map can be many times the size of the frame. The
+        part the frame hides is left out, which keeps the picture small. The
+        cut runs a little outside the frame, where it is not seen.
+        """
+        box = (
+            self.left - _CUT_OUTSIDE,
+            self.top - _CUT_OUTSIDE,
+            self.left + self.width + _CUT_OUTSIDE,
+            self.top + self.height + _CUT_OUTSIDE,
+        )
+        cut = [_cut(ring, box) for ring in rings]
+        return [ring for ring in cut if len(ring) >= 4]
+
     def shows(self, rings: list[_Ring]) -> bool:
         """Say whether any part of an outline could fall inside the frame."""
         xs = [x for ring in rings for x, _ in ring]
@@ -628,6 +644,47 @@ class _View:
 _Ring = list[tuple[float, float]]
 # Points of an outline closer together than this, in dots, are not all kept.
 _FINEST = 0.7
+# A place around the map is cut this many dots outside the frame.
+_CUT_OUTSIDE = 4
+
+
+def _cut(ring: _Ring, box: _Box) -> _Ring:
+    """Keep the part of a closed ring that is inside a box.
+
+    Each side of the box cuts the ring in turn. Where the ring goes out
+    through a side and comes back, the new edge runs along that side, so
+    what is left is still one closed shape.
+
+    Args:
+        ring: Points on the picture, the last the same as the first.
+        box: The left, top, right and bottom of the box.
+    """
+    points = ring[:-1] if len(ring) > 1 and ring[0] == ring[-1] else ring
+    for axis, edge, inward in (
+        (0, box[0], 1),
+        (0, box[2], -1),
+        (1, box[1], 1),
+        (1, box[3], -1),
+    ):
+        kept: _Ring = []
+        for index, point in enumerate(points):
+            before = points[index - 1]
+            inside = (point[axis] - edge) * inward >= 0
+            if inside != ((before[axis] - edge) * inward >= 0):
+                kept.append(_crossing(before, point, axis, edge))
+            if inside:
+                kept.append(point)
+        points = kept
+    return [*points, points[0]] if points else []
+
+
+def _crossing(
+    start: tuple[float, float], end: tuple[float, float], axis: int, edge: float
+) -> tuple[float, float]:
+    """Return where the line between two points meets a side of a box."""
+    along = (edge - start[axis]) / (end[axis] - start[axis])
+    other = start[1 - axis] + along * (end[1 - axis] - start[1 - axis])
+    return (edge, other) if axis == 0 else (other, edge)
 
 
 def _thinned(ring: _Ring) -> _Ring:
@@ -678,7 +735,7 @@ def _around(geojson: dict[str, Any], shaded: set[str], view: _View) -> list[_Pla
     for feature in features:
         properties = feature.get("properties") or {}
         code = _property(properties, "CD")
-        rings = view.rings(list(_rings(feature.get("geometry") or {})))
+        rings = view.cut(view.rings(list(_rings(feature.get("geometry") or {}))))
         if code in shaded or not rings or not view.shows(rings):
             continue
         places.append(_Place(_property(properties, "NM"), rings, code in focus))
