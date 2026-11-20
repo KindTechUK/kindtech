@@ -850,6 +850,25 @@ def test_map_can_be_drawn(kept):
         assert any(text.startswith("Lewisham: ") for text in titles[1:])
 
 
+def test_the_map_credits_the_boundaries_once(kept):
+    # Distances are measured from the middle of each place, so the boundaries
+    # are a source of the figures as well as of the outlines.
+    result = _run()
+    assert any("Boundaries" in source.name for source in result.sources)
+    boundaries = {
+        "type": "FeatureCollection",
+        "features": [_square(n, code) for n, (code, _, _) in enumerate(NEED)],
+    }
+    texts = ET.fromstring(render_map(result, boundaries=boundaries)).iter(
+        "{http://www.w3.org/2000/svg}text"
+    )
+    credit = " ".join(text.text for text in texts if text.get("class") == "ink2")
+    assert credit.count("Boundaries") == 1
+    assert "Boundaries: Office for National Statistics" in credit
+    # The other sources are still named.
+    assert "Sources: " in credit
+
+
 # --- the whole result ------------------------------------------------------
 
 

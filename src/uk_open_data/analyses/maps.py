@@ -23,7 +23,7 @@ from html import escape
 from typing import Any
 
 from uk_open_data._mapping import geo_code_field
-from uk_open_data.analyses._model import AnalysisResult, MapLayer, MapSpec
+from uk_open_data.analyses._model import AnalysisResult, MapLayer, MapSpec, Source
 from uk_open_data.geo import load_geodata
 
 logger = logging.getLogger(__name__)
@@ -804,9 +804,25 @@ def _heading(spec: MapSpec, layer: MapLayer) -> str:
 
 
 def _credit(result: AnalysisResult, spec: MapSpec) -> str:
-    """Say where the figures and the outlines come from."""
-    names = "; ".join(f"{source.name}, {source.publisher}" for source in result.sources)
-    return f"Sources: {names}. {BOUNDARY_CREDIT} {spec.geography_year}."
+    """Say where the figures and the outlines come from.
+
+    A result that measures from the middle of each place has the boundaries
+    among its sources. The words for the outlines already credit them, so
+    they are not named twice.
+    """
+    names = "; ".join(
+        f"{source.name}, {source.publisher}"
+        for source in result.sources
+        if not _is_boundaries(source)
+    )
+    sources = f"Sources: {names}. " if names else ""
+    return f"{sources}{BOUNDARY_CREDIT} {spec.geography_year}."
+
+
+def _is_boundaries(source: Source) -> bool:
+    """Say whether a source is the boundaries the outlines are drawn from."""
+    publisher = source.publisher.startswith("Office for National Statistics")
+    return publisher and "Boundaries" in source.name
 
 
 def _letters(width: int, size: int, letter: float = _LETTER) -> int:
