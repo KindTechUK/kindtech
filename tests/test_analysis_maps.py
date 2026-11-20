@@ -6,6 +6,7 @@ so the tests are isolated and repeatable.
 """
 
 import logging
+import threading
 import unittest.mock as mock
 import xml.etree.ElementTree as ET
 
@@ -489,6 +490,55 @@ def test_every_authority_is_fetched_once_for_the_life_of_the_process(result):
     maps.clear_outline_cache()
     _fetch(result, service)
     assert len([a for a in service.asked if a["type"] == "LAD"]) > 3
+
+
+def test_a_caller_that_cannot_wait_takes_the_quick_outlines(result):
+    # The fine outlines can take a minute the first time. With fine=False
+    # nothing fine is asked for, and the places around still come.
+    service = _Service()
+    with mock.patch("uk_open_data.analyses.maps.load_geodata", service.load):
+        boundaries = load_map_boundaries(result, fine=False)
+    assert len(boundaries["features"]) == AREAS
+    assert {asked["boundary_type"] for asked in service.asked} == {"BSC"}
+    assert {asked.get("simplify_m") for asked in service.asked} == {None}
+    assert _details(boundaries["surroundings"]) == {LEWISHAM: None, GREENWICH: None}
+    assert boundaries["focus"] == [LEWISHAM]
+    # Every authority at 200 metres, and the neighbourhoods: nothing by name.
+    assert not [a for a in service.asked if "LAD23CD" in a]
+
+
+def test_two_maps_fetched_at_once_fetch_every_authority_once(result):
+    # A door can fetch a second map while the first is still on its way.
+    service = _Service()
+    started = threading.Event()
+    go_on = threading.Event()
+
+    def slow(geography_type, **asked):
+        if geography_type == "LAD" and "LAD23CD" not in asked:
+            started.set()
+            go_on.wait(timeout=5)
+        return service.load(geography_type, **asked)
+
+    fetched: list[dict] = []
+
+    def fetch():
+        fetched.append(load_map_boundaries(result, fine=False))
+
+    with mock.patch("uk_open_data.analyses.maps.load_geodata", slow):
+        threads = [threading.Thread(target=fetch) for _ in range(2)]
+        threads[0].start()
+        assert started.wait(timeout=5)
+        threads[1].start()
+        go_on.set()
+        for thread in threads:
+            thread.join(timeout=5)
+    everywhere = [
+        asked
+        for asked in service.asked
+        if asked["type"] == "LAD" and "LAD23CD" not in asked
+    ]
+    assert len(everywhere) == 1
+    assert [len(b["surroundings"]) for b in fetched] == [2, 2]
 
 
 def test_an_empty_answer_for_every_authority_is_not_kept(result):
