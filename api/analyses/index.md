@@ -452,14 +452,23 @@ result says so in a warning. To see the places you do not reach, name the area.
 The charts `need_in_priority_areas` and `reach_in_priority_areas` show people
 in need and people reached per 100 in need for the places in `priority_areas`.
 
+The labels follow the need. When the need is every resident, the figures, the
+headings and the list say "residents" and "the local authorities with the most
+residents", not "people in need" and "high need".
+
+The answer says so when the area was worked out from your data: it opens "In
+the 7 local authorities where most of your people live". When a fifth or more
+of the people in your data could not be placed in the area you serve, it ends
+by saying how many are not counted.
+
 | Table | Rows |
 | --- | --- |
-| `priority_areas` | The high-need local authorities with the lowest reach, lowest first: people in need, people, people per 100 in need |
+| `priority_areas` | The high-need local authorities, your lowest reach first: people in need, people, people per 100 in need. It is a list in that order and no more: a place on it can have more reach than the area as a whole |
 | `by_local_authority` | One per local authority compared, with need and reach in bands, and people in need for each 1,000 residents. This feeds the map |
 
 The map shades need by its rate, people in need for each 1,000 residents, in
 five equal groups. A count would make the largest places darkest whatever
-their need. The list of places to look at first still goes by the count, as
+their need. The list of high-need places still goes by the count, as
 the case study does. The residents are the census count of everyone who lives
 in each local authority, loaded beside the need figures.
 
@@ -667,7 +676,7 @@ people in need and volume for each 1,000 in need for the places in
 
 | Table | Rows |
 | --- | --- |
-| `priority_areas` | The high-need local authorities with the least provision, lowest first: people in need, volume, volume per 1,000 in need |
+| `priority_areas` | The high-need local authorities, thinnest provision first: people in need, volume, volume per 1,000 in need. The labels follow the need, as in the second analysis |
 | `by_local_authority` | One per local authority compared, with need and provision in bands. This feeds the map |
 
 | Option | Default | Meaning |
