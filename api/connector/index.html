@@ -1266,9 +1266,10 @@ totals, never rows</strong>.</p>
 <h2 id="start-it">Start it</h2>
 <p>The server needs the <code>connector</code> extra:</p>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;uk-open-data[connector]&quot;</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>uk_open_data.connector
+uv<span class="w"> </span>run<span class="w"> </span>uk-open-data<span class="w"> </span>connector
 </code></pre></div>
-<p>That runs over stdio, which is how a desktop assistant starts a local
+<p><code>python -m uk_open_data.connector</code> starts the same thing and takes the same
+options. That runs over stdio, which is how a desktop assistant starts a local
 connector. For Claude Desktop or Claude Code, add this to the MCP
 configuration, with the path to your checkout:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1277,7 +1278,7 @@ configuration, with the path to your checkout:</p>
 <span class="w">      </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uv&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="s2">&quot;run&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--directory&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/path/to/uk-open-data&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--extra&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;connector&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">&quot;python&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;uk_open_data.connector&quot;</span>
+<span class="w">        </span><span class="s2">&quot;uk-open-data&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;connector&quot;</span>
 <span class="w">      </span><span class="p">]</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
@@ -1285,7 +1286,7 @@ configuration, with the path to your checkout:</p>
 </code></pre></div>
 <p>To host it, run the same server over Streamable HTTP. The address to give an
 assistant then ends in <code>/mcp</code>:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>uk_open_data.connector<span class="w"> </span>--transport<span class="w"> </span>streamable-http<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>uk-open-data<span class="w"> </span>connector<span class="w"> </span>--transport<span class="w"> </span>streamable-http<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
 </code></pre></div>
 <h2 id="tools">Tools</h2>
 <table>

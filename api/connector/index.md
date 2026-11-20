@@ -15,10 +15,11 @@ The server needs the `connector` extra:
 
 ```bash
 uv add "uk-open-data[connector]"
-uv run python -m uk_open_data.connector
+uv run uk-open-data connector
 ```
 
-That runs over stdio, which is how a desktop assistant starts a local
+`python -m uk_open_data.connector` starts the same thing and takes the same
+options. That runs over stdio, which is how a desktop assistant starts a local
 connector. For Claude Desktop or Claude Code, add this to the MCP
 configuration, with the path to your checkout:
 
@@ -29,7 +30,7 @@ configuration, with the path to your checkout:
       "command": "uv",
       "args": [
         "run", "--directory", "/path/to/uk-open-data", "--extra", "connector",
-        "python", "-m", "uk_open_data.connector"
+        "uk-open-data", "connector"
       ]
     }
   }
@@ -40,7 +41,7 @@ To host it, run the same server over Streamable HTTP. The address to give an
 assistant then ends in `/mcp`:
 
 ```bash
-uv run python -m uk_open_data.connector --transport streamable-http --port 8000
+uv run uk-open-data connector --transport streamable-http --port 8000
 ```
 
 ## Tools
