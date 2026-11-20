@@ -167,8 +167,9 @@ def test_top_sets_the_length_of_the_list(kept):
 
 @pytest.mark.parametrize("top", [0, 51, 2.5, "ten", True])
 def test_bad_top_is_rejected(kept, top):
-    with pytest.raises(AnalysisInputError, match="top"):
+    with pytest.raises(AnalysisInputError, match="Places listed") as caught:
         _run(options={"top": top})
+    assert caught.value.option == "top"
 
 
 def test_within_km_moves_the_line(kept):
@@ -212,15 +213,21 @@ def test_a_distance_on_the_line_is_within_reach(kept):
 
 @pytest.mark.parametrize("within", [0, -1, 501, "near", True, None])
 def test_bad_within_km_is_rejected(kept, within):
-    with pytest.raises(AnalysisInputError, match="within_km"):
+    with pytest.raises(
+        AnalysisInputError, match="Distance within reach, in kilometres"
+    ) as caught:
         _run(options={"within_km": within})
+    assert caught.value.option == "within_km"
 
 
 def test_nowhere_beyond_reach_is_said_not_hidden(kept):
     result = _run(options={"within_km": 500})
     assert result.table("priority_areas").rows == []
     assert result.figure("share_of_people_within_reach").value == 100.0
-    assert any(w.startswith("Every local authority compared") for w in result.warnings)
+    assert any(
+        w.startswith("Every local authority in the area you serve")
+        for w in result.warnings
+    )
 
 
 # --- the answer ------------------------------------------------------------
@@ -252,7 +259,7 @@ def test_answer_says_when_nowhere_is_beyond_reach(kept):
     result = _run(options={"within_km": 500})
     assert result.answer == (
         AVERAGE.format(who="residents", share="all", within="500")
-        + " No local authority compared is farther away than that."
+        + " No local authority in the area you serve is farther away than that."
     )
 
 
@@ -286,8 +293,9 @@ def test_need_can_be_another_built_in_measure(kept):
 
 @pytest.mark.parametrize("need", ["everyone", 7, None, {"dataset": "NM_1_1"}])
 def test_bad_need_is_rejected(kept, need):
-    with pytest.raises(AnalysisInputError, match="need"):
+    with pytest.raises(AnalysisInputError, match="Who counts as in need") as caught:
         _run(options={"need": need})
+    assert caught.value.option == "need"
 
 
 def test_catchment_can_name_local_authorities(kept):
@@ -296,7 +304,7 @@ def test_catchment_can_name_local_authorities(kept):
     assert result.figure("people_in_need").value == 18000
     assert _names(result.table("priority_areas")) == ["Adur"]
     choice = next(c for c in result.choices if c.id == "catchment")
-    assert choice.reason == "You set the catchment."
+    assert choice.reason == "You gave the area."
 
 
 def test_a_site_outside_the_catchment_still_counts_as_the_nearest(kept):
@@ -308,8 +316,9 @@ def test_a_site_outside_the_catchment_still_counts_as_the_nearest(kept):
 
 @pytest.mark.parametrize("catchment", [["Lewisham", "Narnia"], 7, [], [""]])
 def test_bad_catchment_is_rejected(kept, catchment):
-    with pytest.raises(AnalysisInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="Area you serve") as caught:
         _run(options={"catchment": catchment})
+    assert caught.value.option == "catchment"
 
 
 def test_a_place_without_a_centre_is_left_out_and_counted(kept):
@@ -322,8 +331,9 @@ def test_a_place_without_a_centre_is_left_out_and_counted(kept):
 
 def test_a_catchment_without_any_centre_is_an_input_error(kept):
     keep_centres(CENTRES[:5], "invented for a test.")
-    with pytest.raises(AnalysisInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="Area you serve") as caught:
         _run(options={"catchment": "Wales"})
+    assert caught.value.option == "catchment"
 
 
 # --- reading the positions -------------------------------------------------
@@ -454,8 +464,11 @@ def test_positions_given_directly_send_nothing(kept):
 
 @pytest.mark.parametrize("how", ["sometimes", None, 1])
 def test_bad_postcode_lookup_is_rejected_in_either_mode(kept, how):
-    with pytest.raises(AnalysisInputError, match="postcode_lookup"):
+    with pytest.raises(
+        AnalysisInputError, match="Where postcodes are looked up"
+    ) as caught:
         _run(options={"postcode_lookup": how})
+    assert caught.value.option == "postcode_lookup"
 
 
 # --- site postcodes that stay on this machine ------------------------------

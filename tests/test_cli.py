@@ -89,7 +89,7 @@ def test_analysis_describe(capsys):
     assert main(["analysis", "describe", ANALYSIS_ID]) == EXIT_OK
     out = capsys.readouterr().out
     assert "columns needed: lsoa_code, count" in out
-    assert "suppress_below (default 5)" in out
+    assert "Smallest count shown (--option suppress_below=VALUE, default 5)" in out
 
 
 def test_analysis_describe_json(capsys):
@@ -261,6 +261,20 @@ def test_a_run_that_answers_is_recorded_once(index, counts_file, capsys, caplog)
     assert [record.getMessage() for record in caplog.records] == [
         "run analysis=reach-deprivation mode=neighbourhood_counts door=cli"
     ]
+
+
+def test_an_option_error_says_what_to_type(index, counts_file, capsys):
+    assert main(_run_args(counts_file, "--option", "suppress_below=1")) == 2
+    err = capsys.readouterr().err
+    assert "'Smallest count shown' cannot be lower than 3" in err
+    assert err.endswith("On the command line this is --option suppress_below=VALUE.\n")
+
+
+def test_a_column_error_says_what_to_type(index, counts_file, capsys):
+    args = ["analysis", "run", ANALYSIS_ID, str(counts_file)]
+    assert main([*args, "--column", "postcode=Nowhere"]) == EXIT_INPUT_ERROR
+    err = capsys.readouterr().err
+    assert err.endswith("On the command line this is --column postcode=COLUMN.\n")
 
 
 def test_a_run_that_fails_is_not_recorded(index, counts_file, capsys, caplog):

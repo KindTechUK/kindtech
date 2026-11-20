@@ -17,6 +17,7 @@ import narwhals as nw
 import uk_open_data
 from uk_open_data.analyses._answers import AREA, HIDDEN, number, shown_first, values
 from uk_open_data.analyses._inputs import is_blank
+from uk_open_data.analyses._labels import LABELS, said
 from uk_open_data.analyses._model import (
     Analysis,
     AnalysisInfo,
@@ -45,6 +46,7 @@ from uk_open_data.analyses._privacy import (
     group_hidden,
 )
 from uk_open_data.analyses._steps import (
+    HOW_TO_NAME_A_PLACE,
     POSTCODE_LOOKUP,
     SUPPRESS_BELOW,
     Trail,
@@ -125,6 +127,7 @@ INFO = AnalysisInfo(
         POSTCODE_LOOKUP,
         Option(
             name="catchment",
+            label=LABELS["catchment"],
             description=(
                 "The area you serve: a list of local authority names or codes, "
                 "or 'England'. Left empty, the analysis uses the local authorities "
@@ -134,9 +137,11 @@ INFO = AnalysisInfo(
         ),
         Option(
             name="catchment_min_share",
+            label=LABELS["catchment_min_share"],
             description=(
-                "When the catchment is not given, a local authority joins it "
-                "if it holds at least this share of the people located."
+                "When the area you serve is not given, a local authority "
+                "joins it if it holds at least this share of the people "
+                "located."
             ),
             default=0.05,
         ),
@@ -156,12 +161,12 @@ CAVEATS = (
 
 DECILE_CHART = Chart(
     id="people_by_decile",
-    title="Your people and catchment residents, by deprivation decile",
+    title="Your people and residents of the area, by deprivation decile",
     table="by_decile",
     category_column="imd_decile",
     series=(
         ChartSeries("share_of_people", "Your people", "percent"),
-        ChartSeries("share_of_residents", "Catchment residents", "percent"),
+        ChartSeries("share_of_residents", "Residents of the area", "percent"),
     ),
     note="Decile 1 is the most deprived tenth of neighbourhoods in England.",
 )
@@ -226,8 +231,9 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
     map_spec = None
     if catchment.whole_country:
         trail.warnings.append(
-            "No map was made because the catchment is the whole of England. "
-            "Name the local authorities you serve to get one."
+            "No map was made because the area you serve is the whole of "
+            f"England. Name local authorities in {said('catchment')} to get "
+            "one."
         )
     else:
         tables.append(_neighbourhood_table(in_catchment, areas, catchment, threshold))
@@ -422,16 +428,16 @@ def _named_catchment(wanted: Any, areas: dict[str, _Area]) -> _Catchment:
         isinstance(item, str) and item.strip() for item in items
     ):
         msg = (
-            "The option 'catchment' must be a local authority name or code, a "
+            f"{said('catchment')} must be a local authority name or code, a "
             "list of them, or 'England'."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="catchment")
     cleaned = [item.strip() for item in items]
     if [item.lower() for item in cleaned] == [ENGLAND.lower()]:
         return _Catchment(
             lad_codes=frozenset(),
             names=(ENGLAND,),
-            reason="You set the catchment to the whole of England.",
+            reason="You gave the whole of England as the area.",
             whole_country=True,
         )
     lad_names = _authority_names(areas)
@@ -440,16 +446,16 @@ def _named_catchment(wanted: Any, areas: dict[str, _Area]) -> _Catchment:
     unknown = [item for item in cleaned if item.lower() not in by_key]
     if unknown:
         msg = (
-            "These catchment entries are not English local authorities in the "
-            f"2025 index: {', '.join(unknown)}. Use the names or codes as "
-            "the index spells them."
+            f"These entries in {said('catchment')} are not English local "
+            f"authorities in the 2025 index: {', '.join(unknown)}. "
+            f"{HOW_TO_NAME_A_PLACE}"
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="catchment")
     chosen = list(dict.fromkeys(by_key[item.lower()] for item in cleaned))
     return _Catchment(
         lad_codes=frozenset(chosen),
         names=tuple(lad_names[lad] for lad in chosen),
-        reason="You set the catchment.",
+        reason="You gave the area.",
     )
 
 
@@ -476,9 +482,9 @@ def _keep_catchment(
     n_inside = sum(inside.values())
     trail.working.append(
         Step(
-            title="Set the catchment",
+            title="Set the area you serve",
             detail=(
-                f"Catchment: {catchment.label}. {catchment.reason} "
+                f"Area: {catchment.label}. {catchment.reason} "
                 f"{n_inside} of the {n_located} people located live in it. "
                 "The decile figures and the map cover these people."
             ),
@@ -488,16 +494,16 @@ def _keep_catchment(
     )
     if n_inside < threshold:
         msg = (
-            f"Fewer than {threshold} of the people located live in the "
-            f"catchment ({catchment.label}), which is too few to give figures "
-            "that do not point at individuals. Check the 'catchment' option."
+            f"Fewer than {threshold} of the people located live in the area "
+            f"you serve ({catchment.label}), which is too few to give figures "
+            f"that do not point at individuals. Check {said('catchment')}."
         )
-        raise AnalysisInputError(msg)
+        raise AnalysisInputError(msg, option="catchment")
     if n_inside < n_located:
         trail.warnings.append(
-            f"{n_located - n_inside} people live outside the catchment. They "
-            "are counted in the local authority table but not in the decile "
-            "figures. Change the 'catchment' option to include them."
+            f"{n_located - n_inside} people live outside the area you serve. "
+            "They are counted in the local authority table but not in the "
+            f"decile figures. Change {said('catchment')} to include them."
         )
     return inside
 
@@ -554,7 +560,7 @@ def _decile_table(
             detail=(
                 "Decile 1 is the most deprived tenth of neighbourhoods in "
                 "England and decile 10 the least. For each decile, the people "
-                "you reached in the catchment were set against everyone who "
+                "you reached in the area you serve were set against everyone who "
                 "lives in its neighbourhoods of that decile (mid-2022 "
                 "population)."
             ),
@@ -564,7 +570,7 @@ def _decile_table(
     )
     return Table(
         id="by_decile",
-        title="People and residents by deprivation decile, in the catchment",
+        title="People and residents by deprivation decile, in the area you serve",
         columns=(
             "imd_decile",
             "people",
@@ -675,7 +681,10 @@ def _neighbourhood_table(
     ]
     return Table(
         id="by_neighbourhood",
-        title="Catchment neighbourhoods: deprivation decile and people reached",
+        title=(
+            "Neighbourhoods in the area you serve: deprivation decile and "
+            "people reached"
+        ),
         columns=(
             "geography_code",
             "geography_name",
@@ -744,15 +753,15 @@ def _figures(
         ),
         Figure(
             "people_in_catchment",
-            "People who live in the catchment",
+            "People who live in the area you serve",
             sum(people),
             "people",
             note="The decile figures below are about these people.",
         ),
         _share_figure(
             "share_most_deprived_10",
-            "Share of your people in the catchment who live in the 10% most "
-            "deprived neighbourhoods in England",
+            "Share of your people in the area you serve who live in the 10% "
+            "most deprived neighbourhoods in England",
             people,
             hide,
             (0,),
@@ -760,8 +769,8 @@ def _figures(
         ),
         _share_figure(
             "share_most_deprived_20",
-            "Share of your people in the catchment who live in the 20% most "
-            "deprived neighbourhoods in England",
+            "Share of your people in the area you serve who live in the 20% "
+            "most deprived neighbourhoods in England",
             people,
             hide,
             MOST_DEPRIVED,
@@ -769,8 +778,8 @@ def _figures(
         ),
         Figure(
             "catchment_share_most_deprived_20",
-            "Share of catchment residents who live in the 20% most deprived "
-            "neighbourhoods in England",
+            "Share of residents of the area you serve who live in the 20% "
+            "most deprived neighbourhoods in England",
             percent(sum(residents[:2]), sum(residents)),
             "percent",
             note="The comparison for the share of your people.",
@@ -808,13 +817,13 @@ def _reach_figures(
     groups = (
         (
             "reach_per_1000_most_deprived_20",
-            "People reached per 1,000 residents in the catchment's "
-            "neighbourhoods among the 20% most deprived in England",
+            "People reached per 1,000 residents in the neighbourhoods of the "
+            "area you serve that are among the 20% most deprived in England",
             MOST_DEPRIVED,
         ),
         (
             "reach_per_1000_elsewhere",
-            "People reached per 1,000 residents in the rest of the catchment",
+            "People reached per 1,000 residents in the rest of the area you serve",
             ELSEWHERE,
         ),
     )
@@ -850,7 +859,7 @@ def _reach_figure(
             label,
             None,
             "per_1000",
-            note="The catchment has no neighbourhoods of this kind.",
+            note="The area you serve has no neighbourhoods of this kind.",
         )
     reached = sum(people[position] for position in positions)
     return Figure(figure_id, label, _per_1000(reached, lived), "per_1000")
@@ -916,7 +925,7 @@ def _choices(catchment: _Catchment, threshold: int) -> tuple[Choice, ...]:
         ),
         Choice(
             id="catchment",
-            label="Catchment",
+            label=LABELS["catchment"],
             value=list(catchment.names),
             reason=catchment.reason,
             option="catchment",

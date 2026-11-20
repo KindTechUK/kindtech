@@ -298,7 +298,7 @@ def test_a_quarter_of_the_places_are_high_need_and_the_result_says_so(nomis):
     assert {r["geography_name"] for r in table.rows if r["high_need"]} == HIGH_NEED
     assert result.figure("high_need_areas").value == len(NEED) // 4
     choice = next(c for c in result.choices if c.id == "high_need")
-    assert choice.value == "In the top quarter of the area compared, by people in need"
+    assert choice.value == "In the top quarter of the area you serve, by people in need"
     step = next(s for s in result.working if s.title == "Set reach against need")
     assert "in the top quarter of the area (at or above 9,000)" in step.detail
 
@@ -458,8 +458,9 @@ def test_filters_of_a_table_can_name_another_measure(nomis):
     ],
 )
 def test_bad_need_is_rejected(nomis, need):
-    with pytest.raises(AnalysisInputError, match="need"):
+    with pytest.raises(AnalysisInputError, match="Who counts as in need") as caught:
         _run(_counts(Lewisham=60), options={"need": need})
+    assert caught.value.option == "need"
     assert nomis.asked == []
 
 
@@ -579,8 +580,9 @@ def test_top_sets_the_length_of_the_list(nomis):
 
 @pytest.mark.parametrize("top", [0, 51, 2.5, "ten", True])
 def test_bad_top_is_rejected(nomis, top):
-    with pytest.raises(AnalysisInputError, match="top"):
+    with pytest.raises(AnalysisInputError, match="Places listed") as caught:
         _run(_counts(Greenwich=50), options={"top": top})
+    assert caught.value.option == "top"
 
 
 # --- small counts ----------------------------------------------------------
@@ -654,8 +656,9 @@ def test_suppress_below_can_be_raised_but_not_dropped(nomis):
     rows = {r["geography_name"]: r for r in result.table("by_local_authority").rows}
     assert rows["Cardiff"]["people"] is None
     assert rows["Manchester"]["people"] is None
-    with pytest.raises(AnalysisInputError, match="suppress_below"):
+    with pytest.raises(AnalysisInputError, match="Smallest count shown") as caught:
         _run(_counts(Lewisham=60), options={"suppress_below": 2})
+    assert caught.value.option == "suppress_below"
 
 
 # --- the area compared -----------------------------------------------------
@@ -690,16 +693,17 @@ def test_catchment_can_be_a_country(nomis):
 
 @pytest.mark.parametrize("catchment", [["Lewisham", "Narnia"], 7, [], [""]])
 def test_bad_catchment_is_rejected(nomis, catchment):
-    with pytest.raises(AnalysisInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="Area you serve") as caught:
         _run(_counts(Lewisham=60), options={"catchment": catchment})
+    assert caught.value.option == "catchment"
 
 
 def test_catchment_with_too_few_people_is_an_input_error(nomis):
-    with pytest.raises(AnalysisInputError, match="live in the catchment"):
+    with pytest.raises(AnalysisInputError, match="live in the area you serve"):
         _run(_counts(Lewisham=60, Adur=2), options={"catchment": "Adur"})
 
 
-GUESSED = "The area compared was worked out from where your people live"
+GUESSED = "The area you serve was worked out from where your people live"
 
 
 def test_the_area_is_worked_out_from_where_most_people_live(nomis):
@@ -765,8 +769,11 @@ def test_a_named_area_is_not_called_worked_out(nomis):
 
 @pytest.mark.parametrize("share", ["a lot", 0, 1.5, True, None])
 def test_bad_share_is_rejected(nomis, share):
-    with pytest.raises(AnalysisInputError, match="catchment_min_share"):
+    with pytest.raises(
+        AnalysisInputError, match="Share that makes a place part of your area"
+    ) as caught:
         _run(_counts(Lewisham=60), options={"catchment_min_share": share})
+    assert caught.value.option == "catchment_min_share"
 
 
 def test_a_wide_comparison_is_flagged_when_people_are_in_few_places():
@@ -782,7 +789,10 @@ def test_a_wide_comparison_is_flagged_when_people_are_in_few_places():
         # No place holds every person, so the whole country is compared.
         wide = _run(rows, options={"catchment_min_share": 1})
         named = _run(rows, options={"catchment": "England"})
-    flag = "Your people live in 2 of the 30 local authorities compared."
+    flag = (
+        "No area was given, so all 30 local authorities in England and Wales "
+        "are looked at, and your people live in 2 of them."
+    )
     assert any(w.startswith(flag) for w in wide.warnings)
     assert not any(w.startswith(flag) for w in named.warnings)
 
@@ -995,7 +1005,7 @@ def test_result_explains_itself(nomis):
         "Loaded the residents",
         "Read the local authority counts",
         "Joined people to the need figures",
-        "Set the area to compare",
+        "Set the area you serve",
         "Set reach against need",
         "Listed the places with high need and low reach",
         "Hid small counts",

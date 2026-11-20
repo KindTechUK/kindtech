@@ -19,12 +19,25 @@ class AnalysisInputError(ValueError):
 
     The message is written for a person and never repeats a value from the
     data. ``problems`` holds each problem as its own sentence.
+
+    ``option`` is the code name of the option the error is about, and ``role``
+    the name of the column role, so a page can show the message beside the
+    right box. When the problems are about several, it is the first of them.
+    Each is None when the error is about neither.
     """
 
-    def __init__(self, problems: list[str] | str) -> None:
+    def __init__(
+        self,
+        problems: list[str] | str,
+        *,
+        option: str | None = None,
+        role: str | None = None,
+    ) -> None:
         self.problems: list[str] = (
             [problems] if isinstance(problems, str) else list(problems)
         )
+        self.option = option
+        self.role = role
         super().__init__(" ".join(self.problems))
 
 
@@ -100,12 +113,17 @@ class Option:
     ``choices`` lists the values to pick from when the option takes one of a
     fixed list, so a page can show them as a list and not a text box. It is
     empty when the option is free, such as a number or a place name.
+
+    ``label`` is the option's short plain name, such as "Area you serve". A
+    page shows it beside the option, and messages use it, in quotes, to point
+    a person at the option. ``name`` is the code name a call is written with.
     """
 
     name: str
     description: str
     default: Any = None
     choices: tuple[OptionChoice, ...] = ()
+    label: str = ""
 
 
 @dataclass(frozen=True)

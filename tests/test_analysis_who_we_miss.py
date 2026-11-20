@@ -508,7 +508,7 @@ def test_groups_option_says_which_group_a_label_belongs_to(nomis):
     assert _rows(result)["Other"]["people"] == 50
     assert result.figure("people_not_matched").value == 0
     step = next(s for s in result.working if s.title.startswith("Matched your labels"))
-    assert "1 were set by the 'groups' option" in step.detail
+    assert "1 were set in 'How your labels match census groups'" in step.detail
 
 
 def test_groups_option_wins_over_the_wording(nomis):
@@ -524,9 +524,12 @@ def test_groups_option_wins_over_the_wording(nomis):
     "groups", [["Indian"], "Indian", {"Indian": 3}, {"Indian": "South Asian"}]
 )
 def test_bad_groups_option_is_rejected_without_repeating_a_label(nomis, groups):
-    with pytest.raises(AnalysisInputError, match="'groups'") as raised:
+    with pytest.raises(
+        AnalysisInputError, match="'How your labels match census groups'"
+    ) as raised:
         _run(CLIENTS, options={"catchment": "Lewisham", "groups": groups})
     assert "Indian" not in str(raised.value)
+    assert raised.value.option == "groups"
     assert "South Asian" not in str(raised.value)
 
 
@@ -655,7 +658,7 @@ def test_a_label_that_names_both_sexes_is_not_matched(nomis):
 
 @pytest.mark.parametrize("characteristic", ["age", "", None, 3])
 def test_unknown_characteristic_is_rejected(nomis, characteristic):
-    with pytest.raises(AnalysisInputError, match="'characteristic'"):
+    with pytest.raises(AnalysisInputError, match="'What people are grouped by'"):
         _run(
             CLIENTS, options={"catchment": "Lewisham", "characteristic": characteristic}
         )
@@ -729,7 +732,7 @@ def test_labels_that_match_nothing_are_the_reason_given_not_too_few_people(nomis
         "30 people have no label, or a label that matched no census group, so "
         "too few are left to give figures."
     )
-    assert "'groups' option" in message
+    assert "'How your labels match census groups'" in message
     assert "Not stated" not in message  # the label as typed is not repeated
 
 
@@ -746,7 +749,7 @@ def test_few_people_brings_a_warning_about_chance(nomis):
 
 @pytest.mark.parametrize("value", [0, 1.5, -1, "0.8", True, None])
 def test_bad_line_for_under_represented_is_rejected(nomis, value):
-    with pytest.raises(AnalysisInputError, match="'under_represented_below'"):
+    with pytest.raises(AnalysisInputError, match="'What counts as under-represented'"):
         _run(
             CLIENTS, options={"catchment": "Lewisham", "under_represented_below": value}
         )
@@ -754,7 +757,9 @@ def test_bad_line_for_under_represented_is_rejected(nomis, value):
 
 @pytest.mark.parametrize("value", [0, 2, "a twentieth", False])
 def test_bad_catchment_share_is_rejected(nomis, value):
-    with pytest.raises(AnalysisInputError, match="'catchment_min_share'"):
+    with pytest.raises(
+        AnalysisInputError, match="'Share that makes a place part of your area'"
+    ):
         _run(CLIENTS, options={"catchment": "Lewisham", "catchment_min_share": value})
 
 
@@ -769,7 +774,7 @@ def test_bad_counts_are_rejected(nomis, count):
 
 
 def test_catchment_must_be_given_without_postcodes(nomis):
-    with pytest.raises(AnalysisInputError, match="'catchment' option"):
+    with pytest.raises(AnalysisInputError, match="Fill in 'Area you serve'"):
         _run(CLIENTS, options={})
 
 
@@ -780,7 +785,7 @@ def test_catchment_can_name_local_authorities_by_name_or_code(nomis):
     assert _rows(result)["Black"]["share_of_residents"] == 22.5
     choice = next(c for c in result.choices if c.id == "catchment")
     assert choice.value == "Greenwich, Lewisham"
-    assert choice.reason == "You set the catchment."
+    assert choice.reason == "You gave the area."
 
 
 def test_catchment_can_be_a_country(nomis):
@@ -794,8 +799,9 @@ def test_catchment_can_be_a_country(nomis):
 
 @pytest.mark.parametrize("catchment", [["Lewisham", "Narnia"], 7, [], [""]])
 def test_bad_catchment_is_rejected(nomis, catchment):
-    with pytest.raises(AnalysisInputError, match="catchment"):
+    with pytest.raises(AnalysisInputError, match="Area you serve") as caught:
         _run(CLIENTS, options={"catchment": catchment})
+    assert caught.value.option == "catchment"
 
 
 # --- one row per person ----------------------------------------------------

@@ -8,6 +8,7 @@ tables, so the tests are isolated and repeatable.
 import json
 import logging
 import unittest.mock as mock
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -30,6 +31,7 @@ from uk_open_data.analyses._inputs import (
     tidy_postcode,
     to_count,
 )
+from uk_open_data.analyses._labels import LABELS
 from uk_open_data.analyses._privacy import band_labels, cells_to_hide, count_band
 from uk_open_data.analyses.reach_deprivation import ANALYSIS
 from uk_open_data.imd import keep_imd
@@ -232,6 +234,18 @@ def test_resolve_columns_reports_unknown_roles_and_columns():
     with pytest.raises(AnalysisInputError) as raised:
         resolve_columns(["a"], ["postcode"], {"postcode": "b", "age": "a"})
     assert len(raised.value.problems) == 2
+    # The first role with a problem, so a page can mark its column choice.
+    assert raised.value.role == "postcode"
+    assert raised.value.option is None
+
+
+def test_an_input_error_is_about_no_option_or_role_unless_it_says_so():
+    plain = AnalysisInputError("Something is wrong.")
+    assert (plain.option, plain.role) == (None, None)
+    about = AnalysisInputError(["One.", "Two."], option="catchment")
+    assert about.option == "catchment"
+    assert about.problems == ["One.", "Two."]
+    assert str(about) == "One. Two."
 
 
 # --- the interface ---------------------------------------------------------
@@ -318,7 +332,7 @@ def test_catchment_is_where_most_people_live(world):
     assert catchment.option == "catchment"
     assert result.figure("people_located").value == 73
     assert result.figure("people_in_catchment").value == 70
-    assert any("3 people live outside the catchment" in w for w in result.warnings)
+    assert any("3 people live outside the area you serve" in w for w in result.warnings)
     other = result.table("by_local_authority").rows[-1]
     assert other["lad_name"] == "Other local authorities"
     assert other["lad_code"] is None
@@ -700,6 +714,53 @@ def test_an_error_from_the_download_is_not_blamed_on_a_kept_copy():
     ):
         run_analysis(ANALYSIS_ID, [{"lsoa_code": _area_code(0, 1), "count": 30}])
     assert not isinstance(raised.value, AnalysisInputError)
+
+
+# --- the plain name of each option -----------------------------------------
+
+
+def test_every_option_has_one_plain_name_on_every_analysis():
+    labels: dict[str, set[str]] = {}
+    for analysis in list_analyses():
+        for option in analysis.options:
+            assert option.label, f"{analysis.id}: {option.name} has no label"
+            labels.setdefault(option.name, set()).add(option.label)
+    assert all(len(names) == 1 for names in labels.values())
+    plain = [next(iter(names)) for names in labels.values()]
+    assert len(set(plain)) == len(plain)  # no two options share a name
+    assert labels["catchment"] == {"Area you serve"}
+    described = describe_analysis(ANALYSIS_ID).to_dict()["options"]
+    assert {o["name"]: o["label"] for o in described}["catchment"] == "Area you serve"
+
+
+def test_the_docs_list_every_plain_name():
+    docs = Path(__file__).parent.parent / "docs" / "api" / "analyses.md"
+    text = docs.read_text(encoding="utf-8")
+    for name, label in LABELS.items():
+        assert f"| `{name}` | {label} |" in text
+
+
+def test_what_a_person_reads_about_an_option_holds_no_code_name():
+    for analysis in list_analyses():
+        names = [option.name for option in analysis.options]
+        for option in analysis.options:
+            read = f"{option.label} {option.description}"
+            assert not [name for name in names if "_" in name and name in read]
+            assert "catchment" not in read.lower()
+            assert "option" not in read.lower()
+
+
+def test_a_bad_option_says_which_one_by_its_plain_name(world):
+    with pytest.raises(AnalysisInputError) as raised:
+        world.run(options={"suppress_below": 1})
+    assert raised.value.option == "suppress_below"
+    assert str(raised.value).startswith("'Smallest count shown' cannot be lower")
+    assert "suppress_below" not in str(raised.value)
+    with pytest.raises(AnalysisInputError) as raised:
+        world.run(options={"catchment": ["Narnia"]})
+    assert raised.value.option == "catchment"
+    assert "These entries in 'Area you serve'" in str(raised.value)
+    assert "for example Lewisham" in str(raised.value)
 
 
 # --- options with a fixed list of values -----------------------------------

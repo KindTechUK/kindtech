@@ -116,7 +116,12 @@ def resolve_columns(
         if role in roles and column not in available
     ]
     if problems:
-        raise AnalysisInputError(problems)
+        wrong = [
+            role
+            for role, column in mapping.items()
+            if role not in roles or column not in available
+        ]
+        raise AnalysisInputError(problems, role=wrong[0])
     return {
         role: mapping.get(role, role)
         for role in roles
