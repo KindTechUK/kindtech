@@ -53,6 +53,7 @@ from uk_open_data.analyses._steps import (
     SUPPRESS_BELOW,
     Trail,
     bad_counts,
+    before_rounding,
     named_areas,
     percent,
     place_postcodes,
@@ -997,6 +998,39 @@ def _figures(
             "groups",
             note=note,
         ),
+        *_shares_behind_the_answer(people, lived, rows),
+    ]
+
+
+def _shares_behind_the_answer(
+    people: list[int], lived: list[float], rows: list[dict[str, Any]]
+) -> list[Figure]:
+    """Give the two shares the answer quotes, so each has its exact value.
+
+    They are the shares of the first group the answer names. Its count is
+    shown, or the group would not be judged, so the exact shares give away
+    nothing the table does not.
+    """
+    under = _under(rows)
+    if not under or under[0]["people"] == 0:
+        return []
+    first = rows.index(under[0])
+    group = under[0]["group"]
+    return [
+        Figure(
+            "share_of_people_first_group",
+            f"Share of your people in the first of those groups, {group}",
+            under[0]["share_of_people"],
+            "percent",
+            exact=before_rounding(people[first], sum(people)),
+        ),
+        Figure(
+            "share_of_residents_first_group",
+            f"Share of residents in that group, {group}",
+            under[0]["share_of_residents"],
+            "percent",
+            exact=before_rounding(lived[first], sum(lived)),
+        ),
     ]
 
 
@@ -1006,12 +1040,7 @@ def _figures(
 def _answer(rows: list[dict[str, Any]]) -> str:
     """Name the groups reached less than their share of residents."""
     judged = [row for row in rows if row["under_represented"] is not None]
-    # A group with nobody may be one the charity does not record, so the
-    # groups it does reach come first.
-    under = sorted(
-        (row for row in judged if row["under_represented"]),
-        key=lambda row: (row["people"] == 0, row["representation"]),
-    )
+    under = _under(rows)
     against = f"Set against the people who live in {AREA}, you reach"
     hidden = sum(1 for row in rows if row["suppressed"])
     if not judged:
@@ -1034,6 +1063,18 @@ def _answer(rows: list[dict[str, Any]]) -> str:
     elif hidden:
         answer += f" {hidden} more groups have a hidden count and are not judged."
     return answer
+
+
+def _under(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """List the groups reached less than their share, in the answer's order.
+
+    A group with nobody may be one the charity does not record, so the
+    groups it does reach come first.
+    """
+    return sorted(
+        (row for row in rows if row["under_represented"]),
+        key=lambda row: (row["people"] == 0, row["representation"]),
+    )
 
 
 def _shares_of_the_first(under: list[dict[str, Any]]) -> str:

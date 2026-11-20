@@ -257,6 +257,38 @@ def test_the_code_to_run_it_again_leaves_out_the_persons_own_labels(nomis):
     assert "groups" not in check_working(_run(CLIENTS))
 
 
+def test_the_shares_the_answer_quotes_are_figures_with_exact_values(nomis):
+    # The answer turns on two small percentages. Each is a figure, so each
+    # has its value before rounding to be checked against.
+    result = _run(CLIENTS)
+    first = next(
+        row
+        for row in result.table("by_group").rows
+        if f", {row['group']}," in result.answer
+    )
+    ours = result.figure("share_of_people_first_group")
+    theirs = result.figure("share_of_residents_first_group")
+    assert ours.label.endswith(f", {first['group']}")
+    assert (ours.value, theirs.value) == (
+        first["share_of_people"],
+        first["share_of_residents"],
+    )
+    assert f"{ours.value}%, against {theirs.value}%" in result.answer
+    matched = result.figure("people_matched").value
+    assert ours.exact == pytest.approx(100 * first["people"] / matched)
+    assert round(theirs.exact, 1) == theirs.value
+    check_working(result)
+
+
+def test_no_share_is_a_figure_when_the_answer_quotes_none(nomis):
+    # Nobody in the data is in the one group reached less than its share,
+    # so the answer gives no percentages and there is nothing to check.
+    result = _run(_counts(White_British=100, Black_Caribbean=45, Indian=20, Mixed=15))
+    assert "%" not in result.answer
+    ids = {figure.id for figure in result.figures}
+    assert "share_of_people_first_group" not in ids
+
+
 def test_result_says_what_it_did_and_can_be_written_as_json(nomis):
     result = _run(CLIENTS)
     assert result.map is None
