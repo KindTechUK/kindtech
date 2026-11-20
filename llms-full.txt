@@ -2158,7 +2158,7 @@ answer = run_analysis_on_counts(
 answer["status"]              # "ok"
 answer["result"]["answer"]    # the sentence to open with
 answer["result"]["figures"]   # headline figures, small counts hidden
-answer["result"]["tables"]    # the places to look at first
+answer["result"]["tables"]    # the high-need places, lowest reach first
 ```
 
 `catchment` is the area you serve: every place the charity serves, whether or
