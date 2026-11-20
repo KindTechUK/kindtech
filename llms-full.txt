@@ -992,7 +992,8 @@ Every analysis returns the same things:
 - **a map description**: which areas to draw and what to colour them by, when
   the analysis has a map
 - **chart descriptions**: which table and columns to draw as a bar chart
-- **the working**: each step taken, with how many rows went in and came out
+- **the working**: each step taken, with how many rows went in and came out,
+  the figures before rounding and the code that runs it again
 - **choices**: what the analysis decided for you, and the option that changes it
 - **checks**: what a person must confirm before using the figures
 - **caveats**: what the figures cannot say
@@ -1242,6 +1243,73 @@ for figure_id in result.key_figures:
     figure = result.figure(figure_id)
     print(figure.label, figure.value, figure.unit)
 ```
+
+## Checking a result and running it again
+
+A result shows its working, so that anyone can check it or run it again.
+
+`result.working` lists each step in plain words, with how many rows went in
+and came out. `result.sources` gives each source and its date.
+
+A share or a rate is rounded before it is shown. `figure.exact` is the value
+before rounding:
+
+```python
+figure = result.figure("share_most_deprived_20")
+figure.value   # 68.6
+figure.exact   # 68.57142857142857
+```
+
+`exact` is `None` for a count, which is not rounded, and for a figure that is
+hidden to protect a small count. It is also `None` for a distance from one
+place to a site, which is rounded to the kilometre on purpose so that it says
+less about where a site is.
+
+`result.code` is the Python that runs the analysis again with the same
+settings:
+
+```python
+print(result.code)
+```
+
+```python
+# Version 0.1 of this analysis, run with
+# uk-open-data 0.2.0. This runs it again with
+# the same settings. Nothing from your table is written here: put
+# the name of your own column beside each role.
+import pandas as pd
+
+from uk_open_data.analyses import run_analysis
+
+data = pd.read_csv("your-table.csv")
+result = run_analysis(
+    "reach-deprivation",
+    data,
+    columns={
+        "postcode": "",  # the name of your column
+    },
+    options={
+        "suppress_below": 10,
+        "postcode_lookup": "auto",
+        "catchment_min_share": 0.05,
+    },
+)
+print(result.answer)
+```
+
+Every setting that has a value is written out, the ones you left alone too,
+so the code gives the same result if a default changes in a later version. A
+setting the analysis works out for itself, such as the area you serve when
+you named none, is left out.
+
+The code holds nothing from your table. The names of your columns are left
+for you to fill in, because a heading can hold something private. A setting
+that holds your own words, such as your own labels for groups in
+`who-we-miss`, is written as `{}` with a note to fill it in. So the code is as
+safe to share as the result is.
+
+The command line prints both at the end of its report, under "Figures before
+rounding" and "To run it again in Python".
 
 ## Charts
 
@@ -1889,6 +1957,11 @@ analysis keeps:
 6. List anything sent off the machine in `privacy.sent_to_third_parties`.
 7. Answer the question in `answer`, from figures the result shows and nothing
    else, and name the figures to show first in `key_figures`.
+8. Give a share or a rate its `exact` value, from `before_rounding`, when the
+   figure is shown, and never when it is hidden. Mark an option `private`
+   when the value a person gives holds words from their own data, so the
+   code that runs the analysis again leaves it out. `run_analysis` writes
+   `result.code` for you.
 
 
 ## Command Line
@@ -1929,7 +2002,8 @@ uk-open-data analysis describe reach-deprivation
 Runs an analysis on a `.csv`, `.xlsx` or `.ods` file and prints a plain-text report:
 a sentence or two that answer the question, then the figures, the tables, the
 checks to make before using them, what the figures cannot say, the choices
-made, the working, the sources and a privacy summary. A number has its unit
+made, the working, the figures before rounding, the sources, a privacy
+summary and the Python that runs it again. A number has its unit
 after it, such as "64.7 km", unless the label beside it already says the unit.
 
 ```bash

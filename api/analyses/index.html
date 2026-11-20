@@ -894,6 +894,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#checking-a-result-and-running-it-again" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking a result and running it again
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#charts" class="md-nav__link">
     <span class="md-ellipsis">
       Charts
@@ -1312,6 +1321,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#checking-a-result-and-running-it-again" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking a result and running it again
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#charts" class="md-nav__link">
     <span class="md-ellipsis">
       Charts
@@ -1436,7 +1454,8 @@ chat assistant through the <a href="../connector/">connector</a>.</p>
 <li><strong>a map description</strong>: which areas to draw and what to colour them by, when
   the analysis has a map</li>
 <li><strong>chart descriptions</strong>: which table and columns to draw as a bar chart</li>
-<li><strong>the working</strong>: each step taken, with how many rows went in and came out</li>
+<li><strong>the working</strong>: each step taken, with how many rows went in and came out,
+  the figures before rounding and the code that runs it again</li>
 <li><strong>choices</strong>: what the analysis decided for you, and the option that changes it</li>
 <li><strong>checks</strong>: what a person must confirm before using the figures</li>
 <li><strong>caveats</strong>: what the figures cannot say</li>
@@ -1675,6 +1694,58 @@ its place.</p>
     <span class="n">figure</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figure_id</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">figure</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">figure</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">figure</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
 </code></pre></div>
+<h2 id="checking-a-result-and-running-it-again">Checking a result and running it again</h2>
+<p>A result shows its working, so that anyone can check it or run it again.</p>
+<p><code>result.working</code> lists each step in plain words, with how many rows went in
+and came out. <code>result.sources</code> gives each source and its date.</p>
+<p>A share or a rate is rounded before it is shown. <code>figure.exact</code> is the value
+before rounding:</p>
+<div class="highlight"><pre><span></span><code><span class="n">figure</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;share_most_deprived_20&quot;</span><span class="p">)</span>
+<span class="n">figure</span><span class="o">.</span><span class="n">value</span>   <span class="c1"># 68.6</span>
+<span class="n">figure</span><span class="o">.</span><span class="n">exact</span>   <span class="c1"># 68.57142857142857</span>
+</code></pre></div>
+<p><code>exact</code> is <code>None</code> for a count, which is not rounded, and for a figure that is
+hidden to protect a small count. It is also <code>None</code> for a distance from one
+place to a site, which is rounded to the kilometre on purpose so that it says
+less about where a site is.</p>
+<p><code>result.code</code> is the Python that runs the analysis again with the same
+settings:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Version 0.1 of this analysis, run with</span>
+<span class="c1"># uk-open-data 0.2.0. This runs it again with</span>
+<span class="c1"># the same settings. Nothing from your table is written here: put</span>
+<span class="c1"># the name of your own column beside each role.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_analysis</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;your-table.csv&quot;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">run_analysis</span><span class="p">(</span>
+    <span class="s2">&quot;reach-deprivation&quot;</span><span class="p">,</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;postcode&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>  <span class="c1"># the name of your column</span>
+    <span class="p">},</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;suppress_below&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="s2">&quot;postcode_lookup&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;catchment_min_share&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">answer</span><span class="p">)</span>
+</code></pre></div>
+<p>Every setting that has a value is written out, the ones you left alone too,
+so the code gives the same result if a default changes in a later version. A
+setting the analysis works out for itself, such as the area you serve when
+you named none, is left out.</p>
+<p>The code holds nothing from your table. The names of your columns are left
+for you to fill in, because a heading can hold something private. A setting
+that holds your own words, such as your own labels for groups in
+<code>who-we-miss</code>, is written as <code>{}</code> with a note to fill it in. So the code is as
+safe to share as the result is.</p>
+<p>The command line prints both at the end of its report, under "Figures before
+rounding" and "To run it again in Python".</p>
 <h2 id="charts">Charts</h2>
 <p><code>result.charts</code> describes the charts a result is best shown with, so a page
 can draw them without knowing the analysis. Each <code>Chart</code> names a table of the
@@ -2759,6 +2830,11 @@ analysis keeps:</p>
 <li>List anything sent off the machine in <code>privacy.sent_to_third_parties</code>.</li>
 <li>Answer the question in <code>answer</code>, from figures the result shows and nothing
    else, and name the figures to show first in <code>key_figures</code>.</li>
+<li>Give a share or a rate its <code>exact</code> value, from <code>before_rounding</code>, when the
+   figure is shown, and never when it is hidden. Mark an option <code>private</code>
+   when the value a person gives holds words from their own data, so the
+   code that runs the analysis again leaves it out. <code>run_analysis</code> writes
+   <code>result.code</code> for you.</li>
 </ol>
         <div id="llms-copy-button" style="position: fixed; z-index: 1100; top: 80px; right: 20px;">
             <button onclick="copyMarkdownToClipboard()" style="cursor: pointer; background: #007acc; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Copy Markdown</button>
