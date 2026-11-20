@@ -246,6 +246,65 @@ def test_places_around_are_drawn_pale_and_named(result):
     assert "Hartlepool" not in svg
 
 
+def _with_a_shore(far_east: float | None = None) -> dict:
+    """Lewisham round the shaded squares, as the shore they stop at.
+
+    With ``far_east`` the first square runs out that far, as a full outline
+    runs down a river.
+    """
+    boundaries = _boundaries()
+    if far_east is not None:
+        ring = boundaries["features"][0]["geometry"]["coordinates"][0]
+        ring[1][0] = ring[2][0] = far_east
+    boundaries["surroundings"] = [
+        _place("E09000023", "Lewisham", -0.06, 51.39, 0.07),
+        _place("E09000011", "Greenwich", 0.01, 51.39, 0.07),
+    ]
+    boundaries["focus"] = ["E09000023"]
+    boundaries["shore"] = ["E09000023"]
+    return boundaries
+
+
+def test_neighbourhoods_are_drawn_no_further_than_the_shore(result):
+    # A full outline of a neighbourhood runs out over the water. The outline
+    # of its local authority stops at the shore, so the shading is cut to it.
+    root = ET.fromstring(render_map(result, boundaries=_with_a_shore()))
+    (shore,) = [
+        c for c in root.iter(f"{SVG}clipPath") if c.get("id").endswith("-shore")
+    ]
+    assert len(shore.findall(f"{SVG}path")) == 1
+    cut = [g for g in root.iter(f"{SVG}g") if "-shore" in (g.get("clip-path") or "")]
+    assert len(cut) == 1
+    assert len(cut[0].findall(f"{SVG}path")) == AREAS
+    # The places around and the line round Lewisham are not cut.
+    assert all("land" not in (path.get("class") or "") for path in cut[0])
+
+
+def test_the_picture_is_framed_on_the_shore_not_on_the_water(result):
+    # One neighbourhood runs a degree down a river. Framed on that, the
+    # place would be a sliver at the left with its name out on the water.
+    svg = render_map(result, boundaries=_with_a_shore(far_east=1.0))
+    assert "1 km" in _texts(svg, "ink")
+    (held,) = [
+        text
+        for text in ET.fromstring(svg).iter(f"{SVG}text")
+        if text.get("class") == "held"
+    ]
+    assert 200 < float(held.get("x")) < 520
+    # Without a shore the frame has to hold the whole of it.
+    loose = _with_a_shore(far_east=1.0)
+    del loose["shore"]
+    assert "10 km" in _texts(render_map(result, boundaries=loose), "ink")
+
+
+def test_there_is_no_cut_when_the_shore_has_no_outline(result):
+    boundaries = _with_a_shore()
+    boundaries["shore"] = ["E09000023", "E09000099"]
+    svg = render_map(result, boundaries=boundaries)
+    assert "-shore" not in svg
+    assert len(_paths(svg)) == AREAS
+
+
 def test_outlines_not_in_the_result_are_the_places_around(result):
     # A file that holds more areas than the result shades: the rest are drawn
     # pale, never shaded, and the shaded areas alone set the frame.
@@ -333,11 +392,12 @@ class _Service:
     can tell a fine one from one simplified to 200 metres.
     """
 
-    def __init__(self, fail_first=0, authorities=True, fine_authorities=None):
+    def __init__(self, fail_first=0, authorities=True, fine_authorities=None, more=()):
         self.asked: list[dict] = []
         self._failures = fail_first
         self._authorities = authorities
         self._fine = fine_authorities
+        self._more = list(more)
 
     def load(self, geography_type, **asked):
         self.asked.append({"type": geography_type, **asked})
@@ -352,6 +412,7 @@ class _Service:
             _place(LEWISHAM, "Lewisham", -0.06, 51.39, 0.07),
             _place(GREENWICH, "Greenwich", 0.0, 51.39, 0.07),
             _place(HARTLEPOOL, "Hartlepool", 5.0, 54.0, 0.07),
+            *(_place(*place) for place in self._more),
         ]
         wanted = asked.get("LAD23CD")
         if not self._authorities:
@@ -431,28 +492,61 @@ def test_rough_outlines_stand_in_when_the_fine_ones_do_not_come(result):
     assert _details(boundaries["surroundings"]) == {LEWISHAM: None, GREENWICH: None}
 
 
-def test_places_around_come_from_the_same_layer_as_the_areas(result):
+def test_places_on_a_fine_map_come_in_fine_detail_and_stop_at_the_shore(result):
     # A neighbour simplified to 200 metres does not sit on neighbourhoods
-    # drawn to 10, so the places on and near a small map are fetched again
-    # from the full outlines at the same detail.
+    # drawn to 10, so the places on a small map are fetched again from the
+    # full outlines. For a local authority those stop at the shore.
     service = _Service()
     boundaries = _fetch(result, service)
-    everywhere, near = [asked for asked in service.asked if asked["type"] == "LAD"]
+    everywhere, held, beside = [a for a in service.asked if a["type"] == "LAD"]
     assert everywhere["boundary_type"] == "BSC"
     assert "LAD23CD" not in everywhere
-    assert near["boundary_type"] == "BFE"
-    assert near["simplify_m"] == 10
+    # The authority that holds the map is asked for first: the picture is
+    # framed on it, and that says which others the picture shows.
+    assert (held["boundary_type"], held["simplify_m"]) == ("BFC", 20)
+    assert held["LAD23CD"] == [LEWISHAM]
+    assert (beside["boundary_type"], beside["simplify_m"]) == ("BFC", 20)
     # Hartlepool is far from the map, so it is neither asked for nor kept.
-    assert near["LAD23CD"] == [GREENWICH, LEWISHAM]
-    assert _details(boundaries["surroundings"]) == {LEWISHAM: 10, GREENWICH: 10}
-    # The authority the result counts as the area served holds the map.
+    assert beside["LAD23CD"] == [GREENWICH]
+    assert _details(boundaries["surroundings"]) == {LEWISHAM: 20, GREENWICH: 20}
+    # The authority the result counts as the area served holds the map, and
+    # the neighbourhoods are drawn no further than its outline.
     assert boundaries["focus"] == [LEWISHAM]
+    assert boundaries["shore"] == [LEWISHAM]
 
 
 def test_a_neighbour_keeps_its_rough_outline_when_the_fine_one_does_not_come(result):
     service = _Service(fine_authorities=[LEWISHAM])
     boundaries = _fetch(result, service)
-    assert _details(boundaries["surroundings"]) == {LEWISHAM: 10, GREENWICH: None}
+    assert _details(boundaries["surroundings"]) == {LEWISHAM: 20, GREENWICH: None}
+    assert boundaries["shore"] == [LEWISHAM]
+
+
+def test_the_place_that_holds_the_map_is_fine_however_many_are_around(result):
+    # With many places in the picture they stay at 200 metres. The one that
+    # holds the neighbourhoods does not: its line has to fit them.
+    boundaries = _fetch(result, _Service(), _FINE_AROUND=0)
+    assert _details(boundaries["surroundings"]) == {LEWISHAM: 20, GREENWICH: None}
+    assert boundaries["shore"] == [LEWISHAM]
+
+
+def test_a_place_the_picture_does_not_show_keeps_its_rough_outline(result):
+    # Near enough to be kept for a wider picture, but north of the frame.
+    service = _Service(more=[("E09000030", "Tower Hamlets", -0.03, 51.47, 0.005)])
+    boundaries = _fetch(result, service)
+    assert _details(boundaries["surroundings"]) == {
+        LEWISHAM: 20,
+        GREENWICH: 20,
+        "E09000030": None,
+    }
+
+
+def test_there_is_no_shore_when_its_fine_outline_does_not_come(result):
+    # A 200 metre outline cuts across its own neighbourhoods, so nothing is
+    # cut to it.
+    boundaries = _fetch(result, _Service(fine_authorities=[GREENWICH]))
+    assert _details(boundaries["surroundings"]) == {LEWISHAM: None, GREENWICH: 20}
+    assert boundaries["shore"] == []
 
 
 def test_map_is_whole_when_the_places_around_do_not_come(result):
@@ -477,7 +571,7 @@ def test_map_is_drawn_with_what_it_fetches(result):
 
 
 def test_every_authority_is_fetched_once_for_the_life_of_the_process(result):
-    # It is about a megabyte and the same for every map.
+    # It is nearly three megabytes and the same for every map.
     service = _Service()
     _fetch(result, service)
     _fetch(result, service)
@@ -503,6 +597,7 @@ def test_a_caller_that_cannot_wait_takes_the_quick_outlines(result):
     assert {asked.get("simplify_m") for asked in service.asked} == {None}
     assert _details(boundaries["surroundings"]) == {LEWISHAM: None, GREENWICH: None}
     assert boundaries["focus"] == [LEWISHAM]
+    assert boundaries["shore"] == []
     # Every authority at 200 metres, and the neighbourhoods: nothing by name.
     assert not [a for a in service.asked if "LAD23CD" in a]
 
