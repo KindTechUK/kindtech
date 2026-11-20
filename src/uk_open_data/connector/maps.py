@@ -32,6 +32,12 @@ MAX_PICTURE_BYTES = 1_500_000
 # is asked for, the boundary service can take a minute or more, and the figures
 # should not wait that long for a picture.
 MAP_SECONDS = 15.0
+# Where the code that asks the boundary service logs its own errors.
+OUTLINES_LOGGER = "uk_open_data.geo"
+LINE_LEFT_OUT = (
+    "A line from the code that asks the boundary service is left out here: "
+    "it can hold the web address asked."
+)
 
 DRAWN = (
     "A map of this result was drawn for the person, coloured by: {layers}. "
@@ -108,6 +114,28 @@ def picture_for(
     labels = ", ".join(layer["label"] for layer in layers)
     picture = {"title": result.map.title, "layers": layers}
     return picture, DRAWN.format(layers=labels)
+
+
+def keep_addresses_out_of_the_log() -> None:
+    """Replace what the boundary service's code logs with one plain sentence.
+
+    That code logs a failed request with the web address it asked, which holds
+    the area codes of the map. A program that owns its log calls this once, as
+    the connector's command does. Each warning or error from that code then
+    becomes :data:`LINE_LEFT_OUT` at the same level, and its quieter lines are
+    dropped. Calling it again changes nothing.
+    """
+    outlines_log = logging.getLogger(OUTLINES_LOGGER)
+    outlines_log.propagate = False
+    if not any(isinstance(kept, _PlainLine) for kept in outlines_log.handlers):
+        outlines_log.addHandler(_PlainLine(logging.WARNING))
+
+
+class _PlainLine(logging.Handler):
+    """Says that a line was left out, and nothing of what it held."""
+
+    def emit(self, record: logging.LogRecord) -> None:
+        logger.log(record.levelno, LINE_LEFT_OUT)
 
 
 def _in_time(load: Boundaries, result: AnalysisResult) -> dict[str, Any]:

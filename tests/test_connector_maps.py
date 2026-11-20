@@ -6,6 +6,7 @@ the real first analysis on the small England.
 
 import asyncio
 import json
+import logging
 import threading
 from typing import Any
 
@@ -17,8 +18,9 @@ pytest.importorskip("mcp")
 
 from mcp import Client  # noqa: E402
 
+from uk_open_data import cli  # noqa: E402
 from uk_open_data.analyses import need_reach, run_analysis  # noqa: E402
-from uk_open_data.connector import build_server, maps  # noqa: E402
+from uk_open_data.connector import build_server, command, maps  # noqa: E402
 from uk_open_data.connector.maps import (  # noqa: E402
     MAP_META_KEY,
     MAP_VIEW,
@@ -27,6 +29,7 @@ from uk_open_data.connector.maps import (  # noqa: E402
 )
 
 pytestmark = pytest.mark.usefixtures("england")
+
 
 COUNTS = [
     {"lsoa_code": "E01000001", "count": 12},
@@ -252,6 +255,44 @@ class TestThroughTheServer:
 
         assert "ConnectionError" in caplog.text
         assert "example.invalid" not in caplog.text
+
+    def test_the_boundary_codes_own_error_lines_are_said_plainly(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        asking = logging.getLogger(f"{maps.OUTLINES_LOGGER}.api")
+        address = "https://example.invalid/query?where=LSOA21CD IN ('E01000001')"
+
+        maps.keep_addresses_out_of_the_log()
+        maps.keep_addresses_out_of_the_log()
+        with caplog.at_level("WARNING"):
+            asking.error("Error querying ArcGIS service: %s", address)
+
+        assert [record.getMessage() for record in caplog.records] == [
+            maps.LINE_LEFT_OUT
+        ]
+        assert caplog.records[0].levelname == "ERROR"
+        assert "example.invalid" not in caplog.text
+        assert "E01000001" not in caplog.text
+
+    def test_the_command_guards_its_log_before_it_serves(
+        self, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        outlines_log = logging.getLogger(maps.OUTLINES_LOGGER)
+
+        class Server:
+            def run(self, *args: Any, **kwargs: Any) -> None:
+                with caplog.at_level("WARNING"):
+                    outlines_log.error("asked %s", "https://example.invalid/E01000001")
+
+        monkeypatch.setattr("uk_open_data.connector.build_server", Server)
+
+        command.main([])
+
+        assert "example.invalid" not in caplog.text
+        assert maps.LINE_LEFT_OUT in caplog.text
+
+    def test_the_logger_guarded_is_the_one_the_command_line_quiets(self) -> None:
+        assert maps.OUTLINES_LOGGER == cli.OUTLINES_LOGGER
 
     def test_a_result_held_back_has_no_map(self) -> None:
         small = [{"lsoa_code": "E01000001", "count": 3}, *COUNTS[1:]]
