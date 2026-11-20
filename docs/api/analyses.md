@@ -843,10 +843,19 @@ keep_centres(
 | `areas_compared` | Local authorities compared |
 | `people_in_need` | People in the area you serve |
 | `average_distance_km` | Average distance to your nearest site, counting every person at the centre of their local authority |
-| `share_of_people_within_reach` | Share of people in a local authority within `within_km` of a site |
-| `people_beyond_reach` | People in a local authority farther than that |
-| `areas_beyond_reach` | Local authorities farther than that |
-| `farthest_distance_km` | Distance from the farthest local authority to a site |
+| `share_of_people_within_reach` | Share of people in a local authority whose centre is within `within_km` of a site |
+| `people_beyond_reach` | People in a local authority whose centre is farther than that |
+| `areas_beyond_reach` | Local authorities whose centre is farther than that |
+| `farthest_distance_km` | Distance from the centre of the farthest local authority to a site |
+
+Every distance is from the centre of a local authority, the one the ONS
+publishes for it, and every person is counted there. That is coarse. A London
+borough is a few kilometres across, so 10 km says something about it. A large
+rural local authority can be 50 km across: a site can be inside it and still
+be farther than 10 km from its centre, and the place is then listed as far
+from a site. The answer, the labels, the headings and a caveat all say that
+distance is from the centre. Where the places you work in are large, set
+`within_km` higher and read the distances, not only who is within reach.
 
 The charts `people_in_priority_areas` and `distance_in_priority_areas` show
 the people and the distance for the places in `priority_areas`. The map has

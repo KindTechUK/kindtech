@@ -225,7 +225,7 @@ def test_nowhere_beyond_reach_is_said_not_hidden(kept):
     assert result.table("priority_areas").rows == []
     assert result.figure("share_of_people_within_reach").value == 100.0
     assert any(
-        w.startswith("Every local authority in the area you serve")
+        w.startswith("The centre of every local authority in the area you serve")
         for w in result.warnings
     )
 
@@ -906,6 +906,36 @@ def test_result_explains_itself(kept):
     json.dumps(summary)
     detail = next(t for t in summary["tables"] if t["id"] == "by_local_authority")
     assert detail["rows"] == []
+
+
+def test_every_distance_is_said_to_be_from_a_centre(kept):
+    # A person is counted at the centre of their local authority, so a site
+    # can be inside a large place and the place still be listed as far from
+    # one. Each label that gives a distance or judges reach by it says so.
+    result = _run()
+    labels = {figure.id: figure.label for figure in result.figures}
+    assert labels["share_of_people_within_reach"] == (
+        "Share of people in a local authority whose centre is within 10 km of a site"
+    )
+    assert labels["people_beyond_reach"] == (
+        "People in a local authority whose centre is more than 10 km from a site"
+    )
+    assert labels["areas_beyond_reach"] == (
+        "Local authorities whose centre is more than 10 km from a site"
+    )
+    assert "centre" in labels["farthest_distance_km"]
+    for table in result.tables:
+        assert table.headings["distance_km"] == "From its centre to your nearest site"
+    assert "centre" in result.charts[1].title
+    assert result.answer.startswith(
+        "Counting each person at the centre of their local authority, "
+    )
+    listed = next(s for s in result.working if s.title.startswith("Listed"))
+    assert "whose centre is more than 10 km from a site" in listed.detail
+    assert any(
+        "a site can be inside the place and still be far from its centre" in caveat
+        for caveat in result.caveats
+    )
 
 
 def test_headings_do_not_call_every_resident_a_need(kept):

@@ -207,7 +207,8 @@ CAVEATS = (
     "can make a short distance a long journey.",
     "Distance is measured from the centre of each local authority, not from "
     "where each person lives. In a large local authority many people are much "
-    "nearer or much farther than the figure says.",
+    "nearer or much farther than the figure says, and a site can be inside "
+    "the place and still be far from its centre.",
     "The figures say how far people are from a site. They do not say how far "
     "the people you see travel, or whether anyone far away needs you.",
 )
@@ -228,7 +229,7 @@ CHARTS = (
     ),
     Chart(
         id="distance_in_priority_areas",
-        title="Distance to your nearest site from the places listed",
+        title="Distance from the centre of each place listed to your nearest site",
         table="priority_areas",
         category_column="geography_name",
         series=(ChartSeries("distance_km", "Kilometres", "km"),),
@@ -500,16 +501,16 @@ def _priority_table(
         Step(
             title="Listed the places far from a site",
             detail=(
-                f"The {len(beyond)} local authorities more than {within:g} km "
-                "from a site were put in order of people, most first. The "
-                f"first {len(ranked)} are listed."
+                f"The {len(beyond)} local authorities whose centre is more "
+                f"than {within:g} km from a site were put in order of people, "
+                f"most first. The first {len(ranked)} are listed."
             ),
         )
     )
     if not beyond:
         trail.warnings.append(
-            f"Every local authority in the area you serve is within "
-            f"{within:g} km of a site, so no place is listed. Lower "
+            "The centre of every local authority in the area you serve is "
+            f"within {within:g} km of a site, so no place is listed. Lower "
             f"{said('within_km')} to list the farthest."
         )
     return Table(
@@ -634,25 +635,27 @@ def _figures(
         ),
         Figure(
             "share_of_people_within_reach",
-            f"Share of people in a local authority within {within:g} km of a site",
+            "Share of people in a local authority whose centre is within "
+            f"{within:g} km of a site",
             percent(people - sum(row.authority.need for row in beyond), people),
             "percent",
         ),
         Figure(
             "people_beyond_reach",
-            f"People in a local authority more than {within:g} km from a site",
+            "People in a local authority whose centre is more than "
+            f"{within:g} km from a site",
             round(sum(row.authority.need for row in beyond)),
             "people",
         ),
         Figure(
             "areas_beyond_reach",
-            f"Local authorities more than {within:g} km from a site",
+            f"Local authorities whose centre is more than {within:g} km from a site",
             len(beyond),
             "areas",
         ),
         Figure(
             "farthest_distance_km",
-            "Distance from the farthest local authority to a site",
+            "Distance from the centre of the farthest local authority to a site",
             max(row.distance for row in rows),
             "km",
         ),

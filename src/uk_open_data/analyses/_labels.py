@@ -29,8 +29,8 @@ LABELS = {
 # table may give a column a heading of its own, where the shared one is too
 # wide: a place is a neighbourhood in one table and a local authority in the rest.
 HEADINGS = {
-    "distance_band": "Distance to your nearest site, grouped",
-    "distance_km": "Distance to your nearest site",
+    "distance_band": "From its centre to your nearest site, grouped",
+    "distance_km": "From its centre to your nearest site",
     "geography_code": "Code",
     "geography_name": "Local authority",
     "group": "Group",
