@@ -110,7 +110,25 @@ def test_analysis_run_prints_a_report(index, counts_file, capsys):
     assert "Check before you use these figures" in out
     assert "Nothing left this machine." in out
     assert "hidden" in out  # the count of three
-    assert "Catchment neighbourhoods" not in out  # the map table is left out
+    assert "Neighbourhoods in the area you serve" not in out  # the map's table
+
+
+def test_report_tables_have_plain_headings_and_units(index, counts_file, capsys):
+    assert main(_run_args(counts_file)) == EXIT_OK
+    lines = capsys.readouterr().out.splitlines()
+    heading = next(line for line in lines if line.startswith("  Deprivation decile"))
+    assert heading.split("  ")[1:] == [
+        "Deprivation decile",
+        "Your people",
+        "Share of your people",
+        "Residents",
+        "Share of residents",
+        "Your people per 1,000 residents",
+    ]
+    first = lines[lines.index(heading) + 1].split()
+    assert first == ["1", "30", "50.0%", "1,000", "10.0%", "30.0"]
+    assert not any("imd_decile" in line or "lad_name" in line for line in lines)
+    assert all(line == line.rstrip() for line in lines)
 
 
 def test_the_report_opens_with_the_answer(index, counts_file, capsys):

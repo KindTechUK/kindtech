@@ -999,6 +999,13 @@ def test_map_can_be_drawn(nomis):
 
 def test_result_explains_itself(nomis):
     result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    # Every column has a plain heading to show in place of its id.
+    assert not [
+        column
+        for table in result.tables
+        for column in table.columns
+        if table.headings[column] == column
+    ]
     assert result.analysis_id == ANALYSIS_ID
     assert [step.title for step in result.working] == [
         "Loaded the need figures",

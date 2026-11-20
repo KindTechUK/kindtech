@@ -1,9 +1,12 @@
-"""The plain name of each option, the same on every door.
+"""The plain names of options and table columns, the same on every door.
 
-A page shows the name beside the option, the command line lists it, and every
+A page shows an option's name beside it, the command line lists it, and every
 message that points a person at an option uses it, in quotes. The code name,
 such as ``catchment``, is for whoever writes the call and is never put in a
 sentence a person reads.
+
+A table column has a heading in the same way, and a unit where it has one, so
+a table reads the same on a page, in a chat and on the command line.
 """
 
 from __future__ import annotations
@@ -19,6 +22,50 @@ LABELS = {
     "top": "Places listed",
     "under_represented_below": "What counts as under-represented",
     "within_km": "Distance within reach, in kilometres",
+}
+
+
+# The heading of each column an analysis in this package puts in a table. A
+# table may give a column a heading of its own, where the shared one is too
+# wide: a place is a neighbourhood in one table and a local authority in the rest.
+HEADINGS = {
+    "distance_band": "Distance to your nearest site (band)",
+    "distance_km": "Distance to your nearest site",
+    "geography_code": "Code",
+    "geography_name": "Local authority",
+    "group": "Group",
+    "high_need": "High need",
+    "imd_decile": "Deprivation decile",
+    "in_catchment": "In the area you serve",
+    "lad_code": "Code",
+    "lad_name": "Local authority",
+    "local_authorities": "Local authorities in this row",
+    "need_band": "Need (band)",
+    "people": "Your people",
+    "people_band": "Your people (band)",
+    "people_in_need": "People in need",
+    "people_in_need_per_1000_residents": "People in need per 1,000 residents",
+    "people_per_1000": "Your people per 1,000 residents",
+    "people_per_100_in_need": "Your people per 100 in need",
+    "provision_band": "Provision (band)",
+    "rank": "Rank",
+    "reach_band": "Reach (band)",
+    "representation": "Your share divided by the residents' share",
+    "residents": "Residents",
+    "share_of_people": "Share of your people",
+    "share_of_residents": "Share of residents",
+    "suppressed": "Hidden",
+    "under_represented": "Under-represented",
+    "volume": "What you provide",
+    "volume_per_1000_in_need": "What you provide per 1,000 people in need",
+    "within_reach": "Within reach",
+}
+
+# The unit of each column that has one, named as the units of figures are.
+COLUMN_UNITS = {
+    "distance_km": "km",
+    "share_of_people": "percent",
+    "share_of_residents": "percent",
 }
 
 

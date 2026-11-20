@@ -12,6 +12,7 @@ from dataclasses import dataclass, field, fields, is_dataclass
 from typing import Any
 
 from uk_open_data._frames import dicts_to_frame
+from uk_open_data.analyses._labels import COLUMN_UNITS, HEADINGS
 
 
 class AnalysisInputError(ValueError):
@@ -167,6 +168,13 @@ class Table:
 
     ``detail`` marks long tables, such as the rows behind a map, that a caller
     may leave out of a summary.
+
+    ``headings`` gives each column a plain heading to show in place of its
+    id, such as "Your people per 100 in need". ``units`` gives the unit of
+    each column that has one, named as the units of figures are: "percent" or
+    "km". A table need only give the headings and units that are its own. Any
+    column left out takes what the package uses for that id. A column the
+    package does not know keeps its id as its heading and has no unit.
     """
 
     id: str
@@ -174,6 +182,22 @@ class Table:
     columns: tuple[str, ...]
     rows: list[dict[str, Any]]
     detail: bool = False
+    headings: dict[str, str] = field(default_factory=dict)
+    units: dict[str, str] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Give every column its heading and unit: its own, or the shared one."""
+        headings = {
+            column: self.headings.get(column) or HEADINGS.get(column, column)
+            for column in self.columns
+        }
+        units = {
+            column: unit
+            for column in self.columns
+            if (unit := self.units.get(column) or COLUMN_UNITS.get(column))
+        }
+        object.__setattr__(self, "headings", headings)
+        object.__setattr__(self, "units", units)
 
     def to_frame(self) -> Any:
         """Return the table as a pandas or polars DataFrame."""

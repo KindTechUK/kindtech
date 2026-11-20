@@ -685,6 +685,7 @@ def _neighbourhood_table(
             "Neighbourhoods in the area you serve: deprivation decile and "
             "people reached"
         ),
+        headings={"geography_name": "Neighbourhood"},
         columns=(
             "geography_code",
             "geography_name",

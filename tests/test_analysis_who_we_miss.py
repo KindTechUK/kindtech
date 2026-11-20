@@ -244,6 +244,13 @@ def test_the_line_for_under_represented_can_be_moved(nomis):
 def test_result_says_what_it_did_and_can_be_written_as_json(nomis):
     result = _run(CLIENTS)
     assert result.map is None
+    # Every column has a plain heading to show in place of its id.
+    assert not [
+        column
+        for table in result.tables
+        for column in table.columns
+        if table.headings[column] == column
+    ]
     assert [choice.id for choice in result.choices] == [
         "characteristic",
         "groups",

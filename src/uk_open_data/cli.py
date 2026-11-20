@@ -58,6 +58,8 @@ MAP_NOT_DRAWN = (
     "without it. Check the connection and try again."
 )
 OUTLINES_LOGGER = "uk_open_data.geo"
+# What follows a number, for each unit that is not said in a label or heading.
+UNIT_SUFFIX = {"percent": "%", "per_1000": " per 1,000", "km": " km"}
 CONNECTOR = "connector"
 
 
@@ -502,8 +504,7 @@ def _figure_value(value: Any, unit: str, note: str) -> str:
     """Format a figure's value with its unit."""
     if value is None:
         return f"not shown ({note.rstrip('.').lower()})" if note else "not shown"
-    suffix = {"percent": "%", "per_1000": " per 1,000"}.get(unit, "")
-    return f"{value:,}{suffix}"
+    return f"{value:,}{UNIT_SUFFIX.get(unit, '')}"
 
 
 def _plain_value(value: Any) -> str:
@@ -514,31 +515,40 @@ def _plain_value(value: Any) -> str:
 
 
 def _table_lines(table: Table) -> list[str]:
-    """Lay out a table in aligned columns, without the suppressed flag."""
+    """Lay out a table in aligned columns, without the suppressed flag.
+
+    Each column has its plain heading, and each number its unit.
+    """
     columns = [column for column in table.columns if column != "suppressed"]
     cells = [
-        [_cell(row.get(column), bool(row.get("suppressed"))) for column in columns]
+        [
+            _cell(row.get(column), bool(row.get("suppressed")), table.units.get(column))
+            for column in columns
+        ]
         for row in table.rows
     ]
+    headings = [table.headings[column] for column in columns]
     widths = [
-        max(len(column), *(len(row[index]) for row in cells))
-        for index, column in enumerate(columns)
+        max(len(heading), *(len(row[index]) for row in cells))
+        for index, heading in enumerate(headings)
     ]
     return [
         "  "
-        + "  ".join(text.ljust(width) for text, width in zip(line, widths, strict=True))
-        for line in [columns, *cells]
+        + "  ".join(
+            text.ljust(width) for text, width in zip(line, widths, strict=True)
+        ).rstrip()
+        for line in [headings, *cells]
     ]
 
 
-def _cell(value: Any, suppressed: bool) -> str:
-    """Format one table cell."""
+def _cell(value: Any, suppressed: bool, unit: str | None = None) -> str:
+    """Format one table cell, with its unit when it is a number that has one."""
     if value is None:
         return "hidden" if suppressed else "-"
     if isinstance(value, bool):
         return "yes" if value else "no"
     if isinstance(value, int | float):
-        return f"{value:,}"
+        return f"{value:,}{UNIT_SUFFIX.get(unit or '', '')}"
     return str(value)
 
 

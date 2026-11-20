@@ -18,6 +18,7 @@ from uk_open_data.analyses import (
     RUNS_LOGGER,
     AnalysisInputError,
     Figure,
+    Table,
     describe_analysis,
     list_analyses,
     reach_deprivation,
@@ -761,6 +762,40 @@ def test_a_bad_option_says_which_one_by_its_plain_name(world):
     assert raised.value.option == "catchment"
     assert "These entries in 'Area you serve'" in str(raised.value)
     assert "for example Lewisham" in str(raised.value)
+
+
+# --- the heading and unit of each table column -----------------------------
+
+
+def test_a_table_gives_every_column_a_heading():
+    table = Table(
+        id="t",
+        title="T",
+        columns=("geography_name", "share_of_people", "distance_km", "my_own"),
+        rows=[],
+        headings={"geography_name": "Neighbourhood"},
+    )
+    assert table.headings == {
+        "geography_name": "Neighbourhood",  # its own
+        "share_of_people": "Share of your people",  # the shared one
+        "distance_km": "Distance to your nearest site",
+        "my_own": "my_own",  # a column the package does not know
+    }
+    assert table.units == {"share_of_people": "percent", "distance_km": "km"}
+
+
+def test_every_column_of_a_result_has_a_plain_heading(world):
+    result = world.run()
+    for table in result.tables:
+        assert list(table.headings) == list(table.columns)
+        assert not [c for c in table.columns if table.headings[c] == c]
+    by_place = result.table("by_neighbourhood")
+    assert by_place.headings["geography_name"] == "Neighbourhood"
+    assert result.table("by_decile").units == {
+        "share_of_people": "percent",
+        "share_of_residents": "percent",
+    }
+    assert "headings" in result.to_dict()["tables"][0]
 
 
 # --- options with a fixed list of values -----------------------------------
