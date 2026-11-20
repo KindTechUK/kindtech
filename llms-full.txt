@@ -1043,7 +1043,8 @@ written with, such as `catchment`. `label` is its short plain name, such as
 "Area you serve". Show the label beside the option. Every message that points a
 person at an option uses the label, in quotes ("Change 'Area you serve' to
 include them."), and never the code name, so the sentence matches what is on
-the screen. An option has the same label in every analysis that has it:
+the screen. An option has the same label in every analysis that has it, and
+the result's `choices` use the same label for the choice it made:
 
 | `name` | `label` |
 | --- | --- |
@@ -1051,7 +1052,7 @@ the screen. An option has the same label in every analysis that has it:
 | `catchment_min_share` | Share that makes a place part of your area |
 | `suppress_below` | Smallest count shown |
 | `postcode_lookup` | Where postcodes are looked up |
-| `need` | Who counts as in need |
+| `need` | People you are trying to reach |
 | `top` | Places listed |
 | `characteristic` | What people are grouped by |
 | `groups` | How your labels match census groups |
@@ -1112,6 +1113,11 @@ a program need not search the sentence. When the problems are about several,
 it is the first of them. Each is `None` when the error is about neither, for
 example when a source could not be read. The command line adds what to type:
 "On the command line this is --option catchment=VALUE."
+
+When the columns an analysis needs were not all found, `error.role` is the
+first one still to be named. When an option was given that the analysis does
+not have, the message lists each option it does have by both names:
+"need ('People you are trying to reach')".
 
 When a public data source the analysis needs cannot be reached, the
 `requests.RequestException` is let out. Its text holds the whole web address
@@ -1444,13 +1450,20 @@ The charts `need_in_priority_areas` and `reach_in_priority_areas` show people
 in need and people reached per 100 in need for the places in `priority_areas`.
 
 The labels follow the need. When the need is every resident, the figures, the
-headings and the list say "residents" and "the local authorities with the most
-residents", not "people in need" and "high need".
+headings, the list, the working and the source say "residents" and "the local
+authorities with the most residents", not "people in need" and "high need".
+The fourth and fifth analyses do the same.
 
 The answer says so when the area was worked out from your data: it opens "In
 the 7 local authorities where most of your people live". When a fifth or more
 of the people in your data could not be placed in the area you serve, it ends
-by saying how many are not counted.
+by saying how many are not counted. When some of them could not be placed in
+any local authority, which is a name or a postcode to put right, and others
+live outside the area, which is not a mistake, it says how many of each.
+
+When only one local authority is compared every share is 100%, so
+`key_figures` names the rate and the two counts behind it instead:
+`reach_per_100_in_need`, `people_in_catchment` and `people_in_need`.
 
 | Table | Rows |
 | --- | --- |
@@ -1649,13 +1662,13 @@ for a group Nomis counts.
 
 | Figure | Meaning |
 | --- | --- |
-| `volume_supplied` | Volume in the data you gave |
-| `volume_located` | Volume placed in a local authority in England or Wales |
-| `volume_in_catchment` | Volume in the area you serve |
+| `volume_supplied` | Provision in the data you gave |
+| `volume_located` | Provision placed in a local authority in England or Wales |
+| `volume_in_catchment` | Provision in the area you serve |
 | `areas_compared` | Local authorities compared |
 | `areas_without_provision` | Local authorities where you provide nothing |
 | `people_in_need` | People in need in the area you serve |
-| `volume_per_1000_in_need` | Volume for each 1,000 people in need, across the area |
+| `volume_per_1000_in_need` | Provision for each 1,000 people in need, across the area |
 | `high_need_areas` | Local authorities with high need |
 | `high_need_areas_without_provision` | High-need local authorities where you provide nothing |
 | `share_of_provision_in_high_need_areas` | Share of your provision that is in high-need local authorities |
@@ -1907,7 +1920,8 @@ uk-open-data analysis describe reach-deprivation
 Runs an analysis on a `.csv`, `.xlsx` or `.ods` file and prints a plain-text report:
 a sentence or two that answer the question, then the figures, the tables, the
 checks to make before using them, what the figures cannot say, the choices
-made, the working, the sources and a privacy summary.
+made, the working, the sources and a privacy summary. A number has its unit
+after it, such as "64.7 km", unless the label beside it already says the unit.
 
 ```bash
 uk-open-data analysis run reach-deprivation clients.csv \

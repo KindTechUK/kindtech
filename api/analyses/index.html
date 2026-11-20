@@ -1478,7 +1478,8 @@ written with, such as <code>catchment</code>. <code>label</code> is its short pl
 "Area you serve". Show the label beside the option. Every message that points a
 person at an option uses the label, in quotes ("Change 'Area you serve' to
 include them."), and never the code name, so the sentence matches what is on
-the screen. An option has the same label in every analysis that has it:</p>
+the screen. An option has the same label in every analysis that has it, and
+the result's <code>choices</code> use the same label for the choice it made:</p>
 <table>
 <thead>
 <tr>
@@ -1505,7 +1506,7 @@ the screen. An option has the same label in every analysis that has it:</p>
 </tr>
 <tr>
 <td><code>need</code></td>
-<td>Who counts as in need</td>
+<td>People you are trying to reach</td>
 </tr>
 <tr>
 <td><code>top</code></td>
@@ -1572,6 +1573,10 @@ a program need not search the sentence. When the problems are about several,
 it is the first of them. Each is <code>None</code> when the error is about neither, for
 example when a source could not be read. The command line adds what to type:
 "On the command line this is --option catchment=VALUE."</p>
+<p>When the columns an analysis needs were not all found, <code>error.role</code> is the
+first one still to be named. When an option was given that the analysis does
+not have, the message lists each option it does have by both names:
+"need ('People you are trying to reach')".</p>
 <p>When a public data source the analysis needs cannot be reached, the
 <code>requests.RequestException</code> is let out. Its text holds the whole web address
 that was asked for, which can hold a postcode, so show a message of your own
@@ -2007,12 +2012,18 @@ result says so in a warning. To see the places you do not reach, name the area.<
 <p>The charts <code>need_in_priority_areas</code> and <code>reach_in_priority_areas</code> show people
 in need and people reached per 100 in need for the places in <code>priority_areas</code>.</p>
 <p>The labels follow the need. When the need is every resident, the figures, the
-headings and the list say "residents" and "the local authorities with the most
-residents", not "people in need" and "high need".</p>
+headings, the list, the working and the source say "residents" and "the local
+authorities with the most residents", not "people in need" and "high need".
+The fourth and fifth analyses do the same.</p>
 <p>The answer says so when the area was worked out from your data: it opens "In
 the 7 local authorities where most of your people live". When a fifth or more
 of the people in your data could not be placed in the area you serve, it ends
-by saying how many are not counted.</p>
+by saying how many are not counted. When some of them could not be placed in
+any local authority, which is a name or a postcode to put right, and others
+live outside the area, which is not a mistake, it says how many of each.</p>
+<p>When only one local authority is compared every share is 100%, so
+<code>key_figures</code> names the rate and the two counts behind it instead:
+<code>reach_per_100_in_need</code>, <code>people_in_catchment</code> and <code>people_in_need</code>.</p>
 <table>
 <thead>
 <tr>
@@ -2365,15 +2376,15 @@ for a group Nomis counts.</p>
 <tbody>
 <tr>
 <td><code>volume_supplied</code></td>
-<td>Volume in the data you gave</td>
+<td>Provision in the data you gave</td>
 </tr>
 <tr>
 <td><code>volume_located</code></td>
-<td>Volume placed in a local authority in England or Wales</td>
+<td>Provision placed in a local authority in England or Wales</td>
 </tr>
 <tr>
 <td><code>volume_in_catchment</code></td>
-<td>Volume in the area you serve</td>
+<td>Provision in the area you serve</td>
 </tr>
 <tr>
 <td><code>areas_compared</code></td>
@@ -2389,7 +2400,7 @@ for a group Nomis counts.</p>
 </tr>
 <tr>
 <td><code>volume_per_1000_in_need</code></td>
-<td>Volume for each 1,000 people in need, across the area</td>
+<td>Provision for each 1,000 people in need, across the area</td>
 </tr>
 <tr>
 <td><code>high_need_areas</code></td>
