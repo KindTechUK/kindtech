@@ -1867,6 +1867,10 @@ When the file, a column or an option cannot be used, the command prints what is
 wrong and exits with status 2. The message never repeats a value from your
 data, so it is safe to paste into a chat or an issue.
 
+The outlines for `--map` come from the ONS Open Geography Portal. When they
+cannot be fetched, the report is still printed or written, no map file is made,
+and the command says so in one sentence and exits with status 2.
+
 A run that prints its answer writes one line to the `uk_open_data.runs` logger,
 with the analysis, the input mode and the word `cli`. Nothing collects it on
 your machine and nothing is sent anywhere. See
