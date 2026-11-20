@@ -228,16 +228,30 @@ name fits, when you give their outlines. Put them among the features of
 darker line and its name.
 
 ```python
-boundaries = load_map_boundaries(result)
-boundaries["surroundings"] = nearby["features"]  # outlines you already have
-boundaries["focus"] = ["E09000023"]
+boundaries = {
+    "type": "FeatureCollection",
+    "features": areas,           # outlines you already have
+    "surroundings": nearby,
+    "focus": ["E09000023"],
+}
 svg = render_map(result, boundaries=boundaries)
 ```
 
 `render_map` fetches the outline of each area from the ONS Open Geography
-Portal. Only the public area codes of the area you serve are sent. To draw without
-the network, pass `boundaries=` a GeoJSON FeatureCollection you already have;
-`load_map_boundaries(result)` fetches one you can save and reuse.
+Portal. Only the public area codes of the area you serve, and of the local
+authorities near it, are sent. To draw without the network, pass `boundaries=`
+a GeoJSON FeatureCollection you already have; `load_map_boundaries(result)`
+fetches one you can save and reuse.
+
+`load_map_boundaries` fetches the places around the map as well, and lists
+under `"focus"` the local authorities that hold a map's neighbourhoods. A map
+of up to 1,000 neighbourhoods or 20 local authorities is drawn large, so its
+outlines come from the full ones with detail finer than 10 or 20 metres left
+out, and so do the places near it, so that neighbours meet. A map of more is
+drawn small and takes outlines simplified to 200 metres. It asks once for
+every local authority at 200 metres, about a megabyte, to find the ones near
+the map. When the places around cannot be fetched, the map is drawn without
+them and nothing is said.
 
 ## The answer
 
