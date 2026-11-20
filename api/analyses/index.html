@@ -1714,8 +1714,8 @@ settings:</p>
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><span class="c1"># Version 0.1 of this analysis, run with</span>
 <span class="c1"># uk-open-data 0.2.0. This runs it again with</span>
-<span class="c1"># the same settings. Nothing from your table is written here: put</span>
-<span class="c1"># the name of your own column beside each role.</span>
+<span class="c1"># the same settings. No row or heading of your table is written</span>
+<span class="c1"># here: put the name of your own column beside each role.</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_analysis</span>
@@ -1734,18 +1734,28 @@ settings:</p>
     <span class="p">},</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">answer</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">figure</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">figures</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">figure</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">figure</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 </code></pre></div>
+<p>It prints the answer and every figure, to set beside the ones in the result.</p>
 <p>Every setting that has a value is written out, the ones you left alone too,
-so the code gives the same result if a default changes in a later version. A
-setting the analysis works out for itself, such as the area you serve when
-you named none, is left out.</p>
-<p>The code holds nothing from your table. The names of your columns are left
-for you to fill in, because a heading can hold something private. A setting
-that holds your own words, such as your own labels for groups in
+so the code gives the same result if a default changes in a later version.
+That is why it can hold a setting the list of choices in a result does not
+mention. A setting the analysis works out for itself, such as the area you
+serve when you named none, is left out. An area you named is written as you
+gave it.</p>
+<p>The setting for where postcodes are looked up is written as it was used. Code
+copied from a run that kept postcodes on one machine says so, and on another
+machine it stops and asks for the postcode table before it sends a postcode
+anywhere.</p>
+<p>The code holds no row and no heading of your table. The names of your columns
+are left for you to fill in, because a heading can hold something private. A
+setting that holds your own words, such as your own labels for groups in
 <code>who-we-miss</code>, is written as <code>{}</code> with a note to fill it in. So the code is as
 safe to share as the result is.</p>
-<p>The command line prints both at the end of its report, under "Figures before
-rounding" and "To run it again in Python".</p>
+<p>The command line prints both as the last two parts of its report, under
+"Figures before rounding" and "To run it again in Python". The code starts at
+the margin, so it runs as it is copied.</p>
 <h2 id="charts">Charts</h2>
 <p><code>result.charts</code> describes the charts a result is best shown with, so a page
 can draw them without knowing the analysis. Each <code>Chart</code> names a table of the

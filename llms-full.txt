@@ -1275,8 +1275,8 @@ print(result.code)
 ```python
 # Version 0.1 of this analysis, run with
 # uk-open-data 0.2.0. This runs it again with
-# the same settings. Nothing from your table is written here: put
-# the name of your own column beside each role.
+# the same settings. No row or heading of your table is written
+# here: put the name of your own column beside each role.
 import pandas as pd
 
 from uk_open_data.analyses import run_analysis
@@ -1295,21 +1295,33 @@ result = run_analysis(
     },
 )
 print(result.answer)
+for figure in result.figures:
+    print(figure.label, figure.value)
 ```
 
-Every setting that has a value is written out, the ones you left alone too,
-so the code gives the same result if a default changes in a later version. A
-setting the analysis works out for itself, such as the area you serve when
-you named none, is left out.
+It prints the answer and every figure, to set beside the ones in the result.
 
-The code holds nothing from your table. The names of your columns are left
-for you to fill in, because a heading can hold something private. A setting
-that holds your own words, such as your own labels for groups in
+Every setting that has a value is written out, the ones you left alone too,
+so the code gives the same result if a default changes in a later version.
+That is why it can hold a setting the list of choices in a result does not
+mention. A setting the analysis works out for itself, such as the area you
+serve when you named none, is left out. An area you named is written as you
+gave it.
+
+The setting for where postcodes are looked up is written as it was used. Code
+copied from a run that kept postcodes on one machine says so, and on another
+machine it stops and asks for the postcode table before it sends a postcode
+anywhere.
+
+The code holds no row and no heading of your table. The names of your columns
+are left for you to fill in, because a heading can hold something private. A
+setting that holds your own words, such as your own labels for groups in
 `who-we-miss`, is written as `{}` with a note to fill it in. So the code is as
 safe to share as the result is.
 
-The command line prints both at the end of its report, under "Figures before
-rounding" and "To run it again in Python".
+The command line prints both as the last two parts of its report, under
+"Figures before rounding" and "To run it again in Python". The code starts at
+the margin, so it runs as it is copied.
 
 ## Charts
 
