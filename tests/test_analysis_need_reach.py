@@ -1104,6 +1104,15 @@ def test_map_can_be_drawn(nomis):
             title.text for title in root.iter("{http://www.w3.org/2000/svg}title")
         ]
         assert any(text.startswith("Lewisham: ") for text in titles[1:])
+        # Three places are few enough to name, and the title says what the
+        # colour shows.
+        texts = {
+            text.text: text.get("class")
+            for text in root.iter("{http://www.w3.org/2000/svg}text")
+        }
+        assert {texts[name] for name in ("Lewisham", "Greenwich", "Adur")} == {"name"}
+        label = next(item.label for item in result.map.layers if item.id == layer)
+        assert f"{label}, by local authority" in texts
 
 
 # --- the whole result ------------------------------------------------------
