@@ -131,7 +131,7 @@ def test_figures_from_site_positions(kept):
         "areas_beyond_reach": 5,
         "farthest_distance_km": 475,
     }
-    assert result.figure("people_in_need").label.endswith("Residents of every age")
+    assert result.figure("people_in_need").label.endswith("(Residents of every age)")
 
 
 def test_each_place_is_measured_to_its_nearest_site(kept):
@@ -293,7 +293,9 @@ def test_need_can_be_another_built_in_measure(kept):
 
 @pytest.mark.parametrize("need", ["everyone", 7, None, {"dataset": "NM_1_1"}])
 def test_bad_need_is_rejected(kept, need):
-    with pytest.raises(AnalysisInputError, match="Who counts as in need") as caught:
+    with pytest.raises(
+        AnalysisInputError, match="People you are trying to reach"
+    ) as caught:
         _run(options={"need": need})
     assert caught.value.option == "need"
 
@@ -904,6 +906,23 @@ def test_result_explains_itself(kept):
     json.dumps(summary)
     detail = next(t for t in summary["tables"] if t["id"] == "by_local_authority")
     assert detail["rows"] == []
+
+
+def test_headings_do_not_call_every_resident_a_need(kept):
+    # Distance is measured for every resident unless another measure is set,
+    # so the column of people is headed "Residents", not "People in need".
+    result = _run()
+    for table in result.tables:
+        assert table.headings["people_in_need"] == "Residents"
+    assert result.table("by_local_authority").headings["need_band"] == (
+        "Residents, grouped"
+    )
+    option = {o.name: o for o in describe_analysis(ANALYSIS_ID).options}["need"]
+    choice = next(c for c in result.choices if c.id == "need")
+    assert choice.label == option.label == "People you are trying to reach"
+    assert result.sources[0].used_for == (
+        "People you are trying to reach: Residents of every age."
+    )
 
 
 def test_command_line_runs_the_analysis(kept, tmp_path, capsys):

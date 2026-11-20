@@ -16,7 +16,7 @@ LABELS = {
     "catchment_min_share": "Share that makes a place part of your area",
     "characteristic": "What people are grouped by",
     "groups": "How your labels match census groups",
-    "need": "Who counts as in need",
+    "need": "People you are trying to reach",
     "postcode_lookup": "Where postcodes are looked up",
     "suppress_below": "Smallest count shown",
     "top": "Places listed",

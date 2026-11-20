@@ -163,7 +163,7 @@ def test_the_default_need_is_everyone_who_lives_there(nomis):
     assert dataset == "NM_2028_1"
     assert query["c_sex"] == 0
     assert query["measures"] == 20100
-    assert result.figure("people_in_need").label.endswith("Residents of every age")
+    assert result.figure("people_in_need").label.endswith("(Residents of every age)")
     assert any("Not all of them need" in caveat for caveat in result.caveats)
 
 
@@ -186,7 +186,9 @@ def test_kept_need_figures_are_used_and_nothing_is_fetched(nomis):
 
 @pytest.mark.parametrize("need", ["everyone", 7, None, {"dataset": "NM_1_1"}])
 def test_bad_need_is_rejected(nomis, need):
-    with pytest.raises(AnalysisInputError, match="Who counts as in need") as caught:
+    with pytest.raises(
+        AnalysisInputError, match="People you are trying to reach"
+    ) as caught:
         _run(SPREAD, options={"need": need})
     assert caught.value.option == "need"
 
@@ -225,7 +227,13 @@ def test_labels_follow_the_measure(nomis):
         "The local authorities with the most residents where you provide nothing"
     )
     assert labels["people_in_need"] == (
-        "People in the area you serve: Residents of every age"
+        "People in the area you serve (Residents of every age)"
+    )
+    # One word for what is provided, and the rate's label says its own unit.
+    assert labels["volume_supplied"] == "Provision in the data you gave"
+    assert labels["volume_in_catchment"] == "Provision in the area you serve"
+    assert labels["volume_per_1000_in_need"] == (
+        "Provision for each 1,000 residents, across the area"
     )
     table = result.table("priority_areas")
     assert table.title == "Places with the most residents, thinnest provision first"
@@ -244,6 +252,15 @@ def test_labels_follow_the_measure(nomis):
     read += [*layers, result.map.title, result.map.layers[0].note]
     assert not [text for text in read if "need" in text.lower()]
     assert not any("high need" in caveat for caveat in result.caveats)
+    # The working, the check and the source follow the measure too.
+    said = [step.detail for step in result.working]
+    said += [source.used_for for source in result.sources]
+    assert not [text for text in said if "in need" in text or "high need" in text]
+    option = {o.name: o for o in describe_analysis(ANALYSIS_ID).options}["need"]
+    choice = next(c for c in result.choices if c.id == "need")
+    assert choice.label == option.label == "People you are trying to reach"
+    check = next(c for c in result.checks if c.id == "need_fits")
+    assert "Change 'People you are trying to reach'" in check.why
     chosen = _run(SPREAD, options={"need": "unemployed"})
     labels = {figure.id: figure.label for figure in chosen.figures}
     assert labels["high_need_areas_without_provision"] == (
@@ -625,8 +642,8 @@ def test_result_explains_itself(nomis):
         "Read the local authority volumes",
         "Joined provision to the need figures",
         "Set the area you serve",
-        "Set provision against need",
-        "Listed the places with high need and thin provision",
+        "Set provision against residents",
+        "Listed the places with the most residents and thin provision",
     ]
     assert [check.id for check in result.checks] == [
         "volume_is_provision",

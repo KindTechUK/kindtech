@@ -279,8 +279,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         )
     located = _keep_listed(volumes, authorities, trail)
     compared = choose_compared(options.get("catchment"), authorities)
-    rows = _rows(located, authorities, compared, trail)
     words = need_words(measure.id == RESIDENTS.id)
+    rows = _rows(located, authorities, compared, words, trail)
     figures = _figures(supplied, sum(located.values()), rows, words, measure)
     tables = (_priority_table(rows, top, words, trail), _authority_table(rows, words))
     return AnalysisResult(
@@ -454,6 +454,7 @@ def _rows(
     located: dict[str, float],
     authorities: dict[str, Authority],
     compared: Compared,
+    words: NeedWords,
     trail: Trail,
 ) -> list[_Row]:
     """Build one row per local authority compared."""
@@ -491,12 +492,13 @@ def _rows(
     provision_bands = _provision_bands(volume, need)
     trail.working.append(
         Step(
-            title="Set provision against need",
+            title=f"Set provision against {words.topic}",
             detail=(
-                "For each local authority, the volume you provide was divided "
-                "by the people in need and multiplied by 1,000. A local "
-                "authority is high need when its count of people in need is "
-                f"in the top quarter of the area (at or above {round(cut):,})."
+                "For each local authority, what you provide was divided by "
+                f"the number of {words.noun} and multiplied by 1,000. A "
+                f"local authority {words.rule} when its count of "
+                f"{words.noun} is in the top quarter of the area (at or "
+                f"above {round(cut):,})."
             ),
         )
     )
@@ -587,11 +589,11 @@ def _priority_table(
     )[:top]
     trail.working.append(
         Step(
-            title="Listed the places with high need and thin provision",
+            title=f"Listed the places with {words.high} and thin provision",
             detail=(
-                f"The {len(high)} high-need local authorities were put in "
-                "order of provision for each 1,000 people in need, lowest "
-                f"first, and then by need, highest first. The first "
+                f"The {len(high)} places with {words.high} were put in "
+                f"order of provision for each 1,000 {words.noun}, lowest "
+                f"first, and then by {words.topic}, highest first. The first "
                 f"{len(ranked)} are listed."
             ),
         )
@@ -699,17 +701,20 @@ def _figures(
     in_catchment = sum(volume)
     return [
         Figure(
-            "volume_supplied", "Volume in the data you gave", _tidy(supplied), "count"
+            "volume_supplied",
+            "Provision in the data you gave",
+            _tidy(supplied),
+            "count",
         ),
         Figure(
             "volume_located",
-            "Volume placed in a local authority in England or Wales",
+            "Provision placed in a local authority in England or Wales",
             _tidy(located),
             "count",
         ),
         Figure(
             "volume_in_catchment",
-            "Volume in the area you serve",
+            "Provision in the area you serve",
             _tidy(in_catchment),
             "count",
             note="The figures below are about this provision.",
@@ -728,13 +733,13 @@ def _figures(
         ),
         Figure(
             "people_in_need",
-            f"{words.counted} in the area you serve: {measure.label}",
+            f"{words.counted} in the area you serve ({measure.label})",
             round(sum(need)),
             "people",
         ),
         Figure(
             "volume_per_1000_in_need",
-            f"Volume for each 1,000 {words.noun}, across the area",
+            f"Provision for each 1,000 {words.noun}, across the area",
             _per_1000(in_catchment, sum(need)),
             "per_1000",
         ),
@@ -797,7 +802,7 @@ def _choices(
     return (
         Choice(
             id="need",
-            label="People your provision is set against",
+            label=LABELS["need"],
             value=measure.label,
             reason=measure.reason,
             option="need",

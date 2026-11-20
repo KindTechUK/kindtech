@@ -155,9 +155,14 @@ def _resolve_options(
     known = {option.name: option.default for option in info.options}
     unknown = [name for name in given if name not in known]
     if unknown:
+        # Each option by the name that is typed and the name a page shows.
+        listed = ", ".join(
+            f"{option.name} ('{option.label}')" if option.label else option.name
+            for option in info.options
+        )
         msg = (
             f"This analysis has no option called {', '.join(sorted(unknown))}. "
-            f"Its options are: {', '.join(known) or 'none'}."
+            f"Its options are: {listed or 'none'}."
         )
         raise AnalysisInputError(msg)
     return {**known, **given}
@@ -175,4 +180,20 @@ def _choose_mode(info: AnalysisInfo, matched: Mapping[str, str]) -> InputMode:
         f"The analysis could not find the columns it needs. It needs {needs}. "
         "Say which of your columns holds each one."
     )
-    raise AnalysisInputError(msg)
+    raise AnalysisInputError(msg, role=_first_missing(info, matched))
+
+
+def _first_missing(info: AnalysisInfo, matched: Mapping[str, str]) -> str | None:
+    """The first column still to be named, so a door can point at it.
+
+    It is taken from the way of giving data that has most of its columns
+    named already, which is the one the person is most likely to be using.
+    """
+    nearest = max(
+        info.input_modes,
+        key=lambda mode: sum(role in matched for role in mode.roles),
+        default=None,
+    )
+    if nearest is None:
+        return None
+    return next((role for role in nearest.roles if role not in matched), None)
