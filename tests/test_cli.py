@@ -335,3 +335,32 @@ def test_report_goes_to_its_file_when_the_map_is_not_drawn(
     assert status == EXIT_INPUT_ERROR
     assert "most deprived" in report.read_text(encoding="utf-8")
     assert MAP_NOT_DRAWN in capsys.readouterr().err
+
+
+def test_connector_command_passes_its_options_on(capsys):
+    with mock.patch("uk_open_data.connector.command.main") as start:
+        status = main(["connector", "--transport", "streamable-http", "--port", "9"])
+    assert status == EXIT_OK
+    start.assert_called_once_with(["--transport", "streamable-http", "--port", "9"])
+    assert capsys.readouterr().out == ""
+
+
+def test_connector_command_starts_the_server_over_stdio():
+    with mock.patch("uk_open_data.connector.build_server") as build:
+        assert main(["connector"]) == EXIT_OK
+    build.return_value.run.assert_called_once_with("stdio")
+
+
+def test_connector_command_says_which_extra_is_missing(capsys):
+    missing = ImportError("The connector server needs the 'connector' extra.")
+    with mock.patch("uk_open_data.connector.build_server", side_effect=missing):
+        assert main(["connector"]) == EXIT_INPUT_ERROR
+    shown = capsys.readouterr()
+    assert shown.err == "The connector server needs the 'connector' extra.\n"
+    assert shown.out == ""
+
+
+def test_help_lists_the_connector_command(capsys):
+    with pytest.raises(SystemExit):
+        main(["--help"])
+    assert "connector" in capsys.readouterr().out

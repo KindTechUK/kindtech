@@ -58,6 +58,7 @@ MAP_NOT_DRAWN = (
     "without it. Check the connection and try again."
 )
 OUTLINES_LOGGER = "uk_open_data.geo"
+CONNECTOR = "connector"
 
 
 class _MapNotDrawnError(Exception):
@@ -70,8 +71,11 @@ class _MapNotDrawnError(Exception):
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the command line and return its exit status."""
+    arguments = sys.argv[1:] if argv is None else list(argv)
+    if arguments[:1] == [CONNECTOR]:
+        return _start_connector(arguments[1:])
     parser = _build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(arguments)
     if not hasattr(args, "handler"):
         parser.print_help()
         return EXIT_INPUT_ERROR
@@ -153,6 +157,12 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     run.set_defaults(handler=_handle_run)
     _add_postcode_commands(commands)
+
+    # Listed here for the help text. main() hands its arguments on unread.
+    commands.add_parser(
+        CONNECTOR,
+        help="Start the connector, which offers the analyses to a chat assistant.",
+    )
     return parser
 
 
@@ -186,6 +196,21 @@ def _add_postcode_commands(commands: Any) -> None:
 
 
 # --- handlers --------------------------------------------------------------
+
+
+def _start_connector(arguments: Sequence[str]) -> int:
+    """Start the connector, as ``python -m uk_open_data.connector`` does.
+
+    The connector reads its own options, so they are passed on as given. It
+    runs until the assistant or the person stops it.
+    """
+    from uk_open_data.connector.command import main as start
+
+    try:
+        start(arguments)
+    except ImportError as error:
+        return _fail(str(error))
+    return EXIT_OK
 
 
 def _handle_list(args: argparse.Namespace) -> str:
