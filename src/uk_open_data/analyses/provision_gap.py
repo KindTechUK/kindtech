@@ -62,16 +62,20 @@ from uk_open_data.analyses._need import (
     equal_parts,
     high_need_cut,
     load_need,
+    not_listed_rows,
     read_measure,
     read_top,
 )
 from uk_open_data.analyses._steps import (
     EVERYWHERE,
+    HOW_TO_NAME_A_PLACE,
     LOCAL_AUTHORITY,
     POSTCODE_LOOKUP,
     Trail,
+    bad_counts,
     percent,
     place_postcodes,
+    plural,
     use_postcode_table,
 )
 
@@ -315,13 +319,10 @@ def _amount(raw: Any) -> float | None:
 def _amounts(raw: list[Any]) -> list[float]:
     """Read the volume column, and stop when a row has no usable number."""
     amounts = [_amount(value) for value in raw]
-    bad = sum(1 for amount in amounts if amount is None)
+    bad = [row for row, amount in enumerate(amounts, start=1) if amount is None]
     if bad:
-        msg = (
-            f"{bad} rows have a volume that is not a number of zero or more. "
-            "Correct those rows and run the analysis again."
-        )
-        raise AnalysisInputError(msg, role="volume")
+        what = "a volume that is not a number of zero or more"
+        raise AnalysisInputError(bad_counts(bad, what), role="volume")
     return [amount or 0.0 for amount in amounts]
 
 
@@ -360,21 +361,21 @@ def _volume_by_authority(
     by_key = {code.casefold(): code for code in authorities}
     by_key.update({area.name.casefold(): code for code, area in authorities.items()})
     totals: Counter[str] = Counter()
-    blank = unknown = 0
-    for place, amount in zip(places, amounts, strict=True):
+    blank = 0
+    not_listed: list[int] = []
+    for row, (place, amount) in enumerate(zip(places, amounts, strict=True), start=1):
         if is_blank(place):
             blank += 1
             continue
         code = by_key.get(str(place).strip().casefold())
-        unknown += code is None
+        if code is None:
+            not_listed.append(row)
         totals[code or ""] += amount
+    unknown = len(not_listed)
     if blank:
-        trail.warnings.append(f"{blank} rows had no local authority.")
+        trail.warnings.append(f"{plural(blank, 'row')} had no local authority.")
     if unknown:
-        trail.warnings.append(
-            f"{unknown} rows named a local authority that the need figures do "
-            "not list. Use the names or codes that Nomis uses."
-        )
+        trail.warnings.append(not_listed_rows(not_listed))
     trail.working.append(
         Step(
             title="Read the local authority volumes",
@@ -421,7 +422,9 @@ def _keep_listed(
     if not located:
         msg = (
             "None of the provision could be placed in a local authority in "
-            "England or Wales. Check the location column."
+            "England or Wales. Check the column that says where each row is. "
+            f"{HOW_TO_NAME_A_PLACE} A postcode must be a full one in England "
+            "or Wales."
         )
         raise AnalysisInputError(msg)
     return located

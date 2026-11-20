@@ -34,6 +34,7 @@ from uk_open_data.analyses._inputs import (
 )
 from uk_open_data.analyses._labels import LABELS
 from uk_open_data.analyses._privacy import band_labels, cells_to_hide, count_band
+from uk_open_data.analyses._steps import plural, where_rows
 from uk_open_data.analyses.reach_deprivation import ANALYSIS
 from uk_open_data.imd import keep_imd
 
@@ -515,8 +516,8 @@ def test_too_few_people_is_an_error():
 def test_codes_the_index_does_not_list_are_the_reason_given_not_too_few_people(
     world,
 ):
-    # 2011 codes, or codes for Wales, are not "fewer than 5 people".
-    rows = [{"lsoa_code": "W01000001", "count": 120}]
+    # 2011 codes, or codes no index lists, are not "fewer than 5 people".
+    rows = [{"lsoa_code": "E01999999", "count": 120}]
     with pytest.raises(AnalysisInputError) as raised:
         world.run(rows, columns={"lsoa_code": "lsoa_code", "count": "count"})
     message = str(raised.value)
@@ -525,7 +526,20 @@ def test_codes_the_index_does_not_list_are_the_reason_given_not_too_few_people(
         "does not list, so too few are left to give figures."
     )
     assert "Fewer than" not in message
-    assert "W01000001" not in message  # the code as typed is not repeated
+    assert "E01999999" not in message  # the code as typed is not repeated
+
+
+@pytest.mark.parametrize("code", ["W01000001", "S01006506", "95AA01S1", "N21000001"])
+def test_people_in_another_nation_are_told_the_analysis_covers_england(world, code):
+    rows = [{"lsoa_code": code, "count": 120}, {"lsoa_code": "E01999999", "count": 2}]
+    with pytest.raises(AnalysisInputError) as raised:
+        world.run(rows, columns={"lsoa_code": "lsoa_code", "count": "count"})
+    message = str(raised.value)
+    assert message.startswith(
+        "120 people live in Wales, Scotland or Northern Ireland. This analysis "
+        "covers England only"
+    )
+    assert code not in message
 
 
 def test_too_few_people_in_a_named_catchment_is_an_error(world):
@@ -928,3 +942,39 @@ def test_running_an_analysis_records_nothing_by_itself(world, caplog):
     with caplog.at_level(logging.INFO, logger=RUNS_LOGGER):
         world.run()
     assert caplog.records == []
+
+
+# --- words for counts and rows ---------------------------------------------
+
+
+def test_a_count_is_said_with_its_noun():
+    assert plural(1, "row") == "1 row"
+    assert plural(0, "row") == "0 rows"
+    assert plural(12, "row") == "12 rows"
+
+
+@pytest.mark.parametrize(
+    ("positions", "said"),
+    [
+        ([4], "row 4"),
+        ([4, 9], "rows 4 and 9"),
+        ([1, 2, 3, 4, 5], "rows 1, 2, 3, 4 and 5"),
+        ([1, 2, 3, 4, 5, 6, 7], "rows 1, 2, 3, 4, 5 and 2 more"),
+    ],
+)
+def test_rows_are_pointed_at_by_where_they_are(positions, said):
+    assert where_rows(positions) == f"{said}, counting from the first row of data"
+
+
+def test_a_bad_count_says_which_row_without_repeating_it(world):
+    rows = [
+        {"lsoa_code": _area_code(0, 1), "count": 30},
+        {"lsoa_code": _area_code(0, 2), "count": "about forty"},
+    ]
+    with pytest.raises(AnalysisInputError) as raised:
+        world.run(rows, columns={"lsoa_code": "lsoa_code", "count": "count"})
+    assert str(raised.value).startswith(
+        "1 row had a count that is not a whole number of zero or more: row 2,"
+    )
+    assert "forty" not in str(raised.value)
+    assert raised.value.role == "count"

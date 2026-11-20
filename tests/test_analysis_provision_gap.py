@@ -249,6 +249,16 @@ def test_volumes_for_the_same_place_are_added_up(nomis):
     assert table["Greenwich"]["volume"] == 40
 
 
+def test_provision_that_cannot_be_placed_says_how_to_name_a_place(nomis):
+    with pytest.raises(AnalysisInputError) as raised:
+        _run(_volumes(Lewishm=40, Narnia_Borough=25))
+    message = str(raised.value)
+    assert message.startswith("None of the provision could be placed")
+    assert "for example Lewisham, or give its code, for example E09000023" in message
+    assert "Lewishm" not in message
+    assert "Narnia" not in message
+
+
 def test_rows_that_cannot_be_placed_are_counted_not_named(nomis):
     rows = [
         *SPREAD,
@@ -258,15 +268,18 @@ def test_rows_that_cannot_be_placed_are_counted_not_named(nomis):
     result = _run(rows)
     assert result.figure("volume_supplied").value == 190
     assert result.figure("volume_located").value == 160
-    assert any(w.startswith("1 rows had no local authority") for w in result.warnings)
-    assert any(w.startswith("1 rows named a local authority") for w in result.warnings)
+    assert any(w.startswith("1 row had no local authority") for w in result.warnings)
+    assert any(w.startswith("1 row named a local authority") for w in result.warnings)
     assert "Narnia" not in json.dumps(result.to_dict())
 
 
 @pytest.mark.parametrize("volume", ["lots", "", None, -3, "nan", "inf", True])
 def test_a_volume_that_is_not_a_number_is_an_input_error(nomis, volume):
     rows = [*SPREAD, {"Area": "Cardiff", "Sessions": volume}]
-    with pytest.raises(AnalysisInputError, match="1 rows have a volume"):
+    with pytest.raises(
+        AnalysisInputError,
+        match="1 row had a volume that is not a number of zero or more: row 5,",
+    ):
         _run(rows)
 
 

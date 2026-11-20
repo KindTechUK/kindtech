@@ -76,6 +76,9 @@ DECILES = tuple(range(1, 11))
 MOST_DEPRIVED = (0, 1)  # positions of deciles 1 and 2
 ELSEWHERE = tuple(range(2, 10))  # positions of deciles 3 to 10
 ENGLAND = "England"
+# The first character of a neighbourhood code in Wales, Scotland and Northern
+# Ireland (W01, S01, and 95 or N for Northern Ireland).
+OTHER_NATIONS = ("W", "S", "N", "9")
 
 INFO = AnalysisInfo(
     id=ANALYSIS_ID,
@@ -365,17 +368,26 @@ def _keep_english(
             "2011 code). This analysis covers England only, so they are left out."
         )
     if n_located < threshold:
-        raise AnalysisInputError(_too_few_placed(outside, threshold))
+        elsewhere = sum(
+            n for code, n in counts.items() if code[:1].upper() in OTHER_NATIONS
+        )
+        raise AnalysisInputError(_too_few_placed(outside, elsewhere, threshold))
     return located
 
 
-def _too_few_placed(outside: int, threshold: int) -> str:
+def _too_few_placed(outside: int, elsewhere: int, threshold: int) -> str:
     """Say why too few people could be placed: few were given, or few fitted."""
     if outside < threshold:
         return (
             f"Fewer than {threshold} people could be placed in an English "
             "neighbourhood, which is too few to give figures that do not "
             "point at individuals."
+        )
+    if elsewhere >= threshold:
+        return (
+            f"{elsewhere} people live in Wales, Scotland or Northern Ireland. "
+            "This analysis covers England only, because each nation has its "
+            "own index of deprivation, so too few are left to give figures."
         )
     return (
         f"{outside} people are outside England, or in a neighbourhood the 2025 "

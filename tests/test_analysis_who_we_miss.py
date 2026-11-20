@@ -773,7 +773,10 @@ def test_bad_catchment_share_is_rejected(nomis, value):
 @pytest.mark.parametrize("count", [-1, 2.5, "lots", None])
 def test_bad_counts_are_rejected(nomis, count):
     rows = [*CLIENTS, {"Ethnicity": "Arab", "Clients": count}]
-    with pytest.raises(AnalysisInputError, match="1 rows have a count"):
+    with pytest.raises(
+        AnalysisInputError,
+        match="1 row had a count that is not a whole number of zero or more: row",
+    ):
         _run(rows)
 
 
