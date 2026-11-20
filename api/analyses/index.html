@@ -1657,15 +1657,30 @@ name fits, when you give their outlines. Put them among the features of
 <code>boundaries</code>, or in a list under <code>"surroundings"</code>. Codes listed under
 <code>"focus"</code> are the surrounding places that hold the shaded areas: each gets a
 darker line and its name.</p>
-<div class="highlight"><pre><span></span><code><span class="n">boundaries</span> <span class="o">=</span> <span class="n">load_map_boundaries</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-<span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;surroundings&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nearby</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">]</span>  <span class="c1"># outlines you already have</span>
-<span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;focus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;E09000023&quot;</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><span class="n">boundaries</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="n">areas</span><span class="p">,</span>           <span class="c1"># outlines you already have</span>
+    <span class="s2">&quot;surroundings&quot;</span><span class="p">:</span> <span class="n">nearby</span><span class="p">,</span>
+    <span class="s2">&quot;focus&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;E09000023&quot;</span><span class="p">],</span>
+<span class="p">}</span>
 <span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">boundaries</span><span class="o">=</span><span class="n">boundaries</span><span class="p">)</span>
 </code></pre></div>
 <p><code>render_map</code> fetches the outline of each area from the ONS Open Geography
-Portal. Only the public area codes of the area you serve are sent. To draw without
-the network, pass <code>boundaries=</code> a GeoJSON FeatureCollection you already have;
-<code>load_map_boundaries(result)</code> fetches one you can save and reuse.</p>
+Portal. Only the public area codes of the area you serve, and of the local
+authorities near it, are sent. To draw without the network, pass <code>boundaries=</code>
+a GeoJSON FeatureCollection you already have; <code>load_map_boundaries(result)</code>
+fetches one you can save and reuse.</p>
+<p><code>load_map_boundaries</code> fetches the places around the map as well, and lists
+under <code>"focus"</code> the local authorities that hold a map's neighbourhoods. A map
+of up to 1,000 neighbourhoods or 20 local authorities is drawn large, so its
+outlines come from the full ones with detail finer than 10 or 20 metres left
+out, and so do the places near it, so that neighbours meet. A map of more is
+drawn small and takes outlines simplified to 200 metres. It asks for every
+local authority at 200 metres, about a megabyte, to find the ones near the
+map. That answer is kept in memory for the life of the process, so a second
+map does not ask again; <code>uk_open_data.analyses.maps.clear_outline_cache()</code>
+forgets it. When the places around cannot be fetched, the map is drawn without
+them and nothing is said.</p>
 <h2 id="the-answer">The answer</h2>
 <p><code>result.answer</code> is one or two sentences that answer the question the analysis
 asks, for example:</p>
