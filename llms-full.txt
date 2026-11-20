@@ -2010,6 +2010,10 @@ uv add "uk-open-data[connector]"
 uv run uk-open-data connector
 ```
 
+With pip it is `pip install "uk-open-data[connector]"`, then
+`uk-open-data connector`. Started without the extra, the command ends with one
+sentence that says how to install it.
+
 `python -m uk_open_data.connector` starts the same thing and takes the same
 options. That runs over stdio, which is how a desktop assistant starts a local
 connector. For Claude Desktop or Claude Code, add this to the MCP
