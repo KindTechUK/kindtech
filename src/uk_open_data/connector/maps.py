@@ -77,8 +77,9 @@ def picture_for(
     Args:
         result: An analysis result, with the rows of its detail tables.
         guarded: Values from the input rows that the picture must not repeat.
-        boundaries: Gives the outlines of the areas. Left out, they are
-            fetched from the ONS Open Geography Portal by public area code.
+        boundaries: Gives the outlines of the areas. Left out, the quick
+            outlines, simplified to 200 metres, are fetched from the ONS Open
+            Geography Portal by public area code.
 
     Returns:
         The picture, as ``{"title": ..., "layers": [{"id", "label", "svg"}]}``
@@ -89,7 +90,7 @@ def picture_for(
     if result.map is None:
         return None, ""
     try:
-        outlines = _in_time(boundaries or load_map_boundaries, result)
+        outlines = _in_time(boundaries or _quick_outlines, result)
         layers = [
             {
                 "id": layer.id,
@@ -136,6 +137,11 @@ class _PlainLine(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         logger.log(record.levelno, LINE_LEFT_OUT)
+
+
+def _quick_outlines(result: AnalysisResult) -> dict[str, Any]:
+    """The 200 metre outlines of a result's map, which do not keep a chat waiting."""
+    return load_map_boundaries(result, fine=False)
 
 
 def _in_time(load: Boundaries, result: AnalysisResult) -> dict[str, Any]:
