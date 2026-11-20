@@ -9,6 +9,8 @@ shows it with :data:`MAP_VIEW`.
 """
 
 import logging
+import queue
+import threading
 from collections.abc import Callable, Iterable
 from typing import Any
 
@@ -26,6 +28,10 @@ MAP_VIEW_URI = "ui://kindtech/analysis-map.html"
 MAP_META_KEY = "kindtech/map"
 # Above this the pictures are not sent: an answer should not carry megabytes.
 MAX_PICTURE_BYTES = 1_500_000
+# How long an answer waits for the outlines of its map. The first time an area
+# is asked for, the boundary service can take a minute or more, and the figures
+# should not wait that long for a picture.
+MAP_SECONDS = 15.0
 
 DRAWN = (
     "A map of this result was drawn for the person, coloured by: {layers}. "
@@ -38,6 +44,13 @@ NO_OUTLINES = (
     "No map was drawn, because the outlines of the areas could not be fetched "
     "just now. The figures are not affected. The Kindtech Evidence page and "
     "the command line tool draw the map."
+)
+TOO_SLOW = (
+    "No map was drawn, because the outlines of the areas were slow to arrive "
+    "and the figures were not kept waiting. The outlines are still being "
+    "fetched, so running the analysis again in a minute is often quick and "
+    "draws the map. The Kindtech Evidence page and the command line tool "
+    "draw it too."
 )
 TOO_LARGE = (
     "No map was drawn, because a picture of this many areas is too large to "
@@ -70,7 +83,7 @@ def picture_for(
     if result.map is None:
         return None, ""
     try:
-        outlines = (boundaries or load_map_boundaries)(result)
+        outlines = _in_time(boundaries or load_map_boundaries, result)
         layers = [
             {
                 "id": layer.id,
@@ -79,6 +92,9 @@ def picture_for(
             }
             for layer in result.map.layers
         ]
+    except TimeoutError:
+        logger.warning("A map was not drawn: its outlines took too long.")
+        return None, TOO_SLOW
     except (requests.RequestException, ValueError) as error:
         # The error text can hold a web address, so only its kind is logged.
         logger.warning("A map could not be drawn: %s", type(error).__name__)
@@ -92,6 +108,37 @@ def picture_for(
     labels = ", ".join(layer["label"] for layer in layers)
     picture = {"title": result.map.title, "layers": layers}
     return picture, DRAWN.format(layers=labels)
+
+
+def _in_time(load: Boundaries, result: AnalysisResult) -> dict[str, Any]:
+    """The outlines ``load`` gives for a result, or ``TimeoutError`` if it is slow.
+
+    The outlines are fetched on a thread of their own. When they have not come
+    within :data:`MAP_SECONDS` the answer goes out without a map and the fetch
+    is left to finish, which makes the next map of the same places quick. The
+    thread does not keep the program alive when it is told to stop.
+
+    Raises:
+        TimeoutError: If the outlines did not arrive in time.
+    """
+    arrived: queue.Queue[tuple[dict[str, Any] | None, Exception | None]] = queue.Queue(
+        maxsize=1
+    )
+
+    def fetch() -> None:
+        try:
+            arrived.put((load(result), None))
+        except Exception as error:  # passed on to the caller below
+            arrived.put((None, error))
+
+    threading.Thread(target=fetch, name="map-outlines", daemon=True).start()
+    try:
+        outlines, error = arrived.get(timeout=MAP_SECONDS)
+    except queue.Empty:
+        raise TimeoutError from None
+    if error is not None:
+        raise error
+    return outlines or {}
 
 
 def _that_fit(layers: list[dict[str, str]]) -> list[dict[str, str]]:
