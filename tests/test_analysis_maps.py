@@ -475,6 +475,29 @@ def test_map_is_drawn_with_what_it_fetches(result):
     assert _texts(svg, "near") == ["Greenwich"]
 
 
+def test_every_authority_is_fetched_once_for_the_life_of_the_process(result):
+    # It is about a megabyte and the same for every map.
+    service = _Service()
+    _fetch(result, service)
+    _fetch(result, service)
+    everywhere = [
+        asked
+        for asked in service.asked
+        if asked["type"] == "LAD" and "LAD23CD" not in asked
+    ]
+    assert len(everywhere) == 1
+    maps.clear_outline_cache()
+    _fetch(result, service)
+    assert len([a for a in service.asked if a["type"] == "LAD"]) > 3
+
+
+def test_an_empty_answer_for_every_authority_is_not_kept(result):
+    down = _Service(authorities=False)
+    assert _fetch(result, down)["surroundings"] == []
+    # The service is back: the next map asks again and gets its places.
+    assert len(_fetch(result, _Service())["surroundings"]) == 2
+
+
 def test_credit_carries_the_year_of_the_outlines(result):
     words = " ".join(_texts(render_map(result, boundaries=_boundaries()), "ink2"))
     assert words.endswith("Crown copyright and database right 2021.")

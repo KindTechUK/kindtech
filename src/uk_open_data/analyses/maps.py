@@ -258,18 +258,13 @@ def _surroundings(
 ) -> list[dict[str, Any]]:
     """Fetch the outlines of the local authorities on and near a map.
 
-    Every local authority is fetched once at 200 metres, to find the ones
-    near the map. On a map drawn in fine detail those few are then fetched
-    again from the full outlines at the same detail, so that a neighbour
-    meets the areas beside it. One that does not come keeps its 200 metre
-    outline.
+    Every local authority is fetched at 200 metres, once for the life of
+    the process, to find the ones near the map. On a map drawn in fine detail
+    those few are then fetched again from the full outlines at the same
+    detail, so that a neighbour meets the areas beside it. One that does not
+    come keeps its 200 metre outline.
     """
-    everywhere = load_geodata(
-        AROUND_TYPE,
-        year=str(AROUND_YEAR),
-        coverage="UK",
-        boundary_type=BOUNDARY_TYPE,
-    ).get("features", [])
+    everywhere = _every_authority()
     reach = _reach(features)
     near = {
         _property(feature.get("properties") or {}, "CD"): feature
@@ -286,6 +281,35 @@ def _surroundings(
         for feature in _outlines(AROUND_TYPE, AROUND_YEAR, wanted, detail)
     }
     return list({**near, **finer}.values())
+
+
+# The 200 metre outline of every local authority, once it has been fetched.
+# It is about a megabyte and the same for every map, so a process that draws
+# many maps fetches it once.
+_kept_authorities: list[dict[str, Any]] = []
+
+
+def _every_authority() -> list[dict[str, Any]]:
+    """Return the 200 metre outline of every local authority.
+
+    It is fetched the first time and kept for the life of the process. An
+    answer with nothing in it is not kept, so the next map asks again.
+    """
+    if not _kept_authorities:
+        _kept_authorities.extend(
+            load_geodata(
+                AROUND_TYPE,
+                year=str(AROUND_YEAR),
+                coverage="UK",
+                boundary_type=BOUNDARY_TYPE,
+            ).get("features", [])
+        )
+    return _kept_authorities
+
+
+def clear_outline_cache() -> None:
+    """Forget the outlines kept in memory, so the next map fetches them again."""
+    _kept_authorities.clear()
 
 
 _Box = tuple[float, float, float, float]
