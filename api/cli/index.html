@@ -1332,7 +1332,9 @@ again, and <code>--url</code> with <code>--sha256</code> fetches a copy you host
 </code></pre></div>
 <h3 id="postcodes-info"><code>postcodes info</code></h3>
 <p>Shows the installed table's edition, size and the credits to show when you
-publish something made with it.</p>
+publish something made with it. With no table installed it says so, and says
+how to get one. That is not an error: an analysis then looks postcodes up with
+postcodes.io and says so in its result.</p>
 <h3 id="postcodes-build-source-table-edition-edition"><code>postcodes build SOURCE TABLE --edition EDITION</code></h3>
 <p>Builds a table from the ONS best-fit postcode lookup (<code>.csv</code>, or the <code>.zip</code> it
 comes in) and prints its SHA-256. This is how a new edition is published; you

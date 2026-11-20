@@ -1885,7 +1885,9 @@ uk-open-data postcodes download
 ### `postcodes info`
 
 Shows the installed table's edition, size and the credits to show when you
-publish something made with it.
+publish something made with it. With no table installed it says so, and says
+how to get one. That is not an error: an analysis then looks postcodes up with
+postcodes.io and says so in its result.
 
 ### `postcodes build SOURCE TABLE --edition EDITION`
 
