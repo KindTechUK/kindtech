@@ -72,7 +72,9 @@ catchment=VALUE." `analysis describe` lists every option with both names.
 
 The outlines for `--map` come from the ONS Open Geography Portal. When they
 cannot be fetched, the report is still printed or written, no map file is made,
-and the command says so in one sentence and exits with status 2.
+and the command says so in one sentence and exits with status 3. Status 3 means
+the report is whole and only the map is missing, so a script can keep the
+report. Status 2 means nothing was made.
 
 A run that prints its answer writes one line to the `uk_open_data.runs` logger,
 with the analysis, the input mode and the word `cli`. Nothing collects it on

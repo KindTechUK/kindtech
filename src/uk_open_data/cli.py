@@ -47,6 +47,8 @@ from uk_open_data.postcodes.offline import missing_table_message
 
 EXIT_OK = 0
 EXIT_INPUT_ERROR = 2
+# The report was made and only its map was not: a caller can keep the report.
+EXIT_MAP_NOT_DRAWN = 3
 SPREADSHEET_SUFFIXES = (".xlsx", ".ods")
 KEPT_FIGURES = (
     "An analysis can run without the network when the public figures it uses are "
@@ -85,7 +87,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         text = args.handler(args)
     except _MapNotDrawnError as error:
         _emit(error.report, getattr(args, "output", None))
-        return _fail(MAP_NOT_DRAWN)
+        sys.stderr.write(MAP_NOT_DRAWN + "\n")
+        return EXIT_MAP_NOT_DRAWN
     except AnalysisInputError as error:
         return _fail("\n".join([*error.problems, *_how_to_set(error)]))
     except PostcodeTableError as error:

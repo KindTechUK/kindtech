@@ -13,7 +13,13 @@ import pandas as pd
 import pytest
 import requests
 
-from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, MAP_NOT_DRAWN, main
+from uk_open_data.cli import (
+    EXIT_INPUT_ERROR,
+    EXIT_MAP_NOT_DRAWN,
+    EXIT_OK,
+    MAP_NOT_DRAWN,
+    main,
+)
 
 ANALYSIS_ID = "reach-deprivation"
 
@@ -324,7 +330,9 @@ def test_map_that_cannot_be_fetched_leaves_the_report(
     ):
         status = main(_run_args(counts_file, "--map", str(picture)))
     shown = capsys.readouterr()
-    assert status == EXIT_INPUT_ERROR
+    # A status of its own: the report is whole, so a script can keep it.
+    assert status == EXIT_MAP_NOT_DRAWN
+    assert EXIT_MAP_NOT_DRAWN not in (EXIT_OK, EXIT_INPUT_ERROR)
     assert "most deprived" in shown.out
     assert shown.err == MAP_NOT_DRAWN + "\n"
     assert not picture.exists()
@@ -343,7 +351,7 @@ def test_map_error_from_the_service_is_not_shown(index, counts_file, tmp_path, c
             _run_args(counts_file, "--json", "--map", str(tmp_path / "map.svg"))
         )
     shown = capsys.readouterr()
-    assert status == EXIT_INPUT_ERROR
+    assert status == EXIT_MAP_NOT_DRAWN
     assert json.loads(shown.out)["analysis_id"] == ANALYSIS_ID
     assert shown.err == MAP_NOT_DRAWN + "\n"
     assert "arcgis" not in shown.err
@@ -364,7 +372,7 @@ def test_report_goes_to_its_file_when_the_map_is_not_drawn(
                 str(report),
             )
         )
-    assert status == EXIT_INPUT_ERROR
+    assert status == EXIT_MAP_NOT_DRAWN
     assert "most deprived" in report.read_text(encoding="utf-8")
     assert MAP_NOT_DRAWN in capsys.readouterr().err
 
