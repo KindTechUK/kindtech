@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from collections.abc import Mapping
+from dataclasses import replace
 from typing import Any
 
 from uk_open_data.analyses._inputs import TabularData, resolve_columns
@@ -87,7 +89,7 @@ def run_analysis(
     matched = resolve_columns(table.columns, role_names, columns)
     mode = _choose_mode(info, matched)
     values = {role: table.values(matched[role]) for role in mode.roles}
-    return analysis.run(
+    result = analysis.run(
         AnalysisInput(
             mode=mode,
             values=values,
@@ -95,6 +97,82 @@ def run_analysis(
             n_rows=table.n_rows,
         )
     )
+    return replace(result, code=_code(info, mode, resolved_options, result))
+
+
+def _code(
+    info: AnalysisInfo,
+    mode: InputMode,
+    options: Mapping[str, Any],
+    result: AnalysisResult,
+) -> str:
+    """Write the Python that runs an analysis again with the same settings.
+
+    Nothing from the person's table is written. The names of their columns
+    are left empty for them to fill in, and so is any setting that holds
+    their own words. Every other setting that has a value is written out,
+    the ones left alone too, so the code gives the same result if a default
+    changes later. A setting with no value is one the analysis works out, and
+    is left out.
+
+    The words are few and fixed, because a caller may search a result for
+    words repeated from the person's data: the code names the analysis by its
+    id, not its title.
+    """
+    private = {option.name for option in info.options if option.private}
+    columns = [
+        f'        "{role}": "",  # the name of your column' for role in mode.roles
+    ]
+    settings = [
+        _setting(name, value, name in private)
+        for name, value in options.items()
+        if value is not None
+    ]
+    return "\n".join(
+        [
+            f"# Version {result.analysis_version} of this analysis, run with",
+            f"# uk-open-data {result.package_version}. This runs it again with",
+            "# the same settings. Nothing from your table is written here: put",
+            "# the name of your own column beside each role.",
+            "import pandas as pd",
+            "",
+            "from uk_open_data.analyses import run_analysis",
+            "",
+            'data = pd.read_csv("your-table.csv")',
+            "result = run_analysis(",
+            f'    "{info.id}",',
+            "    data,",
+            "    columns={",
+            *columns,
+            "    },",
+            "    options={",
+            *settings,
+            "    },",
+            ")",
+            "print(result.answer)",
+        ]
+    )
+
+
+def _setting(name: str, value: Any, private: bool) -> str:
+    """Write one option as a line of Python, or leave it to be filled in."""
+    if private:
+        return f'        "{name}": {{}},  # fill in: your own words are not repeated'
+    # Through JSON and back, so that only plain values are written.
+    plain = json.loads(json.dumps(value, default=str))
+    return f'        "{name}": {_literal(plain)},'
+
+
+def _literal(value: Any) -> str:
+    """Write a plain value as Python, with text in double quotes."""
+    if isinstance(value, str):
+        return json.dumps(value, ensure_ascii=False)
+    if isinstance(value, list):
+        return f"[{', '.join(_literal(item) for item in value)}]"
+    if isinstance(value, dict):
+        pairs = (f"{_literal(key)}: {_literal(item)}" for key, item in value.items())
+        return f"{{{', '.join(pairs)}}}"
+    return repr(value)
 
 
 def record_run(analysis_id: str, input_mode: str, door: str) -> None:

@@ -160,6 +160,21 @@ def test_a_figure_does_not_say_its_unit_twice(index, counts_file, capsys):
     assert any(line.endswith("%") for line in lines)
 
 
+def test_the_report_ends_with_how_to_check_it_and_run_it_again(
+    index, counts_file, capsys
+):
+    assert main(_run_args(counts_file)) == EXIT_OK
+    lines = capsys.readouterr().out.splitlines()
+    exact = lines[lines.index("Figures before rounding") + 1]
+    assert exact.startswith("  - Share of your people in the area you serve")
+    assert exact.endswith(": 50")
+    code = lines[lines.index("To run it again in Python") + 1 :]
+    assert code[0].startswith("  # Version ")
+    assert f'      "{ANALYSIS_ID}",' in code
+    assert code[-1] == "  print(result.answer)"
+    assert all(line == line.rstrip() for line in lines)
+
+
 def test_the_report_opens_with_the_answer(index, counts_file, capsys):
     assert main(_run_args(counts_file)) == EXIT_OK
     lines = capsys.readouterr().out.splitlines()

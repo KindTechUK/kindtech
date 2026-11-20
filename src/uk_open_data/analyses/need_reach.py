@@ -90,6 +90,7 @@ from uk_open_data.analyses._steps import (
     SUPPRESS_BELOW,
     Trail,
     bad_counts,
+    before_rounding,
     count_by_postcode,
     percent,
     plural,
@@ -832,6 +833,7 @@ def _figures(
             f"People you reached per 100 {words.noun}, across the area",
             _per_100(in_catchment, sum(need)),
             "per_100",
+            exact=before_rounding(in_catchment, sum(need)),
         ),
         Figure(
             "high_need_areas",
@@ -853,6 +855,7 @@ def _figures(
             percent(sum(need[i] for i in high), sum(need)),
             "percent",
             note="The comparison for the share of your people.",
+            exact=before_rounding(sum(need[i] for i in high), sum(need)),
         ),
     ]
 
@@ -875,7 +878,13 @@ def _share_in_high_need(
             suppressed=True,
         )
     part = sum(people[i] for i in high)
-    return Figure(figure_id, label, percent(part, sum(people)), "percent")
+    return Figure(
+        figure_id,
+        label,
+        percent(part, sum(people)),
+        "percent",
+        exact=before_rounding(part, sum(people)),
+    )
 
 
 # --- what the person needs to know -----------------------------------------

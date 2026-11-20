@@ -34,7 +34,8 @@ uk-open-data analysis describe reach-deprivation
 Runs an analysis on a `.csv`, `.xlsx` or `.ods` file and prints a plain-text report:
 a sentence or two that answer the question, then the figures, the tables, the
 checks to make before using them, what the figures cannot say, the choices
-made, the working, the sources and a privacy summary. A number has its unit
+made, the working, the figures before rounding, the sources, a privacy
+summary and the Python that runs it again. A number has its unit
 after it, such as "64.7 km", unless the label beside it already says the unit.
 
 ```bash

@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import pytest
 import requests
+from working_checks import check_working
 
 from uk_open_data.analyses import (
     AnalysisInputError,
@@ -865,6 +866,17 @@ def test_charts_use_columns_of_the_list(kept):
 
 def test_result_explains_itself(kept):
     result = _run()
+    options = check_working(result)
+    assert options == {
+        "postcode_lookup": "auto",
+        "need": "residents",
+        "within_km": 10,
+        "top": 10,
+    }
+    # The average is given before rounding. A distance from one place is not:
+    # it is rounded to the kilometre on purpose.
+    assert result.figure("average_distance_km").exact == pytest.approx(80.8449, 1e-4)
+    assert result.figure("farthest_distance_km").exact is None
     # Every column has a plain heading to show in place of its id.
     assert not [
         column

@@ -10,6 +10,7 @@ import unittest.mock as mock
 
 import pandas as pd
 import pytest
+from working_checks import check_working
 
 from uk_open_data.analyses import (
     AnalysisInputError,
@@ -239,6 +240,21 @@ def test_the_line_for_under_represented_can_be_moved(nomis):
     choice = next(c for c in loose.choices if c.id == "under_represented_below")
     assert choice.value == 0.5
     assert choice.option == "under_represented_below"
+
+
+def test_the_code_to_run_it_again_leaves_out_the_persons_own_labels(nomis):
+    # The setting that matches a person's labels to census groups holds
+    # their own words, so the code leaves it to be filled in.
+    rows = [*CLIENTS, {"Ethnicity": "Code 7", "Clients": 9}]
+    groups = {"Code 7": "Other"}
+    result = _run(rows, options={"catchment": "Lewisham", "groups": groups})
+    options = check_working(result)
+    assert options["groups"] == {}
+    assert options["catchment"] == "Lewisham"
+    assert '"groups": {},  # fill in' in result.code
+    assert find_row_values(result.to_dict(), ["Code 7"]) == []
+    # Left alone, the setting is not written at all.
+    assert "groups" not in check_working(_run(CLIENTS))
 
 
 def test_result_says_what_it_did_and_can_be_written_as_json(nomis):

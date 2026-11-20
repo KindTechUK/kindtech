@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from working_checks import check_working
 
 from uk_open_data.analyses import (
     DOORS,
@@ -584,6 +585,20 @@ def test_bad_options_are_rejected(world, options):
 
 def test_result_explains_itself(world):
     result = world.run(options={"suppress_below": 10})
+    # The code that runs it again holds every setting, and no column name.
+    options = check_working(result)
+    assert options["suppress_below"] == 10
+    assert "catchment" not in options  # left for the analysis to work out
+    assert "Client postcode" not in result.code
+    again = world.run(options=options)
+    assert [f.value for f in again.figures] == [f.value for f in result.figures]
+    assert result.to_dict()["code"] == result.code
+    # A share is given as it was before rounding. A count is not rounded.
+    share = result.figure("share_most_deprived_20")
+    assert share.exact == pytest.approx(68.5714, 1e-5)
+    assert round(share.exact, 1) == share.value
+    assert result.figure("people_located").exact is None
+    assert "exact" in result.to_dict()["figures"][0]
     assert result.privacy.suppress_below == 10
     assert [check.id for check in result.checks] == [
         "one_row_one_person",

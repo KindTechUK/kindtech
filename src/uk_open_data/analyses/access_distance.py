@@ -79,6 +79,7 @@ from uk_open_data.analyses._steps import (
     POSTCODE_LOOKUP,
     Position,
     Trail,
+    before_rounding,
     locate_postcodes,
     percent,
     use_postcode_table,
@@ -632,6 +633,9 @@ def _figures(
                 "Each person is counted at the centre of their local "
                 "authority, so a place with many people counts for more."
             ),
+            # Worked out from distances already rounded to the kilometre, so
+            # it says no more about where a site is than the table does.
+            exact=before_rounding(travelled, people, 1),
         ),
         Figure(
             "share_of_people_within_reach",
@@ -639,6 +643,9 @@ def _figures(
             f"{within:g} km of a site",
             percent(people - sum(row.authority.need for row in beyond), people),
             "percent",
+            exact=before_rounding(
+                people - sum(row.authority.need for row in beyond), people
+            ),
         ),
         Figure(
             "people_beyond_reach",

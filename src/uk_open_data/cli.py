@@ -477,6 +477,14 @@ def _report_text(info: AnalysisInfo, result: AnalysisResult) -> str:
         "Working", [f"{step.title}. {step.detail}" for step in result.working]
     )
     lines += _section(
+        "Figures before rounding",
+        [
+            f"{figure.label}: {_exact(figure.exact)}"
+            for figure in result.figures
+            if figure.exact is not None
+        ],
+    )
+    lines += _section(
         "Sources",
         [
             # An edition that names a kept copy ends in a full stop already.
@@ -494,7 +502,15 @@ def _report_text(info: AnalysisInfo, result: AnalysisResult) -> str:
             *privacy.notes,
         ],
     )
+    if result.code:
+        lines += ["", "To run it again in Python"]
+        lines += [f"  {line}".rstrip() for line in result.code.splitlines()]
     return "\n".join(lines)
+
+
+def _exact(value: float) -> str:
+    """Write a figure as it was before rounding, to six decimal places."""
+    return f"{value:,.6f}".rstrip("0").rstrip(".")
 
 
 def _hidden_counts(privacy: Privacy) -> list[str]:

@@ -76,6 +76,7 @@ from uk_open_data.analyses._steps import (
     POSTCODE_LOOKUP,
     Trail,
     bad_counts,
+    before_rounding,
     percent,
     place_postcodes,
     plural,
@@ -742,6 +743,7 @@ def _figures(
             f"Provision for each 1,000 {words.noun}, across the area",
             _per_1000(in_catchment, sum(need)),
             "per_1000",
+            exact=before_rounding(in_catchment, sum(need), 1000),
         ),
         Figure(
             "high_need_areas",
@@ -761,6 +763,7 @@ def _figures(
             f"Share of your provision that is in {words.places}",
             percent(sum(volume[i] for i in high), in_catchment),
             "percent",
+            exact=before_rounding(sum(volume[i] for i in high), in_catchment),
         ),
         Figure(
             "share_of_need_in_high_need_areas",
@@ -768,6 +771,7 @@ def _figures(
             percent(sum(need[i] for i in high), sum(need)),
             "percent",
             note="Compare this with the share of your provision.",
+            exact=before_rounding(sum(need[i] for i in high), sum(need)),
         ),
     ]
 

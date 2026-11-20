@@ -230,6 +230,7 @@ INFO = AnalysisInfo(
                 "their wording."
             ),
             default=None,
+            private=True,
         ),
         Option(
             name="catchment",

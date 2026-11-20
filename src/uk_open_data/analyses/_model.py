@@ -118,6 +118,10 @@ class Option:
     ``label`` is the option's short plain name, such as "Area you serve". A
     page shows it beside the option, and messages use it, in quotes, to point
     a person at the option. ``name`` is the code name a call is written with.
+
+    ``private`` is True when the value a person gives holds words from their
+    own data, such as their own labels for groups. A result never repeats
+    such a value, not even in the code that runs the analysis again.
     """
 
     name: str
@@ -125,6 +129,7 @@ class Option:
     default: Any = None
     choices: tuple[OptionChoice, ...] = ()
     label: str = ""
+    private: bool = False
 
 
 @dataclass(frozen=True)
@@ -152,6 +157,11 @@ class Figure:
 
     ``value`` is ``None`` when the figure is hidden to protect small counts
     (``suppressed`` is then ``True``) or cannot be worked out (see ``note``).
+
+    ``exact`` is the value before it was rounded, for a share or a rate, so a
+    person can check the working. It is ``None`` for a count, which is not
+    rounded, for a figure that is hidden, and for a distance from one place,
+    which is rounded to the kilometre on purpose.
     """
 
     id: str
@@ -160,6 +170,7 @@ class Figure:
     unit: str
     note: str = ""
     suppressed: bool = False
+    exact: float | None = None
 
 
 @dataclass(frozen=True)
@@ -337,6 +348,10 @@ class AnalysisResult:
     asks, made only from figures and names the result already shows, so every
     place that shows a result can open with the same words. ``key_figures``
     names up to three figures to show first, by their ids.
+
+    ``code`` is the Python that runs the analysis again with the same
+    settings. It holds nothing from the person's table: the names of their
+    columns are left for them to fill in.
     """
 
     analysis_id: str
@@ -357,6 +372,7 @@ class AnalysisResult:
     charts: tuple[Chart, ...] = ()
     answer: str = ""
     key_figures: tuple[str, ...] = ()
+    code: str = ""
 
     def figure(self, figure_id: str) -> Figure:
         """Return the figure with this id.
