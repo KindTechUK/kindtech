@@ -902,6 +902,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#connector" class="md-nav__link">
+    <span class="md-ellipsis">
+      connector
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1210,6 +1219,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#connector" class="md-nav__link">
+    <span class="md-ellipsis">
+      connector
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1342,6 +1360,18 @@ postcodes.io and says so in its result.</p>
 <p>Builds a table from the ONS best-fit postcode lookup (<code>.csv</code>, or the <code>.zip</code> it
 comes in) and prints its SHA-256. This is how a new edition is published; you
 do not need it to use the package.</p>
+<h3 id="connector"><code>connector</code></h3>
+<p>Starts the <a href="../connector/">connector</a>, which offers the analyses to a chat
+assistant as tools. It is the same as <code>python -m uk_open_data.connector</code> and
+takes the same options:</p>
+<div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>connector
+uk-open-data<span class="w"> </span>connector<span class="w"> </span>--transport<span class="w"> </span>streamable-http<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+</code></pre></div>
+<p>It needs the <code>connector</code> extra, and says so when the extra is not installed:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;uk-open-data[connector]&quot;</span>
+</code></pre></div>
+<p>Over stdio, the default, the command prints nothing and waits: the assistant
+starts it and talks to it. It runs until the assistant, or you, stop it.</p>
 <h2 id="using-it-from-an-assistant">Using it from an assistant</h2>
 <p>Give an assistant the JSON summary, not your file:</p>
 <div class="highlight"><pre><span></span><code>uk-open-data<span class="w"> </span>analysis<span class="w"> </span>run<span class="w"> </span>reach-deprivation<span class="w"> </span>clients.csv<span class="w"> </span><span class="se">\</span>

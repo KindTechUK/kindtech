@@ -1899,6 +1899,26 @@ Builds a table from the ONS best-fit postcode lookup (`.csv`, or the `.zip` it
 comes in) and prints its SHA-256. This is how a new edition is published; you
 do not need it to use the package.
 
+### `connector`
+
+Starts the [connector](connector.md), which offers the analyses to a chat
+assistant as tools. It is the same as `python -m uk_open_data.connector` and
+takes the same options:
+
+```bash
+uk-open-data connector
+uk-open-data connector --transport streamable-http --port 8000
+```
+
+It needs the `connector` extra, and says so when the extra is not installed:
+
+```bash
+uv add "uk-open-data[connector]"
+```
+
+Over stdio, the default, the command prints nothing and waits: the assistant
+starts it and talks to it. It runs until the assistant, or you, stop it.
+
 ## Using it from an assistant
 
 Give an assistant the JSON summary, not your file:
