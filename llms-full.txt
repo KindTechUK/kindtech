@@ -1193,7 +1193,9 @@ local authorities are named one by one; neighbourhoods are named by the local
 authority they are in. Text is broken into lines to fit the width you ask for.
 
 The places around the map are drawn in pale grey, with their names where a
-name fits, when you give their outlines. Put them among the features of
+name fits, when you give their outlines. Only the part of each that the frame
+shows is written to the picture, so a large neighbour does not make the file
+large. Put them among the features of
 `boundaries`, or in a list under `"surroundings"`. Codes listed under
 `"focus"` are the surrounding places that hold the shaded areas: each gets a
 darker line and its name. Codes listed under `"shore"` are surrounding places
