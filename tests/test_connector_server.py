@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import sys
 from typing import Any
 
 import pytest
@@ -364,6 +365,25 @@ def test_help_names_the_command_that_started_it(
         command.main(["--help"], **prog)
 
     assert capsys.readouterr().out.startswith(shown)
+
+
+def test_a_missing_extra_ends_the_command_with_one_sentence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # As when the mcp package is not installed.
+    monkeypatch.setitem(sys.modules, "uk_open_data.connector.server", None)
+    monkeypatch.setattr(sys, "argv", ["python -m uk_open_data.connector"])
+
+    with pytest.raises(SystemExit) as stopped:
+        command.start()
+
+    said = str(stopped.value)
+    assert said.startswith("The connector server needs the 'connector' extra.")
+    assert 'uv add "uk-open-data[connector]"' in said
+    assert 'pip install "uk-open-data[connector]"' in said
+    # No traceback is chained to it for Python to print.
+    assert stopped.value.__cause__ is None
+    assert stopped.value.__suppress_context__ is True
 
 
 def test_command_defaults_to_stdio(monkeypatch: pytest.MonkeyPatch) -> None:

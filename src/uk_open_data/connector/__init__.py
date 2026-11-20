@@ -28,8 +28,9 @@ __all__ = [
 ]
 
 _MISSING_EXTRA = (
-    "The connector server needs the 'connector' extra. "
-    'Install it: `uv add "uk-open-data[connector]"`'
+    "The connector server needs the 'connector' extra. Install it with "
+    '`uv add "uk-open-data[connector]"` or '
+    '`pip install "uk-open-data[connector]"`.'
 )
 
 
