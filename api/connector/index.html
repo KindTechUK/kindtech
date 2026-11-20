@@ -1414,6 +1414,16 @@ tells the assistant to begin its reply with that sentence in its exact words,
 so a person reads the same words in a chat as on the Kindtech Evidence page
 and at the command line. The sentence passes the same check as the rest of the
 result: it is withheld if it repeats a value from the rows.</p>
+<p>The result also holds what a person needs to check it. A share or a rate has
+<code>exact</code>, its value before rounding, and the result has <code>code</code>, the Python that
+runs the analysis again with the same settings. Both are described under
+<a href="../analyses/">the working</a> and come through as the analysis wrote them. The
+code leaves the names of the person's columns to be filled in, and a setting
+that holds their own labels, such as <code>groups</code> for <code>who-we-miss</code>, is written as
+<code>{}</code>, so it passes the same check as the rest of the result. The server's
+instructions and the tool's description tell an assistant to quote figures as
+they are shown, rounded, and to give an exact value or the code only when the
+person asks how a figure was worked out or asks for the code.</p>
 <p>A count or volume given as text that is nothing but a number, such as
 <code>"1200"</code> or <code>"1,200"</code>, is read as a number, because assistants often send one
 that way. This applies to the roles an analysis marks <code>amount</code> in its description
