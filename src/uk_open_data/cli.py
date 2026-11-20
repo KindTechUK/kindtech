@@ -43,7 +43,7 @@ from uk_open_data.postcodes import (
     postcode_table_info,
     postcode_table_path,
 )
-from uk_open_data.postcodes.offline import missing_table_message
+from uk_open_data.postcodes.offline import NO_TABLE, how_to_get_a_table
 
 EXIT_OK = 0
 EXIT_INPUT_ERROR = 2
@@ -60,6 +60,15 @@ MAP_NOT_DRAWN = (
     "without it. Check the connection and try again."
 )
 OUTLINES_LOGGER = "uk_open_data.geo"
+# Said when no postcode table is installed, before how to get one, because
+# it is what a person running an analysis needs to know.
+NO_TABLE_IS_FINE = (
+    "That is fine: an analysis then looks postcodes up with postcodes.io, and "
+    "says so in its result."
+)
+WHAT_A_TABLE_IS_FOR = (
+    "With a table, postcodes are looked up on this machine and none are sent out."
+)
 # What follows a number, for each unit that is not said in a label or heading.
 UNIT_SUFFIX = {"percent": "%", "per_1000": " per 1,000", "km": " km"}
 CONNECTOR = "connector"
@@ -292,8 +301,8 @@ def _handle_postcodes_info(args: argparse.Namespace) -> str:
     """
     if postcode_table_path() is None:
         return (
-            f"{missing_table_message()}\nUntil one is installed, an analysis "
-            "looks postcodes up with postcodes.io, and says so in its result."
+            f"{NO_TABLE} {NO_TABLE_IS_FINE}\n"
+            f"{WHAT_A_TABLE_IS_FOR} {how_to_get_a_table()}"
         )
     return _table_text()
 
@@ -469,7 +478,8 @@ def _report_text(info: AnalysisInfo, result: AnalysisResult) -> str:
     lines += _section(
         "Sources",
         [
-            f"{source.name}, {source.publisher}, {source.edition}. "
+            # An edition that names a kept copy ends in a full stop already.
+            f"{source.name}, {source.publisher}, {source.edition.rstrip('.')}. "
             f"{source.licence}. {source.url}"
             for source in result.sources
         ],
