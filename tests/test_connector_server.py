@@ -108,6 +108,16 @@ def test_the_assistant_is_told_to_open_with_the_answer() -> None:
     assert "Open your reply with result.answer in its exact words" in description
 
 
+def test_an_assistant_is_told_when_to_show_the_code_and_exact_values() -> None:
+    description = " ".join(_tools()["run_analysis_on_counts"]["description"].split())
+    instructions = build_server().instructions or ""
+
+    assert "'exact' value and result.code" in description
+    assert "asks for the code" in description
+    assert "Quote each figure as it is shown, rounded." in instructions
+    assert "asks for the code" in instructions
+
+
 @pytest.mark.usefixtures("england")
 def test_describe_place_through_the_server() -> None:
     reply = _call("describe_place", {"place": "Lewisham"})

@@ -323,6 +323,20 @@ class TestWithTheRealAnalysis:
         assert result["checks"]
         assert result["sources"]
 
+    def test_the_code_and_the_figures_before_rounding_come_through(self) -> None:
+        answer = run_analysis_on_counts("reach-deprivation", COUNTS)
+
+        result = answer["result"]
+        exact = {figure["id"]: figure["exact"] for figure in result["figures"]}
+        assert answer["status"] == "ok"
+        assert 'run_analysis(\n    "reach-deprivation"' in result["code"]
+        # 12 of 42 people: shown as 28.6, kept as it was worked out.
+        assert exact["share_most_deprived_10"] == pytest.approx(100 * 12 / 42)
+        assert exact["people_supplied"] is None
+        # The code names roles and leaves the person's column names blank.
+        for row in COUNTS:
+            assert row["lsoa_code"] not in result["code"]
+
     def test_the_answer_sentence_comes_through_to_open_the_reply(self) -> None:
         answer = run_analysis_on_counts("reach-deprivation", COUNTS)
 
@@ -417,6 +431,8 @@ class TestCountsThatWouldBeHidden:
         assert [f["id"] for f in figures if f["suppressed"]] == [
             "share_most_deprived_10"
         ]
+        # A hidden figure has no value before rounding either.
+        assert [f["exact"] for f in figures if f["suppressed"]] == [None]
 
     def test_combining_the_small_count_leaves_nothing_to_ask_about(self) -> None:
         combined = [
@@ -536,6 +552,13 @@ class TestWithTheThirdAnalysis:
 
         assert answer["analyses"][0]["id"] == "who-we-miss"
 
+    def test_says_which_option_holds_the_persons_own_labels(self) -> None:
+        answer = find_analysis("which ethnic groups are we missing?")
+
+        options = {o["name"]: o for o in answer["analyses"][0]["options"]}
+        assert options["groups"]["private"] is True
+        assert options["catchment"]["private"] is False
+
     def test_runs_on_group_counts(self) -> None:
         answer = run_analysis_on_counts("who-we-miss", GROUP_COUNTS, options=CATCHMENT)
 
@@ -593,6 +616,19 @@ class TestWithTheThirdAnalysis:
         assert answer["status"] == "ok"
         assert "Quillfeather" not in reply
         assert "ZZ99" not in reply
+
+    def test_the_code_to_run_it_again_holds_no_label_of_the_persons_own(self) -> None:
+        rows = [*GROUP_COUNTS, {"group": "Zebedee Quillfeather", "count": 6}]
+        own_labels = {**CATCHMENT, "groups": {"Zebedee Quillfeather": "Other"}}
+
+        answer = run_analysis_on_counts("who-we-miss", rows, options=own_labels)
+
+        code = answer["result"]["code"]
+        assert answer["status"] == "ok"
+        assert 'run_analysis(\n    "who-we-miss"' in code
+        assert '"groups": {}' in code
+        assert "Lewisham" in code
+        assert "Quillfeather" not in json.dumps(answer)
 
 
 VOLUMES = [
