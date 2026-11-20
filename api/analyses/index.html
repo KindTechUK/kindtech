@@ -1609,7 +1609,7 @@ the package, so neither is typed out a second time:</p>
 </code></pre></div>
 <h2 id="drawing-the-map">Drawing the map</h2>
 <p>A result describes its map; <code>render_map</code> draws it as an SVG picture with a
-legend and the credits the data licences ask for.</p>
+key and the credits the data licences ask for.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">uk_open_data.analyses</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_map</span>
 
 <span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>                  <span class="c1"># the first layer: deprivation decile</span>
@@ -1622,6 +1622,22 @@ legend and the credits the data licences ask for.</p>
 nothing the result does not already hold. People are shown in bands, and the
 lowest band includes zero. Hover over an area in a browser to see its name and
 value. The colours adapt to a dark page.</p>
+<p>A picture shows one layer, and its title says what the colour shows: "People
+reached, by neighbourhood". The first layer of a map is drawn in blue and the
+second in orange, so two pictures of one result do not look like the same
+measure. The shaded areas sit in a frame with a scale line. Up to twelve
+local authorities are named one by one; neighbourhoods are named by the local
+authority they are in. Text is broken into lines to fit the width you ask for.</p>
+<p>The places around the map are drawn in pale grey, with their names where a
+name fits, when you give their outlines. Put them among the features of
+<code>boundaries</code>, or in a list under <code>"surroundings"</code>. Codes listed under
+<code>"focus"</code> are the surrounding places that hold the shaded areas: each gets a
+darker line and its name.</p>
+<div class="highlight"><pre><span></span><code><span class="n">boundaries</span> <span class="o">=</span> <span class="n">load_map_boundaries</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;surroundings&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nearby</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">]</span>  <span class="c1"># outlines you already have</span>
+<span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;focus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;E09000023&quot;</span><span class="p">]</span>
+<span class="n">svg</span> <span class="o">=</span> <span class="n">render_map</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">boundaries</span><span class="o">=</span><span class="n">boundaries</span><span class="p">)</span>
+</code></pre></div>
 <p><code>render_map</code> fetches the outline of each area from the ONS Open Geography
 Portal. Only the public area codes of the area you serve are sent. To draw without
 the network, pass <code>boundaries=</code> a GeoJSON FeatureCollection you already have;
