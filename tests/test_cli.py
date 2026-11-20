@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 import requests
 
-from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, main
+from uk_open_data.cli import EXIT_INPUT_ERROR, EXIT_OK, MAP_NOT_DRAWN, main
 
 ANALYSIS_ID = "reach-deprivation"
 
@@ -268,3 +268,70 @@ def test_a_run_that_fails_is_not_recorded(index, counts_file, capsys, caplog):
     with caplog.at_level(logging.INFO, logger="uk_open_data.runs"):
         assert main(args) == EXIT_INPUT_ERROR
     assert caplog.records == []
+
+
+def _no_outlines(*args, **kwargs):
+    """Stand in for the boundary service when it cannot be reached.
+
+    The real one logs its error, which holds its web address, and gives back
+    no outlines.
+    """
+    log = logging.getLogger("uk_open_data.geo.api")
+    assert logging.getLogger("uk_open_data.geo").handlers, "the log is not kept quiet"
+    log.error("Error querying ArcGIS service: https://services1.arcgis.com/x")
+    return {"type": "FeatureCollection", "features": []}
+
+
+def test_map_that_cannot_be_fetched_leaves_the_report(
+    index, counts_file, tmp_path, capsys, caplog
+):
+    picture = tmp_path / "map.svg"
+    with (
+        mock.patch("uk_open_data.analyses.maps.load_geodata", _no_outlines),
+        caplog.at_level(logging.INFO, logger="uk_open_data.runs"),
+    ):
+        status = main(_run_args(counts_file, "--map", str(picture)))
+    shown = capsys.readouterr()
+    assert status == EXIT_INPUT_ERROR
+    assert "most deprived" in shown.out
+    assert shown.err == MAP_NOT_DRAWN + "\n"
+    assert not picture.exists()
+    assert logging.getLogger("uk_open_data.geo").handlers == []
+    runs = [r for r in caplog.records if r.name == "uk_open_data.runs"]
+    assert len(runs) == 1
+
+
+def test_map_error_from_the_service_is_not_shown(index, counts_file, tmp_path, capsys):
+    error = requests.ConnectionError(
+        "HTTPSConnectionPool(host='services1.arcgis.com'): Max retries exceeded "
+        "with url: /x/query?where=LSOA21CD IN ('E01000001')"
+    )
+    with mock.patch("uk_open_data.cli.load_map_boundaries", side_effect=error):
+        status = main(
+            _run_args(counts_file, "--json", "--map", str(tmp_path / "map.svg"))
+        )
+    shown = capsys.readouterr()
+    assert status == EXIT_INPUT_ERROR
+    assert json.loads(shown.out)["analysis_id"] == ANALYSIS_ID
+    assert shown.err == MAP_NOT_DRAWN + "\n"
+    assert "arcgis" not in shown.err
+    assert "E01000001" not in shown.err
+
+
+def test_report_goes_to_its_file_when_the_map_is_not_drawn(
+    index, counts_file, tmp_path, capsys
+):
+    report = tmp_path / "report.txt"
+    with mock.patch("uk_open_data.analyses.maps.load_geodata", _no_outlines):
+        status = main(
+            _run_args(
+                counts_file,
+                "--map",
+                str(tmp_path / "map.svg"),
+                "--output",
+                str(report),
+            )
+        )
+    assert status == EXIT_INPUT_ERROR
+    assert "most deprived" in report.read_text(encoding="utf-8")
+    assert MAP_NOT_DRAWN in capsys.readouterr().err

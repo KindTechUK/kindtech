@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import logging
 import sys
 from collections.abc import Sequence
 from io import BytesIO
@@ -34,7 +35,7 @@ from uk_open_data.analyses import (
     record_run,
     run_analysis,
 )
-from uk_open_data.analyses.maps import render_map
+from uk_open_data.analyses.maps import load_map_boundaries, render_map
 from uk_open_data.postcodes import (
     PostcodeTableError,
     build_postcode_table,
@@ -51,6 +52,20 @@ KEPT_FIGURES = (
     "An analysis can run without the network when the public figures it uses are "
     "kept on this machine: see the page for the analysis in the documentation."
 )
+MAP_NOT_DRAWN = (
+    "The map was not drawn, because the outlines of its areas could not be "
+    "fetched from the ONS Open Geography Portal. The report is complete "
+    "without it. Check the connection and try again."
+)
+OUTLINES_LOGGER = "uk_open_data.geo"
+
+
+class _MapNotDrawnError(Exception):
+    """An analysis ran, but the outlines for its map could not be fetched."""
+
+    def __init__(self, report: str) -> None:
+        super().__init__(MAP_NOT_DRAWN)
+        self.report = report
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -62,6 +77,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return EXIT_INPUT_ERROR
     try:
         text = args.handler(args)
+    except _MapNotDrawnError as error:
+        _emit(error.report, getattr(args, "output", None))
+        return _fail(MAP_NOT_DRAWN)
     except AnalysisInputError as error:
         return _fail("\n".join(error.problems))
     except PostcodeTableError as error:
@@ -196,13 +214,38 @@ def _handle_run(args: argparse.Namespace) -> str:
         for name, value in (_split_pair(pair, "--option") for pair in args.option)
     }
     result = run_analysis(args.analysis_id, rows, columns=columns, options=options)
-    if args.map is not None:
-        svg = render_map(result, layer=args.map_layer)
-        args.map.write_text(svg + "\n", encoding="utf-8")
+    drawn = args.map is None or _write_map(result, args.map_layer, args.map)
     record_run(result.analysis_id, result.input_mode, "cli")
     if args.json:
-        return _to_json(result.to_dict(include_detail=not args.summary))
-    return _report_text(info, result)
+        text = _to_json(result.to_dict(include_detail=not args.summary))
+    else:
+        text = _report_text(info, result)
+    if not drawn:
+        raise _MapNotDrawnError(text)
+    return text
+
+
+def _write_map(result: AnalysisResult, layer: str | None, path: Path) -> bool:
+    """Draw a result's map into a file, and say whether it was drawn.
+
+    The service that holds the outlines logs its own errors, which carry its
+    web address. They are kept off the screen here, and the caller says what
+    happened in one plain sentence instead.
+    """
+    quiet = logging.NullHandler()
+    outlines_log = logging.getLogger(OUTLINES_LOGGER)
+    outlines_log.addHandler(quiet)
+    try:
+        boundaries = load_map_boundaries(result)
+    except requests.RequestException:
+        return False
+    finally:
+        outlines_log.removeHandler(quiet)
+    if not boundaries["features"]:
+        return False
+    svg = render_map(result, layer=layer, boundaries=boundaries)
+    path.write_text(svg + "\n", encoding="utf-8")
+    return True
 
 
 def _handle_postcodes_download(args: argparse.Namespace) -> str:
