@@ -61,6 +61,7 @@ from uk_open_data.analyses._model import (
 )
 from uk_open_data.analyses._need import (
     DEFAULT_TOP,
+    FEW_PLACES,
     MAX_TOP,
     MEASURES,
     NEED_BANDS,
@@ -585,7 +586,7 @@ def _map_spec() -> MapSpec:
                 label="People",
                 value_column="need_band",
                 kind="ordinal",
-                note="Local authorities in five equal groups by people.",
+                note=f"Local authorities in five equal groups by people.{FEW_PLACES}",
                 categories=NEED_BANDS,
             ),
         ),

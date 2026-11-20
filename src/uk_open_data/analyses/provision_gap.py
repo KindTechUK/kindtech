@@ -53,6 +53,7 @@ from uk_open_data.analyses._model import (
 from uk_open_data.analyses._need import (
     DEFAULT_TOP,
     FEW_AREAS,
+    FEW_PLACES,
     MAX_TOP,
     MEASURES,
     NEED_BANDS,
@@ -669,7 +670,10 @@ def _map_spec(words: NeedWords) -> MapSpec:
                 label=sentence_case(words.noun),
                 value_column="need_band",
                 kind="ordinal",
-                note=f"Local authorities in five equal groups by {words.noun}.",
+                note=(
+                    f"Local authorities in five equal groups by {words.noun}."
+                    f"{FEW_PLACES}"
+                ),
                 categories=NEED_BANDS,
             ),
             MapLayer(
@@ -680,7 +684,7 @@ def _map_spec(words: NeedWords) -> MapSpec:
                 note=(
                     "Local authorities where you provide are in three equal "
                     "groups. The lowest band holds places where you provide "
-                    "nothing."
+                    "nothing." + FEW_PLACES
                 ),
                 categories=PROVISION_BANDS,
             ),

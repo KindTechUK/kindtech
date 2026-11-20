@@ -548,13 +548,30 @@ def high_need_cut(need: list[float]) -> float:
     return sorted(need, reverse=True)[places - 1]
 
 
+# Said in a map's note, because a key lists every group whatever the map has.
+FEW_PLACES = (
+    " With fewer places than groups, the lowest place is in the lowest group "
+    "and the highest in the highest."
+)
+
+
 def equal_parts(values: list[float], parts: int) -> dict[int, int]:
     """Split positions into equal parts by value, lowest first.
+
+    With fewer values than parts, each value is a part of its own, spread
+    from the lowest part to the highest. So the highest value is in the top
+    part, and a key that runs from low to high is true of the map. One value
+    alone goes in the middle part: there is nothing to set it against.
 
     Returns:
         Position in ``values`` to part number, from 0.
     """
     order = sorted(range(len(values)), key=lambda i: (values[i], i))
+    if len(order) == 1:
+        return {order[0]: parts // 2}
+    if len(order) < parts:
+        last = len(order) - 1
+        return {i: round(rank * (parts - 1) / last) for rank, i in enumerate(order)}
     return {i: rank * parts // len(order) for rank, i in enumerate(order)}
 
 

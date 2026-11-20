@@ -19,7 +19,7 @@ from uk_open_data.analyses import (
     render_map,
     run_analysis,
 )
-from uk_open_data.analyses._need import high_need_cut
+from uk_open_data.analyses._need import equal_parts, high_need_cut
 from uk_open_data.analyses.need_reach import (
     NEED_BANDS,
     NO_REACH,
@@ -1093,13 +1093,48 @@ def _square(number: int, code: str) -> dict:
     }
 
 
+@pytest.mark.parametrize(
+    ("values", "parts", "expected"),
+    [
+        # Two shown counts: the higher is "Higher", not "Middle".
+        ([0.4, 0.9], 3, [0, 2]),
+        ([7.0, 3.0, 5.0], 5, [4, 0, 2]),
+        ([1.0, 2.0, 3.0, 4.0], 5, [0, 1, 3, 4]),
+        # One place alone is not the lowest of anything.
+        ([6.0], 5, [2]),
+        ([6.0], 3, [1]),
+        # As many places as groups, or more: equal groups, as before.
+        ([1.0, 2.0, 3.0], 3, [0, 1, 2]),
+        ([5.0, 1.0, 4.0, 2.0, 3.0, 6.0], 3, [2, 0, 1, 0, 1, 2]),
+        ([], 5, []),
+    ],
+)
+def test_few_places_are_spread_from_the_lowest_group_to_the_highest(
+    values, parts, expected
+):
+    part = equal_parts(values, parts)
+    assert [part[i] for i in range(len(values))] == expected
+
+
+def test_the_higher_of_two_shown_places_is_in_the_top_group(nomis):
+    # The key of the reach layer runs from "Lower" to "Higher". With two
+    # places shown, the higher was "Middle reach" and nothing was "Higher".
+    result = _run(_counts(Lewisham=60, Greenwich=30))
+    rows = {r["geography_name"]: r for r in result.table("by_local_authority").rows}
+    shown = {name: row["reach_band"] for name, row in rows.items() if row["people"]}
+    assert sorted(shown.values()) == ["Higher reach", "Lower reach"]
+    assert "With fewer places than groups" in result.map.layers[1].note
+
+
 def test_map_shades_need_by_count_when_the_need_is_every_resident(nomis):
     nomis.residents = RESIDENTS
     result = _run_wide(_counts(Lewisham=60), options={"need": "residents"})
     assert len(nomis.asked) == 1  # residents are the need, and are not asked twice
     assert result.map.layers[0].label == "Residents"
     assert result.map.layers[0].note == (
-        "Local authorities in five equal groups by residents."
+        "Local authorities in five equal groups by residents. With fewer "
+        "places than groups, the lowest place is in the lowest group and the "
+        "highest in the highest."
     )
     assert result.map.layers[1].label == "People reached per 100 residents"
     assert result.map.title == "Residents and reach, by local authority"
