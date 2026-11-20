@@ -1344,10 +1344,10 @@ data, so it is safe to paste into a chat or an issue.</p>
 'Area you serve'. When an error is about one option or one column, a last line
 says what to type here: "On the command line this is --option
 catchment=VALUE." <code>analysis describe</code> lists every option with both names.</p>
-<p>The outlines for <code>--map</code> come from the ONS Open Geography Portal. The first
-time an area is asked for, the service can take a minute or two to answer, so
-the command first writes "Fetching the outlines for the map ..." to standard
-error. The report on standard output is not changed by it. When the outlines
+<p>The outlines for <code>--map</code> come from the ONS Open Geography Portal. They
+usually come in a few seconds, but at times the service takes a minute or two
+to answer, so the command first writes "Fetching the outlines for the map
+..." to standard error. The report on standard output is not changed by it. When the outlines
 cannot be fetched, the report is still printed or written, no map file is made,
 and the command says so in one sentence and exits with status 3. Status 3 means
 the report is whole and only the map is missing, so a script can keep the
