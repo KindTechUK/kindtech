@@ -6,6 +6,7 @@ tables, so the tests are isolated and repeatable.
 """
 
 import json
+import re
 import unittest.mock as mock
 import xml.etree.ElementTree as ET
 
@@ -1295,6 +1296,56 @@ def test_map_of_a_few_authorities_is_fetched_in_fine_detail(nomis):
     svg = render_map(result, boundaries=boundaries)
     # "Near" reaches further than the picture, so not all of them are drawn.
     assert 0 < svg.count('class="land"') <= len(around)
+
+
+def _named(svg: str) -> dict[str, tuple[float, float]]:
+    """Where each shaded place is named on a picture."""
+    texts = ET.fromstring(svg).iter("{http://www.w3.org/2000/svg}text")
+    return {
+        text.text: (float(text.get("x")), float(text.get("y")))
+        for text in texts
+        if text.get("class") == "name"
+    }
+
+
+def test_a_name_sits_beside_a_place_too_small_to_hold_it(nomis):
+    # Places far apart are drawn small. A name on top of a small place would
+    # hide the colour that says how much need it has.
+    result = _run(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    rows = result.table("by_local_authority").rows
+    codes = {row["geography_name"]: row["geography_code"] for row in rows}
+    features = [_square(n, code) for n, code in enumerate(codes.values())]
+    for feature in features:
+        if feature["properties"]["LAD23CD"] == codes["Adur"]:
+            west, south = feature["geometry"]["coordinates"][0][0]
+            feature["geometry"]["coordinates"][0] = [
+                [west, south],
+                [west + 0.01, south],
+                [west + 0.01, south + 0.01],
+                [west, south + 0.01],
+                [west, south],
+            ]
+    boundaries = {"type": "FeatureCollection", "features": features}
+    svg = render_map(result, boundaries=boundaries)
+    named = _named(svg)
+    root = ET.fromstring(svg)
+    paths = root.iter("{http://www.w3.org/2000/svg}path")
+    titles = {
+        path.find("{http://www.w3.org/2000/svg}title").text.split(":")[0]: path
+        for path in paths
+        if "area" in (path.get("class") or "").split()
+    }
+
+    def box(name: str) -> tuple[float, float]:
+        numbers = [float(n) for n in re.findall(r"-?\d+\.\d", titles[name].get("d"))]
+        return min(numbers[::2]), max(numbers[::2])
+
+    left, right = box("Adur")
+    # The name starts to the right of the place, clear of it.
+    assert named["Adur"][0] - len("Adur") * 6.2 * 1.1 / 2 >= right
+    # A place with room keeps its name in the middle.
+    left, right = box("Lewisham")
+    assert left < named["Lewisham"][0] < right
 
 
 # --- the whole result ------------------------------------------------------
