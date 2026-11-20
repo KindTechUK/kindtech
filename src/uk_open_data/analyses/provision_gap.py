@@ -107,7 +107,7 @@ INFO = AnalysisInfo(
         "Totals what your sites or services provide in each local authority "
         "and sets it against the people who live there, or a count of people "
         "in need. It lists the high-need local authorities with the least "
-        "provision for each 1,000 people."
+        "provision per 1,000 people."
     ),
     version=ANALYSIS_VERSION,
     roles=(
@@ -138,12 +138,15 @@ INFO = AnalysisInfo(
     input_modes=(
         InputMode(
             name="sites",
-            description="One row per site or service, with its postcode and volume.",
+            description=(
+                "One row per site or service, with its postcode and how much it "
+                "provides."
+            ),
             roles=("postcode", "volume"),
         ),
         InputMode(
             name="area_volumes",
-            description="One row per local authority, with the volume provided there.",
+            description="One row per local authority, with how much is provided there.",
             roles=("local_authority", "volume"),
             aggregated=True,
         ),
@@ -223,13 +226,13 @@ def _charts(words: NeedWords) -> tuple[Chart, ...]:
         ),
         Chart(
             id="provision_in_priority_areas",
-            title=f"Provision for each 1,000 {words.noun} in the places listed",
+            title=f"Provision per 1,000 {words.noun} in the places listed",
             table="priority_areas",
             category_column="geography_name",
             series=(
                 ChartSeries(
                     "volume_per_1000_in_need",
-                    f"What you provide per 1,000 {words.noun}",
+                    f"Provision per 1,000 {words.noun}",
                     "per_1000",
                 ),
             ),
@@ -309,8 +312,8 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
                 "people, so it hides no count.",
                 "The result holds totals for local authorities. It names no "
                 "site and repeats no postcode.",
-                "Where a local authority holds one site, the volume shown for "
-                "it is that site's volume.",
+                "Where a local authority holds one site, the provision shown "
+                "for it is that site's.",
                 "The need figures are public counts and are shown in full.",
             ),
         ),
@@ -339,7 +342,7 @@ def _amounts(raw: list[Any]) -> list[float]:
     amounts = [_amount(value) for value in raw]
     bad = [row for row, amount in enumerate(amounts, start=1) if amount is None]
     if bad:
-        what = "a volume that is not a number of zero or more"
+        what = "provision that is not a number of zero or more"
         raise AnalysisInputError(bad_counts(bad, what), role="volume")
     return [amount or 0.0 for amount in amounts]
 
@@ -362,7 +365,7 @@ def _volume_by_postcode(
     )
     if not_placed:
         trail.warnings.append(
-            f"A volume of {_tidy(not_placed):,} is at sites that could not be "
+            f"Provision of {_tidy(not_placed):,} is at sites that could not be "
             "placed, and is left out."
         )
     return totals, sum(amounts)
@@ -396,9 +399,9 @@ def _volume_by_authority(
         trail.warnings.append(not_listed_rows(not_listed))
     trail.working.append(
         Step(
-            title="Read the local authority volumes",
+            title="Read the provision by local authority",
             detail=(
-                f"{len(places)} rows holding a volume of "
+                f"{len(places)} rows holding provision of "
                 f"{_tidy(sum(amounts)):,}. {blank} rows had no local "
                 f"authority and were left out. {unknown} rows named a place "
                 "the need figures do not list."
@@ -425,7 +428,7 @@ def _keep_listed(
         Step(
             title="Joined provision to the need figures",
             detail=(
-                f"A volume of {_tidy(inside):,} is in a local authority the "
+                f"Provision of {_tidy(inside):,} is in a local authority the "
                 f"need figures list. {_tidy(outside):,} is outside England "
                 "and Wales, or in a local authority the figures do not list."
             ),
@@ -433,7 +436,7 @@ def _keep_listed(
     )
     if outside:
         trail.warnings.append(
-            f"A volume of {_tidy(outside):,} was placed outside England and "
+            f"Provision of {_tidy(outside):,} was placed outside England and "
             "Wales, or in a local authority the need figures do not list "
             "(for example one whose boundary has changed). It is left out."
         )
@@ -473,10 +476,10 @@ def _rows(
         Step(
             title="Set the area you serve",
             detail=(
-                f"Area: {compared.label}. {compared.reason} A volume of "
-                f"{_tidy(inside):,} of the {_tidy(sum(located.values())):,} "
-                f"placed is in it, in {with_provision} of its {len(volume)} "
-                "local authorities."
+                f"Area: {compared.label}. {compared.reason} Of the provision "
+                f"of {_tidy(sum(located.values())):,} placed, {_tidy(inside):,} "
+                f"is in it, in {with_provision} of its {len(volume)} local "
+                "authorities."
             ),
         )
     )
@@ -495,7 +498,7 @@ def _rows(
         Step(
             title=f"Set provision against {words.topic}",
             detail=(
-                "For each local authority, what you provide was divided by "
+                "For each local authority, the provision was divided by "
                 f"the number of {words.noun} and multiplied by 1,000. A "
                 f"local authority {words.rule} when its count of "
                 f"{words.noun} is in the top quarter of the area (at or "
@@ -521,7 +524,7 @@ def _warn_about_area(
     """Warn when the area looks too wide, too narrow or too small."""
     if outside:
         trail.warnings.append(
-            f"A volume of {_tidy(outside):,} is outside the area you serve and "
+            f"Provision of {_tidy(outside):,} is outside the area you serve and "
             f"is left out. Change {said('catchment')} to include it."
         )
     if not compared.named and with_provision * FEW_AREAS < len(compared.codes):
@@ -593,7 +596,7 @@ def _priority_table(
             title=f"Listed the places with {words.high} and thin provision",
             detail=(
                 f"The {len(high)} places with {words.high} were put in "
-                f"order of provision for each 1,000 {words.noun}, lowest "
+                f"order of provision per 1,000 {words.noun}, lowest "
                 f"first, and then by {words.topic}, highest first. The first "
                 f"{len(ranked)} are listed."
             ),
@@ -671,7 +674,7 @@ def _map_spec(words: NeedWords) -> MapSpec:
             ),
             MapLayer(
                 id="provision",
-                label=f"Provision for each 1,000 {words.noun}",
+                label=f"Provision per 1,000 {words.noun}",
                 value_column="provision_band",
                 kind="ordinal",
                 note=(
@@ -740,7 +743,7 @@ def _figures(
         ),
         Figure(
             "volume_per_1000_in_need",
-            f"Provision for each 1,000 {words.noun}, across the area",
+            f"Provision per 1,000 {words.noun}, across the area",
             _per_1000(in_catchment, sum(need)),
             "per_1000",
             exact=before_rounding(in_catchment, sum(need), 1000),
@@ -841,16 +844,20 @@ def _checks(mode: str, measure: Measure, compared: Compared) -> tuple[Check, ...
             id="sites_alike",
             question="Do your sites each provide about the same amount?",
             why=(
-                "With no volume column every site counts as one. Add a "
-                "volume column if some sites provide much more than others."
+                "With no column for how much each site provides, every site "
+                "counts as one. Add one if some sites provide much more than "
+                "others."
             ),
         )
     else:
         first = Check(
             id="volume_is_provision",
-            question="Is the volume a count of what you provide, and not of people?",
+            question=(
+                "Is the provision a count of sessions, places, boxes or hours, "
+                "and not of people?"
+            ),
             why=(
-                "This analysis shows every volume as it is. Counts of people "
+                "This analysis shows provision as it is. Counts of people "
                 "belong in the need against reach analysis, which hides small "
                 "counts."
             ),

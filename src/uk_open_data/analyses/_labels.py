@@ -56,8 +56,8 @@ HEADINGS = {
     "share_of_residents": "Share of residents",
     "suppressed": "Hidden",
     "under_represented": "Under-represented",
-    "volume": "What you provide",
-    "volume_per_1000_in_need": "What you provide per 1,000 people in need",
+    "volume": "Provision",
+    "volume_per_1000_in_need": "Provision per 1,000 people in need",
     "within_reach": "Within reach",
 }
 

@@ -234,20 +234,20 @@ def test_labels_follow_the_measure(nomis):
     assert labels["volume_supplied"] == "Provision in the data you gave"
     assert labels["volume_in_catchment"] == "Provision in the area you serve"
     assert labels["volume_per_1000_in_need"] == (
-        "Provision for each 1,000 residents, across the area"
+        "Provision per 1,000 residents, across the area"
     )
     table = result.table("priority_areas")
     assert table.title == "Places with the most residents, thinnest provision first"
     assert table.headings["volume_per_1000_in_need"] == (
-        "What you provide per 1,000 residents"
+        "Provision per 1,000 residents"
     )
     charts = [chart.title for chart in result.charts]
     assert charts == [
         "Residents in the places listed",
-        "Provision for each 1,000 residents in the places listed",
+        "Provision per 1,000 residents in the places listed",
     ]
     layers = [layer.label for layer in result.map.layers]
-    assert layers == ["Residents", "Provision for each 1,000 residents"]
+    assert layers == ["Residents", "Provision per 1,000 residents"]
     assert result.map.title == "Residents and provision, by local authority"
     read = [*labels.values(), table.title, *table.headings.values(), *charts]
     read += [*layers, result.map.title, result.map.layers[0].note]
@@ -338,7 +338,7 @@ def test_a_volume_that_is_not_a_number_is_an_input_error(nomis, volume):
     rows = [*SPREAD, {"Area": "Cardiff", "Sessions": volume}]
     with pytest.raises(
         AnalysisInputError,
-        match="1 row had a volume that is not a number of zero or more: row 5,",
+        match="1 row had provision that is not a number of zero or more: row 5,",
     ):
         _run(rows)
 
@@ -403,7 +403,7 @@ def test_catchment_can_name_local_authorities(nomis):
     assert result.figure("volume_in_catchment").value == 130
     # The top quarter of three places is one place, the one with most need.
     assert _names(result.table("priority_areas")) == ["Cardiff"]
-    assert any(w.startswith("A volume of 30 is outside") for w in result.warnings)
+    assert any(w.startswith("Provision of 30 is outside") for w in result.warnings)
     assert any(w.startswith("Only 3 local authorities") for w in result.warnings)
     choice = next(c for c in result.choices if c.id == "catchment")
     assert choice.reason == "You gave the area."
@@ -501,9 +501,9 @@ def test_sites_are_placed_in_local_authorities_online(nomis):
     assert table["Lewisham"]["volume"] == 1500
     assert table["Greenwich"]["volume"] == 4321
     assert table["Cardiff"]["volume"] == 80
-    assert any(w.startswith("A volume of 10 is at sites") for w in result.warnings)
+    assert any(w.startswith("Provision of 10 is at sites") for w in result.warnings)
     assert any(
-        w.startswith("A volume of 50 was placed outside") for w in result.warnings
+        w.startswith("Provision of 50 was placed outside") for w in result.warnings
     )
     assert "local authorities" in result.privacy.sent_to_third_parties[0]
     source = next(s for s in result.sources if s.id == "postcodes-io")
@@ -644,7 +644,7 @@ def test_result_explains_itself(nomis):
     assert result.analysis_id == ANALYSIS_ID
     assert [step.title for step in result.working] == [
         "Loaded the need figures",
-        "Read the local authority volumes",
+        "Read the provision by local authority",
         "Joined provision to the need figures",
         "Set the area you serve",
         "Set provision against residents",

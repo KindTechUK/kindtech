@@ -626,7 +626,8 @@ def _figures(
         ),
         Figure(
             "average_distance_km",
-            "Average distance to your nearest site, counting every person",
+            "Average distance from the centre of each person's local authority "
+            "to your nearest site",
             round(travelled / people, 1) if people else None,
             "km",
             note=(

@@ -687,7 +687,7 @@ class TestWithTheFourthAnalysis:
         answer = run_analysis_on_counts("provision-gap", rows)
 
         assert answer["status"] == "input_problem"
-        assert answer["problems"][0].startswith("1 row had a volume")
+        assert answer["problems"][0].startswith("1 row had provision that")
         assert "a lot" not in json.dumps(answer)
 
     @pytest.mark.parametrize(
