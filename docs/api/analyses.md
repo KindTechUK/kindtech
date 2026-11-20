@@ -582,7 +582,9 @@ When only one local authority is compared every share is 100%, so
 The map shades need by its rate, people in need for each 1,000 residents, in
 five equal groups. With fewer than five places, each is a group of its own,
 from the lowest group to the highest, and one place alone is in the middle
-group. The three groups of the reach layer work the same way. A count would
+group. The three groups of the reach layer work the same way. The note of a
+layer says so when its places are fewer than its groups, and says nothing of
+it otherwise. A count would
 make the largest places darkest whatever their need. The list of high-need places still goes by the count, as
 the case study does. The residents are the census count of everyone who lives
 in each local authority, loaded beside the need figures.

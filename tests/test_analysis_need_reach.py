@@ -19,7 +19,13 @@ from uk_open_data.analyses import (
     render_map,
     run_analysis,
 )
-from uk_open_data.analyses._need import equal_parts, high_need_cut
+from uk_open_data.analyses._need import (
+    FEW_PLACES,
+    ONE_PLACE,
+    equal_parts,
+    few_places,
+    high_need_cut,
+)
 from uk_open_data.analyses.need_reach import (
     NEED_BANDS,
     NO_REACH,
@@ -1123,7 +1129,47 @@ def test_the_higher_of_two_shown_places_is_in_the_top_group(nomis):
     rows = {r["geography_name"]: r for r in result.table("by_local_authority").rows}
     shown = {name: row["reach_band"] for name, row in rows.items() if row["people"]}
     assert sorted(shown.values()) == ["Higher reach", "Lower reach"]
-    assert "With fewer places than groups" in result.map.layers[1].note
+    assert result.map.layers[1].note.endswith(FEW_PLACES)
+
+
+@pytest.mark.parametrize(
+    ("places", "parts", "said"),
+    [
+        (0, 3, ""),
+        (1, 3, ONE_PLACE),
+        (1, 5, ONE_PLACE),
+        (2, 3, FEW_PLACES),
+        (4, 5, FEW_PLACES),
+        # A place for every group, or more: nothing to explain.
+        (3, 3, ""),
+        (5, 5, ""),
+        (296, 5, ""),
+    ],
+)
+def test_few_places_are_spoken_of_only_when_they_are_few(places, parts, said):
+    assert few_places(places, parts) == said
+
+
+def test_a_map_of_many_places_says_nothing_of_few(nomis):
+    # The words about few places were on every map, and puzzled a reader of
+    # a map with a place for every group.
+    result = _run_wide(_counts(Lewisham=60, Greenwich=30, Cardiff=45))
+    assert len(result.table("by_local_authority").rows) >= 5
+    for layer in result.map.layers:
+        assert "fewer places" not in layer.note
+        assert "One place" not in layer.note
+
+
+def test_a_map_says_so_when_few_places_are_grouped(nomis):
+    two = _run(_counts(Lewisham=60, Greenwich=30))
+    assert len(two.table("by_local_authority").rows) == 2
+    assert two.map.layers[0].note.endswith(FEW_PLACES)
+    assert two.map.layers[1].note.endswith(FEW_PLACES)
+    # Many places compared, one of them reached: the need layer has a place
+    # for every group and the reach layer has one place alone.
+    one = _run_wide(_counts(Lewisham=60))
+    assert "fewer places" not in one.map.layers[0].note
+    assert one.map.layers[1].note.endswith(ONE_PLACE)
 
 
 def test_map_shades_need_by_count_when_the_need_is_every_resident(nomis):
@@ -1132,9 +1178,7 @@ def test_map_shades_need_by_count_when_the_need_is_every_resident(nomis):
     assert len(nomis.asked) == 1  # residents are the need, and are not asked twice
     assert result.map.layers[0].label == "Residents"
     assert result.map.layers[0].note == (
-        "Local authorities in five equal groups by residents. With fewer "
-        "places than groups, the lowest place is in the lowest group and the "
-        "highest in the highest."
+        "Local authorities in five equal groups by residents."
     )
     assert result.map.layers[1].label == "People reached per 100 residents"
     assert result.map.title == "Residents and reach, by local authority"

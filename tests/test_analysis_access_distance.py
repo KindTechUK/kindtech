@@ -797,6 +797,8 @@ def test_map_is_described_by_local_authority(kept):
     assert rows["Lewisham"]["distance_band"] == "Under 5 km"
     assert rows["Adur"]["distance_band"] == "40 km or more"
     assert rows["Birmingham"]["need_band"] == "Highest fifth"
+    # A place for every group: nothing is said of few places.
+    assert spec.layers[1].note == "Local authorities in five equal groups by people."
 
 
 @pytest.mark.parametrize(

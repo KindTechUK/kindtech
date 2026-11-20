@@ -53,7 +53,6 @@ from uk_open_data.analyses._model import (
 from uk_open_data.analyses._need import (
     DEFAULT_TOP,
     FEW_AREAS,
-    FEW_PLACES,
     MAX_TOP,
     MEASURES,
     NEED_BANDS,
@@ -64,6 +63,8 @@ from uk_open_data.analyses._need import (
     band_by_need,
     choose_compared,
     equal_parts,
+    few_in_need_bands,
+    few_places,
     guess_compared,
     high_need_cut,
     load_need,
@@ -122,7 +123,7 @@ LOWEST = "your lowest reach"
 NEED_BY_RATE = (
     "People in need for each 1,000 residents",
     "Local authorities in five equal groups by people in need for each 1,000 "
-    "residents, so a large place is not darker for its size alone." + FEW_PLACES,
+    "residents, so a large place is not darker for its size alone.",
 )
 LARGE_PLACE_DARKER = (
     " A large place is likely to be darker than a small one with the same rate."
@@ -348,7 +349,7 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         input_mode=analysis_input.mode.name,
         figures=tuple(figures),
         tables=tables,
-        map=_map_spec(by_rate, words),
+        map=_map_spec(by_rate, words, rows),
         working=tuple(trail.working),
         choices=(
             *trail.choices,
@@ -737,7 +738,7 @@ def _authority_table(rows: list[_Row], words: NeedWords) -> Table:
 
 def _by_count(words: NeedWords) -> tuple[str, str]:
     """The label and the note of the need layer when it is shaded by count."""
-    note = f"Local authorities in five equal groups by {words.noun}.{FEW_PLACES}"
+    note = f"Local authorities in five equal groups by {words.noun}."
     if words is IN_NEED:
         note += LARGE_PLACE_DARKER
     return sentence_case(words.noun), note
@@ -748,13 +749,16 @@ def _caveats(words: NeedWords) -> tuple[str, ...]:
     return CAVEATS if words is IN_NEED else CAVEATS_FOR_RESIDENTS
 
 
-def _map_spec(by_rate: bool, words: NeedWords) -> MapSpec:
+def _map_spec(by_rate: bool, words: NeedWords, rows: list[_Row]) -> MapSpec:
     """Describe the map of need and reach.
 
     Need is shaded by people in need for each 1,000 residents when
     ``by_rate`` is true, and by the count of people in need when it is not.
+    Each note says how few places were grouped, when there are fewer than
+    the key has groups.
     """
     need_label, need_note = NEED_BY_RATE if by_rate else _by_count(words)
+    reached = sum(row.reach_band != NO_REACH for row in rows)
     return MapSpec(
         title=f"{sentence_case(words.topic)} and reach, by local authority",
         geography_type="LAD",
@@ -767,7 +771,7 @@ def _map_spec(by_rate: bool, words: NeedWords) -> MapSpec:
                 label=need_label,
                 value_column="need_band",
                 kind="ordinal",
-                note=need_note,
+                note=need_note + few_in_need_bands(len(rows)),
                 categories=NEED_BANDS,
             ),
             MapLayer(
@@ -778,7 +782,8 @@ def _map_spec(by_rate: bool, words: NeedWords) -> MapSpec:
                 note=(
                     "Local authorities with a count that can be shown are in "
                     "three equal groups. The lowest band holds places with "
-                    "nobody and places with a hidden count." + FEW_PLACES
+                    "nobody and places with a hidden count."
+                    + few_places(reached, len(REACH_BANDS) - 1)
                 ),
                 categories=REACH_BANDS,
             ),

@@ -553,6 +553,18 @@ FEW_PLACES = (
     " With fewer places than groups, the lowest place is in the lowest group "
     "and the highest in the highest."
 )
+ONE_PLACE = " One place alone is in the middle group."
+
+
+def few_places(places: int, parts: int) -> str:
+    """The words a map's note needs when it has fewer places than groups.
+
+    Nothing is said of a map with a place for every group, where the words
+    would only puzzle a reader.
+    """
+    if places == 1:
+        return ONE_PLACE
+    return FEW_PLACES if 1 < places < parts else ""
 
 
 def equal_parts(values: list[float], parts: int) -> dict[int, int]:
@@ -579,3 +591,8 @@ def band_by_need(need: list[float]) -> list[str]:
     """Put each local authority in a fifth of the area by people in need."""
     part = equal_parts(need, len(NEED_BANDS))
     return [NEED_BANDS[part[i]] for i in range(len(need))]
+
+
+def few_in_need_bands(places: int) -> str:
+    """What the note of a map shaded by :func:`band_by_need` says of few places."""
+    return few_places(places, len(NEED_BANDS))
