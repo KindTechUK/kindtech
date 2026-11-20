@@ -28,9 +28,9 @@ MAP_VIEW_URI = "ui://kindtech/analysis-map.html"
 MAP_META_KEY = "kindtech/map"
 # Above this the pictures are not sent: an answer should not carry megabytes.
 MAX_PICTURE_BYTES = 1_500_000
-# How long an answer waits for the outlines of its map. The first time an area
-# is asked for, the boundary service can take a minute or more, and the figures
-# should not wait that long for a picture.
+# How long an answer waits for the outlines of its map. They usually come in a
+# few seconds, but at times the boundary service has taken a minute or more,
+# and the figures should not wait that long for a picture.
 MAP_SECONDS = 15.0
 # Where the code that asks the boundary service logs its own errors.
 OUTLINES_LOGGER = "uk_open_data.geo"
@@ -53,10 +53,10 @@ NO_OUTLINES = (
 )
 TOO_SLOW = (
     "No map was drawn, because the outlines of the areas were slow to arrive "
-    "and the figures were not kept waiting. The outlines are still being "
-    "fetched, so running the analysis again in a minute is often quick and "
-    "draws the map. The Kindtech Evidence page and the command line tool "
-    "draw it too."
+    "and the figures were not kept waiting. The service that holds them is "
+    "slow at times, so it is worth running the analysis again in a few "
+    "minutes for the map. The Kindtech Evidence page and the command line "
+    "tool draw it too."
 )
 TOO_LARGE = (
     "No map was drawn, because a picture of this many areas is too large to "
@@ -149,8 +149,9 @@ def _in_time(load: Boundaries, result: AnalysisResult) -> dict[str, Any]:
 
     The outlines are fetched on a thread of their own. When they have not come
     within :data:`MAP_SECONDS` the answer goes out without a map and the fetch
-    is left to finish, which makes the next map of the same places quick. The
-    thread does not keep the program alive when it is told to stop.
+    is left to finish, so the outlines the package keeps for the process are
+    there for the next map. The thread does not keep the program alive when
+    it is told to stop.
 
     Raises:
         TimeoutError: If the outlines did not arrive in time.

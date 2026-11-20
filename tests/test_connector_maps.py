@@ -120,7 +120,7 @@ class TestThePicture:
 
         assert picture is None
         assert note == maps.TOO_SLOW
-        # The fetch is left to finish, so the next map of these places is quick.
+        # The fetch is left to finish and not stopped when the answer goes out.
         assert fetched == []
         let_go.set()
 
