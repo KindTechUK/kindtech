@@ -477,14 +477,6 @@ def _report_text(info: AnalysisInfo, result: AnalysisResult) -> str:
         "Working", [f"{step.title}. {step.detail}" for step in result.working]
     )
     lines += _section(
-        "Figures before rounding",
-        [
-            f"{figure.label}: {_exact(figure.exact)}"
-            for figure in result.figures
-            if figure.exact is not None
-        ],
-    )
-    lines += _section(
         "Sources",
         [
             # An edition that names a kept copy ends in a full stop already.
@@ -502,9 +494,17 @@ def _report_text(info: AnalysisInfo, result: AnalysisResult) -> str:
             *privacy.notes,
         ],
     )
+    lines += _section(
+        "Figures before rounding",
+        [
+            f"{figure.label}: {_exact(figure.exact)}"
+            for figure in result.figures
+            if figure.exact is not None
+        ],
+    )
     if result.code:
-        lines += ["", "To run it again in Python"]
-        lines += [f"  {line}".rstrip() for line in result.code.splitlines()]
+        # Not set in from the margin, so that it runs as it is copied.
+        lines += ["", "To run it again in Python", *result.code.splitlines()]
     return "\n".join(lines)
 
 

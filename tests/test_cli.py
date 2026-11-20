@@ -5,6 +5,7 @@ The deprivation index is replaced with a small invented table, and the files
 are written to a temporary folder, so the tests are isolated and repeatable.
 """
 
+import ast
 import json
 import logging
 import unittest.mock as mock
@@ -168,10 +169,18 @@ def test_the_report_ends_with_how_to_check_it_and_run_it_again(
     exact = lines[lines.index("Figures before rounding") + 1]
     assert exact.startswith("  - Share of your people in the area you serve")
     assert exact.endswith(": 50")
+    # The two parts are the last two, after the sources and the privacy notes.
+    assert lines.index("Privacy") < lines.index("Figures before rounding")
     code = lines[lines.index("To run it again in Python") + 1 :]
-    assert code[0].startswith("  # Version ")
-    assert f'      "{ANALYSIS_ID}",' in code
-    assert code[-1] == "  print(result.answer)"
+    # The code starts at the margin, so it runs as it is copied.
+    assert code[0].startswith("# Version ")
+    assert f'    "{ANALYSIS_ID}",' in code
+    assert code[-3:] == [
+        "print(result.answer)",
+        "for figure in result.figures:",
+        "    print(figure.label, figure.value)",
+    ]
+    ast.parse("\n".join(code))
     assert all(line == line.rstrip() for line in lines)
 
 

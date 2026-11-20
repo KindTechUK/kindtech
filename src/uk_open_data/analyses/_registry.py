@@ -113,7 +113,11 @@ def _code(
     their own words. Every other setting that has a value is written out,
     the ones left alone too, so the code gives the same result if a default
     changes later. A setting with no value is one the analysis works out, and
-    is left out.
+    is left out. A place the person named in a setting is written as they
+    gave it: it is their choice, not a row of their table.
+
+    The code prints the answer and every figure, so that running it gives
+    figures to set beside the ones in the result.
 
     The words are few and fixed, because a caller may search a result for
     words repeated from the person's data: the code names the analysis by its
@@ -132,8 +136,8 @@ def _code(
         [
             f"# Version {result.analysis_version} of this analysis, run with",
             f"# uk-open-data {result.package_version}. This runs it again with",
-            "# the same settings. Nothing from your table is written here: put",
-            "# the name of your own column beside each role.",
+            "# the same settings. No row or heading of your table is written",
+            "# here: put the name of your own column beside each role.",
             "import pandas as pd",
             "",
             "from uk_open_data.analyses import run_analysis",
@@ -150,6 +154,8 @@ def _code(
             "    },",
             ")",
             "print(result.answer)",
+            "for figure in result.figures:",
+            "    print(figure.label, figure.value)",
         ]
     )
 
