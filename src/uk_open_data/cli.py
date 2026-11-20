@@ -60,6 +60,11 @@ MAP_NOT_DRAWN = (
     "fetched from the ONS Open Geography Portal. The report is complete "
     "without it. Check the connection and try again."
 )
+# Said before the outlines are asked for, so a wait is not a blank screen.
+MAP_BEING_FETCHED = (
+    "Fetching the outlines for the map from the ONS Open Geography Portal. "
+    "The first time an area is asked for, this can take a minute or two."
+)
 OUTLINES_LOGGER = "uk_open_data.geo"
 # Said when no postcode table is installed, before how to get one, because
 # it is what a person running an analysis needs to know.
@@ -271,7 +276,12 @@ def _write_map(result: AnalysisResult, layer: str | None, path: Path) -> bool:
     The service that holds the outlines logs its own errors, which carry its
     web address. They are kept off the screen here, and the caller says what
     happened in one plain sentence instead.
+
+    Fetching can be slow, so the command says first that it is fetching. That
+    goes to standard error, which leaves the report as it is.
     """
+    sys.stderr.write(MAP_BEING_FETCHED + "\n")
+    sys.stderr.flush()
     quiet = logging.NullHandler()
     outlines_log = logging.getLogger(OUTLINES_LOGGER)
     outlines_log.addHandler(quiet)

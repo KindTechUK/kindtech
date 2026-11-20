@@ -18,6 +18,7 @@ from uk_open_data.cli import (
     EXIT_INPUT_ERROR,
     EXIT_MAP_NOT_DRAWN,
     EXIT_OK,
+    MAP_BEING_FETCHED,
     MAP_NOT_DRAWN,
     main,
 )
@@ -381,7 +382,7 @@ def test_map_that_cannot_be_fetched_leaves_the_report(
     assert status == EXIT_MAP_NOT_DRAWN
     assert EXIT_MAP_NOT_DRAWN not in (EXIT_OK, EXIT_INPUT_ERROR)
     assert "most deprived" in shown.out
-    assert shown.err == MAP_NOT_DRAWN + "\n"
+    assert shown.err == f"{MAP_BEING_FETCHED}\n{MAP_NOT_DRAWN}\n"
     assert not picture.exists()
     assert logging.getLogger("uk_open_data.geo").handlers == []
     runs = [r for r in caplog.records if r.name == "uk_open_data.runs"]
@@ -400,9 +401,30 @@ def test_map_error_from_the_service_is_not_shown(index, counts_file, tmp_path, c
     shown = capsys.readouterr()
     assert status == EXIT_MAP_NOT_DRAWN
     assert json.loads(shown.out)["analysis_id"] == ANALYSIS_ID
-    assert shown.err == MAP_NOT_DRAWN + "\n"
+    assert shown.err == f"{MAP_BEING_FETCHED}\n{MAP_NOT_DRAWN}\n"
     assert "arcgis" not in shown.err
     assert "E01000001" not in shown.err
+
+
+def test_the_command_says_first_that_the_map_is_being_fetched(
+    index, counts_file, tmp_path, capsys
+):
+    # The first fetch of an area's outlines can take a minute or two. The
+    # line is on standard error, so the report on standard output is as it was.
+    asked: list[str] = []
+
+    def outlines(result):
+        asked.append(capsys.readouterr().err)
+        return {"type": "FeatureCollection", "features": []}
+
+    with mock.patch("uk_open_data.cli.load_map_boundaries", outlines):
+        main(_run_args(counts_file, "--map", str(tmp_path / "map.svg")))
+    assert asked == [MAP_BEING_FETCHED + "\n"]
+    shown = capsys.readouterr()
+    assert "Fetching the outlines" not in shown.out
+    # A run with no map says nothing of the kind.
+    assert main(_run_args(counts_file)) == EXIT_OK
+    assert capsys.readouterr().err == ""
 
 
 def test_report_goes_to_its_file_when_the_map_is_not_drawn(
