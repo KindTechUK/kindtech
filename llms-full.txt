@@ -1735,8 +1735,8 @@ to correct. Postcodes are placed as in the first analysis: on your machine when
 the postcode table is installed, and with postcodes.io otherwise.
 
 The analysis loads a count of people in every local authority from
-[Nomis](ons.md), divides the volume you provide in each one by it, and lists
-the high-need local authorities with the least provision for each 1,000
+[Nomis](ons.md), divides the provision in each one by it, and lists
+the high-need local authorities with the least provision per 1,000
 people. A local authority is high need when its count is in the top quarter
 of the area you serve, as in the second analysis.
 
@@ -1754,14 +1754,14 @@ for a group Nomis counts.
 | `areas_compared` | Local authorities compared |
 | `areas_without_provision` | Local authorities where you provide nothing |
 | `people_in_need` | People in need in the area you serve |
-| `volume_per_1000_in_need` | Provision for each 1,000 people in need, across the area |
+| `volume_per_1000_in_need` | Provision per 1,000 people in need, across the area |
 | `high_need_areas` | Local authorities with high need |
 | `high_need_areas_without_provision` | High-need local authorities where you provide nothing |
 | `share_of_provision_in_high_need_areas` | Share of your provision that is in high-need local authorities |
 | `share_of_need_in_high_need_areas` | Share of people in need who live there, for comparison |
 
 The charts `need_in_priority_areas` and `provision_in_priority_areas` show
-people in need and volume for each 1,000 in need for the places in
+people in need and provision per 1,000 in need for the places in
 `priority_areas`. The map has two layers, `need` and `provision`.
 
 | Table | Rows |
@@ -1787,10 +1787,10 @@ result = run_analysis(
 result.table("priority_areas").to_frame()
 ```
 
-This analysis hides no count, and has no `suppress_below` option. A volume is what
-an organisation provides, not a number of people, so every total is shown,
-however small. Where a local authority holds one site, the volume shown for it
-is that site's. If your numbers are people, such as people seen at each site,
+This analysis hides no count, and has no `suppress_below` option. Provision is
+what an organisation provides, not a number of people, so every total is shown,
+however small. Where a local authority holds one site, the provision shown for
+it is that site's. If your numbers are people, such as people seen at each site,
 use the need against reach analysis instead, which hides small counts. The result
 still names no site and repeats no postcode.
 
@@ -1899,7 +1899,7 @@ keep_centres(
 | `sites_located` | Sites placed in the United Kingdom |
 | `areas_compared` | Local authorities compared |
 | `people_in_need` | People in the area you serve |
-| `average_distance_km` | Average distance to your nearest site, counting every person at the centre of their local authority |
+| `average_distance_km` | Average distance from the centre of each person's local authority to your nearest site. A place with many people counts for more |
 | `share_of_people_within_reach` | Share of people in a local authority whose centre is within `within_km` of a site |
 | `people_beyond_reach` | People in a local authority whose centre is farther than that |
 | `areas_beyond_reach` | Local authorities whose centre is farther than that |

@@ -2449,8 +2449,8 @@ whose volume is not a number stops the run, and the message says how many rows
 to correct. Postcodes are placed as in the first analysis: on your machine when
 the postcode table is installed, and with postcodes.io otherwise.</p>
 <p>The analysis loads a count of people in every local authority from
-<a href="../ons/">Nomis</a>, divides the volume you provide in each one by it, and lists
-the high-need local authorities with the least provision for each 1,000
+<a href="../ons/">Nomis</a>, divides the provision in each one by it, and lists
+the high-need local authorities with the least provision per 1,000
 people. A local authority is high need when its count is in the top quarter
 of the area you serve, as in the second analysis.</p>
 <p>The <code>need</code> option takes the same values as in the second analysis, and the same
@@ -2492,7 +2492,7 @@ for a group Nomis counts.</p>
 </tr>
 <tr>
 <td><code>volume_per_1000_in_need</code></td>
-<td>Provision for each 1,000 people in need, across the area</td>
+<td>Provision per 1,000 people in need, across the area</td>
 </tr>
 <tr>
 <td><code>high_need_areas</code></td>
@@ -2513,7 +2513,7 @@ for a group Nomis counts.</p>
 </tbody>
 </table>
 <p>The charts <code>need_in_priority_areas</code> and <code>provision_in_priority_areas</code> show
-people in need and volume for each 1,000 in need for the places in
+people in need and provision per 1,000 in need for the places in
 <code>priority_areas</code>. The map has two layers, <code>need</code> and <code>provision</code>.</p>
 <table>
 <thead>
@@ -2573,10 +2573,10 @@ people in need and volume for each 1,000 in need for the places in
 
 <span class="n">result</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;priority_areas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
 </code></pre></div>
-<p>This analysis hides no count, and has no <code>suppress_below</code> option. A volume is what
-an organisation provides, not a number of people, so every total is shown,
-however small. Where a local authority holds one site, the volume shown for it
-is that site's. If your numbers are people, such as people seen at each site,
+<p>This analysis hides no count, and has no <code>suppress_below</code> option. Provision is
+what an organisation provides, not a number of people, so every total is shown,
+however small. Where a local authority holds one site, the provision shown for
+it is that site's. If your numbers are people, such as people seen at each site,
 use the need against reach analysis instead, which hides small counts. The result
 still names no site and repeats no postcode.</p>
 <p>The case study compares England's Integrated Care Boards and uses hospital
@@ -2724,7 +2724,7 @@ machine too, so the analysis runs with no request at all:</p>
 </tr>
 <tr>
 <td><code>average_distance_km</code></td>
-<td>Average distance to your nearest site, counting every person at the centre of their local authority</td>
+<td>Average distance from the centre of each person's local authority to your nearest site. A place with many people counts for more</td>
 </tr>
 <tr>
 <td><code>share_of_people_within_reach</code></td>
