@@ -16,10 +16,14 @@ from typing import Any
 import uk_open_data
 from uk_open_data.analyses._answers import (
     HIDDEN,
+    IN_NEED,
+    NeedWords,
     high_need_places,
     look_first,
     need_words,
+    not_counted,
     number,
+    sentence_case,
     shown_first,
     values,
 )
@@ -105,16 +109,14 @@ KEY_FIGURES = (
     "people_in_catchment",
 )
 LOWEST = "your lowest reach"
-# The label and the note of the map's need layer, for each way of shading it.
+# The label and the note of the map's need layer when it is shaded by rate.
 NEED_BY_RATE = (
     "People in need for each 1,000 residents",
     "Local authorities in five equal groups by people in need for each 1,000 "
     "residents, so a large place is not darker for its size alone.",
 )
-NEED_BY_COUNT = (
-    "People in need",
-    "Local authorities in five equal groups by people in need. A large place "
-    "is likely to be darker than a small one with the same rate.",
+LARGE_PLACE_DARKER = (
+    " A large place is likely to be darker than a small one with the same rate."
 )
 NO_REACH = "None, or count hidden"
 REACH_BANDS = (NO_REACH, "Lower reach", "Middle reach", "Higher reach")
@@ -220,37 +222,46 @@ INFO = AnalysisInfo(
     coverage=EVERYWHERE,
 )
 
-CAVEATS = (
+LOW_REACH = (
     "Low reach is not the same as unmet need. Another organisation may already "
-    "serve a place where you reach few people.",
+    "serve a place where you reach few people."
+)
+CAVEATS = (
+    LOW_REACH,
     "Need is a count of people, so a large local authority is more likely to "
     "be listed as high need than a small one with the same rate.",
     "Reach sets the people you helped against everyone counted as in need. "
     "The people you helped may not all be in that group.",
 )
-
-
-CHARTS = (
-    Chart(
-        id="need_in_priority_areas",
-        title="People in need, in the places to look at first",
-        table="priority_areas",
-        category_column="geography_name",
-        series=(ChartSeries("people_in_need", "People in need", "people"),),
-    ),
-    Chart(
-        id="reach_in_priority_areas",
-        title="People you reached per 100 in need, in the same places",
-        table="priority_areas",
-        category_column="geography_name",
-        series=(
-            ChartSeries(
-                "people_per_100_in_need", "People reached per 100 in need", "per_100"
-            ),
-        ),
-        note="No bar is drawn where a count is hidden.",
-    ),
+# Every resident is not a need, so these say what the count is instead.
+CAVEATS_FOR_RESIDENTS = (
+    LOW_REACH,
+    "The places listed are the ones with the most residents. That says where "
+    "most people live, not where need is highest.",
 )
+
+
+def _charts(words: NeedWords) -> tuple[Chart, ...]:
+    """The two charts of the places listed, in the words that fit the measure."""
+    counted = sentence_case(words.noun)
+    reached = f"People reached per 100 {words.per}"
+    return (
+        Chart(
+            id="need_in_priority_areas",
+            title=f"{counted} in the places listed",
+            table="priority_areas",
+            category_column="geography_name",
+            series=(ChartSeries("people_in_need", counted, "people"),),
+        ),
+        Chart(
+            id="reach_in_priority_areas",
+            title=f"{reached} in the places listed",
+            table="priority_areas",
+            category_column="geography_name",
+            series=(ChartSeries("people_per_100_in_need", reached, "per_100"),),
+            note="No bar is drawn where a count is hidden.",
+        ),
+    )
 
 
 @dataclass(frozen=True)
@@ -302,8 +313,12 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
     compared = _choose_area(options.get("catchment"), located, authorities, min_share)
     rows = _rows(located, authorities, compared, residents, threshold, trail)
     by_rate = rows[0].need_rate is not None
-    figures = _figures(supplied, sum(located.values()), rows, measure, threshold)
-    tables = (_priority_table(rows, top, threshold, trail), _authority_table(rows))
+    words = need_words(measure.id == RESIDENTS.id)
+    figures = _figures(supplied, sum(located.values()), rows, words, measure, threshold)
+    tables = (
+        _priority_table(rows, top, threshold, words, trail),
+        _authority_table(rows, words),
+    )
     trail.hidden += sum(row.hidden for row in rows)
     trail.hidden += sum(figure.suppressed for figure in figures)
     trail.working.append(
@@ -324,19 +339,19 @@ def run(analysis_input: AnalysisInput) -> AnalysisResult:
         input_mode=analysis_input.mode.name,
         figures=tuple(figures),
         tables=tables,
-        map=_map_spec(by_rate),
+        map=_map_spec(by_rate, words),
         working=tuple(trail.working),
         choices=(
             *trail.choices,
             *_choices(measure, compared, top, threshold, by_rate),
         ),
         checks=_checks(analysis_input.mode.name, measure, compared),
-        caveats=(*CAVEATS, measure.caveat),
+        caveats=(*_caveats(words), measure.caveat),
         warnings=tuple(trail.warnings),
         sources=tuple(trail.sources),
         privacy=_privacy(threshold, trail),
-        charts=CHARTS,
-        answer=_answer(figures, tables[0], measure),
+        charts=_charts(words),
+        answer=_answer(figures, tables[0], words, compared.guessed),
         key_figures=shown_first(figures, KEY_FIGURES),
     )
 
@@ -615,11 +630,17 @@ def _table_row(row: _Row) -> dict[str, Any]:
     }
 
 
-def _priority_table(rows: list[_Row], top: int, threshold: int, trail: Trail) -> Table:
+def _priority_table(
+    rows: list[_Row], top: int, threshold: int, words: NeedWords, trail: Trail
+) -> Table:
     """The high-need local authorities with the lowest reach.
 
     A hidden count is ranked as the largest a hidden small count can be. That
     number comes from the threshold alone, so the order gives nothing away.
+
+    The title says what the list is in order of and no more. Which of its
+    places to look at first is for the answer to say, because a place high on
+    a short list can still have more reach than the area as a whole.
     """
 
     def reach_at_most(row: _Row) -> float:
@@ -651,7 +672,8 @@ def _priority_table(rows: list[_Row], top: int, threshold: int, trail: Trail) ->
         )
     return Table(
         id="priority_areas",
-        title="High need and low reach: the places to look at first",
+        title=f"Places with {words.high}, your lowest reach first",
+        headings=words.headings(),
         columns=(
             "rank",
             "geography_code",
@@ -665,11 +687,15 @@ def _priority_table(rows: list[_Row], top: int, threshold: int, trail: Trail) ->
     )
 
 
-def _authority_table(rows: list[_Row]) -> Table:
+def _authority_table(rows: list[_Row], words: NeedWords) -> Table:
     """Every local authority in the area, for the map and for a closer look."""
     return Table(
         id="by_local_authority",
-        title="Need and reach in every local authority in the area you serve",
+        title=(
+            f"{sentence_case(words.topic)} and reach in every local authority "
+            "in the area you serve"
+        ),
+        headings=words.headings(),
         columns=(
             "geography_code",
             "geography_name",
@@ -696,17 +722,28 @@ def _authority_table(rows: list[_Row]) -> Table:
     )
 
 
-def _map_spec(by_rate: bool) -> MapSpec:
+def _by_count(words: NeedWords) -> tuple[str, str]:
+    """The label and the note of the need layer when it is shaded by count."""
+    note = f"Local authorities in five equal groups by {words.noun}."
+    if words is IN_NEED:
+        note += LARGE_PLACE_DARKER
+    return sentence_case(words.noun), note
+
+
+def _caveats(words: NeedWords) -> tuple[str, ...]:
+    """What the figures cannot say, in the words that fit the measure."""
+    return CAVEATS if words is IN_NEED else CAVEATS_FOR_RESIDENTS
+
+
+def _map_spec(by_rate: bool, words: NeedWords) -> MapSpec:
     """Describe the map of need and reach.
 
     Need is shaded by people in need for each 1,000 residents when
     ``by_rate`` is true, and by the count of people in need when it is not.
     """
-    need_label, need_note = NEED_BY_COUNT
-    if by_rate:
-        need_label, need_note = NEED_BY_RATE
+    need_label, need_note = NEED_BY_RATE if by_rate else _by_count(words)
     return MapSpec(
-        title="Need and reach, by local authority",
+        title=f"{sentence_case(words.topic)} and reach, by local authority",
         geography_type="LAD",
         geography_year=2023,
         table="by_local_authority",
@@ -722,7 +759,7 @@ def _map_spec(by_rate: bool) -> MapSpec:
             ),
             MapLayer(
                 id="reach",
-                label="People reached per 100 in need",
+                label=f"People reached per 100 {words.per}",
                 value_column="reach_band",
                 kind="ordinal",
                 note=(
@@ -743,10 +780,11 @@ def _figures(
     supplied: int,
     located: int,
     rows: list[_Row],
+    words: NeedWords,
     measure: Measure,
     threshold: int,
 ) -> list[Figure]:
-    """Build the headline figures."""
+    """Build the headline figures, in the words that fit the measure."""
     people = [row.people for row in rows]
     need = [row.authority.need for row in rows]
     high = tuple(i for i, row in enumerate(rows) if row.high_need)
@@ -774,33 +812,33 @@ def _figures(
         ),
         Figure(
             "people_in_need",
-            f"People in need in the area you serve: {measure.label}",
+            f"{words.counted} in the area you serve: {measure.label}",
             round(sum(need)),
             "people",
         ),
         Figure(
             "reach_per_100_in_need",
-            "People you reached per 100 people in need, across the area",
+            f"People you reached per 100 {words.noun}, across the area",
             _per_100(in_catchment, sum(need)),
             "per_100",
         ),
         Figure(
             "high_need_areas",
-            "Local authorities with high need",
+            f"Local authorities with {words.high}",
             len(high),
             "areas",
-            note="The top quarter of the places in it, by people in need.",
+            note=f"The top quarter of the places in it, by {words.noun}.",
         ),
         Figure(
             "high_need_areas_without_people",
-            "High-need local authorities where you reached nobody",
+            f"{sentence_case(words.places)} where you reached nobody",
             sum(1 for i in high if people[i] == 0),
             "areas",
         ),
-        _share_in_high_need(rows, high, threshold),
+        _share_in_high_need(rows, high, words, threshold),
         Figure(
             "share_of_need_in_high_need_areas",
-            "Share of people in need who live in high-need local authorities",
+            f"Share of {words.noun} who live in {words.places}",
             percent(sum(need[i] for i in high), sum(need)),
             "percent",
             note="The comparison for the share of your people.",
@@ -809,11 +847,11 @@ def _figures(
 
 
 def _share_in_high_need(
-    rows: list[_Row], high: tuple[int, ...], threshold: int
+    rows: list[_Row], high: tuple[int, ...], words: NeedWords, threshold: int
 ) -> Figure:
     """The share of people in high-need places, hidden when it gives a cell away."""
     figure_id = "share_of_people_in_high_need_areas"
-    label = "Share of your people who live in high-need local authorities"
+    label = f"Share of your people who live in {words.places}"
     people = [row.people for row in rows]
     hide = [row.hidden for row in rows]
     if group_hidden(people, hide, high, threshold):
@@ -832,13 +870,19 @@ def _share_in_high_need(
 # --- what the person needs to know -----------------------------------------
 
 
-def _answer(figures: list[Figure], priority: Table, measure: Measure) -> str:
-    """Say where need is high and how much of the charity's reach is there."""
+def _answer(
+    figures: list[Figure], priority: Table, words: NeedWords, guessed: bool
+) -> str:
+    """Say where need is high and how much of the charity's reach is there.
+
+    When the area was worked out from where the people live, the sentence
+    opens by saying so, because a door may show the sentence and no warning.
+    """
     shown = values(figures)
-    words = need_words(measure.id == RESIDENTS.id)
     overall = shown["reach_per_100_in_need"]
+    left_out = not_counted(shown["people_supplied"], shown["people_in_catchment"])
     if shown["areas_compared"] == 1:
-        return _answer_for_one_place(overall, words.per)
+        return _answer_for_one_place(overall, words.per) + left_out
     places = high_need_places(shown["high_need_areas"], words.high)
     ours = shown["share_of_people_in_high_need_areas"]
     if ours is None:
@@ -850,9 +894,15 @@ def _answer(figures: list[Figure], priority: Table, measure: Measure) -> str:
     else:
         mine = f"{number(ours)}% of your people do."
     first = look_first(priority, LOWEST, "people_per_100_in_need", overall, words.high)
+    opening = (
+        f"In the {shown['areas_compared']} local authorities where most of your "
+        "people live, "
+        if guessed
+        else ""
+    )
     return (
-        f"{number(shown['share_of_need_in_high_need_areas'])}% of {words.people} "
-        f"live in {places}, and {mine}{first}"
+        f"{opening}{number(shown['share_of_need_in_high_need_areas'])}% of "
+        f"{words.people} live in {places}, and {mine}{first}{left_out}"
     )
 
 
@@ -871,14 +921,17 @@ def _choices(
     measure: Measure, compared: Compared, top: int, threshold: int, by_rate: bool
 ) -> tuple[Choice, ...]:
     """List the choices the analysis made."""
+    words = need_words(measure.id == RESIDENTS.id)
     shading = Choice(
         id="map_need",
-        label="How the map shades need",
-        value=NEED_BY_COUNT[0],
+        label=f"How the map shades {words.topic}",
+        value=_by_count(words)[0],
         reason=(
-            "There are no residents to set the count against: the need is "
-            "every resident, or no copy of the residents is kept on this "
-            "machine beside the need figures."
+            "The need is every resident, so there is no rate to work out."
+            if measure.id == RESIDENTS.id
+            else "The need figures are kept on this machine and no copy of the "
+            "residents is kept beside them, so there is nothing to set the "
+            "count against. Keep the residents too and the map goes by rate."
         ),
     )
     if by_rate:
@@ -901,8 +954,8 @@ def _choices(
         ),
         Choice(
             id="high_need",
-            label="What counts as high need",
-            value="In the top quarter of the area you serve, by people in need",
+            label=f"What counts as {words.high}",
+            value=f"In the top quarter of the area you serve, by {words.noun}",
             reason=(
                 "A quarter keeps the list to the places that stand out. The "
                 "Smart Works study, which this follows, used the top half."
@@ -967,7 +1020,11 @@ def _checks(mode: str, measure: Measure, compared: Compared) -> tuple[Check, ...
         ),
         Check(
             id="need_fits",
-            question=f"Is this the need you work on: {measure.label}?",
+            question=(
+                f"Are these the people you work for: {measure.label}?"
+                if measure.id == RESIDENTS.id
+                else f"Is this the need you work on: {measure.label}?"
+            ),
             why=(
                 "Reach is only meaningful against the people you are trying "
                 f"to help. Change {said('need')} if another measure fits "

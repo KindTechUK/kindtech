@@ -221,6 +221,80 @@ def test_answer_says_where_need_is_high_and_reach_is_low(nomis):
     assert result.to_dict()["answer"] == result.answer
 
 
+def test_answer_says_when_the_area_was_worked_out(nomis):
+    # A door may show the sentence and no warning, so the sentence says it.
+    result = _run(_counts(Greenwich=30, Lewisham=60, Adur=10, Cardiff=3))
+    assert result.answer.startswith(
+        "In the 3 local authorities where most of your people live, "
+    )
+    named = _run(
+        _counts(Greenwich=30, Lewisham=60, Adur=10),
+        options={"catchment": ["Lewisham", "Greenwich", "Adur"]},
+    )
+    assert not named.answer.startswith("In the 3 local authorities")
+
+
+def test_answer_says_how_many_people_are_not_counted_when_they_are_many(nomis):
+    # A mistyped place holds 70 of 322 people: over a fifth are left out.
+    rows = _counts(Lewisham=240, Grenwich=70, Adur=12)
+    result = _run(rows, options={"catchment": ["Lewisham", "Adur"]})
+    assert result.answer.endswith(
+        " 70 of the 322 people in your data could not be placed in the area "
+        "you serve and are not counted."
+    )
+    assert "Grenwich" not in json.dumps(result.to_dict())
+    few = _run(
+        _counts(Lewisham=240, Grenwich=7, Adur=12),
+        options={"catchment": ["Lewisham", "Adur"]},
+    )
+    assert "are not counted" not in few.answer
+
+
+def test_the_list_says_what_it_is_in_order_of_and_no_more(nomis):
+    # A place on a short list can have more reach than the area, so the
+    # title does not call the list "the places to look at first".
+    result = _run_wide(_counts(Lewisham=60, Greenwich=30, Adur=10))
+    table = result.table("priority_areas")
+    assert table.title == "Places with high need, your lowest reach first"
+    assert table.headings["people_in_need"] == "People in need"
+
+
+def test_labels_do_not_call_every_resident_a_need(nomis):
+    result = _run_wide(
+        _counts(Lewisham=60, Greenwich=30, Adur=10), options={"need": "residents"}
+    )
+    labels = {figure.id: figure.label for figure in result.figures}
+    assert labels["people_in_need"] == (
+        "People in the area you serve: Residents of every age"
+    )
+    assert labels["high_need_areas"] == "Local authorities with the most residents"
+    assert labels["share_of_need_in_high_need_areas"] == (
+        "Share of residents who live in the local authorities with the most residents"
+    )
+    assert labels["high_need_areas_without_people"] == (
+        "The local authorities with the most residents where you reached nobody"
+    )
+    table = result.table("priority_areas")
+    assert table.title == "Places with the most residents, your lowest reach first"
+    assert table.headings["people_in_need"] == "Residents"
+    assert table.headings["people_per_100_in_need"] == "Your people per 100 residents"
+    read = [*labels.values(), table.title, *table.headings.values()]
+    assert not [text for text in read if "need" in text.lower()]
+    choice = next(c for c in result.choices if c.id == "high_need")
+    assert choice.label == "What counts as the most residents"
+    assert choice.value == "In the top quarter of the area you serve, by residents"
+
+
+def test_the_map_says_why_it_shades_by_count(nomis):
+    by_count = _run_wide(
+        _counts(Lewisham=60, Greenwich=30, Adur=10), options={"need": "residents"}
+    )
+    choice = next(c for c in by_count.choices if c.id == "map_need")
+    assert choice.reason == (
+        "The need is every resident, so there is no rate to work out."
+    )
+
+
 def test_answer_names_the_first_places_of_the_list_and_no_others(nomis):
     result = _run_wide(_counts(Lewisham=60, Greenwich=30, Adur=10), options={"top": 1})
     assert result.answer.endswith(
@@ -980,12 +1054,25 @@ def test_map_shades_need_by_count_when_the_need_is_every_resident(nomis):
     nomis.residents = RESIDENTS
     result = _run_wide(_counts(Lewisham=60), options={"need": "residents"})
     assert len(nomis.asked) == 1  # residents are the need, and are not asked twice
-    assert result.map.layers[0].label == "People in need"
+    assert result.map.layers[0].label == "Residents"
+    assert result.map.layers[0].note == (
+        "Local authorities in five equal groups by residents."
+    )
+    assert result.map.layers[1].label == "People reached per 100 residents"
+    assert result.map.title == "Residents and reach, by local authority"
     rows = {r["geography_name"]: r for r in result.table("by_local_authority").rows}
     assert rows["Birmingham"]["people_in_need_per_1000_residents"] is None
     assert rows["Birmingham"]["need_band"] == "Highest fifth"
     choice = next(c for c in result.choices if c.id == "map_need")
-    assert choice.value == "People in need"
+    assert choice.label == "How the map shades residents"
+    assert choice.value == "Residents"
+    assert [chart.title for chart in result.charts] == [
+        "Residents in the places listed",
+        "People reached per 100 residents in the places listed",
+    ]
+    assert not any("high need" in caveat for caveat in result.caveats)
+    check = next(c for c in result.checks if c.id == "need_fits")
+    assert check.question.startswith("Are these the people you work for: ")
 
 
 def test_kept_need_figures_keep_the_map_off_the_network_too(nomis):

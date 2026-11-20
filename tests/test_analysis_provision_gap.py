@@ -213,6 +213,48 @@ def test_answer_says_where_need_is_high_and_provision_is_thin(nomis):
     assert result.to_dict()["answer"] == result.answer
 
 
+def test_labels_follow_the_measure(nomis):
+    # The default sets provision against every resident, so no label, heading,
+    # title or chart calls it a need.
+    result = _run(SPREAD)
+    labels = {figure.id: figure.label for figure in result.figures}
+    assert labels["share_of_need_in_high_need_areas"] == (
+        "Share of residents who live in those local authorities"
+    )
+    assert labels["high_need_areas_without_provision"] == (
+        "The local authorities with the most residents where you provide nothing"
+    )
+    assert labels["people_in_need"] == (
+        "People in the area you serve: Residents of every age"
+    )
+    table = result.table("priority_areas")
+    assert table.title == "Places with the most residents, thinnest provision first"
+    assert table.headings["volume_per_1000_in_need"] == (
+        "What you provide per 1,000 residents"
+    )
+    charts = [chart.title for chart in result.charts]
+    assert charts == [
+        "Residents in the places listed",
+        "Provision for each 1,000 residents in the places listed",
+    ]
+    layers = [layer.label for layer in result.map.layers]
+    assert layers == ["Residents", "Provision for each 1,000 residents"]
+    assert result.map.title == "Residents and provision, by local authority"
+    read = [*labels.values(), table.title, *table.headings.values(), *charts]
+    read += [*layers, result.map.title, result.map.layers[0].note]
+    assert not [text for text in read if "need" in text.lower()]
+    assert not any("high need" in caveat for caveat in result.caveats)
+    chosen = _run(SPREAD, options={"need": "unemployed"})
+    labels = {figure.id: figure.label for figure in chosen.figures}
+    assert labels["high_need_areas_without_provision"] == (
+        "High-need local authorities where you provide nothing"
+    )
+    assert chosen.table("priority_areas").title == (
+        "Places with high need, thinnest provision first"
+    )
+    assert chosen.charts[0].title == "People in need in the places listed"
+
+
 def test_answer_says_need_when_a_need_is_chosen(nomis):
     result = _run(SPREAD, options={"need": "unemployed"})
     assert result.answer.startswith(
