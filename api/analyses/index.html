@@ -2636,22 +2636,30 @@ machine too, so the analysis runs with no request at all:</p>
 </tr>
 <tr>
 <td><code>share_of_people_within_reach</code></td>
-<td>Share of people in a local authority within <code>within_km</code> of a site</td>
+<td>Share of people in a local authority whose centre is within <code>within_km</code> of a site</td>
 </tr>
 <tr>
 <td><code>people_beyond_reach</code></td>
-<td>People in a local authority farther than that</td>
+<td>People in a local authority whose centre is farther than that</td>
 </tr>
 <tr>
 <td><code>areas_beyond_reach</code></td>
-<td>Local authorities farther than that</td>
+<td>Local authorities whose centre is farther than that</td>
 </tr>
 <tr>
 <td><code>farthest_distance_km</code></td>
-<td>Distance from the farthest local authority to a site</td>
+<td>Distance from the centre of the farthest local authority to a site</td>
 </tr>
 </tbody>
 </table>
+<p>Every distance is from the centre of a local authority, the one the ONS
+publishes for it, and every person is counted there. That is coarse. A London
+borough is a few kilometres across, so 10 km says something about it. A large
+rural local authority can be 50 km across: a site can be inside it and still
+be farther than 10 km from its centre, and the place is then listed as far
+from a site. The answer, the labels, the headings and a caveat all say that
+distance is from the centre. Where the places you work in are large, set
+<code>within_km</code> higher and read the distances, not only who is within reach.</p>
 <p>The charts <code>people_in_priority_areas</code> and <code>distance_in_priority_areas</code> show
 the people and the distance for the places in <code>priority_areas</code>. The map has
 two layers, <code>distance</code> and <code>need</code>.</p>
