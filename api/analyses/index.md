@@ -225,7 +225,11 @@ The places around the map are drawn in pale grey, with their names where a
 name fits, when you give their outlines. Put them among the features of
 `boundaries`, or in a list under `"surroundings"`. Codes listed under
 `"focus"` are the surrounding places that hold the shaded areas: each gets a
-darker line and its name.
+darker line and its name. Codes listed under `"shore"` are surrounding places
+whose outline is where the land ends. The shaded areas are drawn no further
+than it, and the picture is framed on it. Use it when the outlines of the
+areas run out over water and the outline of the place that holds them does
+not.
 
 ```python
 boundaries = {
@@ -233,6 +237,7 @@ boundaries = {
     "features": areas,           # outlines you already have
     "surroundings": nearby,
     "focus": ["E09000023"],
+    "shore": ["E09000023"],
 }
 svg = render_map(result, boundaries=boundaries)
 ```
@@ -247,12 +252,23 @@ fetches one you can save and reuse.
 under `"focus"` the local authorities that hold a map's neighbourhoods. A map
 of up to 1,000 neighbourhoods or 20 local authorities is drawn large, so its
 outlines come from the full ones with detail finer than 10 or 20 metres left
-out, and so do the places near it, so that neighbours meet. A map of more is
-drawn small and takes outlines simplified to 200 metres. It asks for every
-local authority at 200 metres, about a megabyte, to find the ones near the
-map. That answer is kept in memory for the life of the process, so a second
-map does not ask again; `uk_open_data.analyses.maps.clear_outline_cache()`
-forgets it. When the places around cannot be fetched, the map is drawn without
+out. So do the local authorities that hold its neighbourhoods, and the other
+places a picture of the usual width shows when there are no more than 40 of
+them, so that neighbours meet. A place further off keeps its 200 metre
+outline.
+
+The full outlines of local authorities stop at the shore. The only full
+outlines of neighbourhoods that are open run out to low water and to the
+middle of a river. So on a map of neighbourhoods the local authorities that
+hold them are also listed under `"shore"`, and a river or a bay is left
+clear. When the fine outline of one of them does not come, nothing is listed
+and the neighbourhoods are drawn whole.
+
+A map of more areas is drawn small and takes outlines simplified to 200
+metres. Every map asks for every local authority at 200 metres, nearly three
+megabytes, to find the ones near it. That answer is kept in memory for the
+life of the process, so a second map does not ask again;
+`uk_open_data.analyses.maps.clear_outline_cache()` forgets it. When the places around cannot be fetched, the map is drawn without
 them and nothing is said.
 
 The fine outlines can be slow. The first time they are asked for an area the

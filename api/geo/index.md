@@ -48,7 +48,7 @@ outlines = load_geodata(
 )
 ```
 
-A full-extent layer (`BFE`) runs to the low water mark, so a coast sits a little outside the one a clipped layer draws. The service simplifies each outline by itself, so two neighbours may no longer share exactly the same edge; keep the distance small against the size of the map.
+A full-extent layer (`BFE`) runs to the low water mark and to the middle of a river, so it colours water as land on a map drawn large. Where a layer clipped to the shore is published (`BFC`), ask for that one. The service simplifies each outline by itself, so two neighbours may no longer share exactly the same edge; keep the distance small against the size of the map.
 
 #### Returns
 
