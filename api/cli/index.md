@@ -65,6 +65,11 @@ When the file, a column or an option cannot be used, the command prints what is
 wrong and exits with status 2. The message never repeats a value from your
 data, so it is safe to paste into a chat or an issue.
 
+A message names an option by its plain name, as a page shows it, such as
+'Area you serve'. When an error is about one option or one column, a last line
+says what to type here: "On the command line this is --option
+catchment=VALUE." `analysis describe` lists every option with both names.
+
 The outlines for `--map` come from the ONS Open Geography Portal. When they
 cannot be fetched, the report is still printed or written, no map file is made,
 and the command says so in one sentence and exits with status 2.

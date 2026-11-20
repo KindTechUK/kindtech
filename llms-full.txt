@@ -1038,6 +1038,29 @@ Returns an `AnalysisInfo` for every analysis: its `id`, `title`, the `question` 
 answers, a `summary`, its `roles` (the columns it can use), its `input_modes`
 (the shapes of data it accepts), its `options` and its `coverage`.
 
+Every option has two names. `name` is its code name, the one a call is
+written with, such as `catchment`. `label` is its short plain name, such as
+"Area you serve". Show the label beside the option. Every message that points a
+person at an option uses the label, in quotes ("Change 'Area you serve' to
+include them."), and never the code name, so the sentence matches what is on
+the screen. An option has the same label in every analysis that has it:
+
+| `name` | `label` |
+| --- | --- |
+| `catchment` | Area you serve |
+| `catchment_min_share` | Share that makes a place part of your area |
+| `suppress_below` | Smallest count shown |
+| `postcode_lookup` | Where postcodes are looked up |
+| `need` | Who counts as in need |
+| `top` | Places listed |
+| `characteristic` | What people are grouped by |
+| `groups` | How your labels match census groups |
+| `under_represented_below` | What counts as under-represented |
+| `within_km` | Distance within reach, in kilometres |
+
+The area an analysis looks across has one name wherever a person reads it:
+"the area you serve". `catchment` is only its code name.
+
 An option that takes one of a fixed list of values lists them as `choices`,
 each with a `value` and a `label` a person can read, so a page can show a list
 to pick from. `choices` is empty when the option is free, such as a number or
@@ -1073,6 +1096,13 @@ Runs an analysis and returns an `AnalysisResult`.
 Raises `AnalysisInputError` (a `ValueError`) when the data, the column mapping or
 an option cannot be used. The message is written for a person and
 `error.problems` lists each problem separately.
+
+`error.option` is the code name of the option the error is about, and
+`error.role` the name of the column role, so a page can mark the right box and
+a program need not search the sentence. When the problems are about several,
+it is the first of them. Each is `None` when the error is about neither, for
+example when a source could not be read. The command line adds what to type:
+"On the command line this is --option catchment=VALUE."
 
 When a public data source the analysis needs cannot be reached, the
 `requests.RequestException` is let out. Its text holds the whole web address
@@ -1140,7 +1170,7 @@ lowest band includes zero. Hover over an area in a browser to see its name and
 value. The colours adapt to a dark page.
 
 `render_map` fetches the outline of each area from the ONS Open Geography
-Portal. Only the public area codes of the catchment are sent. To draw without
+Portal. Only the public area codes of the area you serve are sent. To draw without
 the network, pass `boundaries=` a GeoJSON FeatureCollection you already have;
 `load_map_boundaries(result)` fetches one you can save and reuse.
 
@@ -1235,38 +1265,38 @@ The deprivation index is downloaded from gov.uk, or read from a copy
 there is one. A result that used a copy says so in its `sources` and its
 `working`, with the note the copy was kept with.
 
-The analysis then works out your **catchment**: the local authorities that each
+The analysis then works out **the area you serve**: the local authorities that each
 hold at least 5% of the people it could place. The decile figures and the map
 are about the people who live there, so they can be set against everyone who
-lives there. People outside the catchment are counted in the local authority
+lives there. People outside the area you serve are counted in the local authority
 table, and a warning says how many there are.
 
 | Figure | Meaning |
 | --- | --- |
 | `people_supplied` | People in the data you gave |
 | `people_located` | People placed in an English neighbourhood |
-| `people_in_catchment` | People who live in the catchment |
+| `people_in_catchment` | People who live in the area you serve |
 | `share_most_deprived_10` | Share of them in the 10% most deprived neighbourhoods in England |
 | `share_most_deprived_20` | Share of them in the 20% most deprived neighbourhoods in England |
-| `catchment_share_most_deprived_20` | Share of catchment residents who live in those neighbourhoods, for comparison |
+| `catchment_share_most_deprived_20` | Share of residents of the area you serve who live in those neighbourhoods, for comparison |
 | `reach_per_1000_most_deprived_20` | People reached per 1,000 residents of those neighbourhoods |
-| `reach_per_1000_elsewhere` | People reached per 1,000 residents in the rest of the catchment |
+| `reach_per_1000_elsewhere` | People reached per 1,000 residents in the rest of the area you serve |
 
 The chart `people_by_decile` sets the share of your people in each decile
-against the share of catchment residents.
+against the share of residents of the area you serve.
 
 | Table | Rows |
 | --- | --- |
 | `by_decile` | One per deprivation decile: people, share of people, residents, share of residents, people per 1,000 |
-| `by_local_authority` | One per local authority; authorities outside the catchment with few people share one unnamed row |
-| `by_neighbourhood` | One per catchment neighbourhood: decile, residents, and people in bands. This feeds the map |
+| `by_local_authority` | One per local authority; authorities outside the area you serve with few people share one unnamed row |
+| `by_neighbourhood` | One per neighbourhood in the area you serve: decile, residents, and people in bands. This feeds the map |
 
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `suppress_below` | `5` | Counts above zero and below this are hidden |
 | `postcode_lookup` | `"auto"` | `"offline"` uses the table on your machine and fails without one, `"online"` uses postcodes.io, `"auto"` uses the table when it is installed |
 | `catchment` | worked out | A local authority name or code, a list of them, or `"England"` |
-| `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out catchment |
+| `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out area |
 
 ```python
 result = run_analysis(
@@ -1303,7 +1333,7 @@ The analysis loads a count of **people in need** in every local authority from
 [Nomis](ons.md), divides the people you helped in each one by it, and lists
 the high-need local authorities where you reach the fewest people per 100 in
 need. A local authority is high need when its count is in the top quarter of
-the area compared. With fewer than four places, the one with the largest count
+the area you serve. With fewer than four places, the one with the largest count
 is high need.
 
 Choose the need with the `need` option:
@@ -1358,7 +1388,7 @@ keep_need_figures(
 A result that used a kept copy says so in its `sources` and its `working`,
 with the note the copy was kept with.
 
-The area compared is the area you could serve. Name it with `catchment`: a
+The area you serve should hold the places you do not reach yet as well. Name it with `catchment`: a
 list of local authorities, or a country. When you leave it out, the analysis
 works the area out as the first analysis does: each local authority that holds
 at least 5% of the people located (`catchment_min_share`). When none does,
@@ -1372,9 +1402,9 @@ result says so in a warning. To see the places you do not reach, name the area.
 | --- | --- |
 | `people_supplied` | People in the data you gave |
 | `people_located` | People placed in a local authority in England or Wales |
-| `people_in_catchment` | People who live in the area compared |
+| `people_in_catchment` | People who live in the area you serve |
 | `areas_compared` | Local authorities compared |
-| `people_in_need` | People in need in the area compared |
+| `people_in_need` | People in need in the area you serve |
 | `reach_per_100_in_need` | People you reached per 100 people in need, across the area |
 | `high_need_areas` | Local authorities with high need |
 | `high_need_areas_without_people` | High-need local authorities where you reached nobody |
@@ -1408,7 +1438,7 @@ that a run kept off the network stays off it.
 | `postcode_lookup` | `"auto"` | As for the first analysis |
 | `need` | `"unemployed"` | The need to compare your reach with |
 | `catchment` | worked out | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"` |
-| `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out catchment |
+| `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out area |
 | `top` | `10` | How many places to list, from 1 to 50 |
 
 ```python
@@ -1449,7 +1479,7 @@ It accepts three shapes of data:
 The `group` column holds each person's ethnic group, or their sex, in your own
 words. The analysis matches each label to a group the 2021 Census publishes,
 counts your people by group, and sets each group's share of your people
-against its share of the residents of your **catchment**. A group is
+against its share of the residents of **the area you serve**. A group is
 **under-represented** when its share of your people is below four fifths of
 its share of residents.
 
@@ -1482,10 +1512,10 @@ The result names the census groups. It never repeats one of your own labels.
 The `group` role lists the census group names as its `reported_values`,
 because a label of yours can be the same as one of them.
 
-With postcodes the analysis works out your catchment as the first analysis does: the
+With postcodes the analysis works out the area you serve as the first analysis does: the
 local authorities that each hold at least 5% of the people it could place.
 People who live outside it are left out, because they are set against the
-residents of the catchment. Without postcodes the analysis cannot tell where you
+residents of the area you serve. Without postcodes the analysis cannot tell where you
 work, so you must name the area with `catchment`.
 
 The residents come from [Nomis](ons.md), for every local authority at once.
@@ -1509,10 +1539,10 @@ keep_residents(
 | Figure | Meaning |
 | --- | --- |
 | `people_supplied` | People in the data you gave |
-| `people_in_catchment` | People set against residents: with postcodes, those who live in the catchment |
+| `people_in_catchment` | People set against residents: with postcodes, those who live in the area you serve |
 | `people_matched` | People whose label matched a census group. The shares are of these people |
 | `people_not_matched` | People with no label, or one that matched no census group |
-| `residents` | Residents of the catchment in the 2021 Census |
+| `residents` | Residents of the area you serve in the 2021 Census |
 | `groups_under_represented` | Groups you reach less than their share of residents |
 
 The chart `people_against_residents` sets the share of your people in each
@@ -1529,20 +1559,20 @@ group against the share of residents.
 | `characteristic` | `"ethnic_group"` | What the group column holds |
 | `groups` | none | Your label to census group, for labels the wording does not settle |
 | `catchment` | worked out from postcodes | A local authority name or code, a list of them, or `"England"`, `"Wales"` or `"England and Wales"`. Needed when there are no postcodes |
-| `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out catchment |
+| `catchment_min_share` | `0.05` | The share a local authority needs to join a worked-out area |
 | `under_represented_below` | `0.8` | A group is under-represented below this fraction of its share of residents |
 
 A group with a hidden count is not judged. A group nobody came from has a
 count of zero, which is shown, and is under-represented.
 
 This analysis has no map yet. The residents are compared across the whole
-catchment, not place by place.
+area you serve, not place by place.
 
 !!! note "Before you use the figures"
     Read `result.checks` and `result.caveats`. A gap is not proof of a
     barrier: groups differ in age and in need, and the census counts
     residents of every age. With few people, a gap can be chance. Do not
-    publish two runs with different catchments side by side, because a small
+    publish two runs with different areas side by side, because a small
     count can be worked out by taking one from the other.
 
 ## Provision gap
@@ -1571,7 +1601,7 @@ The analysis loads a count of people in every local authority from
 [Nomis](ons.md), divides the volume you provide in each one by it, and lists
 the high-need local authorities with the least provision for each 1,000
 people. A local authority is high need when its count is in the top quarter
-of the area compared, as in the second analysis.
+of the area you serve, as in the second analysis.
 
 The `need` option takes the same values as in the second analysis, and the same
 kept copies (`keep_need_figures`, `download_need_figures`) are used. The
@@ -1583,10 +1613,10 @@ for a group Nomis counts.
 | --- | --- |
 | `volume_supplied` | Volume in the data you gave |
 | `volume_located` | Volume placed in a local authority in England or Wales |
-| `volume_in_catchment` | Volume in the area compared |
+| `volume_in_catchment` | Volume in the area you serve |
 | `areas_compared` | Local authorities compared |
 | `areas_without_provision` | Local authorities where you provide nothing |
-| `people_in_need` | People in need in the area compared |
+| `people_in_need` | People in need in the area you serve |
 | `volume_per_1000_in_need` | Volume for each 1,000 people in need, across the area |
 | `high_need_areas` | Local authorities with high need |
 | `high_need_areas_without_provision` | High-need local authorities where you provide nothing |
@@ -1731,7 +1761,7 @@ keep_centres(
 | `sites_supplied` | Sites in the data you gave |
 | `sites_located` | Sites placed in the United Kingdom |
 | `areas_compared` | Local authorities compared |
-| `people_in_need` | People in the area compared |
+| `people_in_need` | People in the area you serve |
 | `average_distance_km` | Average distance to your nearest site, counting every person at the centre of their local authority |
 | `share_of_people_within_reach` | Share of people in a local authority within `within_km` of a site |
 | `people_beyond_reach` | People in a local authority farther than that |
@@ -1791,7 +1821,9 @@ analysis keeps:
    breakdowns that can be taken from each other to get a small count. Say in
    the privacy notes that a hidden count is not always small.
 3. Give every figure a source.
-4. State every choice and name the option that changes it.
+4. State every choice and name the option that changes it. Give each option
+   a `label`, use the label in quotes whenever a sentence points at the
+   option, and pass `option=` or `role=` when you raise `AnalysisInputError`.
 5. Leave checks for a person to answer.
 6. List anything sent off the machine in `privacy.sent_to_third_parties`.
 7. Answer the question in `answer`, from figures the result shows and nothing
@@ -1866,6 +1898,11 @@ uk-open-data analysis run reach-deprivation clients.csv \
 When the file, a column or an option cannot be used, the command prints what is
 wrong and exits with status 2. The message never repeats a value from your
 data, so it is safe to paste into a chat or an issue.
+
+A message names an option by its plain name, as a page shows it, such as
+'Area you serve'. When an error is about one option or one column, a last line
+says what to type here: "On the command line this is --option
+catchment=VALUE." `analysis describe` lists every option with both names.
 
 The outlines for `--map` come from the ONS Open Geography Portal. When they
 cannot be fetched, the report is still printed or written, no map file is made,
