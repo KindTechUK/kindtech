@@ -1681,6 +1681,13 @@ map. That answer is kept in memory for the life of the process, so a second
 map does not ask again; <code>uk_open_data.analyses.maps.clear_outline_cache()</code>
 forgets it. When the places around cannot be fetched, the map is drawn without
 them and nothing is said.</p>
+<p>The fine outlines can be slow. The first time they are asked for an area the
+service can take from a quarter of a minute to a minute or two. A second
+request for the same area takes a few seconds. A program that cannot wait,
+such as one answering in a chat, calls <code>load_map_boundaries(result,
+fine=False)</code>. It then gets the 200 metre outlines of every area, and the
+places around from the answer kept in memory, in a second or two.
+<code>load_map_boundaries</code> is safe to call from two threads at once.</p>
 <h2 id="the-answer">The answer</h2>
 <p><code>result.answer</code> is one or two sentences that answer the question the analysis
 asks, for example:</p>
